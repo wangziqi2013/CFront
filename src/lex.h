@@ -817,7 +817,13 @@ class SourceFile {
     return "";
   }
   
-
+  /*
+   * ClipOperator() - Clips "operator" including operator and all kinds of
+   *                  symbols from the input stream
+   *
+   * Since there is only a finite set of the symbols, we only need to
+   * return its type instead of the literal
+   */
   TokenType ClipOperator() {
 
   }
