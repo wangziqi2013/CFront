@@ -10,5 +10,7 @@
 
 #include "../src/lex.h"
 
+std::string AppendDoubleQuote(std::string s);
+
 void TestLexClipCharLiteral();
 void TestLexClipStringLiteral();
