@@ -461,7 +461,15 @@ class SourceFile {
       
       if(ch == EOF || ch2 == EOF) {
         ThrowUnclosedCommentBlockError();
-      } else if(ch == '*' && ch2 == '/') {
+      }
+      
+      // No matter what happens we could jump ch
+      GetNextChar();
+      
+      if(ch == '*' && ch2 == '/') {
+        // Also need to jump ch2 since we have seen the end of a comment block
+        GetNextChar();
+        
         break;
       }
 
@@ -469,13 +477,11 @@ class SourceFile {
 
       // If ch2 cannot become a candidate then advance by 2 characters
       // Otherwise we need to test ch2 and its next character
-      GetNextChar();
       if(ch2 != '*') {
         GetNextChar();
       }
     } // while(1)
     
-    assert(false);
     return;
   }
   
