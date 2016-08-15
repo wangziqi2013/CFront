@@ -283,7 +283,9 @@ class SourceFile {
    * IsIdentifier() - Returns whether the current character starts a keyword
    *                  or user-defined identifier
    *
-   * It checks for a-z, A-Z and _
+   * It checks for a-z, A-Z and _. Note that it does not check for numerics
+   * which is also valid inside an identifier as long as it is not the first
+   * one
    */
   inline bool IsIdentifier() const noexcept {
     char ch = PeekNextChar();
@@ -472,8 +474,6 @@ class SourceFile {
         
         break;
       }
-
-      // After this we know None of them are EOF
 
       // If ch2 cannot become a candidate then advance by 2 characters
       // Otherwise we need to test ch2 and its next character
@@ -753,6 +753,63 @@ class SourceFile {
         s.push_back(ch);
       }
     } // while(1)
+    
+    assert(false);
+    return "";
+  }
+  
+  /*
+   * ClipIdentifier() - Starting from alpha-underline, this function keeps
+   *                    collecting characters until it has seen a char that
+   *                    is not alpha-num-underline
+   *
+   * If the length of the identifier is greater than 64. then it will be
+   * collected using a vector. Otherwise as an optimization it will be
+   * held inside a stack-allocated array
+   */
+  std::string ClipIdentifier() {
+    assert(IsIdentifier() == true);
+    
+    // If the length of the identifier exceeds this threshold
+    // then it will be dumped into a vector and we
+    // use the vector to hold that many characters
+    //
+    // NOTE: We use ">=" to determine whether the value is in vector
+    // We make it 64 to let it fit into a cache line
+    static const int VECTOR_MIN_LEN = 64;
+    
+    // This will be the threshold
+    int length = 1;
+    
+    char s1[VECTOR_MIN_LEN - 1];
+    std::vector<char> s2;
+    
+    // We know the first char is valid identifier
+    s1[0] = GetNextChar();
+    
+    while(IsIdentifier() || IsNumeric()) {
+      // If we have reached the threshold then dump it to vector
+      if(length == (VECTOR_MIN_LEN - 1)) {
+        s2.assign(s1, s1 + VECTOR_MIN_LEN - 1);
+      }
+      
+      char ch = GetNextChar();
+      if(length >= (VECTOR_MIN_LEN - 1)) {
+        s2.push_back(ch);
+      } else {
+        s1[length] = ch;
+      }
+      
+      length++;
+    } // while
+    
+    // If the length is greater than or equal to the threshold
+    // then just construct string from the
+    if(length >= VECTOR_MIN_LEN) {
+      return std::string{&s2[0], static_cast<size_t>(length)};
+    } else {
+      return std::string{&s1[0], static_cast<size_t>(length)};
+    }
     
     assert(false);
     return "";
