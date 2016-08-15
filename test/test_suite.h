@@ -15,3 +15,4 @@ std::string AppendDoubleQuote(std::string s);
 void TestLexClipCharLiteral();
 void TestLexClipStringLiteral();
 void TestLexClipIntegerLiteral();
+void TestSkipBlockComment();

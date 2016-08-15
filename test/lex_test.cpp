@@ -87,3 +87,23 @@ void TestLexClipIntegerLiteral() {
   
   return;
 }
+
+/*
+ * TestSkipBlockCOmment() - Tests whether block comment could be skipped
+ */
+void TestSkipBlockComment() {
+  char data[] = "/******************************\n * This is a comment block \n * \n **//****//*      ****";
+  SourceFile sf{data, sizeof(data)};
+  
+  printf("Test string: %s\n", data);
+
+  try {
+    sf.SkipBlockComment();
+    sf.SkipBlockComment();
+    sf.SkipBlockComment();
+  } catch(const std::string &reason) {
+    std::cout << reason << std::endl;
+
+    return;
+  }
+}
