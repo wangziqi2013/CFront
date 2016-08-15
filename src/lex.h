@@ -12,6 +12,8 @@
 #include <vector>
 #include <functional>
 
+#include "token.h"
+
 class SourceFile {
  private:
   // The name of the source file
@@ -813,6 +815,11 @@ class SourceFile {
     
     assert(false);
     return "";
+  }
+  
+
+  TokenType ClipOperator() {
+
   }
   
   ///////////////////////////////////////////////////////////////////
