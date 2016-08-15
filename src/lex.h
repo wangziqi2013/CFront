@@ -688,6 +688,7 @@ class SourceFile {
     // Clip a char with terminating character being single quote
     char ch = ClipChar('\'');
     if(ch == 0x00) {
+      // If 0x00 is returned then the terminating char has been consumed
       ThrowTooShortCharLiteralError();
     } else if(ch == EOF) {
       ThrowUnclosedCharLiteralError();
@@ -695,9 +696,10 @@ class SourceFile {
     
     // Then consume the last character which should be the closing
     // single quote
+    // Otherwise the char literal is not closed
     char ch2 = PeekNextChar();
     if(ch2 != '\'') {
-      ThrowTooLongCharLiteralError();
+      ThrowUnclosedCharLiteralError();
     }
     
     // Advance read position
@@ -799,11 +801,6 @@ class SourceFile {
   
   void ThrowUnclosedStringLiteralError() const {
     throw std::string{"Unclosed string literal"} + \
-          GetPositionString();
-  }
-  
-  void ThrowTooLongCharLiteralError() const {
-    throw std::string{"Char literal is too long"} + \
           GetPositionString();
   }
   
