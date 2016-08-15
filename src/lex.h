@@ -580,6 +580,10 @@ class SourceFile {
    *
    * NOTE: There is no overflow warning even if the value is too large to
    * represent
+   *
+   * NOTE 2: This functions checks whether for oct there is still numeric
+   * digits left before this function returns, since that is an indication of
+   * illegal oct digits (i.e. 8 and 9)
    */
   unsigned long ClipIntegerLiteral() {
     // The first char must be between '0' and '9'
@@ -597,7 +601,13 @@ class SourceFile {
     } else if(IsOctValueLiteral() == true) {
       // Do not jump over anything - the leading 0 will not
       // change the value
-      return ClipOctIntegerLiteral();
+      unsigned long v = ClipOctIntegerLiteral();
+      
+      if(IsNumeric() == true) {
+        ThrowIllegalOctDigitError();
+      }
+      
+      return v;
     }
     
     return ClipDecIntegerLiteral();
@@ -818,6 +828,11 @@ class SourceFile {
   
   void ThrowIllegalEscapedError() const {
     throw std::string{"Illegal escaped sequence"} + \
+          GetPositionString();
+  }
+  
+  void ThrowIllegalOctDigitError() const {
+    throw std::string{"Illegal oct digit \'"} + PeekNextChar() + '\'' + \
           GetPositionString();
   }
 };

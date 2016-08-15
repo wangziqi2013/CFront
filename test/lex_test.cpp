@@ -57,3 +57,33 @@ void TestLexClipStringLiteral() {
     return;
   }
 }
+
+/*
+ * TestClipIntegerLiteral() - Clips an integer literal
+ */
+void TestLexClipIntegerLiteral() {
+  char data[] = "12345 \n\n 0x9876 \t\t 0777   000   0  0x23 \n\t 0888";
+  unsigned long data2[] = {12345, 0x9876, 0777, 000, 0, 0x23, 0};
+  
+  SourceFile sf{data, sizeof(data)};
+  
+  for(int i = 0;i < sizeof(data2) / sizeof(unsigned long);i++) {
+    unsigned long v;
+    
+    try {
+      sf.SkipSpace();
+
+      v = sf.ClipIntegerLiteral();
+    } catch(const std::string &reason) {
+      std::cout << reason << std::endl;
+
+      return;
+    }
+    
+    printf("Value = %lu\n", v);
+    
+    assert(v == data2[i]);
+  }
+  
+  return;
+}

@@ -5,4 +5,5 @@
 int main() {
   TestLexClipCharLiteral();
   TestLexClipStringLiteral();
+  TestLexClipIntegerLiteral();
 }
