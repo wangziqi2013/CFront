@@ -107,3 +107,22 @@ void TestSkipBlockComment() {
     return;
   }
 }
+
+void TestClipIdentifier() {
+  char data[] = "asdfgh _12345 aa_123 wangziqi2013 _____cxxx11______ sdsdsdsdasd ass";
+  SourceFile sf{data, sizeof(data)};
+
+  printf("Test string: %s\n", data);
+  try {
+    for(int i = 0;i < 7;i++) {
+      sf.SkipSpace();
+      std::string s = sf.ClipIdentifier();
+      
+      printf("Ident = %s\n", s.c_str());
+    }
+  } catch(const std::string &reason) {
+    std::cout << reason << std::endl;
+
+    return;
+  }
+}
