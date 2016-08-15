@@ -89,7 +89,7 @@ void TestLexClipIntegerLiteral() {
 }
 
 /*
- * TestSkipBlockCOmment() - Tests whether block comment could be skipped
+ * TestSkipBlockComment() - Tests whether block comment could be skipped
  */
 void TestSkipBlockComment() {
   char data[] = "/******************************\n * This is a comment block \n * \n **//****//*      ****";
@@ -108,6 +108,9 @@ void TestSkipBlockComment() {
   }
 }
 
+/*
+ * TestClipIdentifier() - Tests whether identifier could be clipped correctly
+ */
 void TestClipIdentifier() {
   char data[] = "asdfgh _12345 aa_123 wangziqi2013 _____cxxx11______ sdsdsdsdasd ass";
   SourceFile sf{data, sizeof(data)};
