@@ -274,6 +274,8 @@ class SourceFile {
    * Otherwise return false
    *
    * NOTE: This function could correctly detect decimal, octal and hex (0x)
+   * but negative numbers are not detected, since unary "-" is treated as
+   * an operator, we do not need to recognize negative constant
    */
   inline bool IsNumeric() const noexcept {
     char ch = PeekNextChar();
