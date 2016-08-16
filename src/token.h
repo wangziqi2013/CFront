@@ -67,7 +67,7 @@ enum class TokenType {
   T_LCPAREN,
   T_DOT,
   T_ARROW,
-  T_PLUS,
+  T_PLUS = 110,
   T_MINUS,
   T_NOT,
   T_BITNOT,
@@ -77,7 +77,7 @@ enum class TokenType {
   T_MOD,
   T_LSHIFT,
   T_RSHIFT,
-  T_LESS,
+  T_LESS = 120,
   T_LESSEQ,
   T_GREATER,
   T_GREATEREQ,
@@ -87,7 +87,7 @@ enum class TokenType {
   T_BITOR,
   T_AND,
   T_OR,
-  T_QMARK,
+  T_QMARK = 130,
   T_COMMA,
   T_COLON,
   T_SEMICOLON,
@@ -97,48 +97,48 @@ enum class TokenType {
   T_PLUS_ASSIGN,
   T_MINUS_ASSIGN,
   T_STAR_ASSIGN,
-  T_DIV_ASSIGN,
+  T_DIV_ASSIGN = 140,
   T_MOD_ASSIGN,
   T_LSHIFT_ASSIGN,
   T_RSHIFT_ASSIGN,
   T_AMPERSAND_ASSIGN,
   T_BITXOR_ASSIGN,
   T_BITOR_ASSIGN,
-  T_SIZEOF,
+  T_SIZEOF = 147,
   
   // The following are operator types for overloading in C
   // e.g. ++ and -- have pre- and post-fix form
   
   // ++
   T_POST_INC = 200,
-  T_PRE_INC,
+  T_PRE_INC = 201,
   
   // --
-  T_POST_DEC,
-  T_PRE_DEC,
+  T_POST_DEC = 202,
+  T_PRE_DEC = 203,
 
   // *
-  T_MULT,
-  T_DEREF,
+  T_MULT = 204,
+  T_DEREF = 205,
 
   // &
-  T_ADDR,
-  T_BITAND,
+  T_ADDR = 206,
+  T_BITAND = 207,
   
   // -
-  T_NEG,
-  T_SUBTRACTION,
+  T_NEG = 208,
+  T_SUBTRACTION = 209,
   
   // +
-  T_POS,
-  T_ADDITION,
+  T_POS = 210,
+  T_ADDITION = 211,
   
   // ()
-  T_FUNCCALL,
+  T_FUNCCALL = 212,
   // []
-  T_ARRAYSUB,
+  T_ARRAYSUB = 213,
   // (TYPE)
-  T_TYPECAST,
+  T_TYPECAST = 214,
   
 };
 
