@@ -954,7 +954,7 @@ class SourceFile {
       case ';': return TokenType::T_SEMICOLON;
       case ',': return TokenType::T_COMMA;
       default:
-        ThrowIllegalSymbolError();
+        ThrowIllegalSymbolError(ch);
     } // switch
     
     assert(false);
@@ -1045,8 +1045,9 @@ class SourceFile {
           GetPositionString();
   }
   
-  void ThrowIllegalSymbolError() const {
-    throw std::string{"Illegal symbol \'"} + PeekNextChar() + '\'' + \
+  void ThrowIllegalSymbolError(char ch) const {
+    throw std::string{"Illegal symbol \'"} + ch + "\' (" + \
+          std::to_string((int)ch) + ')' + \
           GetPositionString();
   }
 };
