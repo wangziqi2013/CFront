@@ -58,8 +58,9 @@ enum class TokenType {
 	// The following are types with data
 	
 	T_IDENT,        // Identifier
-  T_INT_CONST,    // Integer constant
+  T_INT_CONST,    // Integer constant (should be of the same length as unsigned long)
   T_STRING_CONST, // String literal
+  T_CHAR_CONST,   // Character literal
 
 	// The following are primitive operator types
 	
