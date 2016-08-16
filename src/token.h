@@ -249,6 +249,26 @@ class Token {
   }
   
   /*
+   * SetType() - Assigns a new type to the token
+   *
+   * This is necessary since we need to resolve ambiguity during parsing
+   * with operator types. e.g. "*" could either be used as multiplication
+   * or be used as pointer dereference operator
+   */
+  void SetType(TokenType p_type) {
+    type = p_type;
+    
+    return;
+  }
+  
+  /*
+   * GetType() - Returns the type of the token
+   */
+  TokenType GetType() const {
+    return type;
+  }
+  
+  /*
    * SetIntConst() - Set a integer constant number to this object
    *
    * This function requires that the token type must be T_INT_CONST
