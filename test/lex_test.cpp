@@ -129,3 +129,25 @@ void TestClipIdentifier() {
     return;
   }
 }
+
+/*
+ * TestClipOperator() - Tests ClipOperator function
+ */
+void TestClipOperator() {
+  char data[] = "()<<=>>=[]&&&++++---&^=";
+  SourceFile sf{data, sizeof(data)};
+  
+  printf("Test string: %s\n", data);
+  try {
+    while(sf.IsEof() == false) {
+      TokenType t = sf.ClipOperator();
+
+      printf("TokenType = %d\n", static_cast<int>(t));
+    }
+  } catch(const std::string &reason) {
+    // There will be an error at the last position, on char 0x00
+    std::cout << reason << std::endl;
+
+    return;
+  }
+}

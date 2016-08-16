@@ -8,6 +8,7 @@ int main() {
   TestLexClipIntegerLiteral();
   TestSkipBlockComment();
   TestClipIdentifier();
+  TestClipOperator();
   
   return 0;
 }

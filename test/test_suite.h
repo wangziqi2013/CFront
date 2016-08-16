@@ -17,3 +17,4 @@ void TestLexClipStringLiteral();
 void TestLexClipIntegerLiteral();
 void TestSkipBlockComment();
 void TestClipIdentifier();
+void TestClipOperator();
