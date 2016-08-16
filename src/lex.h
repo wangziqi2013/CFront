@@ -947,9 +947,16 @@ class SourceFile {
         else if(ch2 == '|') {GetNextChar(); return TokenType::T_OR;}
         else {return TokenType::T_BITOR;}
       }
+      case '?': return TokenType::T_QMARK;
+      case ':': return TokenType::T_COLON;
+      case ';': return TokenType::T_SEMICOLON;
+      case ',': return TokenType::T_COMMA;
       default:
         ThrowIllegalSymbolError();
     } // switch
+    
+    assert(false);
+    return (TokenType)0;
   }
   
   ///////////////////////////////////////////////////////////////////
