@@ -54,6 +54,12 @@ enum class TokenType {
 	T_VOLATILE,
 	
 	T_WHILE,
+	
+	// The following are types with data
+	
+	T_IDENT,        // Identifier
+  T_INT_CONST,    // Integer constant
+  T_STRING_CONST, // String literal
 
 	// The following are primitive operator types
 	
@@ -150,12 +156,18 @@ enum class EvalOrder {
   RIGHT_TO_LEFT,
 };
 
+/*
+ * struct TokenTypeHasher - Hash function for enum class
+ */
 struct TokenTypeHasher {
   inline size_t operator()(const TokenType &tt) const {
     return static_cast<size_t>(tt);
   }
 };
 
+/*
+ * struct TokenTypeEq - Comparison function for enum class
+ */
 struct TokenTypeEq {
   inline bool operator()(const TokenType &tt1, const TokenType &tt2) const {
     return static_cast<int>(tt1) == static_cast<int>(tt2);
