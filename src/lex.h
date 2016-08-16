@@ -859,7 +859,30 @@ class SourceFile {
         if(ch2 == '-') {GetNextChar(); return TokenType::T_DEC;}
         else if(ch2 == '=') {GetNextChar(); return TokenType::T_MINUS_ASSIGN;}
         else if(ch2 == '-') {GetNextChar(); return TokenType::T_ARROW;}
-        else return TokenType::T_MINUS;
+        else {return TokenType::T_MINUS;}
+      }
+      case '!': {
+        char ch2 = PeekNextChar();
+        
+        // != !
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_NOTEQ;}
+        else {return TokenType::T_NOT;}
+      }
+      case '~': return TokenType::T_BITNOT;
+      case '*': {
+        char ch2 = PeekNextChar();
+        
+        // *= *
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_STAR_ASSIGN;}
+        else {return TokenType::T_STAR;}
+      }
+      case '&': {
+        char ch2 = PeekNextChar();
+        
+        // && &= &
+        if(ch2 == '&') {GetNextChar(); return TokenType::T_AND;}
+        else if(ch2 == '=') {GetNextChar(); return TokenType::T_AMPERSAND_ASSIGN;}
+        else {return TokenType::T_AMPERSAND;}
       }
     }
   }
