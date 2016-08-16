@@ -884,6 +884,50 @@ class SourceFile {
         else if(ch2 == '=') {GetNextChar(); return TokenType::T_AMPERSAND_ASSIGN;}
         else {return TokenType::T_AMPERSAND;}
       }
+      case '/': {
+        char ch2 = PeekNextChar();
+        
+        // /= /
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_DIV_ASSIGN;}
+        else {return TokenType::T_DIV;}
+      }
+      case '%': {
+        char ch2 = PeekNextChar();
+
+        // %= %
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_MOD_ASSIGN;}
+        else {return TokenType::T_MOD;}
+      }
+      case '<': {
+        char ch2 = PeekNextChar();
+        
+        // <= <<= << <
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_LESSEQ;}
+        else if(ch2 == '<') {
+          // We know the char is valid
+          GetNextChar();
+          
+          char ch3 = PeekNextChar();
+          if(ch3 == '=') {GetNextChar(); return TokenType::T_LSHIFT_ASSIGN;}
+          else {return TokenType::T_LSHIFT;}
+        }
+        else {return TokenType::T_LESS;}
+      }
+      case '>': {
+        char ch2 = PeekNextChar();
+
+        // >= >>= >> >
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_GREATEREQ;}
+        else if(ch2 == '>') {
+          // We know the char is valid
+          GetNextChar();
+
+          char ch3 = PeekNextChar();
+          if(ch3 == '=') {GetNextChar(); return TokenType::T_RSHIFT_ASSIGN;}
+          else {return TokenType::T_RSHIFT;}
+        }
+        else {return TokenType::T_GREATER;}
+      }
     }
   }
   
