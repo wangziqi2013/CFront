@@ -825,7 +825,43 @@ class SourceFile {
    * return its type instead of the literal
    */
   TokenType ClipOperator() {
+    assert(IsNumeric() == false);
+    assert(IsStringLiteral() == false);
+    assert(IsCharLiteral() == false);
+    assert(IsIdentifier() == false);
+    assert(IsLineComment() == false);
+    assert(IsBlockComment() == false);
+    assert(IsSpace() == false);
+    assert(IsEof() == false);
+    
+    // We know ch must be a valid operator and that there is
+    // at least one char to read
+    char ch = GetNextChar();
+    
+    switch(ch) {
+      case '.': return TokenType::T_DOT;
+      case '(': return TokenType::T_LPAREN;
+      case ')': return TokenType::T_RPAREN;
+      case '[': return TokenType::T_LSPAREN;
+      case ']': return TokenType::T_RSPAREN;
+      case '+': {
+        char ch2 = PeekNextChar();
+        
+        // ++ += +
+        if(ch2 == '+') {GetNextChar(); return TokenType::T_INC;}
+        else if(ch2 == '=') {GetNextChar(); return TokenType::T_PLUS_ASSIGN;}
+        else {return TokenType::T_PLUS;}
+      }
+      case '-': {
+        char ch2 = PeekNextChar();
 
+        // -- -= -> -
+        if(ch2 == '-') {GetNextChar(); return TokenType::T_DEC;}
+        else if(ch2 == '=') {GetNextChar(); return TokenType::T_MINUS_ASSIGN;}
+        else if(ch2 == '-') {GetNextChar(); return TokenType::T_ARROW;}
+        else return TokenType::T_MINUS;
+      }
+    }
   }
   
   ///////////////////////////////////////////////////////////////////
