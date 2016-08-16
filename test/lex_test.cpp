@@ -44,11 +44,11 @@ void TestLexClipStringLiteral() {
   try {
     auto ret = sf.ClipStringLiteral();
     auto ret2 = sf.ClipStringLiteral();
-    printf("String Literal = %s\n", ret.c_str());
-    printf("String Literal = %s\n", ret2.c_str());
+    printf("String Literal = %s\n", ret->c_str());
+    printf("String Literal = %s\n", ret2->c_str());
     
-    assert((AppendDoubleQuote(ret) +
-            AppendDoubleQuote(ret2)) == std::string{data});
+    assert((AppendDoubleQuote(*ret) +
+            AppendDoubleQuote(*ret2)) == std::string{data});
     
     
   } catch(const std::string &reason) {
@@ -119,9 +119,9 @@ void TestClipIdentifier() {
   try {
     for(int i = 0;i < 7;i++) {
       sf.SkipSpace();
-      std::string s = sf.ClipIdentifier();
+      std::string *s = sf.ClipIdentifier();
       
-      printf("Ident = %s\n", s.c_str());
+      printf("Ident = %s\n", s->c_str());
     }
   } catch(const std::string &reason) {
     std::cout << reason << std::endl;
@@ -134,7 +134,7 @@ void TestClipIdentifier() {
  * TestClipOperator() - Tests ClipOperator function
  */
 void TestClipOperator() {
-  char data[] = "()<<=>>=[]&&&++++---&^=";
+  char data[] = "()<<=>>=[]&&&++++---&^===";
   SourceFile sf{data, sizeof(data)};
   
   printf("Test string: %s\n", data);
