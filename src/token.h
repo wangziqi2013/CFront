@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <string>
 #include <functional>
+#include <cassert>
 
 enum class TokenType {
   // The following is keyword types
@@ -191,4 +192,147 @@ class TokenInfo {
 
   static const keyword_map_type keyword_map;
   static const op_map_type op_map;
+};
+
+/*
+ * class Token - Main class to represent lexicon
+ */
+class Token {
+ private:
+  TokenType type;
+  
+  union {
+    // Integer constant
+    unsigned long int_const;
+    
+    // char constant
+    char char_const;
+    
+    // String constant
+    std::string *string_const_p;
+    
+    // Identifier
+    std::string *ident_p;
+  } data;
+  
+ public:
+
+  /*
+   * Constructor() - Construct a token object with corresponding type
+   *
+   * We choose not to set data here since it is a union
+   */
+  Token(TokenType p_type) :
+    type{p_type} {
+    // This will also clear the pointer
+    data.int_const = 0;
+  }
+  
+  /*
+   * Destructor - Frees the pointer if there is one
+   *
+   * The ownership of the pointer stored as identifier or string constant
+   * belongs to Token object
+   */
+  ~Token() {
+    // In both case the target is a string pointer
+    // so we could just delete it without distinguishing
+    // further on its type
+    if(type == TokenType::T_IDENT || \
+       type == TokenType::T_STRING_CONST) {
+      assert(data.string_const_p != nullptr);
+      
+      delete data.string_const_p;
+    }
+    
+    return;
+  }
+  
+  /*
+   * SetIntConst() - Set a integer constant number to this object
+   *
+   * This function requires that the token type must be T_INT_CONST
+   */
+  void SetIntConst(unsigned long p_int_const) {
+    assert(type == TokenType::T_INT_CONST);
+    
+    data.int_const = p_int_const;
+    
+    return;
+  }
+  
+  /*
+   * GetIntConst() - Returns the integer constant
+   */
+  unsigned long GetIntConst() const {
+    assert(type == TokenType::T_INT_CONST);
+    
+    return data.int_const;
+  }
+  
+  /*
+   * SetCharConst() - Set a char constant to this object
+   *
+   * This function requires that the token must be of T_CHAR_CONST
+   */
+  void SetCharConst(char p_char_const) {
+    assert(type == TokenType::T_CHAR_CONST);
+    
+    data.char_const = p_char_const;
+    
+    return;
+  }
+  
+  /*
+   * GetCharConst() - Returns a char constant
+   */
+  char GetCharConst() const {
+    assert(type == TokenType::T_CHAR_CONST);
+    
+    return data.char_const;
+  }
+  
+  /*
+   * SetStringConst() - Set a string constant to this object
+   *
+   * This function requires that the token must be of T_STRING_CONST
+   */
+  void SetStringConst(std::string *p_string_const_p) {
+    assert(type == TokenType::T_STRING_CONST);
+
+    data.string_const_p = p_string_const_p;
+
+    return;
+  }
+  
+  /*
+   * GetStringConst() - Returns the string pointer
+   */
+  std::string *GetStringConst() const {
+    assert(type == TokenType::T_STRING_CONST);
+    
+    return data.string_const_p;
+  }
+  
+  /*
+   * SetIdent() - Set an identifier string to this object
+   *
+   * This function requires that the token must be of T_IDENT
+   */
+  void SetIdent(std::string *p_ident_p) {
+    assert(type == TokenType::T_IDENT);
+
+    data.ident_p = p_ident_p;
+
+    return;
+  }
+  
+  /*
+   * GetIdent() - Returns the identifier string object
+   */
+  std::string *GetIdent() const {
+    assert(type == TokenType::T_IDENT);
+
+    return data.ident_p;
+  }
 };
