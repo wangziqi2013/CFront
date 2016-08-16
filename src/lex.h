@@ -614,7 +614,7 @@ class SourceFile {
       unsigned long v = ClipOctIntegerLiteral();
       
       if(IsNumeric() == true) {
-        ThrowIllegalOctDigitError();
+        ThrowIllegalOctDigitError(PeekNextChar());
       }
       
       return v;
@@ -1040,8 +1040,8 @@ class SourceFile {
           GetPositionString();
   }
   
-  void ThrowIllegalOctDigitError() const {
-    throw std::string{"Illegal oct digit \'"} + PeekNextChar() + '\'' + \
+  void ThrowIllegalOctDigitError(char ch) const {
+    throw std::string{"Illegal oct digit \'"} + ch + '\'' + \
           GetPositionString();
   }
   
