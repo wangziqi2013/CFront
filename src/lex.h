@@ -730,11 +730,12 @@ class SourceFile {
   
   /*
    * ClipStringLiteral() - Clip the string literal and return it in a string
-   *                       object
+   *                       object pointer
    *
-   * The returned object could be used in the move semantics
+   * The returned object is allocared on the heap, and the caller is
+   * responsible for deallocating the memory
    */
-  std::string ClipStringLiteral() {
+  std::string *ClipStringLiteral() {
     assert(IsStringLiteral() == true);
     
     // To jump over the leading '\"'
@@ -750,7 +751,7 @@ class SourceFile {
         s.push_back(0x00);
         
         // Use C string to construct a string object
-        return std::string{&s[0]};
+        return new std::string{&s[0]};
       } else if(ch == EOF) {
         ThrowUnclosedStringLiteralError();
       } else {
@@ -759,7 +760,7 @@ class SourceFile {
     } // while(1)
     
     assert(false);
-    return "";
+    return nullptr;
   }
   
   /*
@@ -771,7 +772,7 @@ class SourceFile {
    * collected using a vector. Otherwise as an optimization it will be
    * held inside a stack-allocated array
    */
-  std::string ClipIdentifier() {
+  std::string *ClipIdentifier() {
     assert(IsIdentifier() == true);
     
     // If the length of the identifier exceeds this threshold
@@ -810,13 +811,13 @@ class SourceFile {
     // If the length is greater than or equal to the threshold
     // then just construct string from the
     if(length >= VECTOR_MIN_LEN) {
-      return std::string{&s2[0], static_cast<size_t>(length)};
+      return new std::string{&s2[0], static_cast<size_t>(length)};
     } else {
-      return std::string{&s1[0], static_cast<size_t>(length)};
+      return new std::string{&s1[0], static_cast<size_t>(length)};
     }
     
     assert(false);
-    return "";
+    return nullptr;
   }
   
   /*
