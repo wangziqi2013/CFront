@@ -928,7 +928,28 @@ class SourceFile {
         }
         else {return TokenType::T_GREATER;}
       }
-    }
+      case '=': {
+        char ch2 = PeekNextChar();
+        
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_EQ;}
+        else {return TokenType::T_ASSIGN;}
+      }
+      case '^': {
+        char ch2 = PeekNextChar();
+
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_BITXOR_ASSIGN;}
+        else {return TokenType::T_BITXOR;}
+      }
+      case '|': {
+        char ch2 = PeekNextChar();
+
+        if(ch2 == '=') {GetNextChar(); return TokenType::T_BITOR_ASSIGN;}
+        else if(ch2 == '|') {GetNextChar(); return TokenType::T_OR;}
+        else {return TokenType::T_BITOR;}
+      }
+      default:
+        ThrowIllegalSymbolError();
+    } // switch
   }
   
   ///////////////////////////////////////////////////////////////////
@@ -1012,6 +1033,11 @@ class SourceFile {
   
   void ThrowIllegalOctDigitError() const {
     throw std::string{"Illegal oct digit \'"} + PeekNextChar() + '\'' + \
+          GetPositionString();
+  }
+  
+  void ThrowIllegalSymbolError() const {
+    throw std::string{"Illegal symbol \'"} + PeekNextChar() + '\'' + \
           GetPositionString();
   }
 };
