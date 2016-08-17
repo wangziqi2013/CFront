@@ -1086,6 +1086,10 @@ class SourceFile {
    * PushBackToken() - Pushes a token back into the stack for retrival
    *
    * This cooperates with GetNextToken()
+   *
+   * All token objects inside this stack are not destroyed when
+   * this object is destroyed, since they might be used elsewhere as
+   * part of a syntax tree, etc.
    */
   inline void PushBackToken(Token *token_p) {
     push_back_token_stack.push(token_p);
