@@ -984,10 +984,16 @@ class SourceFile {
     while(1) {
       if(IsLineComment() == true) {
         SkipLine();
+        
+        continue;
       } else if(IsBlockComment() == true) {
         SkipBlockComment();
+        
+        continue;
       } else if(IsSpace() == true) {
         SkipSpace();
+        
+        continue;
       } else if(IsEof() == true) {
         return nullptr;
       }
