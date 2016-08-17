@@ -12,7 +12,7 @@ void TestLexClipCharLiteral() {
   
   printf("Test string: %s\n", data1);
   
-  SourceFile sf{data1, sizeof(data1)};
+  SourceFile sf{data1, sizeof(data1) - 1};
   
   for(int i = 0;i < sizeof(data2);i++) {
     try {
@@ -40,7 +40,7 @@ void TestLexClipStringLiteral() {
   
   printf("Test string: %s\n", data);
 
-  SourceFile sf{data, sizeof(data)};
+  SourceFile sf{data, sizeof(data) - 1};
   try {
     auto ret = sf.ClipStringLiteral();
     auto ret2 = sf.ClipStringLiteral();
@@ -65,7 +65,7 @@ void TestLexClipIntegerLiteral() {
   char data[] = "12345 \n\n 0x9876 \t\t 0777   000   0  0x23 \n\t 0888";
   unsigned long data2[] = {12345, 0x9876, 0777, 000, 0, 0x23, 0};
   
-  SourceFile sf{data, sizeof(data)};
+  SourceFile sf{data, sizeof(data) - 1};
   
   for(int i = 0;i < sizeof(data2) / sizeof(unsigned long);i++) {
     unsigned long v;
@@ -93,7 +93,7 @@ void TestLexClipIntegerLiteral() {
  */
 void TestSkipBlockComment() {
   char data[] = "/******************************\n * This is a comment block \n * \n **//****//*      ****";
-  SourceFile sf{data, sizeof(data)};
+  SourceFile sf{data, sizeof(data) - 1};
   
   printf("Test string: %s\n", data);
 
@@ -113,7 +113,7 @@ void TestSkipBlockComment() {
  */
 void TestClipIdentifier() {
   char data[] = "asdfgh _12345 aa_123 wangziqi2013 _____cxxx11______ sdsdsdsdasd ass";
-  SourceFile sf{data, sizeof(data)};
+  SourceFile sf{data, sizeof(data) - 1};
 
   printf("Test string: %s\n", data);
   try {
@@ -135,7 +135,7 @@ void TestClipIdentifier() {
  */
 void TestClipOperator() {
   char data[] = "()<<=>>=[]&&&++++---&^===";
-  SourceFile sf{data, sizeof(data)};
+  SourceFile sf{data, sizeof(data) - 1};
   
   printf("Test string: %s\n", data);
   try {
@@ -157,7 +157,11 @@ void TestClipOperator() {
  */
 void TestGetNextToken() {
   char data[] = "int main() { printf(\"Hello, world\n\"); return 0; }";
-  SourceFile sf{data, sizeof(data)};
+  
+  // Must -1 here to cut the trailing 0x00
+  SourceFile sf{data, sizeof(data) - 1};
+  
+  std::cout << "========== TestGetNextToken ==========" << std::endl;
   
   try {
     Token *token_p = nullptr;
