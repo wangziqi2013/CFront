@@ -2,7 +2,7 @@
 CXX=g++
 OPT_FLAGS=
 CXX_FLAGS=-g -std=c++11
-OBJ_FILES=./build/main.o ./build/lex.o ./build/test_suite.o ./build/lex_test.o ./build/token.o
+OBJ_FILES=./build/main.o ./build/lex.o ./build/test_suite.o ./build/lex_test.o ./build/token.o ./build/syntax.o
 SRC=$(wildcard ./src/*.cpp) $(wildcard ./src/*.h)
 
 all: main
@@ -24,6 +24,9 @@ main: $(OBJ_FILES)
 
 ./build/token.o: $(SRC)
 	$(CXX) ./src/token.cpp -c -o ./build/token.o $(CXX_FLAGS)
+
+./build/syntax.o: $(SRC)
+	$(CXX) ./src/syntax.cpp -c -o ./build/syntax.o $(CXX_FLAGS)
     
 clean:
 	rm -f ./main
