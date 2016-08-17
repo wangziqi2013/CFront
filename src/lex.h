@@ -60,6 +60,9 @@ class SourceFile {
     
     std::memcpy(data + 1, p_data, static_cast<size_t>(file_length));
     
+    data[file_length + 1] = EOF;
+    data[0] = EOF;
+    
     // Make sure that we could always read the previous char of
     // the current one
     data++;
@@ -148,7 +151,7 @@ class SourceFile {
    * delete the pointer data - 1
    */
   ~SourceFile() {
-    delete (data - 1);
+    delete[] (data - 1);
     
     return;
   }
