@@ -91,6 +91,72 @@ class SyntaxAnalyzer {
   SyntaxAnalyzer &operator=(SyntaxAnalyzer &&) = delete;
   
   /*
+   * GetExpressionNodeType() - Return the real type of a syntax node
+   *
+   * Since many operators are used in an implicitly overloaded manner, e.g.
+   * "*" is either used as multiplication and pointer dereference. We need to
+   * determine its type based on whether it is used in prefix or postfix
+   * form.
+   *
+   * NOTE: If the op_stack_last_modified is true then we are in prefix form
+   * since we have seen an operator and is expecting a operand
+   */
+  TokenType GetExpressionNodeType(Token *token_p,
+                                  bool op_stack_last_modified) const {
+    switch(token_p->GetType()) {
+      case TokenType::T_STAR:
+        // *p; p *
+        return (op_stack_last_modified == true ? \
+                TokenType::T_DEREF :
+                TokenType::T_MULT);
+      case TokenType::T_AMPERSAND:
+        // &a; a &
+        return (op_stack_last_modified == true ? \
+                TokenType::T_ADDR :
+                TokenType::T_BITAND);
+      case TokenType::T_INC:
+        // ++a; a++
+        return (op_stack_last_modified == true ? \
+                TokenType::T_PRE_INC :
+                TokenType::T_POST_INC);
+      case TokenType::T_DEC:
+        // --a; a--
+        return (op_stack_last_modified == true ? \
+                TokenType::T_PRE_DEC :
+                TokenType::T_POST_DEC);
+      case TokenType::T_MINUS:
+        // -a; a -
+        return (op_stack_last_modified == true ? \
+                TokenType::T_NEG :
+                TokenType::T_SUBTRACTION);
+      case TokenType::T_PLUS:
+        // +a; a+
+        return (op_stack_last_modified == true ? \
+                TokenType::T_POS :
+                TokenType::T_ADDITION);
+      case TokenType::T_LPAREN:
+        // a(); (a)
+        // TODO: Prefix parenthesis could also be type cast
+        // we need to check type information for that form
+        return (op_stack_last_modified == true ? \
+                TokenType::T_PAREN :
+                TokenType::T_FUNCCALL);
+      case TokenType::T_LSPAREN:
+        // Make sure it could only be on the right side
+        assert(op_stack_last_modified == false);
+        
+        // we only have a[] form
+        return TokenType::T_ARRAYSUB;
+      default:
+        // By default we just use the original type
+        return token_p->GetType();
+    }
+    
+    assert(false);
+    return TokenType::T_INVALID;
+  }
+  
+  /*
    * ParseExpression() - Parse expression using a stack and return the top node
    */
   SyntaxNode *ParseExpression() {
@@ -110,7 +176,7 @@ class SyntaxAnalyzer {
       op_stack_last_modified = true;
       
       return;
-    }
+    };
     
     // This function pushes a syntax node into the node stack
     // Note that it uses a syntax node as argument
@@ -119,9 +185,7 @@ class SyntaxAnalyzer {
       op_stack_last_modified = false;
 
       return;
-    }
-    
-    
+    };
     
     // Loops until we have seen a non-expression element
     // we need to push that token back before returning
@@ -129,20 +193,24 @@ class SyntaxAnalyzer {
       Token *token_p = source_p->GetNextToken();
       TokenType type = token_p->GetType();
 
+      // Get raw type
+      type = GetExpressionNodeType(token_p, op_stack_last_modified);
+      
+      // Recognize whether it is prefix or postfix
+      token_p->SetType(type);
+      
+      // It must be found, including T_PAREN and T_ARRAYSUB
+      auto it = TokenInfo::op_map.find(type);
+      assert(it != TokenInfo::op_map.end());
+      
+      // Extract precedence and associativity
+      int precedence = it->second.precedence;
+      EvalOrder associativity = it->second.associativity;
+      int operand_num = it->second.operand_num;
+
       switch(type) {
-        // For the following operators they should be treated as unary operator
-        case TokenType::T_STAR:
-          // Prefix * is dereference
-          token_p->SetType(TokenType::T_DEREF);
-          
-          // These two must appear together
-          op_stack.push(new SyntaxNode{token_p});
-          op_stack_last_modified = true;
-        case TokenType::T_AMPERSAND:
-        case TokenType::T_INC:
-        case TokenType::T_DEC:
-        //case TokenType::T_
-      }
-    }
+        
+      } // switch
+    } // while
   }
 };
