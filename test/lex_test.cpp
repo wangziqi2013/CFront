@@ -159,12 +159,22 @@ void TestClipOperator() {
  * TestGetNextToken() - Tests overall functionality
  */
 void TestGetNextToken() {
-  char data[] = "int main() { printf(\"Hello, world\n\"); return 0; }";
+  char data[] = " /* \n\
+                   * main2() - The entrance point of the program \n\
+                   */ \n\
+                  int main() { \n\
+                   // This is a pointer \n\
+                   int *p = 0x7c000000; \n\
+                   \n\
+                   printf(\"Hello, world\\n\"); \n\
+                   \n\
+                   return -1 * *p; }\n";
   
   // Must -1 here to cut the trailing 0x00
   SourceFile sf{data, sizeof(data) - 1};
   
   std::cout << "========== TestGetNextToken ==========" << std::endl;
+  std::cout << data << std::endl;
   
   try {
     Token *token_p = nullptr;
