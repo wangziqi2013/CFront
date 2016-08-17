@@ -47,7 +47,7 @@ class SourceFile {
   // This is used to hold tokens that are pushed back
   // We use a stack structure, so if multiple tokes are
   // pushed back, we should push the newest first
-  std::stack<Token *> push_back_token_list;
+  std::stack<Token *> push_back_token_stack;
 
  public:
 
@@ -61,7 +61,7 @@ class SourceFile {
     file_length{p_file_length},
     current_line{1},
     current_column{1},
-    push_back_token_list{} {
+    push_back_token_stack{} {
     // Allocate two bytes more for EOF sentinel
     data = new char[file_length + 2];
     
@@ -87,7 +87,7 @@ class SourceFile {
     file_length{0},
     current_line{1},
     current_column{1},
-    push_back_token_list{} {
+    push_back_token_stack{} {
     // Open the file, and if it fails throw an exception
     FILE *fp = fopen(filename.c_str(), "r");
     if(fp == nullptr) {
@@ -987,8 +987,20 @@ class SourceFile {
    * The caller is responsible for destroying the pointer
    *
    * If EOF is seen then return NULL pointer
+   *
+   * This function will check push_back_token_stack first to see whether
+   * it contains any pushed back token. If yes then it will return one from
+   * the stack instead of extracting tokens from the input stream
    */
   Token *GetNextToken() {
+    if(push_back_token_stack.size() > 0UL) {
+      // Pop the top element and assign it to the token being returned
+      Token *token_p = push_back_token_stack.top();
+      push_back_token_stack.pop();
+      
+      return token_p;
+    }
+    
     while(1) {
       if(IsLineComment() == true) {
         SkipLine();
@@ -1068,6 +1080,17 @@ class SourceFile {
       
       return token_p;
     } // while(1)
+  }
+  
+  /*
+   * PushBackToken() - Pushes a token back into the stack for retrival
+   *
+   * This cooperates with GetNextToken()
+   */
+  inline void PushBackToken(Token *token_p) {
+    push_back_token_stack.push(token_p);
+    
+    return;
   }
   
   ///////////////////////////////////////////////////////////////////
