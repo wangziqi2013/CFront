@@ -144,12 +144,17 @@ enum class TokenType {
   T_POS = 210,
   T_ADDITION = 211,
   
-  // ()
-  T_FUNCCALL = 212,
+  // Prefix "(" is parsed as parenthesis, postfix ( is function call
+  // Though prefix ( could also be type cast, that requires some
+  // type checking.
+  T_PAREN = 212,
+  T_TYPECAST = 213,
+  T_FUNCCALL = 214,
+  
   // []
-  T_ARRAYSUB = 213,
-  // (TYPE)
-  T_TYPECAST = 214,
+  T_ARRAYSUB = 215,
+  
+  
   
 };
 
@@ -179,6 +184,24 @@ struct TokenTypeEq {
   }
 };
 
+/*
+ * struct OpInfo - Stores information about operators including
+ *                 precedence, associativity and number of operands
+ */
+struct OpInfo {
+  // The smaller the higher
+  int precedence;
+  
+  // -1 if operand count is not fixed. Mostly used with function call
+  // For function call we need special mechanism to collect arguments
+  // which are themselves a comma list of expressions
+  int operand_num;
+  
+  // Associativity is used to resolve shift-reduce conflict
+  // when the precedence is the same
+  EvalOrder associativity;
+};
+
 class TokenInfo {
  public:
   using keyword_map_value_type = std::pair<std::string, TokenType>;
@@ -186,11 +209,11 @@ class TokenInfo {
 
   // The value type used in operator map
   using op_map_value_type = \
-    std::pair<TokenType, std::pair<int, EvalOrder>>;
+    std::pair<TokenType, OpInfo>;
     
   using op_map_type = \
     std::unordered_map<TokenType,
-                       std::pair<int, EvalOrder>,
+                       OpInfo,
                        TokenTypeHasher,
                        TokenTypeEq>;
 
