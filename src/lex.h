@@ -963,6 +963,90 @@ class SourceFile {
   }
   
   ///////////////////////////////////////////////////////////////////
+  // Driver for all above
+  ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * GetNextToken() - Returns a token object pointer representing
+   *                  the current token
+   *
+   * The caller is responsible for destroying the pointer
+   *
+   * If EOF is seen then return NULL pointer
+   */
+  Token *GetNextToken() {
+    while(1) {
+      if(IsLineComment() == true) {
+        SkipLine();
+      } else if(IsBlockComment() == true) {
+        SkipBlockComment();
+      } else if(IsSpace() == true) {
+        SkipSpace();
+      } else if(IsEof() == true) {
+        return nullptr;
+      }
+      
+      // After this we know there is a valid token
+      // We construct it here to avoid memory leak during
+      // tokenization - we could always delete this pointer
+      // as long as the type is known
+      Token *token_p = new Token{TokenType::T_INVALID};
+      
+      try {
+        if(IsNumeric() == true) {
+          // Must set type here since if an exception is thown
+          // then the memory deallocation routine will check the type
+          token_p->SetType(TokenType::T_INT_CONST);
+          
+          token_p->SetIntConst(ClipIntegerLiteral());
+        } else if(IsStringLiteral() == true) {
+          token_p->SetType(TokenType::T_STRING_CONST);
+          
+          // The string will not be new-ed until it returns
+          // so there is no memory leak
+          token_p->SetStringConst(ClipStringLiteral());
+        } else if(IsCharLiteral() == true) {
+          token_p->SetType(TokenType::T_CHAR_CONST);
+
+          token_p->SetCharConst(ClipCharLiteral());
+        } else if(IsIdentifier() == true) {
+          token_p->SetType(TokenType::T_IDENT);
+
+          // For identifiers we should check whether it is a
+          // real identifier or a keyword - for keywords we
+          // need to rewrite its type using the map
+          std::string *s = ClipIdentifier();
+          
+          // After this no exception should be thrown
+          
+          auto it = TokenInfo::keyword_map.find(*s);
+          if(it != TokenInfo::keyword_map.end()) {
+            // Leave the ident field of token object nullptr
+            token_p->SetType(it->second);
+          } else {
+            token_p->SetIdentifier(s);
+          }
+        } else {
+          // This is the last resort - trying to clip an operator
+          // and there is no payload
+          token_p->SetType(ClipOperator());
+        }
+      } catch(const std::string reason) {
+        // NOTE: WHEN THIS HAPPENS THE POINTER FIELD IN  THE TOKEN
+        // OBJECT HAS NOT BEEN SET.
+        //
+        // IT REQUIRES THE TYPE OF THE TOKEN BEING KNOWN
+        delete token_p;
+        
+        // Throw to the caller
+        throw std::string{"ERROR: "} + reason;
+      } // try-catch
+      
+      return token_p;
+    } // while(1)
+  }
+  
+  ///////////////////////////////////////////////////////////////////
   // Error Handling
   ///////////////////////////////////////////////////////////////////
   
