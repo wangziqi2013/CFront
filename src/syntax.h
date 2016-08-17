@@ -157,6 +157,20 @@ class SyntaxAnalyzer {
   }
   
   /*
+   * ReduceOperator() - Takes an operator out of the op stack and form
+   *                    an expression with that operator and push it into
+   *                    the node stack
+   *
+   * We need to know the number of operands of a certain operator, and
+   * that kind of information is encoded inside OpInfo helper class.
+   * Once the number of operands is known, we could push them into the
+   * child list of the operand syntax node
+   */
+  void ReduceOperator() {
+
+  }
+  
+  /*
    * ParseExpression() - Parse expression using a stack and return the top node
    */
   SyntaxNode *ParseExpression() {
@@ -200,16 +214,15 @@ class SyntaxAnalyzer {
       token_p->SetType(type);
       
       // It must be found, including T_PAREN and T_ARRAYSUB
-      auto it = TokenInfo::op_map.find(type);
-      assert(it != TokenInfo::op_map.end());
+      auto &op_info = TokenInfo::GetOpInfo(type);
       
       // Extract precedence and associativity
-      int precedence = it->second.precedence;
-      EvalOrder associativity = it->second.associativity;
-      int operand_num = it->second.operand_num;
+      int precedence = op_info.precedence;
+      EvalOrder associativity = op_info.associativity;
+      int operand_num = op_info.operand_num;
 
       if(op_stack.size() != 0) {
-        auto it2 = op_stack.top()->GetType();
+        auto it = op_stack.top()->GetType();
         
         // If the precedence of the coming token < top token:
         //  reduce until we see a lower precedence (including "(")

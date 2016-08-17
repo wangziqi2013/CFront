@@ -166,6 +166,10 @@ enum class EvalOrder {
   RIGHT_TO_LEFT,
 };
 
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
 /*
  * struct TokenTypeHasher - Hash function for enum class
  */
@@ -217,7 +221,28 @@ class TokenInfo {
 
   static const keyword_map_type keyword_map;
   static const op_map_type op_map;
+  
+  /*
+   * GetOpInfo() - Return the struct of (precedence, op count, associativity)
+   *               of a specific operator
+   *
+   * If the operator is not found (which should not happen in practice since
+   * we have coded all operators inside the mapping) then an error will be
+   * thrown
+   *
+   * We return a constant reference to the structure
+   */
+  static const OpInfo &GetOpInfo(TokenType type) {
+    auto it = TokenInfo::op_map.find(type);
+    assert(it != TokenInfo::op_map.end());
+    
+    return it->second;
+  }
 };
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 /*
  * class Token - Main class to represent lexicon
