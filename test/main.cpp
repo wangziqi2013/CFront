@@ -10,5 +10,7 @@ int main() {
   TestClipIdentifier();
   TestClipOperator();
   
+  TestGetNextToken();
+  
   return 0;
 }

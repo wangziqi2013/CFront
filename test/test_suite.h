@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "../src/lex.h"
+#include "../src/token.h"
 
 std::string AppendDoubleQuote(std::string s);
 
@@ -18,3 +19,4 @@ void TestLexClipIntegerLiteral();
 void TestSkipBlockComment();
 void TestClipIdentifier();
 void TestClipOperator();
+void TestGetNextToken();
