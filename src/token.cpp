@@ -54,8 +54,9 @@ const TokenInfo::op_map_type TokenInfo::op_map {
                                  OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
     TokenInfo::op_map_value_type{TokenType::T_POST_DEC,
                                  OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
+    // Its two arguments are function name and param list
     TokenInfo::op_map_value_type{TokenType::T_FUNCCALL,
-                                 OpInfo{2, -1, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT}},
     TokenInfo::op_map_value_type{TokenType::T_ARRAYSUB,
                                  OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
     TokenInfo::op_map_value_type{TokenType::T_DOT,

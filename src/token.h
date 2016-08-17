@@ -192,9 +192,7 @@ struct OpInfo {
   // The smaller the higher
   int precedence;
   
-  // -1 if operand count is not fixed. Mostly used with function call
-  // For function call we need special mechanism to collect arguments
-  // which are themselves a comma list of expressions
+  // -1 for parenthesis, positive number for all others
   int operand_num;
   
   // Associativity is used to resolve shift-reduce conflict
