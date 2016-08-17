@@ -12,56 +12,56 @@ enum class TokenType {
   T_INVALID = 0,
   
   // The following is keyword types
-  T_AUTO,
+  T_AUTO = 1,
   
-  T_BREAK,
+  T_BREAK = 2,
   
-  T_CASE,
+  T_CASE = 3,
 	T_CHAR,
 	T_CONST,
 	T_CONTINUE,
 	
-	T_DEFAULT,
+	T_DEFAULT = 7,
 	T_DO,
 	T_DOUBLE,
 	
-	T_ELSE,
+	T_ELSE = 10,
 	T_ENUM,
 	T_EXTERN,
 	
-	T_FLOAT,
+	T_FLOAT = 13,
 	T_FOR,
 	
-	T_GOTO,
+	T_GOTO = 15,
 	
-	T_IF,
+	T_IF = 16,
 	T_INT,
 	
-	T_LONG,
+	T_LONG = 18,
 	
-	T_REGISTER,
+	T_REGISTER = 19,
 	T_RETURN,
 	
-	T_SHORT,
+	T_SHORT = 21,
 	T_SIGNED,
 	// T_SIZEOF -> This is part of the expression system
 	T_STATIC,
 	T_STRUCT,
 	T_SWITCH,
 	
-	T_TYPEDEF,
+	T_TYPEDEF = 26,
 	
-	T_UNION,
+	T_UNION = 27,
 	T_UNSIGNED,
 	
-	T_VOID,
+	T_VOID = 29,
 	T_VOLATILE,
 	
-	T_WHILE,
+	T_WHILE = 31,
 	
 	// The following are types with data
 	
-	T_IDENT,        // Identifier
+	T_IDENT = 80,   // Identifier
   T_INT_CONST,    // Integer constant (should be of the same length as unsigned long)
   T_STRING_CONST, // String literal
   T_CHAR_CONST,   // Character literal
