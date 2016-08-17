@@ -209,12 +209,12 @@ class SyntaxAnalyzer {
       int operand_num = it->second.operand_num;
 
       if(op_stack.size() != 0) {
-        auto it2 = op_stack.top().GetType();
+        auto it2 = op_stack.top()->GetType();
         
         // If the precedence of the coming token < top token:
         //  reduce until we see a lower precedence (including "(")
         //               or the stack is emptied
-        if(precedence < it2->second)
+        //if(precedence < it2->second)
       }
 
       switch(type) {
