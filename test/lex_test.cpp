@@ -50,7 +50,8 @@ void TestLexClipStringLiteral() {
     assert((AppendDoubleQuote(*ret) +
             AppendDoubleQuote(*ret2)) == std::string{data});
     
-    
+    delete ret;
+    delete ret2;
   } catch(const std::string &reason) {
     std::cout << reason << std::endl;
 
@@ -122,6 +123,8 @@ void TestClipIdentifier() {
       std::string *s = sf.ClipIdentifier();
       
       printf("Ident = %s\n", s->c_str());
+      
+      delete s;
     }
   } catch(const std::string &reason) {
     std::cout << reason << std::endl;
