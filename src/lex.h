@@ -1029,6 +1029,10 @@ class SourceFile {
           if(it != TokenInfo::keyword_map.end()) {
             // Leave the ident field of token object nullptr
             token_p->SetType(it->second);
+            
+            // Since we have just seen a keyword, no need to
+            // save the literal and we could remove it
+            delete s;
           } else {
             token_p->SetIdentifier(s);
           }
