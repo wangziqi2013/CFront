@@ -8,8 +8,11 @@
 #include <cassert>
 
 enum class TokenType {
+  // This is a placeholder
+  T_INVALID = 0,
+  
   // The following is keyword types
-  T_AUTO = 0,
+  T_AUTO,
   
   T_BREAK,
   
@@ -177,6 +180,7 @@ struct TokenTypeEq {
 };
 
 class TokenInfo {
+ public:
   using keyword_map_value_type = std::pair<std::string, TokenType>;
   using keyword_map_type = std::unordered_map<std::string, TokenType>;
 
@@ -226,6 +230,9 @@ class Token {
     type{p_type} {
     // This will also clear the pointer
     data.int_const = 0;
+    
+    assert(data.ident_p == nullptr);
+    assert(data.string_const_p == nullptr);
   }
   
   /*
@@ -240,9 +247,13 @@ class Token {
     // further on its type
     if(type == TokenType::T_IDENT || \
        type == TokenType::T_STRING_CONST) {
-      assert(data.string_const_p != nullptr);
-      
-      delete data.string_const_p;
+         
+      // If we destruct the string in exception handler
+      // then the pointer is nullptr since during construction
+      // we set it to nullptr and it has not been filled with anything
+      if(data.string_const_p != nullptr) {
+        delete data.string_const_p;
+      }
     }
     
     return;
@@ -335,11 +346,11 @@ class Token {
   }
   
   /*
-   * SetIdent() - Set an identifier string to this object
+   * SetIdentifier() - Set an identifier string to this object
    *
    * This function requires that the token must be of T_IDENT
    */
-  void SetIdent(std::string *p_ident_p) {
+  void SetIdentifier(std::string *p_ident_p) {
     assert(type == TokenType::T_IDENT);
 
     data.ident_p = p_ident_p;
@@ -348,9 +359,9 @@ class Token {
   }
   
   /*
-   * GetIdent() - Returns the identifier string object
+   * GetIdentifier() - Returns the identifier string object
    */
-  std::string *GetIdent() const {
+  std::string *GetIdentifier() const {
     assert(type == TokenType::T_IDENT);
 
     return data.ident_p;
