@@ -151,6 +151,7 @@ class SourceFile {
    * delete the pointer data - 1
    */
   ~SourceFile() {
+    // Must use delete[] to match new[] and delete[]
     delete[] (data - 1);
     
     return;
@@ -850,6 +851,8 @@ class SourceFile {
       case ')': return TokenType::T_RPAREN;
       case '[': return TokenType::T_LSPAREN;
       case ']': return TokenType::T_RSPAREN;
+      case '{': return TokenType::T_LCPAREN;
+      case '}': return TokenType::T_RCPAREN;
       case '+': {
         char ch2 = PeekNextChar();
         
