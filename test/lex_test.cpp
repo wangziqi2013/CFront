@@ -151,3 +151,36 @@ void TestClipOperator() {
     return;
   }
 }
+
+/*
+ * TestGetNextToken() - Tests overall functionality
+ */
+void TestGetNextToken() {
+  char data[] = "int main() { printf(\"Hello, world\n\"); return 0; }";
+  SourceFile sf{data, sizeof(data)};
+  
+  try {
+    Token *token_p = nullptr;
+    while((token_p = sf.GetNextToken()) != nullptr) {
+      TokenType type = token_p->GetType();
+      
+      printf("TokenType = %d; ", (int)token_p->GetType());
+
+      if(type == TokenType::T_INT_CONST) {
+        printf("Int const = %lu\n", token_p->GetIntConst());
+      } else if(type == TokenType::T_CHAR_CONST) {
+        printf("Char const = %c\n", token_p->GetCharConst());
+      } else if(type == TokenType::T_STRING_CONST) {
+        printf("String const = \"%s\"\n", token_p->GetStringConst()->c_str());
+      } else if(type == TokenType::T_IDENT) {
+        printf("Identifier = %s\n", token_p->GetIdentifier()->c_str());
+      } else {
+        printf("Other token type\n");
+      }
+
+      delete token_p;
+    }
+  } catch(const std::string &reason) {
+    std::cout << reason << std::endl;
+  }
+}
