@@ -163,12 +163,13 @@ void TestGetNextToken() {
                    * main2() - The entrance point of the program \n\
                    */ \n\
                   int main() { \n\
-                   // This is a pointer \n\
-                   int *p = 0x7c000000; \n\
-                   \n\
-                   printf(\"Hello, world\\n\"); \n\
-                   \n\
-                   return -1 * *p; }\n";
+                    // This is a pointer \n\
+                    int *p = 0x7c000000; \n\
+                    \n\
+                    printf(\"Hello, world\\n\"); \n\
+                    \n\
+                    return -1 * *p; \n\
+                  }\n";
   
   // Must -1 here to cut the trailing 0x00
   SourceFile sf{data, sizeof(data) - 1};

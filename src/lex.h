@@ -10,6 +10,7 @@
 // New C++ and C++11 headers
 #include <string>
 #include <vector>
+#include <stack>
 #include <functional>
 
 #include "token.h"
@@ -42,6 +43,11 @@ class SourceFile {
   // and columns
   int current_line;
   int current_column;
+  
+  // This is used to hold tokens that are pushed back
+  // We use a stack structure, so if multiple tokes are
+  // pushed back, we should push the newest first
+  std::stack<Token *> push_back_token_list;
 
  public:
 
@@ -54,7 +60,8 @@ class SourceFile {
     current_index{0},
     file_length{p_file_length},
     current_line{1},
-    current_column{1} {
+    current_column{1},
+    push_back_token_list{} {
     // Allocate two bytes more for EOF sentinel
     data = new char[file_length + 2];
     
@@ -79,7 +86,8 @@ class SourceFile {
     current_index{0},
     file_length{0},
     current_line{1},
-    current_column{1} {
+    current_column{1},
+    push_back_token_list{} {
     // Open the file, and if it fails throw an exception
     FILE *fp = fopen(filename.c_str(), "r");
     if(fp == nullptr) {
