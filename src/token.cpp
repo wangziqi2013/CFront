@@ -47,7 +47,7 @@ const TokenInfo::op_map_type TokenInfo::op_map {
     // "(" is also considered as an operator of the lowest precedence
     // since any operator could not cause a reduce
     TokenInfo::op_map_value_type{TokenType::T_PAREN,
-                                 OpInfo{100, -1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{100, 1, EvalOrder::RIGHT_TO_LEFT}},
     
     // precedence = 2
   	TokenInfo::op_map_value_type{TokenType::T_POST_INC,
