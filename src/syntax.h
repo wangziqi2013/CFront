@@ -468,7 +468,12 @@ class SyntaxAnalyzer {
     return;
   }
   
-  
+  /*
+   * ReduceTillParenthesis() - Reduce top level until we see a T_PAREN
+   *
+   * If there is no T_PAREN in the stack then raise an error, since ")"
+   * and "(" are not balanced
+   */
   void ReduceTillParenthesis(ExpressionContext *context_p) {
     
   }
@@ -520,5 +525,14 @@ class SyntaxAnalyzer {
           std::to_string(expected) + \
           "; actual " + \
           std::to_string(actual);
+  }
+  
+  /*
+   * ThrowMissingLeftParenthesisError() - This is thrown when we reduce to
+   *                                      right parenthesis but could not find
+   *                                      it in the operator stack
+   */
+  void ThrowMissingLeftParenthesisError() {
+    throw std::string{"Unmatched '(' and ')'; missing '('"};
   }
 };
