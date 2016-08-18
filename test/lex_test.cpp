@@ -178,8 +178,8 @@ void TestGetNextToken() {
   std::cout << data << std::endl;
   
   try {
-    Token *token_p = nullptr;
-    while((token_p = sf.GetNextToken()) != nullptr) {
+    Token *token_p = sf.GetNextToken();
+    while(token_p->GetType() != TokenType::T_INVALID) {
       TokenType type = token_p->GetType();
       
       printf("TokenType = %d; ", (int)token_p->GetType());
@@ -197,6 +197,8 @@ void TestGetNextToken() {
       }
 
       delete token_p;
+      
+      token_p = sf.GetNextToken();
     }
   } catch(const std::string &reason) {
     std::cout << reason << std::endl;
