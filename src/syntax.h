@@ -100,6 +100,10 @@ class ExpressionContext {
   std::stack<SyntaxNode *> op_stack;
   std::stack<SyntaxNode *> value_stack;
   
+  // This is an auxiliary data structure that is used to store OpInfo
+  // pointer corresponding to op_stack
+  std::stack<const OpInfo *> op_info_stack;
+  
   // If the last modified stack is op stack then this is set to true
   // This is controlled automatically by the push and pop functions
   bool op_stack_last_modified;
@@ -125,6 +129,9 @@ class ExpressionContext {
     op_stack.push(node_p);
     op_stack_last_modified = true;
     
+    // Need to maintain a synchronized OpInfo stack
+    op_info_stack.push(&TokenInfo::GetOpInfo(node_p->GetType()));
+    
     return;
   }
   
@@ -141,6 +148,9 @@ class ExpressionContext {
     
     SyntaxNode *node_p = op_stack.top();
     op_stack.pop();
+    
+    // Need to maintain synchronized opinfo stack
+    op_info_stack.pop();
     
     return node_p;
   }
@@ -206,6 +216,15 @@ class ExpressionContext {
     assert(op_stack.size() > 0UL);
     
     return op_stack.top();
+  }
+  
+  /*
+   * TopOpInfo() - Access the OpInfo structure of the topmost operator
+   */
+  inline const OpInfo *TopOpInfo() {
+    assert(op_stack.size() == op_info_stack.size());
+    
+    return op_info_stack.top();
   }
 };
 
@@ -327,11 +346,10 @@ class SyntaxAnalyzer {
    * we need to query a hash table to get OpInfo which is a non-trivial task
    * so the number of queries should be reduced to a minimum
    */
-  void ReduceOperator(ExpressionContext *context_p,
-                      const OpInfo &op_info) {
+  void ReduceOperator(ExpressionContext *context_p) {
     // We do not care about the actual type of the top operand here
     // just pop an operand and
-    int operand_num = op_info.operand_num;
+    int operand_num = context_p->TopOpInfo()->operand_num;
     
     // The number of operands must be between [1, 3]
     // NOTE: For T_PAREN type the number of operand is -1
@@ -378,6 +396,24 @@ class SyntaxAnalyzer {
     context_p->PushValueNode(top_op_node_p);
     
     return;
+  }
+  
+  /*
+   * ReduceOnPrecedence() - Reduces operators until the top one is
+   *                        of even lower precedence (or the same
+   *                        precedence) of the current operator
+   *
+   * Note that we need to reduce to an operator of < or <= precedence
+   * of the given one, depending on associativity. For left-to-right
+   * assosiativity we should reduce to "<=" precedence, o.w. reduce
+   * to a "<" operator is necessary
+   */
+  void ReduceOnPrecedence(ExpressionContext *context_p,
+                          SyntaxNode *current_op_p) {
+    // Get the top operator node and see its precedence
+    SyntaxNode *top_op_p = context_p->TopOpNode();
+    const OpInfo *top_op_info_p = context_p->TopOpInfo();
+    
   }
   
   /*
