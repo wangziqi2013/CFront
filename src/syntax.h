@@ -124,13 +124,18 @@ class ExpressionContext {
   
   /*
    * PushOpNode() - Push an operator syntax node into the stack
+   *
+   * NOTE: We need to manually provide the op_info_p in the argument
+   * since the caller of this function has to first get it from
+   * the TokenInfo class, and we do not want to perform the same
+   * action twice since querying TokenInfo is not a trivial task
    */
-  inline void PushOpNode(SyntaxNode *node_p) {
+  inline void PushOpNode(SyntaxNode *node_p, const OpInfo *op_info_p) {
     op_stack.push(node_p);
     op_stack_last_modified = true;
     
     // Need to maintain a synchronized OpInfo stack
-    op_info_stack.push(&TokenInfo::GetOpInfo(node_p->GetType()));
+    op_info_stack.push(op_info_p);
     
     return;
   }
@@ -351,6 +356,9 @@ class SyntaxAnalyzer {
     // just pop an operand and
     int operand_num = context_p->TopOpInfo()->operand_num;
     
+    // We could not reduce T_PAREN
+    assert(operand_num != -1);
+    
     // The number of operands must be between [1, 3]
     // NOTE: For T_PAREN type the number of operand is -1
     // so it should not be reduced in this function
@@ -407,13 +415,53 @@ class SyntaxAnalyzer {
    * of the given one, depending on associativity. For left-to-right
    * assosiativity we should reduce to "<=" precedence, o.w. reduce
    * to a "<" operator is necessary
+   *
+   * NOTE: It does not push current operator into the stack, which must
+   * be done by the caller
    */
   void ReduceOnPrecedence(ExpressionContext *context_p,
-                          SyntaxNode *current_op_p) {
-    // Get the top operator node and see its precedence
-    SyntaxNode *top_op_p = context_p->TopOpNode();
-    const OpInfo *top_op_info_p = context_p->TopOpInfo();
+                          OpInfo *current_op_info_p) {
+                            
+    // If left-to-right order then loop until see a <= precedence
+    // i.e. precedence numeric value >=
+    // T_PATEN should also belong to this category since
+    // we could not reduce parenthesis
+    if(top_op_info_p->associativity == EvalOrder::LEFT_TO_RIGHT) {
+      
+      while(context_p->GetOpStackSize() > 0) {
+        // Get the top operator node's precedence
+        const OpInfo *top_op_info_p = context_p->TopOpInfo();
+        
+        // If the top node has a lower or equal precedence than
+        // the current testing node then return
+        //
+        // for T_PAREN this is always satisfied so we will not
+        // reduce on parenthesis
+        if(top_op_info_p->precedence >= current_op_info_p->precedence) {
+          break;
+        }
+        
+        // Reduce the operator, pop operands, push into child list, and
+        // push the complex into the value list
+        // NOTE that this will change IsPrefix() flag to false
+        // since we have pushed into the value list
+        ReduceOperator(context_p);
+      }
+    } else if(top_op_info_p->associativity == EvalOrder::RIGHT_TO_LEFT) {
+      while(context_p->GetOpStackSize() > 0) {
+        const OpInfo *top_op_info_p = context_p->TopOpInfo();
+
+        if(top_op_info_p->precedence >= current_op_info_p->precedence) {
+          break;
+        }
+
+        ReduceOperator(context_p);
+      }
+    } else {
+      assert(false);
+    }
     
+    return;
   }
   
   /*
