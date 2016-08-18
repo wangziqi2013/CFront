@@ -475,7 +475,23 @@ class SyntaxAnalyzer {
    * and "(" are not balanced
    */
   void ReduceTillParenthesis(ExpressionContext *context_p) {
+    // If we get out of this while loop then there is an error
+    while(context_p->GetOpStackSize() > 0) {
+      // No matter what it is as long as we have not exited
+      // we always do a reduce, including for T_PAREN
+      ReduceOperator(context_p);
+      
+      if(context_p->TopOpNode()->GetType() == TokenType::T_PAREN) {
+        return;
+      }
+    } // while stack is not empty
     
+    // If we have emptied the stack and still did not see "("
+    // then throw error since there is no matching for ")"
+    ThrowMissingLeftParenthesisError();
+    
+    assert(false);
+    return;
   }
   
   /*
