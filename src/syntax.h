@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "lex.h"
 #include "token.h"
 
@@ -55,6 +57,34 @@ class SyntaxNode {
   inline TokenType GetType() const {
     return token_p->GetType();
   }
+  
+  /*
+   * GetToken() - Returns the token node embedded inside the syntax node
+   */
+  inline Token *GetToken() const {
+    return token_p;
+  }
+  
+  /*
+   * GetChildList() - Return the child list reference
+   */
+  inline std::vector<SyntaxNode *> &GetChildList() {
+    return child_list;
+  }
+  
+  /*
+   * PushChildNode() - Push child node into child node list
+   */
+  inline void PushChildNode(SyntaxNode *node_p) {
+    child_list.push_back(node_p);
+  }
+  
+  /*
+   * ReverseChildList() - Reverse the child list in-place
+   */
+  inline void ReverseChildList() {
+    std::reverse(child_list.begin(), child_list.end());
+  }
 };
 
 /*
@@ -89,9 +119,9 @@ class ExpressionContext {
   {}
   
   /*
-   * PushOp() - Push an operator syntax node into the stack
+   * PushOpNode() - Push an operator syntax node into the stack
    */
-  inline void PushOp(SyntaxNode *node_p) {
+  inline void PushOpNode(SyntaxNode *node_p) {
     op_stack.push(node_p);
     op_stack_last_modified = true;
     
@@ -99,12 +129,12 @@ class ExpressionContext {
   }
   
   /*
-   * PopOp() - Pops an operator from the stack
+   * PopOpNode() - Pops an operator from the stack
    *
    * If the stack is empty just return nullptr and it should be
    * treated as an error
    */
-  inline SyntaxNode *PopOp() {
+  inline SyntaxNode *PopOpNode() {
     if(op_stack.size() == 0UL) {
       return nullptr;
     }
@@ -116,11 +146,11 @@ class ExpressionContext {
   }
   
   /*
-   * PushValue() - Push a syntax node into value stack
+   * PushValueNode() - Push a syntax node into value stack
    *
    * This function will set op_stack_last_modified as false as a by-product
    */
-  inline void PushValue(SyntaxNode *node_p) {
+  inline void PushValueNode(SyntaxNode *node_p) {
     value_stack.push(node_p);
     op_stack_last_modified = false;
     
@@ -128,11 +158,11 @@ class ExpressionContext {
   }
   
   /*
-   * PopValue() - Returns a value SyntaxNode
+   * PopValueNode() - Returns a value SyntaxNode
    *
    * If the value stack is empty just return nullptr. This is almost an error
    */
-  inline SyntaxNode *PopValue() {
+  inline SyntaxNode *PopValueNode() {
     if(value_stack.size() == 0UL) {
       return nullptr;
     }
@@ -153,6 +183,29 @@ class ExpressionContext {
    */
   bool IsPrefix() const {
     return op_stack_last_modified;
+  }
+  
+  /*
+   * GetOpStackSize() - Return the size of the operator stack
+   */
+  inline size_t GetOpStackSize() const {
+    return op_stack.size();
+  }
+  
+  /*
+   * GetValueStackSize() - Return the size of the value stack
+   */
+  inline size_t GetValueStackSize() const {
+    return value_stack.size();
+  }
+  
+  /*
+   * TopOpNode() - Returns the top on op_stack
+   */
+  inline SyntaxNode *TopOpNode() {
+    assert(op_stack.size() > 0UL);
+    
+    return op_stack.top();
   }
 };
 
@@ -269,9 +322,62 @@ class SyntaxAnalyzer {
    *
    * If the op stack is empty or node stack is empty then we have a parsing
    * error
+   *
+   * The information of operator is also passed in as argument since
+   * we need to query a hash table to get OpInfo which is a non-trivial task
+   * so the number of queries should be reduced to a minimum
    */
-  void ReduceOperator(ExpressionContext *context_p) {
-
+  void ReduceOperator(ExpressionContext *context_p,
+                      const OpInfo &op_info) {
+    // We do not care about the actual type of the top operand here
+    // just pop an operand and
+    int operand_num = op_info.operand_num;
+    
+    // The number of operands must be between [1, 3]
+    // NOTE: For T_PAREN type the number of operand is -1
+    // so it should not be reduced in this function
+    assert(operand_num > 0);
+    assert(operand_num <= 3);
+    
+    // No matter how many operands it requires, first check
+    // the number of values in value stack
+    if(operand_num > context_p->GetValueStackSize()) {
+      ThrowMissingOperandError(operand_num, context_p->GetValueStackSize());
+    }
+    
+    // Next we pop operand_num syntax nodes from the value stack
+    // and reverse them in-place
+    
+    // We must have something to pop out in this function
+    // if ther operator stack is empty it should be handled outside
+    // of this function
+    assert(context_p->GetOpStackSize() > 0UL);
+    
+    // This is the top of operator node
+    SyntaxNode *top_op_node_p = context_p->PopOpNode();
+    assert(top_op_node_p != nullptr);
+    
+    // Deliberately let it fall through to unroll the loop
+    switch(operand_num) {
+      case 3:
+        top_op_node_p->PushChildNode(context_p->PopValueNode());
+      case 2:
+        top_op_node_p->PushChildNode(context_p->PopValueNode());
+      case 1:
+        top_op_node_p->PushChildNode(context_p->PopValueNode());
+      default:
+        assert(false);
+    } // switch
+    
+    // Since we poped it from right to left, and the correct order is from
+    // left to right for all operators
+    top_op_node_p->ReverseChildList();
+    
+    // The last step is to push it back to the value stack since now
+    // it is reduced from operator to a value
+    context_p->PushValueNode(top_op_node_p);
+    
+    return;
   }
   
   /*
@@ -306,5 +412,20 @@ class SyntaxAnalyzer {
         
       } // switch
     } // while
+  }
+  
+  ///////////////////////////////////////////////////////////////////
+  // Error handling
+  ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * ThrowMissingOperandError() - This is thrown when reducing operator but
+   *                              there is missing operand
+   */
+  void ThrowMissingOperandError(int expected, int actual) {
+    throw std::string{"Missing operand: expect "} + \
+          std::to_string(expected) + \
+          "; actual " + \
+          std::to_string(actual);
   }
 };
