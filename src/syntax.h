@@ -57,6 +57,104 @@ class SyntaxNode {
   }
 };
 
+/*
+ * class ExpressionContext - This is the context for parsing expressions
+ *
+ * We use a stack-based approach to parse expressions. Since we might evaluate
+ * expressions recursively (e.g. function arguments are not connected by any
+ * operator, so we need to parse them separately), we might need few contexts
+ * be presense together
+ */
+class ExpressionContext {
+ private:
+  std::stack<SyntaxNode *> op_stack;
+  std::stack<SyntaxNode *> value_stack;
+  
+  // If the last modified stack is op stack then this is set to true
+  // This is controlled automatically by the push and pop functions
+  bool op_stack_last_modified;
+  
+ public:
+  /*
+   * Constructor - Initialize member variables
+   *
+   * We need to initialize the boolean variable to true since when both
+   * stacks are empty, if we see an operator then it is definitely a
+   * prefix operator (including prefix "(")
+   */
+  ExpressionContext() :
+    op_stack{},
+    value_stack{},
+    op_stack_last_modified{true}
+  {}
+  
+  /*
+   * PushOp() - Push an operator syntax node into the stack
+   */
+  inline void PushOp(SyntaxNode *node_p) {
+    op_stack.push(node_p);
+    op_stack_last_modified = true;
+    
+    return;
+  }
+  
+  /*
+   * PopOp() - Pops an operator from the stack
+   *
+   * If the stack is empty just return nullptr and it should be
+   * treated as an error
+   */
+  inline SyntaxNode *PopOp() {
+    if(op_stack.size() == 0UL) {
+      return nullptr;
+    }
+    
+    SyntaxNode *node_p = op_stack.top();
+    op_stack.pop();
+    
+    return node_p;
+  }
+  
+  /*
+   * PushValue() - Push a syntax node into value stack
+   *
+   * This function will set op_stack_last_modified as false as a by-product
+   */
+  inline void PushValue(SyntaxNode *node_p) {
+    value_stack.push(node_p);
+    op_stack_last_modified = false;
+    
+    return;
+  }
+  
+  /*
+   * PopValue() - Returns a value SyntaxNode
+   *
+   * If the value stack is empty just return nullptr. This is almost an error
+   */
+  inline SyntaxNode *PopValue() {
+    if(value_stack.size() == 0UL) {
+      return nullptr;
+    }
+    
+    SyntaxNode *node_p = value_stack.top();
+    value_stack.top();
+    
+    return node_p;
+  }
+  
+  /*
+   * IsPrefix() - Returns whether the op stack is the last stack we have
+   *              modified
+   *
+   * This is equivalent to whether the coming operator is prefix operator
+   * or not since if op stack is the last stack modified then we have seen
+   * an op and is expceting a value or a prefix op
+   */
+  bool IsPrefix() const {
+    return op_stack_last_modified;
+  }
+};
 
 /*
  * class SyntaxAnalyzer - Analyzes syntax and builds syntax tree
@@ -102,48 +200,50 @@ class SyntaxAnalyzer {
    * since we have seen an operator and is expecting a operand
    */
   TokenType GetExpressionNodeType(Token *token_p,
-                                  bool op_stack_last_modified) const {
+                                  ExpressionContext *context_p) const {
+    bool is_prefix = context_p->IsPrefix();
+    
     switch(token_p->GetType()) {
       case TokenType::T_STAR:
         // *p; p *
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_DEREF :
                 TokenType::T_MULT);
       case TokenType::T_AMPERSAND:
         // &a; a &
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_ADDR :
                 TokenType::T_BITAND);
       case TokenType::T_INC:
         // ++a; a++
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_PRE_INC :
                 TokenType::T_POST_INC);
       case TokenType::T_DEC:
         // --a; a--
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_PRE_DEC :
                 TokenType::T_POST_DEC);
       case TokenType::T_MINUS:
         // -a; a -
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_NEG :
                 TokenType::T_SUBTRACTION);
       case TokenType::T_PLUS:
         // +a; a+
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_POS :
                 TokenType::T_ADDITION);
       case TokenType::T_LPAREN:
         // a(); (a)
         // TODO: Prefix parenthesis could also be type cast
         // we need to check type information for that form
-        return (op_stack_last_modified == true ? \
+        return (is_prefix == true ? \
                 TokenType::T_PAREN :
                 TokenType::T_FUNCCALL);
       case TokenType::T_LSPAREN:
         // Make sure it could only be on the right side
-        assert(op_stack_last_modified == false);
+        assert(is_prefix == false);
         
         // we only have a[] form
         return TokenType::T_ARRAYSUB;
@@ -165,8 +265,11 @@ class SyntaxAnalyzer {
    * that kind of information is encoded inside OpInfo helper class.
    * Once the number of operands is known, we could push them into the
    * child list of the operand syntax node
+   *
+   * If the op stack is empty or node stack is empty then we have a parsing
+   * error
    */
-  void ReduceOperator() {
+  void ReduceOperator(ExpressionContext *context_p) {
 
   }
   
@@ -174,32 +277,7 @@ class SyntaxAnalyzer {
    * ParseExpression() - Parse expression using a stack and return the top node
    */
   SyntaxNode *ParseExpression() {
-    std::stack<SyntaxNode *> op_stack{};
-    std::stack<SyntaxNode *> node_stack{};
-    
-    // If the last modified stack is op stack then this is set to true
-    bool op_stack_last_modified = true;
-    
-    // The following two functions are used to synvhronize two stacks
-    // and the boolean variable
-    
-    // This lambda function is used to push a token into the op stack
-    // Note that it uses a token node rather than syntax node
-    auto push_op_stack = [&](Token *token_p) {
-      op_stack.push(new SyntaxNode{token_p});
-      op_stack_last_modified = true;
-      
-      return;
-    };
-    
-    // This function pushes a syntax node into the node stack
-    // Note that it uses a syntax node as argument
-    auto push_node_stack = [&](SyntaxNode *node_p) {
-      node_stack.push(node_p);
-      op_stack_last_modified = false;
-
-      return;
-    };
+    ExpressionContext context{};
     
     // Loops until we have seen a non-expression element
     // we need to push that token back before returning
@@ -207,10 +285,10 @@ class SyntaxAnalyzer {
       Token *token_p = source_p->GetNextToken();
       TokenType type = token_p->GetType();
 
-      // Get raw type
-      type = GetExpressionNodeType(token_p, op_stack_last_modified);
+      // Get raw type, recognize whether it is prefix or postfix
+      type = GetExpressionNodeType(token_p, &context);
       
-      // Recognize whether it is prefix or postfix
+      // And reset type to reflect prefix/postfix status
       token_p->SetType(type);
       
       // It must be found, including T_PAREN and T_ARRAYSUB
@@ -221,14 +299,7 @@ class SyntaxAnalyzer {
       EvalOrder associativity = op_info.associativity;
       int operand_num = op_info.operand_num;
 
-      if(op_stack.size() != 0) {
-        auto it = op_stack.top()->GetType();
-        
-        // If the precedence of the coming token < top token:
-        //  reduce until we see a lower precedence (including "(")
-        //               or the stack is emptied
-        //if(precedence < it2->second)
-      }
+      
 
       switch(type) {
         
