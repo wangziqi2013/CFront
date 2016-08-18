@@ -420,7 +420,7 @@ class SyntaxAnalyzer {
    * be done by the caller
    */
   void ReduceOnPrecedence(ExpressionContext *context_p,
-                          OpInfo *current_op_info_p) {
+                          const OpInfo *current_op_info_p) {
                             
     // If left-to-right order then loop until see a <= precedence
     // i.e. precedence numeric value >=
@@ -495,7 +495,25 @@ class SyntaxAnalyzer {
   }
   
   /*
+   * ReduceTillEmpty() - Reduce all operators on the stack until
+   *                     the op stack is empty
+   *
+   * This function is called when we know we have reached the end of the
+   * expression
+   */
+  void ReduceTillEmpty(ExpressionContext *context_p) {
+    // Loop until the stack is finally empy
+    while(context_p->GetOpStackSize() > 0) {
+      ReduceOperator(context_p);
+    } // while stack is not empty
+
+    return;
+  }
+  
+  /*
    * ParseExpression() - Parse expression using a stack and return the top node
+   *
+   * If terminate_on_rsparen
    */
   SyntaxNode *ParseExpression() {
     ExpressionContext context{};
@@ -510,22 +528,90 @@ class SyntaxAnalyzer {
       type = GetExpressionNodeType(token_p, &context);
       
       // And reset type to reflect prefix/postfix status
+      //
+      // For those not part of the expression or do not have prefix/postfix
+      // form this does not change but still we set it
       token_p->SetType(type);
       
-      // It must be found, including T_PAREN and T_ARRAYSUB
-      auto &op_info = TokenInfo::GetOpInfo(type);
+      // If it is not found then check whether it is ). If not then
+      // we know we have reached the end
+      //
+      // This includes ',' and ']' which will cause this function to return
+      // ',' is useful in parameter list parsing
+      // and ']' is useful in array index parsing
+      const OpInfo *op_info_p = TokenInfo::GetOpInfo(type);
       
-      // Extract precedence and associativity
-      int precedence = op_info.precedence;
-      EvalOrder associativity = op_info.associativity;
-      int operand_num = op_info.operand_num;
+      // Either it is not part of the expression, or it is
+      // a data terminal
+      if(op_info_p == nullptr) {
+        // If it is terminal types that carries data then
+        // push them into value stack
+        if(type == TokenType::T_STRING_CONST ||
+           type == TokenType::T_INT_CONST ||
+           type == TokenType::T_IDENT ||
+           type == TokenType::T_CHAR_CONST) {
+          // Construct a syntax node and initialize it with the token
+          // object
+          // The token object will not be destroyed until the syntax node
+          // is destructed
+          context.PushValueNode(new SyntaxNode{token_p});
+          
+          // Start with next token
+          continue;
+        } 
 
-      
+        // Push it back
+        // If it is ',' or ')' in param list then caller should extract
+        // and verify them
+        //
+        // If it is ']' caller should also verify them
+        source_p->PushBackToken(token_p);
 
-      switch(type) {
+        // Reduce all operators and see whether there is single value in
+        // value stack
+        // If not then we have error
+        ReduceTillEmpty(&context);
+        if(context.GetValueStackSize() != 1) {
+          ThrowUnexpectedValueError();
+        }
         
-      } // switch
-    } // while
+        // Pop the only value object and return it
+        return context.PopValueNode();
+      }
+      
+      // '(' is parsed recursively
+      if(type == TokenType::T_PAREN) {
+        // This is not used anymore
+        delete token_p;
+        
+        SyntaxNode *node_p = ParseExpression();
+        
+        // The other token must be ')'
+        Token *end_token_p = source_p->GetNextToken();
+        if(end_token_p->GetType() != TokenType::T_RPAREN) {
+          // It will delete all its child and below recursively
+          delete node_p;
+          
+          ThrowMissingRightParenthesisError();
+        }
+        
+        // Directly return - do not need an extra T_PAREN syntax node
+        return node_p;
+      } else if(type == TokenType::T_ARRAYSUB) {
+        assert(false);
+      } else if(type == TokenType::T_FUNCCALL) {
+        assert(false);
+      }
+      
+      // We know op_info_p is not nullptr
+      ReduceOnPrecedence(&context, op_info_p);
+      
+      // Now we could push into the op stack and continue
+      context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+    } // while(1)
+    
+    assert(false);
+    return nullptr;
   }
   
   ///////////////////////////////////////////////////////////////////
@@ -536,7 +622,7 @@ class SyntaxAnalyzer {
    * ThrowMissingOperandError() - This is thrown when reducing operator but
    *                              there is missing operand
    */
-  void ThrowMissingOperandError(int expected, int actual) {
+  void ThrowMissingOperandError(int expected, int actual) const {
     throw std::string{"Missing operand: expect "} + \
           std::to_string(expected) + \
           "; actual " + \
@@ -548,7 +634,21 @@ class SyntaxAnalyzer {
    *                                      right parenthesis but could not find
    *                                      it in the operator stack
    */
-  void ThrowMissingLeftParenthesisError() {
+  void ThrowMissingLeftParenthesisError() const {
     throw std::string{"Unmatched '(' and ')'; missing '('"};
+  }
+  
+  void ThrowMissingRightParenthesisError() const {
+    throw std::string{"Unmatched '(' and ')'; missing ')'"};
+  }
+  
+  /*
+   * ThrowUnexpectedValueError() - When we finishes an expression and reduces
+   *                               until the operator stack becomes empty
+   *                               if the value stack does not have exactly 1 
+   *                               element then raise this error
+   */
+  void ThrowUnexpectedValueError() const {
+    throw std::string{"Unexpected value object after reducing expression tree"};
   }
 };
