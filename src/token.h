@@ -433,4 +433,25 @@ class Token {
 
     return data.ident_p;
   }
+  
+  /*
+   * ToString() - Convert the token node to string representation
+   *
+   * There is no trailing '\n' attached with the string
+   */
+  std::string ToString() const {
+    if(type == TokenType::T_IDENT) {
+      return std::string{"T_IDENT: "} + *GetIdentifier();
+    } else if(type == TokenType::T_STRING_CONST) {
+      return std::string{"T_STRING_CONST: "} + *GetStringConst();
+    } else if(type == TokenType::T_INT_CONST) {
+      return std::string{"T_INT_CONST: "} + std::to_string(GetIntConst());
+    } else if(type == TokenType::T_CHAR_CONST) {
+      return std::string{"T_CHAR_CONST: "} + \
+             std::to_string(static_cast<int>(GetCharConst()));
+    } else {
+      return std::string{"Type %d ("} + \
+             std::to_string(static_cast<int>(GetType())) + ')';
+    }
+  }
 };
