@@ -6,6 +6,27 @@
 #include "lex.h"
 #include "token.h"
 
+static void dummy(const char*, ...) {}
+
+#define DEBUG_PRINT
+
+#ifdef DEBUG_PRINT
+
+#define dbg_printf(fmt, ...)                              \
+  do {                                                    \
+    fprintf(stderr, "%-24s: " fmt, __FUNCTION__, ##__VA_ARGS__); \
+    fflush(stdout);                                       \
+  } while (0);
+
+#else
+
+#define dbg_printf(fmt, ...)   \
+  do {                         \
+    dummy(fmt, ##__VA_ARGS__); \
+  } while (0);
+
+#endif
+
 /*
  * class SyntaxNode - Represents grammar elements
  *
@@ -46,6 +67,29 @@ class SyntaxNode {
     // Recursively remove all nodes below
     for(SyntaxNode *t : child_list) {
       delete t;
+    }
+    
+    return;
+  }
+  
+  /*
+   * TraversePrint() - Traverse and print all nodes in prefix order
+   */
+  void TraversePrint(int level = 0) const {
+    std::string s = token_p->ToString();
+    
+    // Print i space for identation
+    for(int i = 0;i < level;i++) {
+      putchar(' ');
+    }
+    
+    printf("%s\n", s.c_str());
+    
+    int counter = 0;
+    for(SyntaxNode *node_p : child_list) {
+      printf("(Child %d)\n", counter);
+      
+      node_p->TraversePrint(level + 1);
     }
     
     return;
@@ -391,7 +435,10 @@ class SyntaxAnalyzer {
         top_op_node_p->PushChildNode(context_p->PopValueNode());
       case 1:
         top_op_node_p->PushChildNode(context_p->PopValueNode());
+        break;
       default:
+        dbg_printf("Operand num = %d; error!\n", operand_num);
+        
         assert(false);
     } // switch
     
@@ -527,6 +574,8 @@ class SyntaxAnalyzer {
       // Get raw type, recognize whether it is prefix or postfix
       type = GetExpressionNodeType(token_p, &context);
       
+      dbg_printf("Type after conversion: %d\n", (int)type);
+      
       // And reset type to reflect prefix/postfix status
       //
       // For those not part of the expression or do not have prefix/postfix
@@ -550,6 +599,8 @@ class SyntaxAnalyzer {
            type == TokenType::T_INT_CONST ||
            type == TokenType::T_IDENT ||
            type == TokenType::T_CHAR_CONST) {
+          dbg_printf("See data terminal node. Push and start new loop\n");
+          
           // Construct a syntax node and initialize it with the token
           // object
           // The token object will not be destroyed until the syntax node
@@ -558,7 +609,7 @@ class SyntaxAnalyzer {
           
           // Start with next token
           continue;
-        } 
+        }
 
         // Push it back
         // If it is ',' or ')' in param list then caller should extract
