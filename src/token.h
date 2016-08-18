@@ -450,8 +450,9 @@ class Token {
       return std::string{"T_CHAR_CONST: "} + \
              std::to_string(static_cast<int>(GetCharConst()));
     } else {
-      return std::string{"Type %d ("} + \
-             std::to_string(static_cast<int>(GetType())) + ')';
+      return std::string{"Type ("} + \
+             std::to_string(static_cast<int>(GetType())) + \
+             ')';
     }
   }
 };
