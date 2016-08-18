@@ -987,6 +987,8 @@ class SourceFile {
       Token *token_p = push_back_token_stack.top();
       push_back_token_stack.pop();
       
+      dbg_printf("Pop from stack: type %d\n", (int)token_p->GetType());
+      
       return token_p;
     }
     
@@ -1082,6 +1084,8 @@ class SourceFile {
    */
   inline void PushBackToken(Token *token_p) {
     push_back_token_stack.push(token_p);
+    
+    dbg_printf("Push back type = %d\n", (int)token_p->GetType());
     
     return;
   }
