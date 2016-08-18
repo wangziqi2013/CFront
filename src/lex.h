@@ -1,18 +1,7 @@
 
 #pragma once
 
-// Old C headers
-#include <cstdio>
-#include <cassert>
-#include <cstring>
-#include <cstdlib>
-
-// New C++ and C++11 headers
-#include <string>
-#include <vector>
-#include <stack>
-#include <functional>
-
+#include "common.h"
 #include "token.h"
 
 class SourceFile {

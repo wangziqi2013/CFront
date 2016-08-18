@@ -1,11 +1,7 @@
 
 #pragma once
 
-#include <utility>
-#include <unordered_map>
-#include <string>
-#include <functional>
-#include <cassert>
+#include "common.h"
 
 enum class TokenType {
   // This is a placeholder
