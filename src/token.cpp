@@ -55,10 +55,13 @@ const TokenInfo::op_map_type TokenInfo::op_map {
     TokenInfo::op_map_value_type{TokenType::T_POST_DEC,
                                  OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
     // Its two arguments are function name and param list
+    // we treat param list as a single syntax node to avoid argument number
+    // problem (though the syntax node does not have a value)
     TokenInfo::op_map_value_type{TokenType::T_FUNCCALL,
                                  OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT}},
+    // ARRAYSUB takes 2 operands: 1 array expression, 1 index expression
     TokenInfo::op_map_value_type{TokenType::T_ARRAYSUB,
-                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT}},
     TokenInfo::op_map_value_type{TokenType::T_DOT,
                                  OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
     TokenInfo::op_map_value_type{TokenType::T_ARROW,
