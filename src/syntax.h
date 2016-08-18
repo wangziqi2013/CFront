@@ -80,14 +80,18 @@ class SyntaxNode {
     
     // Print i space for identation
     for(int i = 0;i < level;i++) {
-      putchar(' ');
+      printf("    ");
     }
     
     printf("%s\n", s.c_str());
     
     int counter = 0;
     for(SyntaxNode *node_p : child_list) {
-      printf("(Child %d)\n", counter);
+      for(int i = 0;i < level;i++) {
+        printf("    ");
+      }
+      
+      printf("(Child %d)\n", counter++);
       
       node_p->TraversePrint(level + 1);
     }
@@ -227,7 +231,7 @@ class ExpressionContext {
     }
     
     SyntaxNode *node_p = value_stack.top();
-    value_stack.top();
+    value_stack.pop();
     
     return node_p;
   }
@@ -618,12 +622,14 @@ class SyntaxAnalyzer {
         // If it is ']' caller should also verify them
         source_p->PushBackToken(token_p);
 
+        dbg_printf("Push back token of type %d\n", (int)type);
+
         // Reduce all operators and see whether there is single value in
         // value stack
         // If not then we have error
         ReduceTillEmpty(&context);
         if(context.GetValueStackSize() != 1) {
-          ThrowUnexpectedValueError();
+          ThrowUnexpectedValueError(context.GetValueStackSize());
         }
         
         // Pop the only value object and return it
@@ -643,7 +649,7 @@ class SyntaxAnalyzer {
           // It will delete all its child and below recursively
           delete node_p;
           
-          ThrowMissingRightParenthesisError();
+          ThrowMissingRightParenthesisError(end_token_p->GetType());
         }
         
         // Directly return - do not need an extra T_PAREN syntax node
@@ -689,8 +695,9 @@ class SyntaxAnalyzer {
     throw std::string{"Unmatched '(' and ')'; missing '('"};
   }
   
-  void ThrowMissingRightParenthesisError() const {
-    throw std::string{"Unmatched '(' and ')'; missing ')'"};
+  void ThrowMissingRightParenthesisError(TokenType type) const {
+    throw std::string{"Unmatched '(' and ')': missing ')'; saw type "} + \
+          std::to_string(static_cast<int>(type));
   }
   
   /*
@@ -699,7 +706,10 @@ class SyntaxAnalyzer {
    *                               if the value stack does not have exactly 1 
    *                               element then raise this error
    */
-  void ThrowUnexpectedValueError() const {
-    throw std::string{"Unexpected value object after reducing expression tree"};
+  void ThrowUnexpectedValueError(size_t num) const {
+    throw std::string{"Unexpected value object"
+                      " after reducing expression tree ("} + \
+          std::to_string(num) + \
+          " left)";
   }
 };
