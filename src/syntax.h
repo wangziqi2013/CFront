@@ -202,8 +202,9 @@ class SyntaxAnalyzer {
   TokenType GetExpressionNodeType(Token *token_p,
                                   ExpressionContext *context_p) const {
     bool is_prefix = context_p->IsPrefix();
+    TokenType type = token_p->GetType();
     
-    switch(token_p->GetType()) {
+    switch(type) {
       case TokenType::T_STAR:
         // *p; p *
         return (is_prefix == true ? \
@@ -249,7 +250,7 @@ class SyntaxAnalyzer {
         return TokenType::T_ARRAYSUB;
       default:
         // By default we just use the original type
-        return token_p->GetType();
+        return type;
     }
     
     assert(false);
