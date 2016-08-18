@@ -426,7 +426,11 @@ class SyntaxAnalyzer {
     // i.e. precedence numeric value >=
     // T_PATEN should also belong to this category since
     // we could not reduce parenthesis
-    if(top_op_info_p->associativity == EvalOrder::LEFT_TO_RIGHT) {
+    //
+    // Since we resolve precedence first, and resolve associativity
+    // only when the precedence is the same (in which case assosciativity
+    // is the same), so we could test current operator's associativity
+    if(current_op_info_p->associativity == EvalOrder::LEFT_TO_RIGHT) {
       
       while(context_p->GetOpStackSize() > 0) {
         // Get the top operator node's precedence
@@ -436,7 +440,7 @@ class SyntaxAnalyzer {
         // the current testing node then return
         //
         // for T_PAREN this is always satisfied so we will not
-        // reduce on parenthesis
+        // reduce on parenthesis unless requested
         if(top_op_info_p->precedence >= current_op_info_p->precedence) {
           break;
         }
@@ -447,7 +451,7 @@ class SyntaxAnalyzer {
         // since we have pushed into the value list
         ReduceOperator(context_p);
       }
-    } else if(top_op_info_p->associativity == EvalOrder::RIGHT_TO_LEFT) {
+    } else if(current_op_info_p->associativity == EvalOrder::RIGHT_TO_LEFT) {
       while(context_p->GetOpStackSize() > 0) {
         const OpInfo *top_op_info_p = context_p->TopOpInfo();
 
@@ -462,6 +466,11 @@ class SyntaxAnalyzer {
     }
     
     return;
+  }
+  
+  
+  void ReduceTillParenthesis(ExpressionContext *context_p) {
+    
   }
   
   /*
