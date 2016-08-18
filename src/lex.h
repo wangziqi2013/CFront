@@ -986,7 +986,7 @@ class SourceFile {
    *
    * The caller is responsible for destroying the pointer
    *
-   * If EOF is seen then return NULL pointer
+   * If EOF is seen then return T_INVALID token
    *
    * This function will check push_back_token_stack first to see whether
    * it contains any pushed back token. If yes then it will return one from
@@ -1015,7 +1015,7 @@ class SourceFile {
         
         continue;
       } else if(IsEof() == true) {
-        return nullptr;
+        return new Token{TokenType::T_INVALID};
       }
       
       // After this we know there is a valid token
