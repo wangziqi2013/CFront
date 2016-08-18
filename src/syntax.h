@@ -242,6 +242,17 @@ class ExpressionContext {
   }
   
   /*
+   * TopValueNode() - Returns the top node on the value stack
+   *
+   * This function requires that the value stack has at least 1 element
+   */
+  inline SyntaxNode *TopValueNode() {
+    assert(value_stack.size() > 0UL);
+    
+    return value_stack.top();
+  }
+  
+  /*
    * TopOpNode() - Returns the top on op_stack
    */
   inline SyntaxNode *TopOpNode() {
@@ -503,15 +514,22 @@ class SyntaxAnalyzer {
    *
    * If there is no T_PAREN in the stack then raise an error, since ")"
    * and "(" are not balanced
+   *
+   * NOTE: This function keeps reducing when we have seen a T_LPAREN
+   * on the op stack, this is to make sure there is at least 1 syntax
+   * element inside the parenthesis
    */
   void ReduceTillParenthesis(ExpressionContext *context_p) {
     // If we get out of this while loop then there is an error
     while(context_p->GetOpStackSize() > 0) {
+      TokenType top_op_type = context_p->TopOpNode()->GetType();
+      
       // No matter what it is as long as we have not exited
       // we always do a reduce, including for T_PAREN
       ReduceOperator(context_p);
       
-      if(context_p->TopOpNode()->GetType() == TokenType::T_PAREN) {
+      // We use the saved top op type since the top op has changed
+      if(top_op_type == TokenType::T_PAREN) {
         return;
       }
     } // while stack is not empty
@@ -545,7 +563,7 @@ class SyntaxAnalyzer {
    *
    * If terminate_on_rsparen
    */
-  SyntaxNode *ParseExpression() {
+  SyntaxNode *ParseExpression(bool terminate_on_rparen = false) {
     ExpressionContext context{};
     
     // Loops until we have seen a non-expression element
@@ -575,6 +593,8 @@ class SyntaxAnalyzer {
       
       // Either it is not part of the expression, or it is
       // a data terminal
+      //
+      // ')' ']' ',' will lead into this block
       if(op_info_p == nullptr) {
         // If it is terminal types that carries data then
         // push them into value stack
@@ -591,6 +611,21 @@ class SyntaxAnalyzer {
           context.PushValueNode(new SyntaxNode{token_p});
           
           // Start with next token
+          continue;
+        }
+
+        // If we do not terminate on ')', i.e. this is not a function call
+        // argument extraction recursive call
+        // then just reduce until parenthesis and pop the parenthesis node
+        // (i.e. parenthesis node only has one child, so it is meangingless to
+        // let it appear in expression tree)
+        if((type == TokenType::T_RPAREN) && \
+           (terminate_on_rparen == false)) {
+          ReduceTillParenthesis(&context);
+          
+          assert(context.TopValueNode()->GetType() == TokenType::T_PAREN);
+          //context.PopOpNode();
+          
           continue;
         }
 
@@ -617,6 +652,7 @@ class SyntaxAnalyzer {
       
       // '(' is parsed recursively
       if(type == TokenType::T_PAREN) {
+        /*
         // This is not used anymore
         delete token_p;
         
@@ -633,6 +669,7 @@ class SyntaxAnalyzer {
         
         // Directly return - do not need an extra T_PAREN syntax node
         return node_p;
+        */
       } else if(type == TokenType::T_ARRAYSUB) {
         assert(false);
       } else if(type == TokenType::T_FUNCCALL) {
