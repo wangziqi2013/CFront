@@ -226,17 +226,38 @@ class TokenInfo {
    * GetOpInfo() - Return the struct of (precedence, op count, associativity)
    *               of a specific operator
    *
-   * If the operator is not found (which should not happen in practice since
-   * we have coded all operators inside the mapping) then an error will be
-   * thrown
+   * If the operator is not found then it implies the type is not part of
+   * an expression, and if we are parsing an expression then probably
+   * it is the end of an expression
    *
-   * We return a constant reference to the structure
+   * We return a constant pointer to the structure
    */
-  static const OpInfo &GetOpInfo(TokenType type) {
+  static const OpInfo *GetOpInfo(TokenType type) {
     auto it = TokenInfo::op_map.find(type);
-    assert(it != TokenInfo::op_map.end());
     
-    return it->second;
+    // If does not find then return nullptr to indicate this
+    // is not a valid operator type
+    //
+    // This branch is useful since
+    if(it == TokenInfo::op_map.end()) {
+      return nullptr;
+    }
+    
+    return &it->second;
+  }
+  
+  /*
+   * IsOperator() - Returns true if the given type is a valid operator in
+   *                expression
+   *
+   * NOTE: Only ( and [ are considered as part of a valid operator
+   * and ")", "]", "," are not since they are treated as terminating symbol
+   * of an expression
+   *
+   * This function checks whether the given token is inside the
+   */
+  static bool IsOperator() {
+
   }
 };
 
