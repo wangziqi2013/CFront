@@ -10,6 +10,7 @@
 
 #include "../src/lex.h"
 #include "../src/token.h"
+#include "../src/syntax.h"
 
 std::string AppendDoubleQuote(std::string s);
 
@@ -20,3 +21,9 @@ void TestSkipBlockComment();
 void TestClipIdentifier();
 void TestClipOperator();
 void TestGetNextToken();
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+void TestParseExpression1();
