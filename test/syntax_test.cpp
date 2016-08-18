@@ -4,7 +4,7 @@
 void TestParseExpression1() {
   printf("========== TestParseExpression1 ==========\n");
   
-  char data[] = "((123456 + a) * *b += cde)";
+  char data[] = "123456 + a * &*++*b++ += cde";
 
   printf("Test string: %s\n", data);
 
