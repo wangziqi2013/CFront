@@ -62,7 +62,7 @@ const TokenInfo::op_map_type TokenInfo::op_map {
     //
     // Though it carries 2 children nodes we should set unary postfix as true
     TokenInfo::op_map_value_type{TokenType::T_FUNCCALL,
-                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT, true}},
+                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     // ARRAYSUB takes 2 operands: 1 array expression, 1 index expression
     TokenInfo::op_map_value_type{TokenType::T_ARRAYSUB,
                                  OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT, false}},
