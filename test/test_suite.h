@@ -29,3 +29,4 @@ void TestGetNextToken();
 void TestParseExpression1();
 void TestParseExpression2();
 void TestParseExpression3();
+void TestParseExpression4();

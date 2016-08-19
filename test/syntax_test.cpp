@@ -72,3 +72,27 @@ void TestParseExpression3() {
     return;
   }
 }
+
+/*
+ * TestParseExpression4() - Tests function call
+ */
+void TestParseExpression4() {
+  printf("========== TestParseExpression4 ==========\n");
+
+  char data[] = "(*func(888, 666, (wzq())))--";
+
+  printf("Test string: %s\n", data);
+
+  SourceFile sf{data, sizeof(data) - 1};
+  SyntaxAnalyzer sa{&sf};
+
+  try {
+    SyntaxNode *node_p = sa.ParseExpression();
+
+    node_p->TraversePrint();
+  } catch(const std::string &reason) {
+    std::cout << reason << std::endl;
+
+    return;
+  }
+}
