@@ -165,7 +165,11 @@ class ExpressionContext {
    */
   inline void PushOpNode(SyntaxNode *node_p, const OpInfo *op_info_p) {
     op_stack.push(node_p);
-    is_prefix = true;
+
+    // For a ++ ++ we should keep is_prefix as false
+    if(op_info_p->is_postfix_unary == false) {
+      is_prefix = true;
+    }
     
     // Need to maintain a synchronized OpInfo stack
     op_info_stack.push(op_info_p);
