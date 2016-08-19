@@ -671,7 +671,7 @@ class SyntaxAnalyzer {
         
         // Pop the only value object and return it
         return context.PopValueNode();
-      }
+      } // if not a regular operator, i.e. RPAREN, ',' or ']'
       
       if(type == TokenType::T_ARRAYSUB) {
         // Since [] is among the highest precedence operators
@@ -706,7 +706,29 @@ class SyntaxAnalyzer {
         
         continue;
       } else if(type == TokenType::T_FUNCCALL) {
-        assert(false);
+        // Since T_FUNCCALL is also among the highest precedence operators
+        // it could only reduce on the same class (i.e. unary postfix)
+        ReduceOnPrecedence(&context, op_info_p);
+
+        // Push the T_FUNCCALL into the op stack
+        // Though this is not strictly necessary we do that to simplify
+        // later processing because we could call reduce
+        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+
+        // This subroutine basically try to parse expressions from
+        // function argument list, until it sees ) and then it returns
+        //
+        // It pushes a single SyntaxNode of type FUNCARG into the value stack
+        // such that no matter how many arguments there are for a function
+        // call, we should always have exactly 2 arguments for T_FUNCCALL
+        SyntaxNode *arg_node_p = ParseFunctionArgumentList();
+
+        // We need to satisfy the operand number requirement
+        context.PushValueNode(arg_node_p);
+
+        ReduceOperator(&context);
+        
+        continue;
       }
       
       // We know op_info_p is not nullptr
