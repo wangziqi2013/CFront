@@ -674,16 +674,37 @@ class SyntaxAnalyzer {
       }
       
       if(type == TokenType::T_ARRAYSUB) {
-        SyntaxNode *node_p = ParseExpression();
+        // Since [] is among the highest precedence operators
+        // it could only reduce on the same class (i.e. unary postfix)
+        ReduceOnPrecedence(&context, op_info_p);
 
-        // The other token must be ')'
+        // Push the [] into the op stack
+        // Though this is not strictly necessary we do that to simplify
+        // later processing because we could call reduce
+        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+
+        // Parse the expression inside the [] until it returns
+        // it returns on ']' and ','
+        SyntaxNode *sub_node_p = ParseExpression();
+
+        // The other token must be ']'
         Token *end_token_p = source_p->GetNextToken();
         if(end_token_p->GetType() != TokenType::T_RSPAREN) {
           // It will delete all its child and below recursively
-          delete node_p;
+          delete sub_node_p;
 
           ThrowMissingRightSolidParenthesisError(end_token_p->GetType());
         }
+        
+        // We need to satisfy the operand number requirement
+        context.PushValueNode(sub_node_p);
+        
+        // This will reduce ARRAYSUB and push into value stack
+        // so it unsets is_prefix flag which is good since any operand
+        // after arraysub must be postfix
+        ReduceOperator(&context);
+        
+        continue;
       } else if(type == TokenType::T_FUNCCALL) {
         assert(false);
       }
