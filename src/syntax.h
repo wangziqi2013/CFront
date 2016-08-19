@@ -479,10 +479,8 @@ class SyntaxAnalyzer {
   void ReduceOnPrecedence(ExpressionContext *context_p,
                           const OpInfo *current_op_info_p) {
                             
-    // If left-to-right order then loop until see a <= precedence
-    // i.e. precedence numeric value >=
-    // T_PATEN should also belong to this category since
-    // we could not reduce parenthesis
+    // If left-to-right order then loop until see a < precedence
+    // i.e. precedence numeric value >
     //
     // Since we resolve precedence first, and resolve associativity
     // only when the precedence is the same (in which case assosciativity
@@ -495,10 +493,7 @@ class SyntaxAnalyzer {
         
         // If the top node has a lower or equal precedence than
         // the current testing node then return
-        //
-        // for T_PAREN this is always satisfied so we will not
-        // reduce on parenthesis unless requested
-        if(top_op_info_p->precedence >= current_op_info_p->precedence) {
+        if(top_op_info_p->precedence > current_op_info_p->precedence) {
           break;
         }
         
@@ -678,27 +673,7 @@ class SyntaxAnalyzer {
         return context.PopValueNode();
       }
       
-      // '(' is parsed recursively
-      if(type == TokenType::T_PAREN) {
-        /*
-        // This is not used anymore
-        delete token_p;
-        
-        SyntaxNode *node_p = ParseExpression();
-        
-        // The other token must be ')'
-        Token *end_token_p = source_p->GetNextToken();
-        if(end_token_p->GetType() != TokenType::T_RPAREN) {
-          // It will delete all its child and below recursively
-          delete node_p;
-          
-          ThrowMissingRightParenthesisError(end_token_p->GetType());
-        }
-        
-        // Directly return - do not need an extra T_PAREN syntax node
-        return node_p;
-        */
-      } else if(type == TokenType::T_ARRAYSUB) {
+      if(type == TokenType::T_ARRAYSUB) {
         SyntaxNode *node_p = ParseExpression();
 
         // The other token must be ')'
@@ -748,8 +723,14 @@ class SyntaxAnalyzer {
     throw std::string{"Unmatched '(' and ')'; missing '('"};
   }
   
-  void ThrowMissingRightParenthesisError(TokenType type) const {
-    throw std::string{"Unmatched '(' and ')': missing ')'; saw type "} + \
+  /*
+   * ThrowMissingRightSolidParenthesisError() - As name suggests
+   *
+   * NOTE: This function is different from the missing '(' in a sense
+   * that we parse '[' and ']' recursively
+   */
+  void ThrowMissingRightSolidParenthesisError(TokenType type) const {
+    throw std::string{"Unmatched '[' and ']': missing ']'; saw type "} + \
           std::to_string(static_cast<int>(type));
   }
   
