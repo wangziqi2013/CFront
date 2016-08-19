@@ -17,6 +17,7 @@ int main() {
   ///////////////////////////////////////////////////////////////////
   TestParseExpression1();
   TestParseExpression2();
+  TestParseExpression3();
   
   return 0;
 }
