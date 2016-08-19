@@ -46,127 +46,131 @@ const TokenInfo::op_map_type TokenInfo::op_map {
     
     // "(" is also considered as an operator of the lowest precedence
     // since any operator could not cause a reduce
+    //
+    // post unary is set to false since it should change is_prefix to true
     TokenInfo::op_map_value_type{TokenType::T_PAREN,
-                                 OpInfo{100, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{100, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     
     // precedence = 2
   	TokenInfo::op_map_value_type{TokenType::T_POST_INC,
-                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT, true}},
     TokenInfo::op_map_value_type{TokenType::T_POST_DEC,
-                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT, true}},
     // Its two arguments are function name and param list
     // we treat param list as a single syntax node to avoid argument number
     // problem (though the syntax node does not have a value)
+    //
+    // Though it carries 2 children nodes we should set unary postfix as true
     TokenInfo::op_map_value_type{TokenType::T_FUNCCALL,
-                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT, true}},
     // ARRAYSUB takes 2 operands: 1 array expression, 1 index expression
     TokenInfo::op_map_value_type{TokenType::T_ARRAYSUB,
-                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_DOT,
-                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_ARROW,
-                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{2, 1, EvalOrder::LEFT_TO_RIGHT, false}},
   	
   	// precedence = 3
   	TokenInfo::op_map_value_type{TokenType::T_PRE_INC,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_PRE_DEC,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_POS,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_NEG,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_NOT,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_BITNOT,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_TYPECAST,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_DEREF,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_ADDR,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_SIZEOF,
-                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{3, 1, EvalOrder::RIGHT_TO_LEFT, false}},
                                  
     // Precedence 5
     TokenInfo::op_map_value_type{TokenType::T_MULT,
-                                 OpInfo{5, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{5, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_DIV,
-                                 OpInfo{5, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{5, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_MOD,
-                                 OpInfo{5, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{5, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 6
     TokenInfo::op_map_value_type{TokenType::T_ADDITION,
-                                 OpInfo{6, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{6, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_SUBTRACTION,
-                                 OpInfo{6, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{6, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 7
     TokenInfo::op_map_value_type{TokenType::T_LSHIFT,
-                                 OpInfo{7, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{7, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_RSHIFT,
-                                 OpInfo{7, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{7, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 8
     TokenInfo::op_map_value_type{TokenType::T_LESS,
-                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_LESSEQ,
-                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_GREATER,
-                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_GREATEREQ,
-                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{8, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 9
     TokenInfo::op_map_value_type{TokenType::T_EQ,
-                                 OpInfo{9, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{9, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     TokenInfo::op_map_value_type{TokenType::T_NOTEQ,
-                                 OpInfo{9, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{9, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 10
     TokenInfo::op_map_value_type{TokenType::T_BITAND,
-                                 OpInfo{10, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{10, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 11
     TokenInfo::op_map_value_type{TokenType::T_BITXOR,
-                                 OpInfo{11, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{11, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 12
     TokenInfo::op_map_value_type{TokenType::T_BITOR,
-                                 OpInfo{12, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{12, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 13
     TokenInfo::op_map_value_type{TokenType::T_AND,
-                                 OpInfo{13, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{13, 2, EvalOrder::LEFT_TO_RIGHT, false}},
     
     // Precedence 14
     TokenInfo::op_map_value_type{TokenType::T_OR,
-                                 OpInfo{14, 2, EvalOrder::LEFT_TO_RIGHT}},
+                                 OpInfo{14, 2, EvalOrder::LEFT_TO_RIGHT, false}},
                                  
     // Precedence 16
     TokenInfo::op_map_value_type{TokenType::T_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_PLUS_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_MINUS_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_STAR_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_DIV_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_MOD_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_LSHIFT_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_RSHIFT_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_AMPERSAND_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_BITXOR_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
     TokenInfo::op_map_value_type{TokenType::T_BITOR_ASSIGN,
-                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT}},
+                                 OpInfo{16, 2, EvalOrder::RIGHT_TO_LEFT, false}},
   }
 };

@@ -198,6 +198,11 @@ struct OpInfo {
   // Associativity is used to resolve shift-reduce conflict
   // when the precedence is the same
   EvalOrder associativity;
+  
+  // Whether the operator is postfix unary operator
+  // This is used to determine whether the operator after
+  // this one is postfix or prefix
+  bool is_postfix_unary;
 };
 
 class TokenInfo {
