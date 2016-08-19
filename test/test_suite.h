@@ -27,3 +27,4 @@ void TestGetNextToken();
 /////////////////////////////////////////////////////////////////////
 
 void TestParseExpression1();
+void TestParseExpression2();
