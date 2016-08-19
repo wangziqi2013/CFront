@@ -639,8 +639,20 @@ class SyntaxAnalyzer {
            (terminate_on_rparen == false)) {
           ReduceTillParenthesis(&context);
           
-          assert(context.TopValueNode()->GetType() == TokenType::T_PAREN);
-          //context.PopOpNode();
+          SyntaxNode *paren_node_p = context.PopValueNode();
+          assert(paren_node_p->GetType() == TokenType::T_PAREN);
+          
+          // Make sure there is only 1 element in the parenthesis syntax node
+          assert(paren_node_p->GetChildList().size() == 1UL);
+          
+          // This is its direct child node which we will push into the stack
+          SyntaxNode *child_node_p = paren_node_p->GetChildList()[0];
+          
+          // Make sure when we destroy it the child not will not be destroyed
+          paren_node_p->GetChildList().clear();
+          delete paren_node_p;
+          
+          context.PushValueNode(child_node_p);;
           
           continue;
         }
@@ -687,7 +699,16 @@ class SyntaxAnalyzer {
         return node_p;
         */
       } else if(type == TokenType::T_ARRAYSUB) {
-        assert(false);
+        SyntaxNode *node_p = ParseExpression();
+
+        // The other token must be ')'
+        Token *end_token_p = source_p->GetNextToken();
+        if(end_token_p->GetType() != TokenType::T_RSPAREN) {
+          // It will delete all its child and below recursively
+          delete node_p;
+
+          ThrowMissingRightSolidParenthesisError(end_token_p->GetType());
+        }
       } else if(type == TokenType::T_FUNCCALL) {
         assert(false);
       }
