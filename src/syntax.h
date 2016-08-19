@@ -133,7 +133,13 @@ class ExpressionContext {
   
   // If the last modified stack is op stack then this is set to true
   // This is controlled automatically by the push and pop functions
-  bool op_stack_last_modified;
+  //
+  // One exception is for unary postfix operator, since they are
+  // associated left-to-right, for a ++ ++, after seeing the first ++
+  // and when we see the second ++, there will be no reduction, so the
+  // last stack modified is op stack, but semantically is_prefix should
+  // be false. We should treat this differently
+  bool is_prefix;
   
  public:
   /*
@@ -146,7 +152,7 @@ class ExpressionContext {
   ExpressionContext() :
     op_stack{},
     value_stack{},
-    op_stack_last_modified{true}
+    is_prefix{true}
   {}
   
   /*
@@ -159,7 +165,7 @@ class ExpressionContext {
    */
   inline void PushOpNode(SyntaxNode *node_p, const OpInfo *op_info_p) {
     op_stack.push(node_p);
-    op_stack_last_modified = true;
+    is_prefix = true;
     
     // Need to maintain a synchronized OpInfo stack
     op_info_stack.push(op_info_p);
@@ -190,11 +196,13 @@ class ExpressionContext {
   /*
    * PushValueNode() - Push a syntax node into value stack
    *
-   * This function will set op_stack_last_modified as false as a by-product
+   * This function will set is_prefix as false as a by-product
    */
   inline void PushValueNode(SyntaxNode *node_p) {
     value_stack.push(node_p);
-    op_stack_last_modified = false;
+    
+    // This is always true, no special treatment
+    is_prefix = false;
     
     return;
   }
@@ -222,9 +230,13 @@ class ExpressionContext {
    * This is equivalent to whether the coming operator is prefix operator
    * or not since if op stack is the last stack modified then we have seen
    * an op and is expceting a value or a prefix op
+   *
+   * The only exception is for unary postfix operator, where "a" "++" "++"
+   * will be recognized as ++a++ since the second ++ is mistakenly recognized
+   * as another ++ before an operand
    */
   bool IsPrefix() const {
-    return op_stack_last_modified;
+    return is_prefix;
   }
   
   /*
@@ -311,7 +323,7 @@ class SyntaxAnalyzer {
    * determine its type based on whether it is used in prefix or postfix
    * form.
    *
-   * NOTE: If the op_stack_last_modified is true then we are in prefix form
+   * NOTE: If the is_prefix flag is true then we are in prefix form
    * since we have seen an operator and is expecting a operand
    */
   TokenType GetExpressionNodeType(Token *token_p,
