@@ -678,6 +678,9 @@ class SyntaxAnalyzer {
         // let it appear in expression tree)
         if((type == TokenType::T_RPAREN) && \
            (context.IsInParenthesis() == true)) {
+          // Leave current parenthesis
+          context.LeaveParenthesis();
+          
           ReduceTillParenthesis(&context);
           
           SyntaxNode *paren_node_p = context.PopValueNode();
@@ -814,6 +817,8 @@ class SyntaxAnalyzer {
    * on ')'
    */
   SyntaxNode *ParseFunctionArgumentList() {
+    dbg_printf("Parsing function argument...\n");
+    
     // Create a new syntax node for holding parameter values
     //
     // It also needs to carry a token node of type T_FUNCARG
