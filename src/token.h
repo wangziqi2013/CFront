@@ -150,7 +150,11 @@ enum class TokenType {
   // []
   T_ARRAYSUB = 215,
   
-  
+  // This one is artificial: function arguments
+  // Since T_FUNCCALL only has 2 parameters, we need to group all its
+  // arguments into one syntax node, otherwise the reduce functuon would not be
+  // able to know how many value node should it reduce
+  T_FUNCARG = 216,
   
 };
 
