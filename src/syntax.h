@@ -141,6 +141,14 @@ class ExpressionContext {
   // be false. We should treat this differently
   bool is_prefix;
   
+  // This counts the numebr of outstanding '(' that have not yet been matched
+  // by a corresponding ')'.
+  //
+  // If this counter is 0 then every ')' we have seen in the input stream is
+  // a signal of stopping parsing. Otherwise every ')' is a sign to
+  // do reduction
+  int parenthesis_counter;
+  
  public:
   /*
    * Constructor - Initialize member variables
@@ -152,7 +160,8 @@ class ExpressionContext {
   ExpressionContext() :
     op_stack{},
     value_stack{},
-    is_prefix{true}
+    is_prefix{true},
+    parenthesis_counter{0}
   {}
   
   /*
@@ -284,6 +293,44 @@ class ExpressionContext {
     assert(op_stack.size() == op_info_stack.size());
     
     return op_info_stack.top();
+  }
+  
+  /*
+   * EnterParenthesis() - Increases the parenthesis counter by 1
+   *
+   * This is called if we see a '(' that represents a left parenthesis (i.e.
+   * in its prefixed form)
+   */
+  inline void EnterParenthesis() {
+    assert(parenthesis_counter >= 0);
+    
+    parenthesis_counter++;
+    
+    return;
+  }
+  
+  /*
+   * LeaveParenthesis() - Decreases the parenthesis counter by 1
+   *
+   * This is called if we see a ')' that represents a right parenthesis
+   */
+  inline void LeaveParenthesis() {
+    assert(parenthesis_counter >= 1);
+    
+    parenthesis_counter--;
+    
+    return;
+  }
+  
+  /*
+   * IsInParenthesis() - Returns whether there is any outstanding '(' to
+   *                     be matched
+   */
+  inline bool IsInParenthesis() {
+    assert(parenthesis_counter >= 0);
+    
+    // If it is >0 then we know there is one '(' not matched
+    return (parenthesis_counter > 0);
   }
 };
 
@@ -571,10 +618,8 @@ class SyntaxAnalyzer {
   
   /*
    * ParseExpression() - Parse expression using a stack and return the top node
-   *
-   * If terminate_on_rsparen
    */
-  SyntaxNode *ParseExpression(bool terminate_on_rparen = false) {
+  SyntaxNode *ParseExpression() {
     ExpressionContext context{};
     
     // Loops until we have seen a non-expression element
@@ -631,7 +676,7 @@ class SyntaxAnalyzer {
         // (i.e. parenthesis node only has one child, so it is meangingless to
         // let it appear in expression tree)
         if((type == TokenType::T_RPAREN) && \
-           (terminate_on_rparen == false)) {
+           (context.IsInParenthesis() == true)) {
           ReduceTillParenthesis(&context);
           
           SyntaxNode *paren_node_p = context.PopValueNode();
@@ -689,7 +734,12 @@ class SyntaxAnalyzer {
 
         // The other token must be ']'
         Token *end_token_p = source_p->GetNextToken();
-        if(end_token_p->GetType() != TokenType::T_RSPAREN) {
+        TokenType end_token_type = end_token_p->GetType();
+        
+        // No matter it is ']' or not we do not need it
+        delete end_token_p;
+        
+        if(end_token_type != TokenType::T_RSPAREN) {
           // It will delete all its child and below recursively
           delete sub_node_p;
 
@@ -731,6 +781,18 @@ class SyntaxAnalyzer {
         continue;
       }
       
+      // Record every parenthsis we enter
+      if(type == TokenType::T_PAREN) {
+        context.EnterParenthesis();
+        
+        // For parenthesis we do not reduce on precedence since its
+        // precedence is very very low so it will cause
+        // reduction on any other operator which is very bad
+        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+        
+        continue;
+      }
+      
       // We know op_info_p is not nullptr
       ReduceOnPrecedence(&context, op_info_p);
       
@@ -740,6 +802,18 @@ class SyntaxAnalyzer {
     
     assert(false);
     return nullptr;
+  }
+  
+  /*
+   * ParseFunctionArgumentList() - Parse function argument list into a
+   *                               single syntax node and return it
+   *
+   * This function recursively calls ParseExpression() on each argument,
+   * and configure ParseExpression() that it returns on ',' and especially
+   * on ')'
+   */
+  SyntaxNode *ParseFunctionArgumentList() {
+    
   }
   
   ///////////////////////////////////////////////////////////////////
