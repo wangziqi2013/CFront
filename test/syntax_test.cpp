@@ -55,7 +55,7 @@ void TestParseExpression2() {
 void TestParseExpression3() {
   printf("========== TestParseExpression3 ==========\n");
 
-  char data[] = "c = a++[b]-- + d[123]";
+  char data[] = "*(((c)) = (a))++[b]-- + d[123]";
 
   printf("Test string: %s\n", data);
 
