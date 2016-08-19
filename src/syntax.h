@@ -652,6 +652,7 @@ class SyntaxAnalyzer {
       //
       // ')' ']' ',' will lead into this block
       if(op_info_p == nullptr) {
+        
         // If it is terminal types that carries data then
         // push them into value stack
         if(type == TokenType::T_STRING_CONST ||
@@ -813,7 +814,43 @@ class SyntaxAnalyzer {
    * on ')'
    */
   SyntaxNode *ParseFunctionArgumentList() {
+    // Create a new syntax node for holding parameter values
+    //
+    // It also needs to carry a token node of type T_FUNCARG
+    SyntaxNode *arg_node_p = new SyntaxNode{new Token{TokenType::T_FUNCARG}};
     
+    Token *token_p = source_p->GetNextToken();
+
+    // If it is ')' then we know it is time to exit
+    if(token_p->GetType() == TokenType::T_RPAREN) {
+      // It is useless
+      delete token_p;
+
+      return arg_node_p;
+    } else {
+      source_p->PushBackToken(token_p);
+    }
+    
+    while(1) {
+      SyntaxNode *node_p = ParseExpression();
+      arg_node_p->PushChildNode(node_p);
+
+      token_p = source_p->GetNextToken();
+      
+      if(token_p->GetType() == TokenType::T_RPAREN) {
+        // It is useless
+        delete token_p;
+
+        return arg_node_p;
+      } else if(token_p->GetType() == TokenType::T_COMMA) {
+        // Delete it
+        delete token_p;
+        
+        // Comma is a hint to continue collection more expressions
+      } else {
+        source_p->PushBackToken(token_p);
+      }
+    } // while(1)
   }
   
   ///////////////////////////////////////////////////////////////////
