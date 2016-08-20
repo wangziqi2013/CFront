@@ -261,6 +261,23 @@ class TokenInfo {
     return &it->second;
   }
   
+  /*
+   * GetTokenName() - Given a token type, return the name of that type
+   *
+   * The name is returned in a constant string reference form
+   */
+  static const std::string &GetTokenName(TokenType type) {
+    auto it = TokenInfo::token_name_map.find(type);
+
+    // If does not find then return nullptr to indicate this
+    // is not a valid operator type
+    //
+    // This branch is useful since
+    assert(it != TokenInfo::token_name_map.end());
+
+    return it->second;
+  }
+  
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -442,19 +459,19 @@ class Token {
    * There is no trailing '\n' attached with the string
    */
   std::string ToString() const {
+    const std::string &name = TokenInfo::GetTokenName(type);
+    
     if(type == TokenType::T_IDENT) {
-      return std::string{"T_IDENT: "} + *GetIdentifier();
+      return name + ' ' + *GetIdentifier();
     } else if(type == TokenType::T_STRING_CONST) {
-      return std::string{"T_STRING_CONST: "} + *GetStringConst();
+      return name + ' ' + *GetStringConst();
     } else if(type == TokenType::T_INT_CONST) {
-      return std::string{"T_INT_CONST: "} + std::to_string(GetIntConst());
+      return name + ' ' + std::to_string(GetIntConst());
     } else if(type == TokenType::T_CHAR_CONST) {
-      return std::string{"T_CHAR_CONST: "} + \
+      return name + ' ' + \
              std::to_string(static_cast<int>(GetCharConst()));
     } else {
-      return std::string{"Type ("} + \
-             std::to_string(static_cast<int>(GetType())) + \
-             ')';
+      return name;
     }
   }
 };
