@@ -251,19 +251,6 @@ class TokenInfo {
     return &it->second;
   }
   
-  /*
-   * IsOperator() - Returns true if the given type is a valid operator in
-   *                expression
-   *
-   * NOTE: Only ( and [ are considered as part of a valid operator
-   * and ")", "]", "," are not since they are treated as terminating symbol
-   * of an expression
-   *
-   * This function checks whether the given token is inside the
-   */
-  static bool IsOperator() {
-
-  }
 };
 
 /////////////////////////////////////////////////////////////////////

@@ -525,7 +525,9 @@ class SyntaxAnalyzer {
    */
   void ReduceOnPrecedence(ExpressionContext *context_p,
                           const OpInfo *current_op_info_p) {
-                            
+    dbg_printf("Reduce on operator of precedence %d\n",
+               current_op_info_p->precedence);
+               
     // If left-to-right order then loop until see a < precedence
     // i.e. precedence numeric value >
     //
@@ -578,6 +580,8 @@ class SyntaxAnalyzer {
    * element inside the parenthesis
    */
   void ReduceTillParenthesis(ExpressionContext *context_p) {
+    dbg_printf("Reduce till parentheis\n");
+    
     // If we get out of this while loop then there is an error
     while(context_p->GetOpStackSize() > 0) {
       TokenType top_op_type = context_p->TopOpNode()->GetType();
