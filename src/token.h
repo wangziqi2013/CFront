@@ -223,9 +223,19 @@ class TokenInfo {
                        OpInfo,
                        TokenTypeHasher,
                        TokenTypeEq>;
+                       
+  // The next two are used in token name map that maps token to string name
+  using token_name_map_value_type = std::pair<TokenType, std::string>;
+  using token_name_map_type = \
+    std::unordered_map<TokenType,
+                       std::string,
+                       TokenTypeHasher,
+                       TokenTypeEq>;
 
   static const keyword_map_type keyword_map;
   static const op_map_type op_map;
+  // This is used for debugging and error reporting
+  static const token_name_map_type token_name_map;
   
   /*
    * GetOpInfo() - Return the struct of (precedence, op count, associativity)
