@@ -1,6 +1,9 @@
 
 #include "token.h"
 
+using namespace wangziqi2013;
+using namespace cfront;
+
 // Definition of the static class member
 const TokenInfo::keyword_map_type TokenInfo::keyword_map {
   {

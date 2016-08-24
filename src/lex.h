@@ -4,6 +4,9 @@
 #include "common.h"
 #include "token.h"
 
+namespace wangziqi2013 {
+namespace cfront {
+
 class SourceFile {
  private:
   // The name of the source file
@@ -1180,3 +1183,6 @@ class SourceFile {
           GetPositionString();
   }
 };
+
+}
+}

@@ -209,6 +209,10 @@ struct OpInfo {
   bool is_postfix_unary;
 };
 
+/*
+ * class TokenInfo - This is the helper class that facilitates tokenizer and
+ *                   syntax analyzer
+ */
 class TokenInfo {
  public:
   using keyword_map_value_type = std::pair<std::string, TokenType>;

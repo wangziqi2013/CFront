@@ -6,6 +6,9 @@
 #include "lex.h"
 #include "token.h"
 
+namespace wangziqi2013 {
+namespace cfront {
+
 /*
  * class SyntaxNode - Represents grammar elements
  *
@@ -910,3 +913,6 @@ class SyntaxAnalyzer {
           " left)";
   }
 };
+
+}
+}
