@@ -8,19 +8,11 @@ namespace cfront {
 
 enum class TypeNodeType {
   // Primitive Integer types
-  INT8_T,
-  UINT8_T,
-  INT16_T,
-  UINT16_T,
-  INT32_T,
-  UINT32_T,
-  INT64_T,
-  UINT64_T,
-  
-  // In the future probably we want to add bit field or even
-  // arbitraty length type here
+  // There is a bit width field indicating how many bits is used
+  // to represent this type
   //
-  // But for now let's ignore these dark corners
+  // It covers the usage of bit field
+  INTEGER_T,
   
   // Array Type
   ARRAY_T = 100,
