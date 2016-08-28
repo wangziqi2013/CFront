@@ -55,7 +55,18 @@ enum class TokenType {
 	
 	T_WHILE = 31,
 	
-	// The following are types with data
+	// The following are compound types
+	//
+	// unsigned char, unsigned short, unsigned int and unsigned long
+	// should be treated as one token instead of two tokens
+	// Since they are represented as a single type rather than unsigned type
+	// of a known type
+  T_UCHAR = 40,
+  T_USHORT,
+  T_UINT,
+  T_ULONG,
+	
+	// The following are types with data (literal token type)
 	
 	T_IDENT = 80,   // Identifier
   T_INT_CONST,    // Integer constant (should be of the same length as unsigned long)
