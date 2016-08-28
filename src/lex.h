@@ -978,7 +978,9 @@ class SourceFile {
    *
    * The caller is responsible for destroying the pointer
    *
-   * If EOF is seen then return T_INVALID token
+   * If EOF is seen then return T_INVALID token. Repeated calls to this
+   * function when EOF has been returned keeps returning EOF without
+   * reading anything out of the buffer range (which is desired behaviour)
    *
    * This function will check push_back_token_stack first to see whether
    * it contains any pushed back token. If yes then it will return one from
