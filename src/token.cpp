@@ -292,3 +292,14 @@ const TokenInfo::token_name_map_type TokenInfo::token_name_map = {
   TokenInfo::token_name_map_value_type{TokenType::T_FUNCARG, "T_FUNCARG"},
 };
 
+/*
+ * builtin_type_set - A set of token types that represent built in types
+ */
+const std::unordered_set<TokenType, TokenTypeHasher, TokenTypeEq>
+TokenInfo::builtin_type_set = {
+  TokenType::T_CHAR, TokenType::T_UCHAR,
+  TokenType::T_SHORT, TokenType::T_USHORT,
+  TokenType::T_INT, TokenType::T_UINT,
+  TokenType::T_LONG, TokenType::T_ULONG,
+};
+
