@@ -145,7 +145,8 @@ void TestClipOperator() {
     while(sf.IsEof() == false) {
       TokenType t = sf.ClipOperator();
 
-      printf("TokenType = %d\n", static_cast<int>(t));
+      printf("TokenType = %-24s \n",
+             TokenInfo::GetTokenName(t).c_str());
     }
   } catch(const std::string &reason) {
     // There will be an error at the last position, on char 0x00
@@ -182,7 +183,8 @@ void TestGetNextToken() {
     while(token_p->GetType() != TokenType::T_INVALID) {
       TokenType type = token_p->GetType();
       
-      printf("TokenType = %d; ", (int)token_p->GetType());
+      printf("TokenType = %-24s; ",
+             TokenInfo::GetTokenName(token_p->GetType()).c_str());
 
       if(type == TokenType::T_INT_CONST) {
         printf("Int const = %lu\n", token_p->GetIntConst());
@@ -203,4 +205,16 @@ void TestGetNextToken() {
   } catch(const std::string &reason) {
     std::cout << reason << std::endl;
   }
+}
+
+int main() {
+  TestLexClipCharLiteral();
+  TestLexClipStringLiteral();
+  TestLexClipIntegerLiteral();
+  TestSkipBlockComment();
+  TestClipIdentifier();
+  TestClipOperator();
+  TestGetNextToken();
+  
+  return 0;
 }

@@ -96,3 +96,12 @@ void TestParseExpression4() {
     return;
   }
 }
+
+int main() {
+  TestParseExpression1();
+  TestParseExpression2();
+  TestParseExpression3();
+  TestParseExpression4();
+  
+  return 0;
+}
