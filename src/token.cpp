@@ -178,6 +178,12 @@ const TokenInfo::op_map_type TokenInfo::op_map {
   }
 };
 
+/*
+ * token_name_map - A mapping from full set of TokenType enum to a string
+ *                  name
+ *
+ * This map is majorly for outputing information for tokens
+ */
 const TokenInfo::token_name_map_type TokenInfo::token_name_map = {
   TokenInfo::token_name_map_value_type{TokenType::T_INVALID, "T_INVALID"},
   TokenInfo::token_name_map_value_type{TokenType::T_AUTO, "T_AUTO"},
