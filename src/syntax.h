@@ -565,6 +565,22 @@ class ExpressionContext {
     return;
   }
   
+  /*
+   * ReduceTillEmpty() - Reduce all operators on the stack until
+   *                     the op stack is empty
+   *
+   * This function is called when we know we have reached the end of the
+   * expression
+   */
+  void ReduceTillEmpty() {
+    // Loop until the stack is finally empy
+    while(GetOpStackSize() > 0) {
+      ReduceOperator();
+    } // while stack is not empty
+
+    return;
+  }
+  
   ///////////////////////////////////////////////////////////////////
   // Error handling
   ///////////////////////////////////////////////////////////////////
@@ -702,22 +718,6 @@ class ExpressionParser {
   }
   
   /*
-   * ReduceTillEmpty() - Reduce all operators on the stack until
-   *                     the op stack is empty
-   *
-   * This function is called when we know we have reached the end of the
-   * expression
-   */
-  void ReduceTillEmpty(ExpressionContext *context_p) {
-    // Loop until the stack is finally empy
-    while(context_p->GetOpStackSize() > 0) {
-      context_p->ReduceOperator();
-    } // while stack is not empty
-
-    return;
-  }
-  
-  /*
    * ParseExpression() - Parse expression using a stack and return the top node
    */
   SyntaxNode *ParseExpression() {
@@ -823,7 +823,7 @@ class ExpressionParser {
         // Reduce all operators and see whether there is single value in
         // value stack
         // If not then we have error
-        ReduceTillEmpty(&context);
+        context.ReduceTillEmpty();
         if(context.GetValueStackSize() != 1) {
           ThrowUnexpectedValueError(context.GetValueStackSize());
         }
