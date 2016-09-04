@@ -632,7 +632,7 @@ class TypeParser {
       
       // Set the type of the token to be the mapped type
       token_p->SetType(type);
-    }// while(1)
+    } // while(1)
     
     assert(false);
     return nullptr;

@@ -6,6 +6,8 @@
 namespace wangziqi2013 {
 namespace cfront {
 
+class SyntaxNode;
+
 /*
  * class ScopeNode - This is a structure that contains information
  *                   about a scope.
@@ -55,7 +57,7 @@ class ScopeNode {
       return nullptr;
     }
     
-    return *it;
+    return it->second;
   }
 };
 
