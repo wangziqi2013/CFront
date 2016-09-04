@@ -30,4 +30,7 @@
 
 *.log
 *.asm
-main
+./build/*
+./bin/*
+bin
+build
