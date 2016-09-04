@@ -45,11 +45,11 @@ class ScopeNode {
   ScopeNode &operator=(ScopeNode &&) = delete;
   
   /*
-   * GetType() - Return the type node from type map
+   * GetTypeNode() - Return the type node from type map
    *
    * If the type has not yet been defiend just return nullptr
    */
-  SyntaxNode *GetType(const std::string &type_name) {
+  SyntaxNode *GetTypeNode(const std::string &type_name) {
     auto it = type_map.find(type_name);
     
     // If the type does not exist in the map just return nullptr
@@ -58,6 +58,17 @@ class ScopeNode {
     }
     
     return it->second;
+  }
+  
+  /*
+   * GetTypeMap() - Return the type map object reference
+   *
+   * The return value is a non-const reference which means that we could
+   * actually modify it
+   */
+  std::unordered_map<std::string, SyntaxNode *> &
+  GetTypeMap() const {
+    return type_map;
   }
 };
 
