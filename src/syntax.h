@@ -530,9 +530,53 @@ class ExpressionContext {
     return;
   }
   
+  /*
+   * ReduceTillParenthesis() - Reduce top level until we see a T_PAREN
+   *
+   * If there is no T_PAREN in the stack then raise an error, since ")"
+   * and "(" are not balanced
+   *
+   * NOTE: This function keeps reducing when we have seen a T_LPAREN
+   * on the op stack, this is to make sure there is at least 1 syntax
+   * element inside the parenthesis
+   */
+  void ReduceTillParenthesis() {
+    dbg_printf("Reduce till parentheis\n");
+
+    // If we get out of this while loop then there is an error
+    while(GetOpStackSize() > 0) {
+      TokenType top_op_type = TopOpNode()->GetType();
+
+      // No matter what it is as long as we have not exited
+      // we always do a reduce, including for T_PAREN
+      ReduceOperator();
+
+      // We use the saved top op type since the top op has changed
+      if(top_op_type == TokenType::T_PAREN) {
+        return;
+      }
+    } // while stack is not empty
+
+    // If we have emptied the stack and still did not see "("
+    // then throw error since there is no matching for ")"
+    ThrowMissingLeftParenthesisError();
+
+    assert(false);
+    return;
+  }
+  
   ///////////////////////////////////////////////////////////////////
   // Error handling
   ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * ThrowMissingLeftParenthesisError() - This is thrown when we reduce to
+   *                                      right parenthesis but could not find
+   *                                      it in the operator stack
+   */
+  void ThrowMissingLeftParenthesisError() const {
+    throw std::string{"Unmatched '(' and ')'; missing '('"};
+  }
   
   /*
    * ThrowMissingOperandError() - This is thrown when reducing operator but
@@ -658,41 +702,6 @@ class ExpressionParser {
   }
   
   /*
-   * ReduceTillParenthesis() - Reduce top level until we see a T_PAREN
-   *
-   * If there is no T_PAREN in the stack then raise an error, since ")"
-   * and "(" are not balanced
-   *
-   * NOTE: This function keeps reducing when we have seen a T_LPAREN
-   * on the op stack, this is to make sure there is at least 1 syntax
-   * element inside the parenthesis
-   */
-  void ReduceTillParenthesis(ExpressionContext *context_p) {
-    dbg_printf("Reduce till parentheis\n");
-    
-    // If we get out of this while loop then there is an error
-    while(context_p->GetOpStackSize() > 0) {
-      TokenType top_op_type = context_p->TopOpNode()->GetType();
-      
-      // No matter what it is as long as we have not exited
-      // we always do a reduce, including for T_PAREN
-      context_p->ReduceOperator();
-      
-      // We use the saved top op type since the top op has changed
-      if(top_op_type == TokenType::T_PAREN) {
-        return;
-      }
-    } // while stack is not empty
-    
-    // If we have emptied the stack and still did not see "("
-    // then throw error since there is no matching for ")"
-    ThrowMissingLeftParenthesisError();
-    
-    assert(false);
-    return;
-  }
-  
-  /*
    * ReduceTillEmpty() - Reduce all operators on the stack until
    *                     the op stack is empty
    *
@@ -782,7 +791,7 @@ class ExpressionParser {
           // Leave current parenthesis
           context.LeaveParenthesis();
           
-          ReduceTillParenthesis(&context);
+          context.ReduceTillParenthesis();
           
           SyntaxNode *paren_node_p = context.PopValueNode();
           assert(paren_node_p->GetType() == TokenType::T_PAREN);
@@ -995,15 +1004,6 @@ class ExpressionParser {
   void ThrowUnexpectedFuncArgSep(TokenType type) {
     throw std::string{"Unexpected separator after function argument: "} + \
           TokenInfo::GetTokenName(type);
-  }
-  
-  /*
-   * ThrowMissingLeftParenthesisError() - This is thrown when we reduce to
-   *                                      right parenthesis but could not find
-   *                                      it in the operator stack
-   */
-  void ThrowMissingLeftParenthesisError() const {
-    throw std::string{"Unmatched '(' and ')'; missing '('"};
   }
   
   /*
