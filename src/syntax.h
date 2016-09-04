@@ -905,9 +905,13 @@ class ExpressionParser {
         
         // Comma is a hint to continue collection more expressions
       } else {
-        source_p->PushBackToken(token_p);
+        ThrowUnexpectedFuncArgSep(token_p->GetType());
       }
     } // while(1)
+    
+    // Control flow will never reach here
+    assert(false);
+    return nullptr;
   }
   
   ///////////////////////////////////////////////////////////////////
@@ -931,6 +935,16 @@ class ExpressionParser {
   ///////////////////////////////////////////////////////////////////
   // Error handling
   ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * ThrowUnexpectedFuncArgSep() - This is called when we see something other
+   *                               than ',' and ')' just after an argument
+   *                               expression of a function
+   */
+  void ThrowUnexpectedFuncArgSep(TokenType type) {
+    throw std::string{"Unexpected separator after function argument: "} + \
+          TokenInfo::GetTokenName(type);
+  }
   
   /*
    * ThrowMissingOperandError() - This is thrown when reducing operator but
