@@ -16,12 +16,28 @@ class Context {
   std::stack<ScopeNode> scope_stack;
 
  public:
-  void EnterScope() {
+
+  /*
+   * EnterScope() - Pushes a new ScopeNode object into the stack
+   *                and return the pushed object
+   */
+  ScopeNode &EnterScope() {
+    scope_stack.emplace();
     
+    return scope_stack.top();
   }
   
+  /*
+   * LeaveScope() - Leaves the scope by popping the node out from the stack
+   *
+   * If the scope stack is already empty then the assertion would fail
+   */
   void LeaveScope() {
-
+    assert(scope_stack.size() > 0);
+    
+    scope_stack.pop();
+    
+    return;
   }
 };
 

@@ -67,7 +67,7 @@ class ScopeNode {
    * actually modify it
    */
   std::unordered_map<std::string, SyntaxNode *> &
-  GetTypeMap() const {
+  GetTypeMap() {
     return type_map;
   }
 };
