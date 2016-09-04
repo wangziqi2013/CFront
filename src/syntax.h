@@ -134,7 +134,42 @@ class SyntaxNode {
  *                    SyntaxNode * and its trees
  */
 class TypeParser {
+ private:
+  // This is the tokenizer
+  // Ownership of the tokenizer does not belong to this class
+  // so the source file object should be destroyed separately
+  SourceFile *source_p;
 
+ public:
+
+  /*
+   * Constructor
+   */
+  TypeParser(SourceFile *p_source_p) :
+    source_p{p_source_p}
+  {}
+
+  /*
+   * Destructor
+   */
+  ~TypeParser() {}
+
+  /*
+   * Deleted function
+   */
+  TypeParser(const TypeParser &) = delete;
+  TypeParser(TypeParser &&) = delete;
+  TypeParser &operator=(const TypeParser &) = delete;
+  TypeParser &operator=(TypeParser &&) = delete;
+  
+  
+  
+  /*
+   * ParseType() - Parses a type expression
+   */
+  SyntaxNode *ParseType() {
+
+  }
 };
 
 /////////////////////////////////////////////////////////////////////
