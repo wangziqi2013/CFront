@@ -9,6 +9,10 @@
 namespace wangziqi2013 {
 namespace cfront {
 
+/////////////////////////////////////////////////////////////////////
+// class SyntaxNode
+/////////////////////////////////////////////////////////////////////
+
 /*
  * class SyntaxNode - Represents grammar elements
  *
@@ -116,6 +120,14 @@ class SyntaxNode {
     std::reverse(child_list.begin(), child_list.end());
   }
 };
+
+/////////////////////////////////////////////////////////////////////
+// class SyntaxNode ends
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+// class ExpressionContext
+/////////////////////////////////////////////////////////////////////
 
 /*
  * class ExpressionContext - This is the context for parsing expressions
@@ -338,9 +350,9 @@ class ExpressionContext {
 };
 
 /*
- * class SyntaxAnalyzer - Analyzes syntax and builds syntax tree
+ * class ExpressionParser - Analyzes expressions and builds syntax tree
  */
-class SyntaxAnalyzer {
+class ExpressionParser {
  private:
   // This holds raw data and also acts as a tokenizer
   // The syntax analyzer does not have ownership of this pointer
@@ -352,22 +364,22 @@ class SyntaxAnalyzer {
   /*
    * Constructor
    */
-  SyntaxAnalyzer(SourceFile *p_source_p) :
+  ExpressionParser(SourceFile *p_source_p) :
     source_p{p_source_p}
   {}
   
   /*
    * Destructor
    */
-  ~SyntaxAnalyzer() {}
+  ~ExpressionParser() {}
   
   /*
    * Deleted function
    */
-  SyntaxAnalyzer(const SyntaxAnalyzer &) = delete;
-  SyntaxAnalyzer(SyntaxAnalyzer &&) = delete;
-  SyntaxAnalyzer &operator=(const SyntaxAnalyzer &) = delete;
-  SyntaxAnalyzer &operator=(SyntaxAnalyzer &&) = delete;
+  ExpressionParser(const ExpressionParser &) = delete;
+  ExpressionParser(ExpressionParser &&) = delete;
+  ExpressionParser &operator=(const ExpressionParser &) = delete;
+  ExpressionParser &operator=(ExpressionParser &&) = delete;
   
   ///////////////////////////////////////////////////////////////////
   // Parsing expression
@@ -687,6 +699,15 @@ class SyntaxAnalyzer {
         // then just reduce until parenthesis and pop the parenthesis node
         // (i.e. parenthesis node only has one child, so it is meangingless to
         // let it appear in expression tree)
+        //
+        // Note that here we also need to check whether the parenthesis
+        // is the one we are looking for (i.e. whether we are currently
+        // inside some parenthesis, since if there is a function call:
+        //   "f(a, b, (a + b))", then when parsing (a + b) it will not
+        // terminate on the second ')' because it tries to reduce on that
+        // token, which is undesired. To make the parse be aware of a possible
+        // T_RPAREN that might not belong to the current expression the
+        // IsInParenthesis() call is important
         if((type == TokenType::T_RPAREN) && \
            (context.IsInParenthesis() == true)) {
           // Leave current parenthesis
@@ -731,11 +752,17 @@ class SyntaxAnalyzer {
         
         // Pop the only value object and return it
         return context.PopValueNode();
-      } // if not a regular operator, i.e. RPAREN, ',' or ']'
+      } // if (not a regular operator, i.e. RPAREN, ',' or ']')
+      
+      //
+      // After this point we know the token must be some operator and
+      // the expression has not ended yet grammatically
+      //
       
       if(type == TokenType::T_ARRAYSUB) {
         // Since [] is among the highest precedence operators
-        // it could only reduce on the same class (i.e. unary postfix)
+        // it could only cause reduce on the same class (i.e. unary postfix)
+        // e.g. a--[2] will cause reduction of "--" when seeing '['
         ReduceOnPrecedence(&context, op_info_p);
 
         // Push the [] into the op stack
@@ -838,6 +865,9 @@ class SyntaxAnalyzer {
     Token *token_p = source_p->GetNextToken();
 
     // If it is ')' then we know it is time to exit
+    // This is a special case then we do not allow expression to be
+    // an empty string, so "func()" will see ')' but no expression
+    // when being parsed
     if(token_p->GetType() == TokenType::T_RPAREN) {
       // It is useless
       delete token_p;
@@ -847,12 +877,23 @@ class SyntaxAnalyzer {
       source_p->PushBackToken(token_p);
     }
     
+    // After this point we know there is at least 1 expression in the
+    // argument list
+    
     while(1) {
+      // Since the parser try to balance parenthesis inside
+      // an expression, when seeing ')', if parenthesis has already
+      // been balanced then the parser knows it is outside the current
+      // expression and will just return
       SyntaxNode *node_p = ParseExpression();
       arg_node_p->PushChildNode(node_p);
 
       token_p = source_p->GetNextToken();
       
+      // If the next token is ')' then function parsing is done
+      // If the next token is ',' then we have more arguments to process
+      // In all other cases throw an error - unexpected symbol when parsing
+      // function argument list
       if(token_p->GetType() == TokenType::T_RPAREN) {
         // It is useless
         delete token_p;

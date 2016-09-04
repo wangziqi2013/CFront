@@ -58,7 +58,7 @@ enum class TokenType {
 	// The following are compound types
 	//
 	// unsigned char, unsigned short, unsigned int and unsigned long
-	// should be treated as one token instead of two tokens
+	// should be treated as one unit instead of two type structs
 	// Since they are represented as a single type rather than unsigned type
 	// of a known type
   T_UCHAR = 40,
