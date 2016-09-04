@@ -472,6 +472,64 @@ class ExpressionContext {
     return;
   }
   
+  /*
+   * ReduceOnPrecedence() - Reduces operators until the top one is
+   *                        of even lower precedence (or the same
+   *                        precedence) of the current operator
+   *
+   * Note that we need to reduce to an operator of < or <= precedence
+   * of the given one, depending on associativity. For left-to-right
+   * assosiativity we should reduce to "<=" precedence, o.w. reduce
+   * to a "<" operator is necessary
+   *
+   * NOTE: It does not push current operator into the stack, which must
+   * be done by the caller
+   */
+  void ReduceOnPrecedence(const OpInfo *current_op_info_p) {
+    dbg_printf("Reduce on operator of precedence %d\n",
+               current_op_info_p->precedence);
+
+    // If left-to-right order then loop until see a < precedence
+    // i.e. precedence numeric value >
+    //
+    // Since we resolve precedence first, and resolve associativity
+    // only when the precedence is the same (in which case assosciativity
+    // is the same), so we could test current operator's associativity
+    if(current_op_info_p->associativity == EvalOrder::LEFT_TO_RIGHT) {
+
+      while(GetOpStackSize() > 0) {
+        // Get the top operator node's precedence
+        const OpInfo *top_op_info_p = TopOpInfo();
+
+        // If the top node has a lower or equal precedence than
+        // the current testing node then return
+        if(top_op_info_p->precedence > current_op_info_p->precedence) {
+          break;
+        }
+
+        // Reduce the operator, pop operands, push into child list, and
+        // push the complex into the value list
+        // NOTE that this will change IsPrefix() flag to false
+        // since we have pushed into the value list
+        ReduceOperator();
+      }
+    } else if(current_op_info_p->associativity == EvalOrder::RIGHT_TO_LEFT) {
+      while(GetOpStackSize() > 0) {
+        const OpInfo *top_op_info_p = TopOpInfo();
+
+        if(top_op_info_p->precedence >= current_op_info_p->precedence) {
+          break;
+        }
+
+        ReduceOperator();
+      }
+    } else {
+      assert(false);
+    }
+
+    return;
+  }
+  
   ///////////////////////////////////////////////////////////////////
   // Error handling
   ///////////////////////////////////////////////////////////////////
@@ -529,10 +587,6 @@ class ExpressionParser {
   ExpressionParser(ExpressionParser &&) = delete;
   ExpressionParser &operator=(const ExpressionParser &) = delete;
   ExpressionParser &operator=(ExpressionParser &&) = delete;
-  
-  ///////////////////////////////////////////////////////////////////
-  // Parsing expression
-  ///////////////////////////////////////////////////////////////////
   
   /*
    * GetExpressionNodeType() - Return the real type of a syntax node
@@ -601,65 +655,6 @@ class ExpressionParser {
     
     assert(false);
     return TokenType::T_INVALID;
-  }
-  
-  /*
-   * ReduceOnPrecedence() - Reduces operators until the top one is
-   *                        of even lower precedence (or the same
-   *                        precedence) of the current operator
-   *
-   * Note that we need to reduce to an operator of < or <= precedence
-   * of the given one, depending on associativity. For left-to-right
-   * assosiativity we should reduce to "<=" precedence, o.w. reduce
-   * to a "<" operator is necessary
-   *
-   * NOTE: It does not push current operator into the stack, which must
-   * be done by the caller
-   */
-  void ReduceOnPrecedence(ExpressionContext *context_p,
-                          const OpInfo *current_op_info_p) {
-    dbg_printf("Reduce on operator of precedence %d\n",
-               current_op_info_p->precedence);
-               
-    // If left-to-right order then loop until see a < precedence
-    // i.e. precedence numeric value >
-    //
-    // Since we resolve precedence first, and resolve associativity
-    // only when the precedence is the same (in which case assosciativity
-    // is the same), so we could test current operator's associativity
-    if(current_op_info_p->associativity == EvalOrder::LEFT_TO_RIGHT) {
-      
-      while(context_p->GetOpStackSize() > 0) {
-        // Get the top operator node's precedence
-        const OpInfo *top_op_info_p = context_p->TopOpInfo();
-        
-        // If the top node has a lower or equal precedence than
-        // the current testing node then return
-        if(top_op_info_p->precedence > current_op_info_p->precedence) {
-          break;
-        }
-        
-        // Reduce the operator, pop operands, push into child list, and
-        // push the complex into the value list
-        // NOTE that this will change IsPrefix() flag to false
-        // since we have pushed into the value list
-        context_p->ReduceOperator();
-      }
-    } else if(current_op_info_p->associativity == EvalOrder::RIGHT_TO_LEFT) {
-      while(context_p->GetOpStackSize() > 0) {
-        const OpInfo *top_op_info_p = context_p->TopOpInfo();
-
-        if(top_op_info_p->precedence >= current_op_info_p->precedence) {
-          break;
-        }
-
-        context_p->ReduceOperator();
-      }
-    } else {
-      assert(false);
-    }
-    
-    return;
   }
   
   /*
@@ -837,7 +832,7 @@ class ExpressionParser {
         // Since [] is among the highest precedence operators
         // it could only cause reduce on the same class (i.e. unary postfix)
         // e.g. a--[2] will cause reduction of "--" when seeing '['
-        ReduceOnPrecedence(&context, op_info_p);
+        context.ReduceOnPrecedence(op_info_p);
 
         // Push the [] into the op stack
         // Though this is not strictly necessary we do that to simplify
@@ -874,7 +869,7 @@ class ExpressionParser {
       } else if(type == TokenType::T_FUNCCALL) {
         // Since T_FUNCCALL is also among the highest precedence operators
         // it could only reduce on the same class (i.e. unary postfix)
-        ReduceOnPrecedence(&context, op_info_p);
+        context.ReduceOnPrecedence(op_info_p);
 
         // Push the T_FUNCCALL into the op stack
         // Though this is not strictly necessary we do that to simplify
@@ -910,7 +905,7 @@ class ExpressionParser {
       }
       
       // We know op_info_p is not nullptr
-      ReduceOnPrecedence(&context, op_info_p);
+      context.ReduceOnPrecedence(op_info_p);
       
       // Now we could push into the op stack and continue
       context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
@@ -986,24 +981,6 @@ class ExpressionParser {
     // Control flow will never reach here
     assert(false);
     return nullptr;
-  }
-  
-  ///////////////////////////////////////////////////////////////////
-  // End of parsing expression
-  ///////////////////////////////////////////////////////////////////
-  
-  ///////////////////////////////////////////////////////////////////
-  // Parsing type
-  ///////////////////////////////////////////////////////////////////
-  
-  /*
-   * GetTypeToken() - Returns the next token that is either a built-in
-   *                  type of a user-defined type
-   *
-   * We could not directly
-   */
-  Token *GetTypeToken() {
-    
   }
   
   ///////////////////////////////////////////////////////////////////
