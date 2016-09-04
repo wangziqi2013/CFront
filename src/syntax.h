@@ -398,6 +398,94 @@ class ExpressionContext {
     // If it is >0 then we know there is one '(' not matched
     return (parenthesis_counter > 0);
   }
+  
+  // The following functions deals with reduce and stack operation
+  
+  /*
+   * ReduceOperator() - Takes an operator out of the op stack and form
+   *                    an expression with that operator and push it into
+   *                    the node stack
+   *
+   * We need to know the number of operands of a certain operator, and
+   * that kind of information is encoded inside OpInfo helper class.
+   * Once the number of operands is known, we could push them into the
+   * child list of the operand syntax node
+   *
+   * If the op stack is empty or node stack is empty then we have a parsing
+   * error
+   */
+  void ReduceOperator() {
+    // We do not care about the actual type of the top operand here
+    // just pop an operand and
+    int operand_num = TopOpInfo()->operand_num;
+
+    // We could not reduce T_PAREN
+    assert(operand_num != -1);
+
+    // The number of operands must be between [1, 3]
+    // NOTE: For T_PAREN type the number of operand is -1
+    // so it should not be reduced in this function
+    assert(operand_num > 0);
+    assert(operand_num <= 3);
+
+    // No matter how many operands it requires, first check
+    // the number of values in value stack
+    if(operand_num > GetValueStackSize()) {
+      ThrowMissingOperandError(operand_num, GetValueStackSize());
+    }
+
+    // Next we pop operand_num syntax nodes from the value stack
+    // and reverse them in-place
+
+    // We must have something to pop out in this function
+    // if ther operator stack is empty it should be handled outside
+    // of this function
+    assert(GetOpStackSize() > 0UL);
+
+    // This is the top of operator node
+    SyntaxNode *top_op_node_p = PopOpNode();
+    assert(top_op_node_p != nullptr);
+
+    // Deliberately let it fall through to unroll the loop
+    switch(operand_num) {
+      case 3:
+        top_op_node_p->PushChildNode(PopValueNode());
+      case 2:
+        top_op_node_p->PushChildNode(PopValueNode());
+      case 1:
+        top_op_node_p->PushChildNode(PopValueNode());
+        break;
+      default:
+        dbg_printf("Operand num = %d; error!\n", operand_num);
+
+        assert(false);
+    } // switch
+
+    // Since we poped it from right to left, and the correct order is from
+    // left to right for all operators
+    top_op_node_p->ReverseChildList();
+
+    // The last step is to push it back to the value stack since now
+    // it is reduced from operator to a value
+    PushValueNode(top_op_node_p);
+
+    return;
+  }
+  
+  ///////////////////////////////////////////////////////////////////
+  // Error handling
+  ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * ThrowMissingOperandError() - This is thrown when reducing operator but
+   *                              there is missing operand
+   */
+  void ThrowMissingOperandError(int expected, int actual) const {
+    throw std::string{"Missing operand: expect "} + \
+          std::to_string(expected) + \
+          "; actual " + \
+          std::to_string(actual);
+  }
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -516,81 +604,6 @@ class ExpressionParser {
   }
   
   /*
-   * ReduceOperator() - Takes an operator out of the op stack and form
-   *                    an expression with that operator and push it into
-   *                    the node stack
-   *
-   * We need to know the number of operands of a certain operator, and
-   * that kind of information is encoded inside OpInfo helper class.
-   * Once the number of operands is known, we could push them into the
-   * child list of the operand syntax node
-   *
-   * If the op stack is empty or node stack is empty then we have a parsing
-   * error
-   *
-   * The information of operator is also passed in as argument since
-   * we need to query a hash table to get OpInfo which is a non-trivial task
-   * so the number of queries should be reduced to a minimum
-   */
-  void ReduceOperator(ExpressionContext *context_p) {
-    // We do not care about the actual type of the top operand here
-    // just pop an operand and
-    int operand_num = context_p->TopOpInfo()->operand_num;
-    
-    // We could not reduce T_PAREN
-    assert(operand_num != -1);
-    
-    // The number of operands must be between [1, 3]
-    // NOTE: For T_PAREN type the number of operand is -1
-    // so it should not be reduced in this function
-    assert(operand_num > 0);
-    assert(operand_num <= 3);
-    
-    // No matter how many operands it requires, first check
-    // the number of values in value stack
-    if(operand_num > context_p->GetValueStackSize()) {
-      ThrowMissingOperandError(operand_num, context_p->GetValueStackSize());
-    }
-    
-    // Next we pop operand_num syntax nodes from the value stack
-    // and reverse them in-place
-    
-    // We must have something to pop out in this function
-    // if ther operator stack is empty it should be handled outside
-    // of this function
-    assert(context_p->GetOpStackSize() > 0UL);
-    
-    // This is the top of operator node
-    SyntaxNode *top_op_node_p = context_p->PopOpNode();
-    assert(top_op_node_p != nullptr);
-    
-    // Deliberately let it fall through to unroll the loop
-    switch(operand_num) {
-      case 3:
-        top_op_node_p->PushChildNode(context_p->PopValueNode());
-      case 2:
-        top_op_node_p->PushChildNode(context_p->PopValueNode());
-      case 1:
-        top_op_node_p->PushChildNode(context_p->PopValueNode());
-        break;
-      default:
-        dbg_printf("Operand num = %d; error!\n", operand_num);
-        
-        assert(false);
-    } // switch
-    
-    // Since we poped it from right to left, and the correct order is from
-    // left to right for all operators
-    top_op_node_p->ReverseChildList();
-    
-    // The last step is to push it back to the value stack since now
-    // it is reduced from operator to a value
-    context_p->PushValueNode(top_op_node_p);
-    
-    return;
-  }
-  
-  /*
    * ReduceOnPrecedence() - Reduces operators until the top one is
    *                        of even lower precedence (or the same
    *                        precedence) of the current operator
@@ -630,7 +643,7 @@ class ExpressionParser {
         // push the complex into the value list
         // NOTE that this will change IsPrefix() flag to false
         // since we have pushed into the value list
-        ReduceOperator(context_p);
+        context_p->ReduceOperator();
       }
     } else if(current_op_info_p->associativity == EvalOrder::RIGHT_TO_LEFT) {
       while(context_p->GetOpStackSize() > 0) {
@@ -640,7 +653,7 @@ class ExpressionParser {
           break;
         }
 
-        ReduceOperator(context_p);
+        context_p->ReduceOperator();
       }
     } else {
       assert(false);
@@ -668,7 +681,7 @@ class ExpressionParser {
       
       // No matter what it is as long as we have not exited
       // we always do a reduce, including for T_PAREN
-      ReduceOperator(context_p);
+      context_p->ReduceOperator();
       
       // We use the saved top op type since the top op has changed
       if(top_op_type == TokenType::T_PAREN) {
@@ -694,7 +707,7 @@ class ExpressionParser {
   void ReduceTillEmpty(ExpressionContext *context_p) {
     // Loop until the stack is finally empy
     while(context_p->GetOpStackSize() > 0) {
-      ReduceOperator(context_p);
+      context_p->ReduceOperator();
     } // while stack is not empty
 
     return;
@@ -855,7 +868,7 @@ class ExpressionParser {
         // This will reduce ARRAYSUB and push into value stack
         // so it unsets is_prefix flag which is good since any operand
         // after arraysub must be postfix
-        ReduceOperator(&context);
+        context.ReduceOperator();
         
         continue;
       } else if(type == TokenType::T_FUNCCALL) {
@@ -879,7 +892,7 @@ class ExpressionParser {
         // We need to satisfy the operand number requirement
         context.PushValueNode(arg_node_p);
 
-        ReduceOperator(&context);
+        context.ReduceOperator();
         
         continue;
       }
@@ -1005,17 +1018,6 @@ class ExpressionParser {
   void ThrowUnexpectedFuncArgSep(TokenType type) {
     throw std::string{"Unexpected separator after function argument: "} + \
           TokenInfo::GetTokenName(type);
-  }
-  
-  /*
-   * ThrowMissingOperandError() - This is thrown when reducing operator but
-   *                              there is missing operand
-   */
-  void ThrowMissingOperandError(int expected, int actual) const {
-    throw std::string{"Missing operand: expect "} + \
-          std::to_string(expected) + \
-          "; actual " + \
-          std::to_string(actual);
   }
   
   /*
