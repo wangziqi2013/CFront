@@ -6,6 +6,9 @@
 #include "lex.h"
 #include "token.h"
 
+namespace wangziqi2013 {
+namespace cfront {
+
 /*
  * class SyntaxNode - Represents grammar elements
  *
@@ -141,6 +144,14 @@ class ExpressionContext {
   // be false. We should treat this differently
   bool is_prefix;
   
+  // This counts the numebr of outstanding '(' that have not yet been matched
+  // by a corresponding ')'.
+  //
+  // If this counter is 0 then every ')' we have seen in the input stream is
+  // a signal of stopping parsing. Otherwise every ')' is a sign to
+  // do reduction
+  int parenthesis_counter;
+  
  public:
   /*
    * Constructor - Initialize member variables
@@ -152,7 +163,8 @@ class ExpressionContext {
   ExpressionContext() :
     op_stack{},
     value_stack{},
-    is_prefix{true}
+    is_prefix{true},
+    parenthesis_counter{0}
   {}
   
   /*
@@ -285,6 +297,44 @@ class ExpressionContext {
     
     return op_info_stack.top();
   }
+  
+  /*
+   * EnterParenthesis() - Increases the parenthesis counter by 1
+   *
+   * This is called if we see a '(' that represents a left parenthesis (i.e.
+   * in its prefixed form)
+   */
+  inline void EnterParenthesis() {
+    assert(parenthesis_counter >= 0);
+    
+    parenthesis_counter++;
+    
+    return;
+  }
+  
+  /*
+   * LeaveParenthesis() - Decreases the parenthesis counter by 1
+   *
+   * This is called if we see a ')' that represents a right parenthesis
+   */
+  inline void LeaveParenthesis() {
+    assert(parenthesis_counter >= 1);
+    
+    parenthesis_counter--;
+    
+    return;
+  }
+  
+  /*
+   * IsInParenthesis() - Returns whether there is any outstanding '(' to
+   *                     be matched
+   */
+  inline bool IsInParenthesis() {
+    assert(parenthesis_counter >= 0);
+    
+    // If it is >0 then we know there is one '(' not matched
+    return (parenthesis_counter > 0);
+  }
 };
 
 /*
@@ -318,6 +368,10 @@ class SyntaxAnalyzer {
   SyntaxAnalyzer(SyntaxAnalyzer &&) = delete;
   SyntaxAnalyzer &operator=(const SyntaxAnalyzer &) = delete;
   SyntaxAnalyzer &operator=(SyntaxAnalyzer &&) = delete;
+  
+  ///////////////////////////////////////////////////////////////////
+  // Parsing expression
+  ///////////////////////////////////////////////////////////////////
   
   /*
    * GetExpressionNodeType() - Return the real type of a syntax node
@@ -478,11 +532,11 @@ class SyntaxAnalyzer {
    */
   void ReduceOnPrecedence(ExpressionContext *context_p,
                           const OpInfo *current_op_info_p) {
-                            
-    // If left-to-right order then loop until see a <= precedence
-    // i.e. precedence numeric value >=
-    // T_PATEN should also belong to this category since
-    // we could not reduce parenthesis
+    dbg_printf("Reduce on operator of precedence %d\n",
+               current_op_info_p->precedence);
+               
+    // If left-to-right order then loop until see a < precedence
+    // i.e. precedence numeric value >
     //
     // Since we resolve precedence first, and resolve associativity
     // only when the precedence is the same (in which case assosciativity
@@ -495,10 +549,7 @@ class SyntaxAnalyzer {
         
         // If the top node has a lower or equal precedence than
         // the current testing node then return
-        //
-        // for T_PAREN this is always satisfied so we will not
-        // reduce on parenthesis unless requested
-        if(top_op_info_p->precedence >= current_op_info_p->precedence) {
+        if(top_op_info_p->precedence > current_op_info_p->precedence) {
           break;
         }
         
@@ -536,6 +587,8 @@ class SyntaxAnalyzer {
    * element inside the parenthesis
    */
   void ReduceTillParenthesis(ExpressionContext *context_p) {
+    dbg_printf("Reduce till parentheis\n");
+    
     // If we get out of this while loop then there is an error
     while(context_p->GetOpStackSize() > 0) {
       TokenType top_op_type = context_p->TopOpNode()->GetType();
@@ -576,10 +629,8 @@ class SyntaxAnalyzer {
   
   /*
    * ParseExpression() - Parse expression using a stack and return the top node
-   *
-   * If terminate_on_rsparen
    */
-  SyntaxNode *ParseExpression(bool terminate_on_rparen = false) {
+  SyntaxNode *ParseExpression() {
     ExpressionContext context{};
     
     // Loops until we have seen a non-expression element
@@ -612,6 +663,7 @@ class SyntaxAnalyzer {
       //
       // ')' ']' ',' will lead into this block
       if(op_info_p == nullptr) {
+        
         // If it is terminal types that carries data then
         // push them into value stack
         if(type == TokenType::T_STRING_CONST ||
@@ -636,7 +688,10 @@ class SyntaxAnalyzer {
         // (i.e. parenthesis node only has one child, so it is meangingless to
         // let it appear in expression tree)
         if((type == TokenType::T_RPAREN) && \
-           (terminate_on_rparen == false)) {
+           (context.IsInParenthesis() == true)) {
+          // Leave current parenthesis
+          context.LeaveParenthesis();
+          
           ReduceTillParenthesis(&context);
           
           SyntaxNode *paren_node_p = context.PopValueNode();
@@ -676,41 +731,81 @@ class SyntaxAnalyzer {
         
         // Pop the only value object and return it
         return context.PopValueNode();
-      }
+      } // if not a regular operator, i.e. RPAREN, ',' or ']'
       
-      // '(' is parsed recursively
-      if(type == TokenType::T_PAREN) {
-        /*
-        // This is not used anymore
-        delete token_p;
-        
-        SyntaxNode *node_p = ParseExpression();
-        
-        // The other token must be ')'
-        Token *end_token_p = source_p->GetNextToken();
-        if(end_token_p->GetType() != TokenType::T_RPAREN) {
-          // It will delete all its child and below recursively
-          delete node_p;
-          
-          ThrowMissingRightParenthesisError(end_token_p->GetType());
-        }
-        
-        // Directly return - do not need an extra T_PAREN syntax node
-        return node_p;
-        */
-      } else if(type == TokenType::T_ARRAYSUB) {
-        SyntaxNode *node_p = ParseExpression();
+      if(type == TokenType::T_ARRAYSUB) {
+        // Since [] is among the highest precedence operators
+        // it could only reduce on the same class (i.e. unary postfix)
+        ReduceOnPrecedence(&context, op_info_p);
 
-        // The other token must be ')'
+        // Push the [] into the op stack
+        // Though this is not strictly necessary we do that to simplify
+        // later processing because we could call reduce
+        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+
+        // Parse the expression inside the [] until it returns
+        // it returns on ']' and ','
+        SyntaxNode *sub_node_p = ParseExpression();
+
+        // The other token must be ']'
         Token *end_token_p = source_p->GetNextToken();
-        if(end_token_p->GetType() != TokenType::T_RSPAREN) {
+        TokenType end_token_type = end_token_p->GetType();
+        
+        // No matter it is ']' or not we do not need it
+        delete end_token_p;
+        
+        if(end_token_type != TokenType::T_RSPAREN) {
           // It will delete all its child and below recursively
-          delete node_p;
+          delete sub_node_p;
 
           ThrowMissingRightSolidParenthesisError(end_token_p->GetType());
         }
+        
+        // We need to satisfy the operand number requirement
+        context.PushValueNode(sub_node_p);
+        
+        // This will reduce ARRAYSUB and push into value stack
+        // so it unsets is_prefix flag which is good since any operand
+        // after arraysub must be postfix
+        ReduceOperator(&context);
+        
+        continue;
       } else if(type == TokenType::T_FUNCCALL) {
-        assert(false);
+        // Since T_FUNCCALL is also among the highest precedence operators
+        // it could only reduce on the same class (i.e. unary postfix)
+        ReduceOnPrecedence(&context, op_info_p);
+
+        // Push the T_FUNCCALL into the op stack
+        // Though this is not strictly necessary we do that to simplify
+        // later processing because we could call reduce
+        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+
+        // This subroutine basically try to parse expressions from
+        // function argument list, until it sees ) and then it returns
+        //
+        // It pushes a single SyntaxNode of type FUNCARG into the value stack
+        // such that no matter how many arguments there are for a function
+        // call, we should always have exactly 2 arguments for T_FUNCCALL
+        SyntaxNode *arg_node_p = ParseFunctionArgumentList();
+
+        // We need to satisfy the operand number requirement
+        context.PushValueNode(arg_node_p);
+
+        ReduceOperator(&context);
+        
+        continue;
+      }
+      
+      // Record every parenthsis we enter
+      if(type == TokenType::T_PAREN) {
+        context.EnterParenthesis();
+        
+        // For parenthesis we do not reduce on precedence since its
+        // precedence is very very low so it will cause
+        // reduction on any other operator which is very bad
+        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+        
+        continue;
       }
       
       // We know op_info_p is not nullptr
@@ -722,6 +817,74 @@ class SyntaxAnalyzer {
     
     assert(false);
     return nullptr;
+  }
+  
+  /*
+   * ParseFunctionArgumentList() - Parse function argument list into a
+   *                               single syntax node and return it
+   *
+   * This function recursively calls ParseExpression() on each argument,
+   * and configure ParseExpression() that it returns on ',' and especially
+   * on ')'
+   */
+  SyntaxNode *ParseFunctionArgumentList() {
+    dbg_printf("Parsing function argument...\n");
+    
+    // Create a new syntax node for holding parameter values
+    //
+    // It also needs to carry a token node of type T_FUNCARG
+    SyntaxNode *arg_node_p = new SyntaxNode{new Token{TokenType::T_FUNCARG}};
+    
+    Token *token_p = source_p->GetNextToken();
+
+    // If it is ')' then we know it is time to exit
+    if(token_p->GetType() == TokenType::T_RPAREN) {
+      // It is useless
+      delete token_p;
+
+      return arg_node_p;
+    } else {
+      source_p->PushBackToken(token_p);
+    }
+    
+    while(1) {
+      SyntaxNode *node_p = ParseExpression();
+      arg_node_p->PushChildNode(node_p);
+
+      token_p = source_p->GetNextToken();
+      
+      if(token_p->GetType() == TokenType::T_RPAREN) {
+        // It is useless
+        delete token_p;
+
+        return arg_node_p;
+      } else if(token_p->GetType() == TokenType::T_COMMA) {
+        // Delete it
+        delete token_p;
+        
+        // Comma is a hint to continue collection more expressions
+      } else {
+        source_p->PushBackToken(token_p);
+      }
+    } // while(1)
+  }
+  
+  ///////////////////////////////////////////////////////////////////
+  // End of parsing expression
+  ///////////////////////////////////////////////////////////////////
+  
+  ///////////////////////////////////////////////////////////////////
+  // Parsing type
+  ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * GetTypeToken() - Returns the next token that is either a built-in
+   *                  type of a user-defined type
+   *
+   * We could not directly
+   */
+  Token *GetTypeToken() {
+    
   }
   
   ///////////////////////////////////////////////////////////////////
@@ -748,8 +911,14 @@ class SyntaxAnalyzer {
     throw std::string{"Unmatched '(' and ')'; missing '('"};
   }
   
-  void ThrowMissingRightParenthesisError(TokenType type) const {
-    throw std::string{"Unmatched '(' and ')': missing ')'; saw type "} + \
+  /*
+   * ThrowMissingRightSolidParenthesisError() - As name suggests
+   *
+   * NOTE: This function is different from the missing '(' in a sense
+   * that we parse '[' and ']' recursively
+   */
+  void ThrowMissingRightSolidParenthesisError(TokenType type) const {
+    throw std::string{"Unmatched '[' and ']': missing ']'; saw type "} + \
           std::to_string(static_cast<int>(type));
   }
   
@@ -766,3 +935,6 @@ class SyntaxAnalyzer {
           " left)";
   }
 };
+
+}
+}

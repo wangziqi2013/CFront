@@ -55,7 +55,18 @@ enum class TokenType {
 	
 	T_WHILE = 31,
 	
-	// The following are types with data
+	// The following are compound types
+	//
+	// unsigned char, unsigned short, unsigned int and unsigned long
+	// should be treated as one token instead of two tokens
+	// Since they are represented as a single type rather than unsigned type
+	// of a known type
+  T_UCHAR = 40,
+  T_USHORT,
+  T_UINT,
+  T_ULONG,
+	
+	// The following are types with data (literal token type)
 	
 	T_IDENT = 80,   // Identifier
   T_INT_CONST,    // Integer constant (should be of the same length as unsigned long)
@@ -150,7 +161,11 @@ enum class TokenType {
   // []
   T_ARRAYSUB = 215,
   
-  
+  // This one is artificial: function arguments
+  // Since T_FUNCCALL only has 2 parameters, we need to group all its
+  // arguments into one syntax node, otherwise the reduce functuon would not be
+  // able to know how many value node should it reduce
+  T_FUNCARG = 216,
   
 };
 
@@ -205,6 +220,10 @@ struct OpInfo {
   bool is_postfix_unary;
 };
 
+/*
+ * class TokenInfo - This is the helper class that facilitates tokenizer and
+ *                   syntax analyzer
+ */
 class TokenInfo {
  public:
   using keyword_map_value_type = std::pair<std::string, TokenType>;
@@ -219,9 +238,19 @@ class TokenInfo {
                        OpInfo,
                        TokenTypeHasher,
                        TokenTypeEq>;
+                       
+  // The next two are used in token name map that maps token to string name
+  using token_name_map_value_type = std::pair<TokenType, std::string>;
+  using token_name_map_type = \
+    std::unordered_map<TokenType,
+                       std::string,
+                       TokenTypeHasher,
+                       TokenTypeEq>;
 
   static const keyword_map_type keyword_map;
   static const op_map_type op_map;
+  // This is used for debugging and error reporting
+  static const token_name_map_type token_name_map;
   
   /*
    * GetOpInfo() - Return the struct of (precedence, op count, associativity)
@@ -248,18 +277,22 @@ class TokenInfo {
   }
   
   /*
-   * IsOperator() - Returns true if the given type is a valid operator in
-   *                expression
+   * GetTokenName() - Given a token type, return the name of that type
    *
-   * NOTE: Only ( and [ are considered as part of a valid operator
-   * and ")", "]", "," are not since they are treated as terminating symbol
-   * of an expression
-   *
-   * This function checks whether the given token is inside the
+   * The name is returned in a constant string reference form
    */
-  static bool IsOperator() {
+  static const std::string &GetTokenName(TokenType type) {
+    auto it = TokenInfo::token_name_map.find(type);
 
+    // If does not find then return nullptr to indicate this
+    // is not a valid operator type
+    //
+    // This branch is useful since
+    assert(it != TokenInfo::token_name_map.end());
+
+    return it->second;
   }
+  
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -441,19 +474,19 @@ class Token {
    * There is no trailing '\n' attached with the string
    */
   std::string ToString() const {
+    const std::string &name = TokenInfo::GetTokenName(type);
+    
     if(type == TokenType::T_IDENT) {
-      return std::string{"T_IDENT: "} + *GetIdentifier();
+      return name + ' ' + *GetIdentifier();
     } else if(type == TokenType::T_STRING_CONST) {
-      return std::string{"T_STRING_CONST: "} + *GetStringConst();
+      return name + ' ' + *GetStringConst();
     } else if(type == TokenType::T_INT_CONST) {
-      return std::string{"T_INT_CONST: "} + std::to_string(GetIntConst());
+      return name + ' ' + std::to_string(GetIntConst());
     } else if(type == TokenType::T_CHAR_CONST) {
-      return std::string{"T_CHAR_CONST: "} + \
+      return name + ' ' + \
              std::to_string(static_cast<int>(GetCharConst()));
     } else {
-      return std::string{"Type ("} + \
-             std::to_string(static_cast<int>(GetType())) + \
-             ')';
+      return name;
     }
   }
 };

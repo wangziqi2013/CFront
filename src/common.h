@@ -16,6 +16,9 @@
 #include <stack>
 #include <functional>
 
+namespace wangziqi2013 {
+namespace cfront {
+
 static void dummy(const char*, ...) {}
 
 #define DEBUG_PRINT
@@ -36,3 +39,6 @@ static void dummy(const char*, ...) {}
   } while (0);
 
 #endif
+
+}
+}
