@@ -126,57 +126,6 @@ class SyntaxNode {
 /////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////
-// class TypeParser
-/////////////////////////////////////////////////////////////////////
-
-/*
- * class TypeParser - Parses a type expression and represent it using
- *                    SyntaxNode * and its trees
- */
-class TypeParser {
- private:
-  // This is the tokenizer
-  // Ownership of the tokenizer does not belong to this class
-  // so the source file object should be destroyed separately
-  SourceFile *source_p;
-
- public:
-
-  /*
-   * Constructor
-   */
-  TypeParser(SourceFile *p_source_p) :
-    source_p{p_source_p}
-  {}
-
-  /*
-   * Destructor
-   */
-  ~TypeParser() {}
-
-  /*
-   * Deleted function
-   */
-  TypeParser(const TypeParser &) = delete;
-  TypeParser(TypeParser &&) = delete;
-  TypeParser &operator=(const TypeParser &) = delete;
-  TypeParser &operator=(TypeParser &&) = delete;
-  
-  
-  
-  /*
-   * ParseType() - Parses a type expression
-   */
-  SyntaxNode *ParseType() {
-
-  }
-};
-
-/////////////////////////////////////////////////////////////////////
-// class TypeParser ends
-/////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////
 // class ExpressionContext
 /////////////////////////////////////////////////////////////////////
 
@@ -608,6 +557,98 @@ class ExpressionContext {
 
 /////////////////////////////////////////////////////////////////////
 // class ExpressionContext ends
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////
+// class TypeParser
+/////////////////////////////////////////////////////////////////////
+
+/*
+ * class TypeParser - Parses a type expression and represent it using
+ *                    SyntaxNode * and its trees
+ */
+class TypeParser {
+ private:
+  // This is the tokenizer
+  // Ownership of the tokenizer does not belong to this class
+  // so the source file object should be destroyed separately
+  SourceFile *source_p;
+
+ public:
+
+  /*
+   * Constructor
+   */
+  TypeParser(SourceFile *p_source_p) :
+    source_p{p_source_p}
+  {}
+
+  /*
+   * Destructor
+   */
+  ~TypeParser() {}
+
+  /*
+   * Deleted function
+   */
+  TypeParser(const TypeParser &) = delete;
+  TypeParser(TypeParser &&) = delete;
+  TypeParser &operator=(const TypeParser &) = delete;
+  TypeParser &operator=(TypeParser &&) = delete;
+
+  /*
+   * ParseTypeExpression() - Parses the expression part of a type
+   *
+   * A type has two parts - base type part and expression part.
+   * This function is responsible for parsing the expression part
+   * of a type declaration
+   */
+  SyntaxNode *ParseTypeExpression() {
+    ExpressionContext context{};
+    
+    while(1) {
+      Token *token_p = source_p->GetNextToken();
+      TokenType type = token_p->GetType();
+      
+      switch(type) {
+        // '*' is always dereference
+        case TokenType::T_STAR:
+          type = TokenType::T_DEREF;
+          break;
+        // '[' is always array sub
+        case TokenType::T_LSPAREN:
+          type = TokenType::T_ARRAYSUB;
+          break;
+        // '(' could be function call or left parenthesis
+        // we need to distinguish between these two cases
+        case TokenType::T_LPAREN:
+          
+          break;
+
+        // By default the type is not changed
+        default:
+          break;
+      } // switch type
+      
+      // Set the type of the token to be the mapped type
+      token_p->SetType(type);
+    }// while(1)
+    
+    assert(false);
+    return nullptr;
+  }
+
+  /*
+   * ParseType() - Parses a type expression
+   */
+  SyntaxNode *ParseType() {
+    assert(false);
+    return nullptr;
+  }
+};
+
+/////////////////////////////////////////////////////////////////////
+// class TypeParser ends
 /////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////
