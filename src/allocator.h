@@ -121,6 +121,9 @@ class SlabAllocator {
     ElementType *element_ptr = \
       reinterpret_cast<ElementType *>(chunk_stack.top() + byte_offset);
       
+    // Do not forget this!!!
+    next_element_index++;
+      
     // The last step is to call placement operator new to initialize the
     // object
     return new (element_ptr) ElementType{args...};
