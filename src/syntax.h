@@ -855,7 +855,7 @@ class ExpressionParser {
           // object
           // The token object will not be destroyed until the syntax node
           // is destructed
-          context.PushValueNode(new SyntaxNode{token_p});
+          context.PushValueNode(SyntaxNode::Get(token_p));
           
           // Start with next token
           continue;
@@ -935,7 +935,7 @@ class ExpressionParser {
         // Push the [] into the op stack
         // Though this is not strictly necessary we do that to simplify
         // later processing because we could call reduce
-        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+        context.PushOpNode(SyntaxNode::Get(token_p), op_info_p);
 
         // Parse the expression inside the [] until it returns
         // it returns on ']' and ','
@@ -972,7 +972,7 @@ class ExpressionParser {
         // Push the T_FUNCCALL into the op stack
         // Though this is not strictly necessary we do that to simplify
         // later processing because we could call reduce
-        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+        context.PushOpNode(SyntaxNode::Get(token_p), op_info_p);
 
         // This subroutine basically try to parse expressions from
         // function argument list, until it sees ) and then it returns
@@ -997,7 +997,7 @@ class ExpressionParser {
         // For parenthesis we do not reduce on precedence since its
         // precedence is very very low so it will cause
         // reduction on any other operator which is very bad
-        context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+        context.PushOpNode(SyntaxNode::Get(token_p), op_info_p);
         
         continue;
       }
@@ -1006,7 +1006,7 @@ class ExpressionParser {
       context.ReduceOnPrecedence(op_info_p);
       
       // Now we could push into the op stack and continue
-      context.PushOpNode(new SyntaxNode{token_p}, op_info_p);
+      context.PushOpNode(SyntaxNode::Get(token_p), op_info_p);
     } // while(1)
     
     assert(false);
@@ -1027,7 +1027,7 @@ class ExpressionParser {
     // Create a new syntax node for holding parameter values
     //
     // It also needs to carry a token node of type T_FUNCARG
-    SyntaxNode *arg_node_p = new SyntaxNode{new Token{TokenType::T_FUNCARG}};
+    SyntaxNode *arg_node_p = SyntaxNode::Get(new Token{TokenType::T_FUNCARG});
     
     Token *token_p = source_p->GetNextToken();
 
