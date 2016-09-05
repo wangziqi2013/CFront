@@ -8,7 +8,7 @@ namespace cfront {
 
 /*
  * class SlabAllocator - Allocates elements but never frees them until explicit
- *                       call of this function
+ *                       call of free function
  *
  * This class is used for two purposes:
  *   1. For many small allocations, reduce call to malloc() to reduce
@@ -33,6 +33,28 @@ class SlabAllocator {
   int element_per_chunk;
   
   /*
+   * AllocateChunk() - Allocate a chunk and push it to the top of the stack
+   *
+   * This function also resets next_element_index to be 0 in order to use
+   * the topmost chunk
+   */
+  void AllocateChunk() {
+    // Allocate the first chunk of memory
+    char *ptr = \
+      reinterpret_cast<char *>(malloc(element_per_chunk * sizeof(ElementType)));
+
+    if(ptr == nullptr) {
+      ThrowAllocatorOutOfMemoryError();
+    }
+
+    chunk_stack.push(ptr);
+    
+    next_element_index = 0;
+    
+    return;
+  }
+  
+  /*
    * ThrowAllocatorOutOfMemoryError() - This is thrown when we are out of
    *                                    memory through malloc() call
    */
@@ -49,14 +71,60 @@ class SlabAllocator {
     chunk_stack{},
     next_element_index{0};
     element_per_chunk{p_element_per_chunk} {
-    // Allocate the first chunk of memory
-    char *ptr = malloc(element_per_chunk * sizeof(ElementType));
-    if(ptr == nullptr) {
-      ThrowAllocatorOutOfMemoryError();
-    }
+    
+    // As part initialization allocate the first chunk on the internal stack
+    AllocateChunk();
+    
+    return;
   }
   
-  ElementType *
+  /*
+   * Destructor - Frees all memory chunks in the slab allocator
+   */
+  ~SlabAllocator() {
+    // Delete all chunks until the stack is empty
+    while(chunk_stack.size() > 0) {
+      delete chunk_satck.top();
+      
+      chunk_stack.pop();
+    }
+    
+    return;
+  }
+  
+  /*
+   * Get() - Returns an element type pointer allocated from the current chunk
+   *
+   * Note that the use of template class here is to let compiler construct
+   * different Get() instances to forward constructor arguments to the
+   * placement new which might take arguments
+   *
+   * These template arguments do not have to be explicitly specified since
+   * the compiler could deduct them during compilation
+   */
+  template <typename ...Args>
+  ElementType *Get(Args&&... args) {
+    // If we have used up all slots in the current chunk
+    // just allocate a new one and reset next element index to 0
+    if(next_element_index == elememt_per_chunk) {
+      AllocateChunk();
+      
+      assert(next_element_index == 0);
+    }
+    
+    // This is the byte offset of the element being
+    // allocated
+    int byte_offset = sizeof(ElementType) * next_element_index;
+    
+    // Add the top most chunk address with the byte offset to yield element
+    // address
+    ElementType *element_ptr = \
+      reinterpret_cast<ElementType *>(chunk_stack.top() + byte_offset);
+      
+    // The last step is to call placement operator new to initialize the
+    // object
+    return new (element_ptr) ElementType{args};
+  }
   
   
 };
