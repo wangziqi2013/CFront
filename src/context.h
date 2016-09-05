@@ -24,8 +24,11 @@ class Context {
    * The ownership of source file belongs to the context object
    */
   Context() :
-    scope_stack{}
-  {}
+    scope_stack{} {
+    // We initialize the first level of stack using an empty scope
+    // possibly with few built-in symbols (but not built-in types
+    // because we )
+  }
 
   /*
    * EnterScope() - Pushes a new ScopeNode object into the stack

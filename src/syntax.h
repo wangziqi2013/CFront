@@ -121,6 +121,8 @@ class SyntaxNode {
   inline void ReverseChildList() {
     std::reverse(child_list.begin(), child_list.end());
   }
+  
+  
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -629,7 +631,9 @@ class TypeParser {
    *      to retrieve the entire type
    */
   SyntaxNode *TryParseBaseType() {
-
+    Token *token_p = source_p->GetNextToken();
+    
+    //if()
   }
 
   /*
