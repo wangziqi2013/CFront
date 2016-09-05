@@ -2,14 +2,16 @@
 CXX=g++
 OPT_FLAGS=
 CXX_FLAGS=-g -std=c++11
-OBJ= ./build/lex.o ./build/token.o ./build/syntax.o ./build/context.o ./build/scope.o ./build/allocator.o ./build/test_suite.o
 SRC=$(wildcard ./src/*.cpp)
 HDR=$(wildcard ./src/*.h)
+OBJ2=$(patsubst %.cpp,%.o,$(SRC))  
+OBJ=$(patsubst ./src/%,./build/%,$(OBJ2))
 ALL_FILES=$(SRC) $(HDR) $(wildcard ./test/*.h) $(wildcard ./test/*.cpp)
 
 all:
 	@echo "*"
 	@echo "* Please run make + test name to build a specific test!"
+	@echo "* $(OBJ)"
 	@echo "*"
     
 ./build/lex.o: $(SRC) $(HDR)
