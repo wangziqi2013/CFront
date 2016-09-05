@@ -2,7 +2,7 @@
 CXX=g++
 OPT_FLAGS=
 CXX_FLAGS=-g -std=c++11
-OBJ= ./build/lex.o ./build/token.o ./build/syntax.o ./build/context.o ./build/scope.o ./build/test_suite.o
+OBJ= ./build/lex.o ./build/token.o ./build/syntax.o ./build/context.o ./build/scope.o ./build/allocator.o ./build/test_suite.o
 SRC=$(wildcard ./src/*.cpp)
 HDR=$(wildcard ./src/*.h)
 ALL_FILES=$(SRC) $(HDR) $(wildcard ./test/*.h) $(wildcard ./test/*.cpp)
@@ -26,6 +26,9 @@ all:
     
 ./build/scope.o: $(SRC) $(HDR)
 	$(CXX) ./src/scope.cpp -c -o ./build/scope.o $(CXX_FLAGS)
+    
+./build/allocator.o: $(SRC) $(HDR)
+	$(CXX) ./src/allocator.cpp -c -o ./build/allocator.o $(CXX_FLAGS)
 
 ./build/test_suite.o: ./test/test_suite.cpp ./test/test_suite.h
 	$(CXX) ./test/test_suite.cpp -c -o ./build/test_suite.o $(CXX_FLAGS)
