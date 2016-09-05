@@ -55,13 +55,6 @@ class SyntaxNode {
    * Destructor - Recursively removes all children nodes
    */
   ~SyntaxNode() {
-    delete token_p;
-    
-    // Recursively remove all nodes below
-    for(SyntaxNode *t : child_list) {
-      delete t;
-    }
-    
     return;
   }
   
@@ -127,7 +120,13 @@ class SyntaxNode {
     std::reverse(child_list.begin(), child_list.end());
   }
   
-  
+  /*
+   * Get() - static function to construct a node object
+   */
+  template <typename ...Args>
+  static SyntaxNode *Get(Args&&... args) {
+    return SyntaxNode::allocator.Get(args...);
+  }
 };
 
 /////////////////////////////////////////////////////////////////////
