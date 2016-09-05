@@ -89,6 +89,8 @@ class SlabAllocator {
       chunk_stack.pop();
     }
     
+    dbg_printf("Allocator finished cleanup\n");
+    
     return;
   }
   
