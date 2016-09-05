@@ -609,12 +609,24 @@ class TypeParser {
    *                      token stream
    *
    * This function is allowed to fail sometimes (majorly when we have seen a
-   * ( parenthesis and are not sure whether it is a real parenthesis or a
-   * type cast). It it could not parse a base type from the stream just
+   * left parenthesis and are not sure whether it is a real parenthesis or a
+   * type cast). If it could not parse a base type from the stream just
    * return nullptr and the token fetched from the stream will be pushed back
    *
    * If a type could be found then it returns a SyntaxNode * wrapping the
    * token object extracted from the stream
+   *
+   * The logic of this function is described below:
+   *   1. If the first token is struct, then we know the following token
+   *      is going to be an ident that is a registered type. All other tokens
+   *      will be treated as a tpye not found error. Note that in this case
+   *      we do not return nullptr but directly go to error since struct
+   *      suggests a type.
+   *   2. If the first token is an ident then we try to find it in the context
+   *      as a registered type. If type not found then push back and return
+   *      nullptr
+   *   3. If it is signed, unsigned, or char, short, int, long then we continue
+   *      to retrieve the entire type
    */
   SyntaxNode *TryParseBaseType() {
 
