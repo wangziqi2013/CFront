@@ -7,6 +7,7 @@
 #include "token.h"
 #include "context.h"
 #include "scope.h"
+#include "allocator.h"
 
 namespace wangziqi2013 {
 namespace cfront {
@@ -22,6 +23,7 @@ namespace cfront {
  * Also there is a vector holding it children nodes
  */
 class SyntaxNode {
+  friend class SlabAllocator<SyntaxNode>;
  private:
   // This holds the type and optionally the payload of
   // the syntax node
@@ -33,8 +35,9 @@ class SyntaxNode {
   // This vector holds its children nodes in left-to-right
   // order
   std::vector<SyntaxNode *> child_list;
- public:
-
+  
+  static SlabAllocator<SyntaxNode> allocator;
+  
   /*
    * Constructor
    *
@@ -45,6 +48,8 @@ class SyntaxNode {
     token_p{p_token_p},
     child_list{}
   {}
+  
+ public:
   
   /*
    * Destructor - Recursively removes all children nodes
