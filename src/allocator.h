@@ -69,7 +69,7 @@ class SlabAllocator {
    */
   SlabAllocator(int p_element_per_chunk=64) :
     chunk_stack{},
-    next_element_index{0};
+    next_element_index{0},
     element_per_chunk{p_element_per_chunk} {
     
     // As part initialization allocate the first chunk on the internal stack
@@ -84,7 +84,7 @@ class SlabAllocator {
   ~SlabAllocator() {
     // Delete all chunks until the stack is empty
     while(chunk_stack.size() > 0) {
-      delete chunk_satck.top();
+      delete chunk_stack.top();
       
       chunk_stack.pop();
     }
@@ -106,7 +106,7 @@ class SlabAllocator {
   ElementType *Get(Args&&... args) {
     // If we have used up all slots in the current chunk
     // just allocate a new one and reset next element index to 0
-    if(next_element_index == elememt_per_chunk) {
+    if(next_element_index == element_per_chunk) {
       AllocateChunk();
       
       assert(next_element_index == 0);
@@ -123,7 +123,7 @@ class SlabAllocator {
       
     // The last step is to call placement operator new to initialize the
     // object
-    return new (element_ptr) ElementType{args};
+    return new (element_ptr) ElementType{args...};
   }
   
   
