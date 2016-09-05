@@ -2,6 +2,7 @@
 #pragma once
 
 #include "common.h"
+#include "token.h"
 #include "scope.h"
 
 namespace wangziqi2013 {
@@ -16,6 +17,15 @@ class Context {
   std::stack<ScopeNode> scope_stack;
 
  public:
+
+  /*
+   * Constructor
+   *
+   * The ownership of source file belongs to the context object
+   */
+  Context() :
+    scope_stack{}
+  {}
 
   /*
    * EnterScope() - Pushes a new ScopeNode object into the stack

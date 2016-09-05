@@ -5,6 +5,8 @@
 
 #include "lex.h"
 #include "token.h"
+#include "context.h"
+#include "scope.h"
 
 namespace wangziqi2013 {
 namespace cfront {
@@ -573,14 +575,20 @@ class TypeParser {
   // Ownership of the tokenizer does not belong to this class
   // so the source file object should be destroyed separately
   SourceFile *source_p;
+  
+  // This is the context object that holds global information such as
+  // symbol table and type table and stacks for both of them
+  Context *context_p;
 
  public:
 
   /*
    * Constructor
    */
-  TypeParser(SourceFile *p_source_p) :
-    source_p{p_source_p}
+  TypeParser(SourceFile *p_source_p,
+             Context *p_context_p) :
+    source_p{p_source_p},
+    context_p{p_context_p}
   {}
 
   /*
@@ -595,6 +603,22 @@ class TypeParser {
   TypeParser(TypeParser &&) = delete;
   TypeParser &operator=(const TypeParser &) = delete;
   TypeParser &operator=(TypeParser &&) = delete;
+
+  /*
+   * TryParseBaseType() - Try to parse a base type from the input
+   *                      token stream
+   *
+   * This function is allowed to fail sometimes (majorly when we have seen a
+   * ( parenthesis and are not sure whether it is a real parenthesis or a
+   * type cast). It it could not parse a base type from the stream just
+   * return nullptr and the token fetched from the stream will be pushed back
+   *
+   * If a type could be found then it returns a SyntaxNode * wrapping the
+   * token object extracted from the stream
+   */
+  SyntaxNode *TryParseBaseType() {
+
+  }
 
   /*
    * ParseTypeExpression() - Parses the expression part of a type
@@ -666,14 +690,18 @@ class ExpressionParser {
   // The syntax analyzer does not have ownership of this pointer
   // and the source file should be destroyed separately
   SourceFile *source_p;
+  
+  // We need this for the type table when dealing with type casting
+  Context *context_p;
 
  public:
    
   /*
    * Constructor
    */
-  ExpressionParser(SourceFile *p_source_p) :
-    source_p{p_source_p}
+  ExpressionParser(SourceFile *p_source_p, Context *p_context_p) :
+    source_p{p_source_p},
+    context_p{p_context_p}
   {}
   
   /*
