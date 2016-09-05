@@ -891,10 +891,6 @@ class ExpressionParser {
           // This is its direct child node which we will push into the stack
           SyntaxNode *child_node_p = paren_node_p->GetChildList()[0];
           
-          // Make sure when we destroy it the child not will not be destroyed
-          paren_node_p->GetChildList().clear();
-          delete paren_node_p;
-          
           context.PushValueNode(child_node_p);;
           
           continue;
@@ -945,13 +941,7 @@ class ExpressionParser {
         Token *end_token_p = source_p->GetNextToken();
         TokenType end_token_type = end_token_p->GetType();
         
-        // No matter it is ']' or not we do not need it
-        delete end_token_p;
-        
         if(end_token_type != TokenType::T_RSPAREN) {
-          // It will delete all its child and below recursively
-          delete sub_node_p;
-
           ThrowMissingRightSolidParenthesisError(end_token_p->GetType());
         }
         
@@ -1036,9 +1026,6 @@ class ExpressionParser {
     // an empty string, so "func()" will see ')' but no expression
     // when being parsed
     if(token_p->GetType() == TokenType::T_RPAREN) {
-      // It is useless
-      delete token_p;
-
       return arg_node_p;
     } else {
       source_p->PushBackToken(token_p);
@@ -1062,15 +1049,10 @@ class ExpressionParser {
       // In all other cases throw an error - unexpected symbol when parsing
       // function argument list
       if(token_p->GetType() == TokenType::T_RPAREN) {
-        // It is useless
-        delete token_p;
-
         return arg_node_p;
       } else if(token_p->GetType() == TokenType::T_COMMA) {
-        // Delete it
-        delete token_p;
-        
         // Comma is a hint to continue collection more expressions
+        continue;
       } else {
         ThrowUnexpectedFuncArgSep(token_p->GetType());
       }
