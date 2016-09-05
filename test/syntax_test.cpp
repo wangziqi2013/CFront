@@ -12,7 +12,8 @@ void TestParseExpression1() {
   printf("Test string: %s\n", data);
 
   SourceFile sf{data, sizeof(data) - 1};
-  ExpressionParser sa{&sf};
+  Context context{};
+  ExpressionParser sa{&sf, &context};
   
   try {
     SyntaxNode *node_p = sa.ParseExpression();
@@ -36,7 +37,8 @@ void TestParseExpression2() {
   printf("Test string: %s\n", data);
 
   SourceFile sf{data, sizeof(data) - 1};
-  ExpressionParser sa{&sf};
+  Context context{};
+  ExpressionParser sa{&sf, &context};
 
   try {
     SyntaxNode *node_p = sa.ParseExpression();
@@ -60,7 +62,8 @@ void TestParseExpression3() {
   printf("Test string: %s\n", data);
 
   SourceFile sf{data, sizeof(data) - 1};
-  ExpressionParser sa{&sf};
+  Context context{};
+  ExpressionParser sa{&sf, &context};
 
   try {
     SyntaxNode *node_p = sa.ParseExpression();
@@ -84,7 +87,8 @@ void TestParseExpression4() {
   printf("Test string: %s\n", data);
 
   SourceFile sf{data, sizeof(data) - 1};
-  ExpressionParser sa{&sf};
+  Context context{};
+  ExpressionParser sa{&sf, &context};
 
   try {
     SyntaxNode *node_p = sa.ParseExpression();
