@@ -1011,14 +1011,14 @@ class SourceFile {
         
         continue;
       } else if(IsEof() == true) {
-        return new Token{TokenType::T_INVALID};
+        return Token::Get(TokenType::T_INVALID);
       }
       
       // After this we know there is a valid token
       // We construct it here to avoid memory leak during
       // tokenization - we could always delete this pointer
       // as long as the type is known
-      Token *token_p = new Token{TokenType::T_INVALID};
+      Token *token_p = Token::Get(TokenType::T_INVALID);
       
       try {
         if(IsNumeric() == true) {
@@ -1064,12 +1064,6 @@ class SourceFile {
           token_p->SetType(ClipOperator());
         }
       } catch(const std::string reason) {
-        // NOTE: WHEN THIS HAPPENS THE POINTER FIELD IN  THE TOKEN
-        // OBJECT HAS NOT BEEN SET.
-        //
-        // IT REQUIRES THE TYPE OF THE TOKEN BEING KNOWN
-        delete token_p;
-        
         // Throw to the caller
         throw std::string{"ERROR: "} + reason;
       } // try-catch
