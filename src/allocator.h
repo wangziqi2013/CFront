@@ -82,9 +82,23 @@ class SlabAllocator {
    * Destructor - Frees all memory chunks in the slab allocator
    */
   ~SlabAllocator() {
+    // Since we have next_element_index elements in the topmost chunk
+    // just destruct the first next_element_index elements
+    CallDestructorForEachElement(next_element_index);
+    
+    // Delete entire chunk of memory which is char * type
+    free(chunk_stack.top());
+    
+    // Pop one chunk. We know there is at least one chunk on the stack
+    chunk_stack.pop();
+    
     // Delete all chunks until the stack is empty
     while(chunk_stack.size() > 0) {
-      delete chunk_stack.top();
+      // Here since all other chunks are full, just delete chunks
+      // using max element count as element to delete
+      CallDestructorForEachElement(element_per_chunk);
+      
+      free(chunk_stack.top());
       
       chunk_stack.pop();
     }
@@ -131,7 +145,26 @@ class SlabAllocator {
     return new (element_ptr) ElementType{args...};
   }
   
-  
+  /*
+   * CallDestructorForEachElement() - Calls destructor for the topmost chunk
+   *
+   * This function takes an extra argument as the element count on the top
+   * most chunk, since it might or might not be the capacity of each chunk
+   * caller needs to pass it in as an argument
+   */
+  void CallDestructorForEachElement(int element_count) {
+    for(int i = 0;i < element_count;i++) {
+      // Compute element pointer
+      ElementType *ptr = \
+        reinterpret_cast<ElementType *>(chunk_stack.top() +
+                                        sizeof(ElementType) * i);
+
+      // Call destructor manually
+      ptr->~ElementType();
+    }
+    
+    return;
+  }
 };
   
 }
