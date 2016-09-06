@@ -1017,7 +1017,7 @@ class ExpressionParser {
     // Create a new syntax node for holding parameter values
     //
     // It also needs to carry a token node of type T_FUNCARG
-    SyntaxNode *arg_node_p = SyntaxNode::Get(new Token{TokenType::T_FUNCARG});
+    SyntaxNode *arg_node_p = SyntaxNode::Get(Token::Get(TokenType::T_FUNCARG));
     
     Token *token_p = source_p->GetNextToken();
 
