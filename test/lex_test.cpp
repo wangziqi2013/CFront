@@ -198,8 +198,6 @@ void TestGetNextToken() {
         printf("Other token type\n");
       }
 
-      delete token_p;
-      
       token_p = sf.GetNextToken();
     }
   } catch(const std::string &reason) {
