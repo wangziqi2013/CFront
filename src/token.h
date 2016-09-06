@@ -2,6 +2,10 @@
 #pragma once
 
 #include "common.h"
+#include "allocator.h"
+
+namespace wangziqi2013 {
+namespace cfront {
 
 enum class TokenType {
   // This is a placeholder
@@ -341,6 +345,9 @@ class Token {
     std::string *ident_p;
   } data;
   
+  // Static data member to allocate node from a slab allocator
+  static SlabAllocator<Token> allocator;
+  
  public:
 
   /*
@@ -510,4 +517,15 @@ class Token {
       return name;
     }
   }
+  
+  /*
+   * Get() - static function to construct a token node object
+   */
+  template <typename ...Args>
+  static Token *Get(Args&&... args) {
+    return Token::allocator.Get(args...);
+  }
 };
+
+} // namespace cfront
+} // namespace wangziqi2013

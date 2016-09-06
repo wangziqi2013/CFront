@@ -4,6 +4,9 @@
 using namespace wangziqi2013;
 using namespace cfront;
 
+// This slab allocator
+SlabAllocator<Token> Token::allocator{};
+
 // Definition of the static class member
 const TokenInfo::keyword_map_type TokenInfo::keyword_map {
   {
