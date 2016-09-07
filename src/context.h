@@ -104,6 +104,21 @@ class Context {
     // not exist and return nullptr
     return nullptr;
   }
+  
+  /*
+   * GetBuiltInTypeNode() - Returns the SyntaxNode * for built in types
+   *
+   * This is used as an optimization to avoid too many nodes for builtin types
+   */
+  SyntaxNode *GetBuiltInTypeNode(TokenType token_type) {
+    // Find the built in type inside the map, and we must find it
+    // since the caller is responsible for verifying whether a type
+    // is built in type or not
+    auto it = builtin_type_map.find(token_type);
+    assert(it != builtin_type_map.end());
+    
+    return it->second;
+  }
 };
 
 } // namespace wangziqi2013
