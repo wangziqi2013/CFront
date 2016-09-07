@@ -12,7 +12,8 @@ ALL_FILES=$(SRC) $(HDR) $(wildcard ./test/*.h) $(wildcard ./test/*.cpp)
 all:
 	@echo "*"
 	@echo "* Please run make + test name to build a specific test!"
-	@echo "* $(OBJ)"
+	@echo "* OBJ = $(OBJ)"
+	@echo "* SRC = $(SRC)"
 	@echo "*"
     
 ./build/lex.o: $(SRC) $(HDR)
@@ -49,5 +50,5 @@ allocator_test: $(OBJ) ./test/allocator_test.cpp
 	$(CXX) $(OBJ) ./build/allocator_test.o -o ./bin/allocator_test $(CXX_FLAGS)
  
 clean:
-	rm -f ./main
 	rm -f ./build/*
+	rm -f ./bin/*
