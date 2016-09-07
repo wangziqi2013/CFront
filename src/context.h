@@ -51,6 +51,11 @@ class Context {
     // We initialize the first level of stack using an empty scope
     // possibly with few built-in symbols
     EnterScope();
+    
+    // Load the map with built in integral types
+    InitializeBuiltInTypeMap();
+    
+    return;
   }
 
   /*
