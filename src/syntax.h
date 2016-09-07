@@ -659,7 +659,15 @@ class TypeParser {
       // If the type name is found then return the type expression object
       // Otherwise return nullptr.
       // In both case we could directly return the value
-      return context_p->GetTypeNode(*token_p->GetIdentifier());
+      SyntaxNode *type_node_p = context_p->GetTypeNode(*token_p->GetIdentifier());
+      
+      // If we are going to return nullptr, first push back the token
+      // since they might be used for other purposes
+      if(type_node_p == nullptr) {
+        source_p->PushBackToken(token_p);
+      }
+      
+      return type_node_p;
     }
     
     // Then start to parse:
