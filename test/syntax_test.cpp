@@ -108,6 +108,7 @@ void TestParseType1() {
   printf("========== TestParseType1 ==========\n");
 
   char data[] = "unsigned long     signed int    int  "
+                "asdfghjkl "   // Test push back token
                 "   unsigned char char signed short ";
 
   printf("Test string: %s\n", data);
@@ -127,6 +128,13 @@ void TestParseType1() {
     
     node_p = ta.TryParseBaseType();
     assert(node_p->GetType() == TokenType::T_INT);
+    
+    node_p = ta.TryParseBaseType();
+    assert(node_p == nullptr);
+    Token *token_p = sf.GetNextToken();
+    assert(token_p->GetType() == TokenType::T_IDENT);
+    assert(*token_p->GetIdentifier() == "asdfghjkl");
+    
     
     node_p = ta.TryParseBaseType();
     assert(node_p->GetType() == TokenType::T_UCHAR);
