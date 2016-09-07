@@ -43,6 +43,10 @@ lex_test: $(OBJ) ./test/lex_test.cpp
 syntax_test: $(OBJ) ./test/syntax_test.cpp
 	$(CXX) ./test/syntax_test.cpp -c -o ./build/syntax_test.o $(CXX_FLAGS)
 	$(CXX) $(OBJ) ./build/syntax_test.o -o ./bin/syntax_test $(CXX_FLAGS)
+    
+allocator_test: $(OBJ) ./test/allocator_test.cpp
+	$(CXX) ./test/allocator_test.cpp -c -o ./build/allocator_test.o $(CXX_FLAGS)
+	$(CXX) $(OBJ) ./build/allocator_test.o -o ./bin/allocator_test $(CXX_FLAGS)
  
 clean:
 	rm -f ./main
