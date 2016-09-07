@@ -328,6 +328,7 @@ class TokenInfo {
  * class Token - Main class to represent lexicon
  */
 class Token {
+  friend class SlabAllocator<Token>;
  private:
   TokenType type;
   
@@ -347,8 +348,6 @@ class Token {
   
   // Static data member to allocate node from a slab allocator
   static SlabAllocator<Token> allocator;
-  
- public:
 
   /*
    * Constructor() - Construct a token object with corresponding type
@@ -369,6 +368,9 @@ class Token {
    *
    * The ownership of the pointer stored as identifier or string constant
    * belongs to Token object
+   *
+   * This is made private to prevent being deleted by something other than
+   * the SlabAllocator
    */
   ~Token() {
     // In both case the target is a string pointer
@@ -387,7 +389,9 @@ class Token {
     
     return;
   }
-  
+
+ public:
+
   /*
    * SetType() - Assigns a new type to the token
    *

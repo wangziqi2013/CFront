@@ -23,6 +23,7 @@ namespace cfront {
  * Also there is a vector holding it children nodes
  */
 class SyntaxNode {
+  // Need this since the constructor and destructor is private
   friend class SlabAllocator<SyntaxNode>;
  private:
   // This holds the type and optionally the payload of
@@ -49,14 +50,16 @@ class SyntaxNode {
     child_list{}
   {}
   
- public:
-  
   /*
    * Destructor - Recursively removes all children nodes
+   *
+   * This is made private to let only SlabAllocator is eligible for deleting it
    */
   ~SyntaxNode() {
     return;
   }
+  
+ public:
   
   /*
    * TraversePrint() - Traverse and print all nodes in prefix order
@@ -628,16 +631,31 @@ class TypeParser {
    *      will be treated as a tpye not found error. Note that in this case
    *      we do not return nullptr but directly go to error since struct
    *      suggests a type.
-   *   2. If the first token is an ident then we try to find it in the context
+   *   2. If the first token is struct and the second token is { then it is
+   *      an anonymous struct declaration
+   *   3. If the first token is struct and the second token is a name not
+   *      registered as type name, and the third token is '{' then it is
+   *      a named struct declaration
+   *   4. If the first token is an ident then we try to find it in the context
    *      as a registered type. If type not found then push back and return
    *      nullptr
-   *   3. If it is signed, unsigned, or char, short, int, long then we continue
+   *   5. If it is signed, unsigned, or char, short, int, long then we continue
    *      to retrieve the entire type
    */
   SyntaxNode *TryParseBaseType() {
     Token *token_p = source_p->GetNextToken();
+    TokenType token_type = token_p->GetType();
     
-    //if()
+    if(token_type == TokenType::T_STRUCT) {
+      // Dispatch it to struct parsing
+      // Do not push back the token since for all three cases
+      // of struct it has a common T_STRUUCT token type
+      //
+      // And also since we have seen T_STRUCT, it could be determined that this
+      // must be a struct declaration oe reference, which must be a type
+      // experession
+      //return ParseStructType();
+    }
   }
 
   /*
