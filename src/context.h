@@ -8,6 +8,9 @@
 namespace wangziqi2013 {
 namespace cfront {
 
+// Forward declaration here - since we not need to create syntax node it is OK
+class SyntaxNode;
+
 /*
  * class Context - The object for holding global values such as symbol tables
  *                 and type tables
@@ -22,6 +25,20 @@ class Context {
   // Use push_back() and pop_back() to access elements like a stack
   std::vector<ScopeNode> scope_stack;
 
+  // Maps TokenType to SyntaxNode 8 for built in types
+  std::unordered_map<TokenType,
+                     SyntaxNode *,
+                     TokenTypeHasher,
+                     TokenTypeEq> builtin_type_map;
+
+  /*
+   * InitializeBuiltInTypeMap() - Initialize SyntaxNode for built in types
+   *
+   * We do this as an optimization to avoid creating too many built in type
+   * nodes - they now all share the same pointer
+   */
+  void InitializeBuiltInTypeMap();
+
  public:
 
   /*
@@ -32,8 +49,8 @@ class Context {
   Context() :
     scope_stack{} {
     // We initialize the first level of stack using an empty scope
-    // possibly with few built-in symbols (but not built-in types
-    // because we )
+    // possibly with few built-in symbols
+    EnterScope();
   }
 
   /*
@@ -66,6 +83,9 @@ class Context {
    * This function searches the stack from the top top the bottom, and if
    * the name exists inside any level that are searched first then it returns
    * the associated type object
+   *
+   * If the type does not exist in all levels just return nullptr. Otherwise
+   * the SyntaxNode pointer that represents the type structure is returned
    */
   SyntaxNode *GetTypeNode(const std::string &type_name) {
     // Iterate through the vector from high index to low index
