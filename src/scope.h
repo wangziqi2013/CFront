@@ -37,10 +37,19 @@ class ScopeNode {
   ScopeNode() {}
   
   /*
+   * Move Constructor - This is necessary in std::vector emplace_back
+   *                    since a vector might grow and it needs to move all
+   *                    previous contents to a new array
+   */
+  ScopeNode(ScopeNode &&other) :
+    type_map{std::move(other.type_map)},
+    ident_map{std::move(other.ident_map)}
+  {}
+  
+  /*
    * These are deleted to avoid any undesirable effects
    */
   ScopeNode(const ScopeNode &) = delete;
-  ScopeNode(ScopeNode &&) = delete;
   ScopeNode &operator=(const ScopeNode &) = delete;
   ScopeNode &operator=(ScopeNode &&) = delete;
   
