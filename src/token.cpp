@@ -300,9 +300,13 @@ const TokenInfo::token_name_map_type TokenInfo::token_name_map = {
  */
 const std::unordered_set<TokenType, TokenTypeHasher, TokenTypeEq>
 TokenInfo::builtin_type_set = {
-  TokenType::T_CHAR, TokenType::T_UCHAR,
-  TokenType::T_SHORT, TokenType::T_USHORT,
-  TokenType::T_INT, TokenType::T_UINT,
-  TokenType::T_LONG, TokenType::T_ULONG,
+  TokenType::T_CHAR,
+  TokenType::T_UCHAR,
+  TokenType::T_SHORT,
+  TokenType::T_USHORT,
+  TokenType::T_INT,
+  TokenType::T_UINT,
+  TokenType::T_LONG,
+  TokenType::T_ULONG,
 };
 
