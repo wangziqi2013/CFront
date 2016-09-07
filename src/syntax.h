@@ -33,8 +33,7 @@ class SyntaxNode {
   // with the token node, we waste 8 bytes just to store nullptr
   Token *token_p;
   
-  // This vector holds its children nodes in left-to-right
-  // order
+  // This vector holds its children nodes in left-to-right order
   std::vector<SyntaxNode *> child_list;
   
   static SlabAllocator<SyntaxNode> allocator;
@@ -655,7 +654,78 @@ class TypeParser {
       // must be a struct declaration oe reference, which must be a type
       // experession
       //return ParseStructType();
+    } else if(token_type == TokenType::T_IDENT) {
+      // Search the named type in the current scope and previous scopes
+      // If the type name is found then return the type expression object
+      // Otherwise return nullptr.
+      // In both case we could directly return the value
+      return context_p->GetTypeNode(*token_p->GetIdentifier());
     }
+    
+    // Then start to parse:
+    //   signed {char short int long}
+    //   unsigned {char short int long}
+    //   char
+    //   short
+    //   int
+    //   long
+    bool is_unsigned = false;
+    switch(token_type) {
+      // For these four basic types just return a syntax node that wraps them
+      // And the syntax node is actually prealllocated nodes cached inside
+      // the context object
+      case TokenType::T_CHAR:
+      case TokenType::T_SHORT:
+      case TokenType::T_INT:
+      case TokenType::T_LONG:
+        return context_p->GetBuiltInTypeNode(token_type);
+      case TokenType::T_UNSIGNED:
+        // Set this flag and fall through
+        is_unsigned = true;
+      case TokenType::T_SIGNED: {
+        // After this we know it must be a type since signed and unsigned
+        // could only be used in type declaration
+        // So do not need to worry about pushing back token here
+        // just use the previous variable name is OK
+        token_p = source_p->GetNextToken();
+        token_type = token_p->GetType();
+        
+        // If is_unsigned is not set just fall through
+        switch(token_type) {
+          case TokenType::T_CHAR:
+            if(is_unsigned == true) {
+              return context_p->GetBuiltInTypeNode(TokenType::T_UCHAR);
+            }
+          case TokenType::T_SHORT:
+            if(is_unsigned == true) {
+              return context_p->GetBuiltInTypeNode(TokenType::T_USHORT);
+            }
+          case TokenType::T_INT:
+            if(is_unsigned == true) {
+              return context_p->GetBuiltInTypeNode(TokenType::T_UINT);
+            }
+          case TokenType::T_LONG:
+            if(is_unsigned == true) {
+              return context_p->GetBuiltInTypeNode(TokenType::T_ULONG);
+            }
+            
+            // If unsigned is not true then just return token_type
+            // We should fall through here
+            return context_p->GetBuiltInTypeNode(token_type);
+          default:
+            ThrowUnexpectedIntegerTypeError(token_p);
+        } // switch second token type
+      } // first token is T_SIGNED
+      default:
+        source_p->PushBackToken(token_p);
+        
+        return nullptr;
+    }
+    
+    // In all other cases just return nullptr after pushing back the token
+    source_p->PushBackToken(token_p);
+    
+    return nullptr;
   }
 
   /*
@@ -706,6 +776,20 @@ class TypeParser {
   SyntaxNode *ParseType() {
     assert(false);
     return nullptr;
+  }
+  
+  ///////////////////////////////////////////////////////////////////
+  // Error handling
+  ///////////////////////////////////////////////////////////////////
+  
+  /*
+   * ThrowUnexpectedIntegerTypeError() - This is thrown when we have seen
+   *                                     signed or unsigned but the next
+   *                                     type is not integral type
+   */
+  void ThrowUnexpectedIntegerTypeError(Token *token_p) const {
+    throw std::string{"Unexpected integral type: "} + \
+          token_p->ToString();
   }
 };
 
