@@ -679,6 +679,8 @@ class TypeParser {
     //   long
     bool is_unsigned = false;
     switch(token_type) {
+      // For void type it is also considered as built in type
+      case TokenType::T_VOID:
       // For these four basic types just return a syntax node that wraps them
       // And the syntax node is actually prealllocated nodes cached inside
       // the context object
@@ -719,6 +721,8 @@ class TypeParser {
             
             // If unsigned is not true then just return token_type
             // We should fall through here
+            // Also it penalize the usage of "signed", but since it is rare
+            // we are fine
             return context_p->GetBuiltInTypeNode(token_type);
           default:
             ThrowUnexpectedIntegerTypeError(token_p);
