@@ -1,0 +1,24 @@
+expression:
+  assignment-expression
+  expression T_COMMA assignment-expression
+
+assignment-expression:
+  conditional-expression
+  unary-expression assignment-operator assignment-expression
+
+assignment-operator:
+  T_ASSIGN
+  T_PLUS_ASSIGN
+  T_MINUS_ASSIGN
+  T_STAR_ASSIGN
+  T_DIV_ASSIGN
+  T_MOD_ASSIGN
+  T_LSHIFT_ASSIGN
+  T_RSHIFT_ASSIGN
+  T_AMPERSAND_ASSIGN
+  T_BITXOR_ASSIGN
+  T_BITOR_ASSIGN
+  
+conditional-expression:
+  logical-OR-expression
+  logical-OR-expression T_QMARK expression T_COLON conditional-expression
