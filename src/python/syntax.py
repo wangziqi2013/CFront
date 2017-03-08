@@ -166,10 +166,13 @@ class ParserGenerator:
     This class is the main class we use to generate the parsing code
     for a given LL(1) syntax
     """
-    def __init__(self):
+    def __init__(self, file_name):
         """
         Initialize the generator object
         """
+        # This is the name of the syntax definition file
+        self.file_name = file_name
+
         # This is a mapping from symbol name to either terminals
         # or non-terminals
         self.symbol_dict = {}
@@ -179,6 +182,9 @@ class ParserGenerator:
 
         # This is a set of non-terminal objects
         self.non_terminal_set = set()
+
+        # Reading the file
+        self.read_file(file_name)
 
         return
 
@@ -226,7 +232,7 @@ class ParserGenerator:
         line_list = \
             [line.strip()
              for line in line_list
-             if (len(line.strip()) != 0 and line.strip()[0] == '#')]
+             if (len(line.strip()) != 0 and line.strip()[0] != '#')]
 
         # This is a set of names for which we are not certain whether
         # it is a terminal or non-terminal
@@ -243,7 +249,7 @@ class ParserGenerator:
 
                 # If the non-terminal object already exists then we have
                 # seen duplicated definition
-                if self.symbol_dict.hash_key(non_terminal):
+                if non_terminal in self.symbol_dict:
                     raise KeyError("Duplication definition of non-terminal: %s" %
                                    (name, ))
 
@@ -254,6 +260,8 @@ class ParserGenerator:
 
                 # Since we already know that name is a non-terminal
                 # we could remove it from this set
+                # discard() does not raise error even if the name
+                # is not in the set
                 in_doubt_set.discard(name)
             else:
                 # Split the line using space characters
@@ -299,6 +307,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # Processing command lines
         argv = Argv()
 
+        # Initialize data members that will be used across
+        # different test cases
+        self.pg = None
+
         self.run_tests(argv)
 
         return
@@ -319,13 +331,13 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # Initialize the object - it will read the file
         # and parse its contents
-        pg = ParserGenerator(file_name)
+        self.pg = ParserGenerator(file_name)
+        pg = self.pg
 
-        s = ""
+        dbg_printf("Terminals: %s", str(pg.terminal_set))
+        dbg_printf("Non-Terminals: %s", str(pg.non_terminal_set))
 
-        dbg_printf("Terminals: %s")
-
-
+        return
 
 if __name__ == "__main__":
     ParserGeneratorTestCase()
