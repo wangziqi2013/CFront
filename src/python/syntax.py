@@ -80,6 +80,23 @@ class Terminal(Symbol):
 
         return
 
+    def __repr__(self):
+        """
+        Returns a string representation of the object that could
+        be used as its identifier
+
+        :return: str
+        """
+        return "[Terminal %s]" % (self.name, )
+
+    def __str__(self):
+        """
+        Returns a string representation
+
+        :return: str
+        """
+        return self.__repr__()
+
 #####################################################################
 # class NonTerminal
 #####################################################################
@@ -113,11 +130,36 @@ class NonTerminal(Symbol):
 
         return
 
+    def __repr__(self):
+        """
+        Returns a string representation of the object that could
+        be used as its identifier
+
+        :return: str
+        """
+        return "[NonTerminal %s]" % (self.name, )
+
+    def __str__(self):
+        """
+        Returns a string representation
+
+        :return: str
+        """
+        return self.__repr__()
+
+#####################################################################
+# class Production
+#####################################################################
+
 class Production:
     """
     This class represents a single production rule that has a left
     hand side non-terminal symbol and
     """
+
+#####################################################################
+# class ParserGenerator
+#####################################################################
 
 class ParserGenerator:
     """
@@ -278,7 +320,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # Initialize the object - it will read the file
         # and parse its contents
         pg = ParserGenerator(file_name)
-        
+
+        s = ""
+
+        dbg_printf("Terminals: %s")
 
 
 
