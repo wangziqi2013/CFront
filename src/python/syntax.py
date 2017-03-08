@@ -197,6 +197,29 @@ class Production:
 
         return
 
+    def __getitem__(self, item):
+        """
+        This mimics the list syntax
+
+        :param item: The index
+        :return: The i-th object in the rhs list
+        """
+        return self.rhs[item]
+
+    def append(self, item):
+        """
+        This mimics the list syntax of appending a new element
+        at the back of rhs_list. We also do extra checking to
+        make sure that the item is a symbol object
+
+        :param item: The new syntax node
+        :return: None
+        """
+        assert(iten.is_symbol() is True)
+        self.rhs_list.append(item)
+
+        return
+
     def __hash__(self):
         """
         This function computes the hash for production object.
@@ -279,6 +302,9 @@ class ParserGenerator:
         # This is a set of non-terminal objects
         self.non_terminal_set = set()
 
+        # This is a set of productions
+        self.production_set = set()
+
         # Reading the file
         self.read_file(file_name)
 
@@ -353,10 +379,18 @@ class ParserGenerator:
                 current_nt = line[:-1]
                 continue
 
+            # There must be a non-terminal node to use
+            if current_nt is None:
+                raise ValueError("The syntax must start with a non-terminal")
+
+            # Otherwise we know this is a new production
+            production = Production(current_nt)
+
             # This is a list of symbol names
             # which have all been converted into terminals
             # or non-terminals in the first pass
             symbol_list = line.split()
+            for symbol in
 
 
 
