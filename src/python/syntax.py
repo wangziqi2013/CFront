@@ -62,6 +62,25 @@ class Symbol:
         """
         return self.name != other.name
 
+    def is_terminal(self):
+        """
+        Whether the node is a terminal object. This function should not
+        be overloaded by the derived class, because it checks the class
+        type here directly
+
+        :return: bool
+        """
+        return isinstance(self, Terminal)
+
+    def is_non_terminal(self):
+        """
+        Whether the node is a non-terminal symbol. This is the counterpart
+        of is_terminal()
+
+        :return: bool
+        """
+        return isinstance(self, NonTerminal)
+
 #####################################################################
 # class Terminal
 #####################################################################
@@ -253,6 +272,18 @@ class ParserGenerator:
 
         return
 
+    def process_production(self, line_list):
+        """
+        This function constructs productions and place them into
+        a list of productions. It also establishes referencing relations
+        between productions and non-terminal symbols (i.e. which symbol
+        is referred to in which production)
+
+        :return: None
+        """
+        for line in line_list:
+            pass
+
     def process_symbol(self, line_list):
         """
         Recognize symbols, and store them into the dictionary for
@@ -372,6 +403,13 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         dbg_printf("Terminals: %s", str(pg.terminal_set))
         dbg_printf("Non-Terminals: %s", str(pg.non_terminal_set))
+
+        # Check the identity of symbols
+        for i in pg.terminal_set:
+            assert(i.is_terminal() is True)
+
+        for i in pg.non_terminal_set:
+            assert(i.is_non_terminal() is True)
 
         return
 

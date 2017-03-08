@@ -22,3 +22,22 @@ assignment-operator:
 conditional-expression:
   logical-OR-expression
   logical-OR-expression T_QMARK expression T_COLON conditional-expression
+
+constant-expression:
+  conditional-expression
+
+logical-OR-expression:
+  logical-AND-expression
+  logical-OR-expression T_OR logical-AND-expression
+
+logical-AND-expression:
+  inclusive-OR-expression
+  logical-AND-expression T_AND inclusive-OR-expression
+
+inclusive-OR-expression:
+  exclusive-OR-expression
+  inclusive-OR-expression T_BIT_OR exclusive-OR-expression
+
+exclusive-OR-expression:
+  AND-expression
+  exclusive-OR-expression T_BIT_XOR AND-expression
