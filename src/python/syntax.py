@@ -87,7 +87,7 @@ class Terminal(Symbol):
 
         :return: str
         """
-        return "[Terminal %s]" % (self.name, )
+        return "[T %s]" % (self.name, )
 
     def __str__(self):
         """
@@ -137,7 +137,7 @@ class NonTerminal(Symbol):
 
         :return: str
         """
-        return "[NonTerminal %s]" % (self.name, )
+        return "[NT %s]" % (self.name, )
 
     def __str__(self):
         """
@@ -156,6 +156,19 @@ class Production:
     This class represents a single production rule that has a left
     hand side non-terminal symbol and
     """
+    def __init__(self, pg, lhs, rhs_list=[]):
+        """
+        Initialize the production object
+
+        :param pg: The ParserGenerator object
+        :param lhs: Left hand side symbol name (string name)
+        :param rhs_list: A list of right hand side symbol names
+        """
+        self.pg = pg
+        self.lhs = lhs
+        self.rhs_list = rhs_list
+
+        return
 
 #####################################################################
 # class ParserGenerator
@@ -234,9 +247,24 @@ class ParserGenerator:
              for line in line_list
              if (len(line.strip()) != 0 and line.strip()[0] != '#')]
 
+        # This function recognizes terminals and non-terminals
+        # and stores them into the corresponding set structure
+        self.process_symbol(line_list)
+
+        return
+
+    def process_symbol(self, line_list):
+        """
+        Recognize symbols, and store them into the dictionary for
+        symbols, as well as the sets for terminals and non-terminals
+
+        :param line_list: A list of lines
+        :return:
+        """
         # This is a set of names for which we are not certain whether
         # it is a terminal or non-terminal
         in_doubt_set = set()
+
         for line in line_list:
             # We have seen a new LHS of the production rule
             # Also non-terminal is very easy to identify because
@@ -291,6 +319,14 @@ class ParserGenerator:
             self.terminal_set.add(terminal)
 
         return
+
+#####################################################################
+#####################################################################
+#####################################################################
+# class ParserGeneratorTestCase - Test cases
+#####################################################################
+#####################################################################
+#####################################################################
 
 class ParserGeneratorTestCase(DebugRunTestCaseBase):
     """
