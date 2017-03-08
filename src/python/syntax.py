@@ -183,11 +183,75 @@ class Production:
         :param lhs: Left hand side symbol name (string name)
         :param rhs_list: A list of right hand side symbol names
         """
+        # Make sure that the lhs is a non terminal symbol
+        assert(lhs.is_non_terminal() is True)
+        # Also make sure that every object in RHS is a symbol
+        # object
+        for rhs in rhs_list:
+            assert(rhs.is_terminal() is True or
+                   rhs.is_non_terminal() is True)
+
         self.pg = pg
         self.lhs = lhs
         self.rhs_list = rhs_list
 
         return
+
+    def __hash__(self):
+        """
+        This function computes the hash for production object.
+
+        The hash of a production object is defined by each of its
+        components: lhs and every symbol in RHS list. We combine
+        the hash code of each component using XOR and return
+
+        :return: hash code
+        """
+        # This computes the hash of the lhs name
+        h = hash(self.lhs)
+
+        # Then combine the hash by XOR the hash of each RHS symbol
+        for rhs in self.rhs_list:
+            h ^= hash(rhs)
+
+        return h
+
+    def __eq__(self, other):
+        """
+        This function checks whether this production equals another
+
+        We check equality by comparing each component, including LHS
+        and each member of the RHS list. This is similar to how
+        we compute the hash code for this class
+
+        :param other: The other object
+        :return: bool
+        """
+        # If the length differs then we know they will never
+        # be the same. We do this before any string comparison
+        if len(self.rhs_list) != len(other.rhs_list):
+            return False
+
+        if self.lhs != other.lhs:
+            return False
+
+        # Use index to fetch component
+        for rhs1, rhs2 in zip(self.rhs_list, other.rhs_list):
+            # If there is none inequality then just return
+            if rhs1.__eq__(rhs2) is False:
+                return False
+
+        return True
+
+    def __ne__(self, other):
+        """
+        This is the reverse of __eq__()
+
+        :param other: The other object
+        :return: bool
+        """
+        return not self.__eq__(other)
+
 
 #####################################################################
 # class ParserGenerator
@@ -281,8 +345,20 @@ class ParserGenerator:
 
         :return: None
         """
+        # This is the current non-terminal node, and we change it
+        # every time a line with ':' is seen
+        current_nt = None
         for line in line_list:
-            pass
+            if line[-1] == ':':
+                current_nt = line[:-1]
+                continue
+
+            # This is a list of symbol names
+            # which have all been converted into terminals
+            # or non-terminals in the first pass
+            symbol_list = line.split()
+
+
 
     def process_symbol(self, line_list):
         """
