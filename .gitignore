@@ -34,3 +34,6 @@
 ./bin/*
 bin
 build
+
+## Ignore python byte code
+*.pyc
