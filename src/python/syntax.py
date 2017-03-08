@@ -62,6 +62,16 @@ class Symbol:
         """
         return self.name != other.name
 
+    def is_symbol(self):
+        """
+        Checks whether the item is either a terminal or a
+        non-terminal
+
+        :return: bool
+        """
+        return self.is_terminal() is True or \
+               self.is_terminal() is True
+
     def is_terminal(self):
         """
         Whether the node is a terminal object. This function should not
