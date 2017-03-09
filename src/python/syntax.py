@@ -157,7 +157,33 @@ class NonTerminal(Symbol):
         self.first_set = set()
         self.follow_set = set()
 
+        # This is the set of all possible symbols if we expand the
+        # non-terminal
+        # We use this set to determine whether there are hidden
+        # left recursions, i.e.
+        #
+        #  S -> V1 V2 V3
+        #  V1 -> V4 V5
+        #  V4 -> S V6
+        self.first_rhs_set = set()
+
         return
+
+    def exists_direct_left_recursion(self):
+        """
+        This function checks whether there is direct left recursion,
+        i.e. for non-terminal A checks whether A -> A b exists
+
+        This is a non-recursive process, and we just need to make sure
+        that no production for this symbol could derive itself
+
+        :return: bool
+        """
+        # For each production that this symbol is the LHS
+        for p in self.lhs_set:
+            assert()
+
+        return False
 
     def __repr__(self):
         """
@@ -302,6 +328,14 @@ class Production:
         :return: str
         """
         return self.__repr__()
+
+    def __len__(self):
+        """
+        Returns the length of the RHS list
+
+        :return: int
+        """
+        return len(self.rhs_list)
 
 
 #####################################################################
