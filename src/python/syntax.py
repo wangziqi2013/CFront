@@ -185,7 +185,7 @@ class Production:
     This class represents a single production rule that has a left
     hand side non-terminal symbol and
     """
-    def __init__(self, pg, lhs, rhs_list=[]):
+    def __init__(self, pg, lhs):
         """
         Initialize the production object
 
@@ -195,11 +195,6 @@ class Production:
         """
         # Make sure that the lhs is a non terminal symbol
         assert(lhs.is_non_terminal() is True)
-        # Also make sure that every object in RHS is a symbol
-        # object
-        for rhs in rhs_list:
-            assert(rhs.is_terminal() is True or
-                   rhs.is_non_terminal() is True)
 
         self.pg = pg
         self.lhs = lhs
@@ -225,7 +220,7 @@ class Production:
         :param item: The new syntax node
         :return: None
         """
-        assert(iten.is_symbol() is True)
+        assert(item.is_symbol() is True)
         self.rhs_list.append(item)
 
         return
@@ -284,6 +279,27 @@ class Production:
         :return: bool
         """
         return not self.__eq__(other)
+
+    def __repr__(self):
+        """
+        Returns a unique representation of the object using
+        a string
+
+        :return: str
+        """
+        s = "[" + self.lhs.name + ' ->'
+        for rhs in self.rhs_list:
+            s += (' ' + rhs.name)
+
+        return s
+
+    def __str__(self):
+        """
+        This function returns the string for printing this object
+
+        :return: str
+        """
+        return self.__repr__()
 
 
 #####################################################################
@@ -400,9 +416,25 @@ class ParserGenerator:
             # which have all been converted into terminals
             # or non-terminals in the first pass
             symbol_list = line.split()
-            for symbol in
+            for symbol_name in symbol_list:
+                # The key must exist because we already had one
+                # pass to add all symbols
+                assert(symbol_name in self.symbol_dict)
 
+                symbol = self.symbol_dict[symbol_name]
+                production.append(symbol)
 
+            # The same production must not appear twice
+            # otherwise it is an input error
+            if production in self.production_set:
+                raise ValueError("Duplicated production: %s" %
+                                 (str(production), ))
+
+            # After appending all nodes we also add the production
+            # into the set pf productions
+            self.production_set.add(production)
+
+            return
 
     def process_symbol(self, line_list):
         """
