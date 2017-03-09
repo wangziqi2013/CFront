@@ -385,6 +385,9 @@ class ParserGenerator:
         # This function recognizes terminals and non-terminals
         # and stores them into the corresponding set structure
         self.process_symbol(line_list)
+        # This function adds productions and references between
+        # productions and symbols
+        self.process_production(line_list)
 
         return
 
@@ -408,6 +411,8 @@ class ParserGenerator:
             # There must be a non-terminal node to use
             if current_nt is None:
                 raise ValueError("The syntax must start with a non-terminal")
+            else:
+                assert(current_nt.is_non_terminal() is True)
 
             # Otherwise we know this is a new production
             production = Production(current_nt)
@@ -424,6 +429,12 @@ class ParserGenerator:
                 symbol = self.symbol_dict[symbol_name]
                 production.append(symbol)
 
+                # If a production rule refers to a non-terminal
+                # then we need to also add the production back
+                # to the non-terminal as a backward reference
+                if symbol.is_non_termial() is True:
+                    symbol.rhs_set.add(production)
+
             # The same production must not appear twice
             # otherwise it is an input error
             if production in self.production_set:
@@ -433,6 +444,7 @@ class ParserGenerator:
             # After appending all nodes we also add the production
             # into the set pf productions
             self.production_set.add(production)
+            current_nt.lhs_list.add(production)
 
             return
 
