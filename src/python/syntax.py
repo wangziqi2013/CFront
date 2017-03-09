@@ -169,6 +169,66 @@ class NonTerminal(Symbol):
 
         return
 
+    def exists_indirect_left_recursion(self):
+        """
+        This function checks whether there is indirect left recursion
+        in the production rules, e.g.
+
+          S -> V1 V2 V3
+          V1 -> S V4
+
+        The way we check indirect left recursions is to construct
+        a set of all possible left non-terminals in all possible
+        derivations of the LHS of a production. This could be done
+        recursively, but we also adopt memorization to reduce the
+        number of step required from exponential to linear
+
+        :return: bool
+        """
+        self.build_first_rhs_set()
+
+        # If the node itself is in the first RHS set then
+        # we know there is an indirect left recursion
+        return self in self.first_rhs_set
+
+    def build_first_rhs_set(self):
+        """
+        Builds first RHS set as specified in the definition of the
+        set. We do this recursively using memorization, i.e. the
+        result is saved in self.first_rhs_set and used later
+
+        :return: None
+        """
+        # If we have visited this symbol before then just return
+        # Since the set object is initialized to None on construction
+        # this check guarantees we do not revisit symbols
+        if symbol.first_rhs_set is not None:
+            return
+        else:
+            # Initialize it to empty set
+            symbol.first_rhs_set = set()
+
+        # For all productions with this symbol as LHS, recursively
+        # add all first RHS symbol into the set of this symbol
+        for p in self.lhs_set:
+            # The production must have RHS side
+            assert(len(p) != 0)
+            s = p[0]
+            if s.is_terminal() is True:
+                continue
+
+            # Recursively build the set for the first RHS
+            s.build_first_rhs_set()
+
+            # Then merge these two sets
+            self.first_rhs_set = \
+                self.first_rhs_set.union(s.first_rhs_set)
+
+            # Also add the first direct RHS into the set
+            self.first_rhs_set.add(s)
+
+        return
+
     def exists_direct_left_recursion(self):
         """
         This function checks whether there is direct left recursion,
@@ -440,6 +500,19 @@ class ParserGenerator:
         # TODO: Add transformation here
 
         return
+
+    def verify(self):
+        """
+        Verify the validity of the grammar as LL(1) for generating
+        predictive recursive descent parser
+
+        We check the following properties:
+          (1) There is no direct
+
+        :return: None
+        """
+
+
 
     def process_root_symbol(self):
         """
