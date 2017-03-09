@@ -51,7 +51,7 @@ AND-expression:
     equality-expression
     AND-expression T_BIT_AND equality-expression
 
-equality-expressionzzz:
+equality-expression:
     relational-expression
     equality-expression T_EQ relational-expression
     equality-expression T_NOTEQ relational-expression
