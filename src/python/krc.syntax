@@ -1,43 +1,124 @@
+
+expression-root:
+    expression
+
+# Add it back later
+#constant-expression:
+#    conditional-expression
+
 expression:
-  assignment-expression
-  expression T_COMMA assignment-expression
+    assignment-expression
+    expression T_COMMA assignment-expression
 
 assignment-expression:
-  conditional-expression
-  unary-expression assignment-operator assignment-expression
+    conditional-expression
+    unary-expression assignment-operator assignment-expression
 
 assignment-operator:
-  T_ASSIGN
-  T_PLUS_ASSIGN
-  T_MINUS_ASSIGN
-  T_STAR_ASSIGN
-  T_DIV_ASSIGN
-  T_MOD_ASSIGN
-  T_LSHIFT_ASSIGN
-  T_RSHIFT_ASSIGN
-  T_AMPERSAND_ASSIGN
-  T_BITXOR_ASSIGN
-  T_BITOR_ASSIGN
+    T_ASSIGN
+    T_PLUS_ASSIGN
+    T_MINUS_ASSIGN
+    T_STAR_ASSIGN
+    T_DIV_ASSIGN
+    T_MOD_ASSIGN
+    T_LSHIFT_ASSIGN
+    T_RSHIFT_ASSIGN
+    T_AMPERSAND_ASSIGN
+    T_BITXOR_ASSIGN
+    T_BITOR_ASSIGN
   
 conditional-expression:
-  logical-OR-expression
-  logical-OR-expression T_QMARK expression T_COLON conditional-expression
-
-constant-expression:
-  conditional-expression
+    logical-OR-expression
+    logical-OR-expression T_QMARK expression T_COLON conditional-expression
 
 logical-OR-expression:
-  logical-AND-expression
-  logical-OR-expression T_OR logical-AND-expression
+    logical-AND-expression
+    logical-OR-expression T_OR logical-AND-expression
 
 logical-AND-expression:
-  inclusive-OR-expression
-  logical-AND-expression T_AND inclusive-OR-expression
+    inclusive-OR-expression
+    logical-AND-expression T_AND inclusive-OR-expression
 
 inclusive-OR-expression:
-  exclusive-OR-expression
-  inclusive-OR-expression T_BIT_OR exclusive-OR-expression
+    exclusive-OR-expression
+    inclusive-OR-expression T_BIT_OR exclusive-OR-expression
 
 exclusive-OR-expression:
-  AND-expression
-  exclusive-OR-expression T_BIT_XOR AND-expression
+    AND-expression
+    exclusive-OR-expression T_BIT_XOR AND-expression
+
+AND-expression:
+    equality-expression
+    AND-expression T_BIT_AND equality-expression
+
+equality-expressionzzz:
+    relational-expression
+    equality-expression T_EQ relational-expression
+    equality-expression T_NOTEQ relational-expression
+
+relational-expression:
+    shift-expression
+    relational-expression T_LESS shift-expression
+    relational-expression T_LESSEQ shift-expression
+    relational-expression T_GREATER shift-expression
+    relational-expression T_GREATEREQ shift-expression
+
+shift-expression:
+    additive-expression
+    shift-expression T_LSHIFT additive-expression
+    shift-expression T_RSHIFT additive-expression
+
+additive-expression:
+    multiplicative-expression
+    additive-expression T_PLUS multiplicative-expression
+    additive-expression T_MINUS multiplicative-expression
+
+multiplicative-expression:
+    cast-expression
+    multiplicative-expression T_STAR cast-expression
+    multiplicative-expression T_DIV cast-expression
+    multiplicative-expression T_MOD cast-expression
+
+cast-expression:
+    unary-expression
+    # Since we have not defined types this is not added
+    # TODO: Add more syntax rules
+    #T_LPAREN type-name T_RPAREN cast-expression
+
+unary-operator:
+    T_AMPERSAND
+    T_STAR
+    T_PLUS
+    T_MINUS
+    T_BITNOT
+    T_NOT
+
+unary-expression:
+    postfix-expression
+    T_INC unary-expression
+    T_DEC unary-expression
+    unary-operator cast-expression
+    T_SIZEOF unary-expression
+    # Do not use type-name for now
+    #T_SIZEOF T_LPAREN type-name T_RPAREN
+
+argument-expression-list:
+    assignment-expression
+    argument-expression-list T_COMMNA assignment-expression
+
+postfix-expression:
+    primary-expression
+    postfix-expression T_LSPAREN expression T_RSPAREN
+    postfix-expression T_LPAREN T_RPAREN
+    postfix-expression T_LPAREN argument-expression-list T_RPAREN
+    postfix-expression T_DOT identifier
+    postfix-expression T_ARROW identifier
+    postfix-expression T_INC
+    postfix-expression T_DEC
+
+primary-expression:
+    T_IDENT
+    T_INT_CONST
+    T_CHAR_CONST
+    T_STRING_CONST
+    T_LPAREN expression T_RPAREN
