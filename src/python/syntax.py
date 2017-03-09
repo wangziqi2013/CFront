@@ -680,9 +680,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         dbg_printf("Terminals: %s", str(pg.terminal_set))
         dbg_printf("Non-Terminals: %s", str(pg.non_terminal_set))
-        dbg_printf("Non-Terminals:")
-        for i in pg.production_set:
-            dbg_printf("%s", str(i))
+        dbg_printf("Productions:")
+        for symbol in pg.non_terminal_set:
+            for p in symbol.lhs_set:
+                dbg_printf("%s", str(p))
 
         dbg_printf("Root symbol: %s", pg.root_symbol)
 
