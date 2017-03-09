@@ -243,7 +243,7 @@ class Production:
         :param item: The index
         :return: The i-th object in the rhs list
         """
-        return self.rhs[item]
+        return self.rhs_list[item]
 
     def append(self, item):
         """
@@ -373,6 +373,9 @@ class ParserGenerator:
         # This is a set of productions
         self.production_set = set()
 
+        # This is the non-terminal where parsing starts
+        self.root_symbol = None
+
         # Reading the file
         self.read_file(file_name)
 
@@ -430,6 +433,58 @@ class ParserGenerator:
         # This function adds productions and references between
         # productions and symbols
         self.process_production(line_list)
+        # This sets self.root_symbol and throws exception is there
+        # is problem finding it
+        self.process_root_symbol()
+
+        # TODO: Add transformation here
+
+        return
+
+    def process_root_symbol(self):
+        """
+        This function finds root symbols. The root symbol is defined as
+        the non-terminal symbol with no reference in its rhs_set, which
+        indicates in our rule that the symbol is the starting point of
+        parsing
+
+        Note that even in the case that root symbol cannot be found, we
+        could always define an artificial root symbol by adding:
+            S_ROOT -> S
+        if S is supposed to be the root but is referred to in some
+        productions. This is guaranteed to work.
+
+        In the case that multiple root symbols are present, i.e. there
+        are multiple nodes with RHS list being empty, we report error
+        and print all possibilities
+
+        :return: None
+        """
+        # We use this set to find the root symbol
+        # It should only contain 1 element
+        root_symbol_list = []
+        for symbol in self.non_terminal_set:
+            if len(symbol.rhs_set) == 0:
+                root_symbol_list.append(symbol)
+
+        # These two are abnormal case
+        if len(root_symbol_list) > 1:
+            dbg_printf("Multiple root symbols found. " +
+                       "Could not decide which one")
+
+            # Print each candidate and exit
+            for symbol in root_symbol_list:
+                dbg_printf("    Candidate: %s", str(symbol))
+
+            raise ValueError("Multiple root symbols")
+        elif len(root_symbol_list) == 0:
+            dbg_printf("Root symbol is not found. " +
+                       "May be you should define an artificial one")
+
+            raise ValueError("Root symbol not found")
+
+        # This is the normal case - exactly 1 is found
+        self.root_symbol = root_symbol_list[0]
 
         return
 
@@ -628,6 +683,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         dbg_printf("Non-Terminals:")
         for i in pg.production_set:
             dbg_printf("%s", str(i))
+
+        dbg_printf("Root symbol: %s", pg.root_symbol)
 
         # Check the identity of symbols
         for i in pg.terminal_set:
