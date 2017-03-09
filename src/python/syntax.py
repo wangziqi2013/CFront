@@ -165,7 +165,7 @@ class NonTerminal(Symbol):
         #  S -> V1 V2 V3
         #  V1 -> V4 V5
         #  V4 -> S V6
-        self.first_rhs_set = set()
+        self.first_rhs_set = None
 
         return
 
@@ -181,7 +181,13 @@ class NonTerminal(Symbol):
         """
         # For each production that this symbol is the LHS
         for p in self.lhs_set:
-            assert()
+            # The production must not be an empty one
+            # i.e. there must be something on the RHS
+            assert(len(p) != 0)
+            # Since we have defined operator== for class Symbol
+            # we could directly compare two symbol
+            if p[0] == self:
+                return True
 
         return False
 
