@@ -70,7 +70,7 @@ class Symbol:
         :return: bool
         """
         return self.is_terminal() is True or \
-               self.is_terminal() is True
+               self.is_non_terminal() is True
 
     def is_terminal(self):
         """
@@ -198,7 +198,9 @@ class Production:
 
         self.pg = pg
         self.lhs = lhs
-        self.rhs_list = rhs_list
+
+        # We append elements into this list later
+        self.rhs_list = []
 
         return
 
@@ -291,7 +293,7 @@ class Production:
         for rhs in self.rhs_list:
             s += (' ' + rhs.name)
 
-        return s
+        return s + ']'
 
     def __str__(self):
         """
@@ -403,9 +405,22 @@ class ParserGenerator:
         # This is the current non-terminal node, and we change it
         # every time a line with ':' is seen
         current_nt = None
+        has_body = True
         for line in line_list:
             if line[-1] == ':':
-                current_nt = line[:-1]
+                # When we see the start of a production, must make
+                # sure that the previous production has been finished
+                if has_body is False:
+                    raise ValueError(
+                        "Production %s does not have a body" %
+                        (line, ))
+                else:
+                    has_body = False
+
+                current_nt_name = line[:-1]
+                assert(current_nt_name in self.symbol_dict)
+
+                current_nt = self.symbol_dict[current_nt_name]
                 continue
 
             # There must be a non-terminal node to use
@@ -414,8 +429,11 @@ class ParserGenerator:
             else:
                 assert(current_nt.is_non_terminal() is True)
 
+            # We have seen a production body
+            has_body = True
+
             # Otherwise we know this is a new production
-            production = Production(current_nt)
+            production = Production(self, current_nt)
 
             # This is a list of symbol names
             # which have all been converted into terminals
@@ -432,7 +450,7 @@ class ParserGenerator:
                 # If a production rule refers to a non-terminal
                 # then we need to also add the production back
                 # to the non-terminal as a backward reference
-                if symbol.is_non_termial() is True:
+                if symbol.is_non_terminal() is True:
                     symbol.rhs_set.add(production)
 
             # The same production must not appear twice
@@ -444,9 +462,9 @@ class ParserGenerator:
             # After appending all nodes we also add the production
             # into the set pf productions
             self.production_set.add(production)
-            current_nt.lhs_list.add(production)
+            current_nt.lhs_set.add(production)
 
-            return
+        return
 
     def process_symbol(self, line_list):
         """
@@ -567,6 +585,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         dbg_printf("Terminals: %s", str(pg.terminal_set))
         dbg_printf("Non-Terminals: %s", str(pg.non_terminal_set))
+        dbg_printf("Non-Terminals:")
+        for i in pg.production_set:
+            dbg_printf("%s", str(i))
 
         # Check the identity of symbols
         for i in pg.terminal_set:
