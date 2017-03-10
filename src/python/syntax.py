@@ -305,12 +305,81 @@ class NonTerminal(Symbol):
 
         return
 
-    def compute_follow(self):
+    def compute_follow(self, path_set=set()):
         """
-        This functions computes the FOLLOW set
+        This functions computes the FOLLOW set. Note that the FOLLOW set
+        is also computed recursively, and therefore we use memorization
+        to compute it
 
         :return: None
         """
+        # If we are seeking for this node's FOLLOW set and then recursively
+        # reached the same node then there must by cyclic grammar:
+        #   A -> a B
+        #   B -> b C
+        #   C -> c A
+        # In this case if we compute FOLLOW(A) then we will compute FOLLOW(C)
+        # and FOLLOW(B) which comes back to FOLLOW(A)
+        #
+        # However this structure is very common in left recursion removal:
+        #   A -> A a | b
+        #   ---
+        #   A  -> b A'
+        #   A' -> eps | a A'
+        # When we compute FOLLOW(A') it is inevitable that this will happen
+        if self in path_set:
+            return
+        else:
+            path_set.add(self)
+
+        # This is how memorization works
+        if self.follow_set is None:
+            self.follow_set = set()
+        else:
+            return
+
+        # For all productions where this terminal appears as a symbol
+        for p in self.rhs_set:
+            # This is a list of indices that this symbol appears
+            # Current we only allow it to have exactly 1 element
+            # Because a non-terminal is not allowed to appear twice
+            index_list = p.get_symbol_index(self)
+            assert(len(index_list) == 1)
+
+            index = index_list[0]
+
+            # If the symbol appears as the last one in the production
+            if index == (len(p.rhs_list) - 1):
+                # This could be a self recursion but we have prevented this
+                # at the beginning of this function
+                p.lhs.compute_follow()
+                self.follow_set = \
+                    self.follow_set.union(p.lhs.follow_set)
+            else:
+                # Compute the FIRST set for the substring after the
+                # terminal symbol
+                substr_first_set = p.compute_substring_first(index + 1)
+
+                # If the string after the non-terminal could be
+                # empty then we also need to add the FOLLOW of the LHS
+                if Symbol.get_empty_symbol() in substr_first_set:
+                    p.lhs.compute_follow()
+                    self.follow_set = \
+                        self.follow_set.union(p.lhs.follow_set)
+
+                    # Remove the empty symbol because empty could not
+                    # appear in FOLLOW set
+                    substr_first_set.remove(Symbol.get_empty_symbol())
+
+                # At last, merge the FIRST() without empty symbol
+                # into the current FOLLOW set
+                self.follow_set = \
+                    self.follow_set.union(substr_first_set)
+
+        # Do not forget to remove this in the path set (we know
+        # it does not exist before entering this function)
+        path_set.remove(self)
+
         return
 
     def get_new_symbol(self):
@@ -625,7 +694,13 @@ class Production:
         """
         This function computes the FIRST set for a substring. An optional
         index field is also provided to allow the user to start
-        computing from a certian starting index
+        computing from a certain starting index
+
+        Note that the FIRST set of the entire production has already been
+        computed in compute_first() of a terminal symbol. The algorithm
+        there is very similar to the one used here. Nevertheless, the
+        result of passing index = 0 and the result computed by the
+        non-terminal should be the same
 
         :return: set(Terminal)
         """
