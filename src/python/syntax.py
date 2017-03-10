@@ -708,17 +708,11 @@ class ParserGenerator:
         # This sets self.root_symbol and throws exception is there
         # is problem finding it
         self.process_root_symbol()
+        # As suggested by name
+        self.process_left_recursion()
 
-        # TODO: Add transformation here
-        #self.verify()
-
-        # Make a copy to avoid changing the size of the set
-        temp = self.non_terminal_set.copy()
-
-        # Remove left recursion. Note we should iterate
-        # on the set above
-        for symbol in temp:
-            symbol.eliminate_left_recursion()
+        # Check feasibility of LL(1)
+        self.verify()
 
         return
 
@@ -746,6 +740,22 @@ class ParserGenerator:
                 raise ValueError("Left recursion is detected" +
                                  " @ symbol %s" %
                                  (str(symbol), ))
+
+        return
+
+    def process_left_recursion(self):
+        """
+        This function removes left recursion for all rules
+
+        :return: None
+        """
+        # Make a copy to avoid changing the size of the set
+        temp = self.non_terminal_set.copy()
+
+        # Remove left recursion. Note we should iterate
+        # on the set above
+        for symbol in temp:
+            symbol.eliminate_left_recursion()
 
         return
 
