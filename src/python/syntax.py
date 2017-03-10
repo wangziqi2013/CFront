@@ -615,7 +615,7 @@ class Production:
         index = 0
         for s in self.rhs_list:
             if s == symbol:
-                ret.push_back(index)
+                ret.append(index)
 
             index += 1
 
@@ -1003,8 +1003,13 @@ class ParserGenerator:
         # This checks condition 6
         for symbol in self.non_terminal_set:
             for p in symbol.rhs_set:
-                pass
+                # This is a list of indices that this symbol
+                # appears in the production
+                ret = p.get_symbol_index(symbol)
 
+                # Make sure each non-terminal only appears once
+                # in all productions
+                assert(len(ret) == 1)
 
         # This checks condition 3
         for symbol in self.non_terminal_set:
