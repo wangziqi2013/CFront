@@ -730,9 +730,9 @@ class ParserGenerator:
             # We have seen a production body
             has_body = True
 
-            # Otherwise we know this is a new production
-            # This also adds the current production into the LHS set
-            production = Production(self, current_nt)
+            # This will be passed into the constructor of
+            # class Production
+            rhs_list = []
 
             # This is a list of symbol names
             # which have all been converted into terminals
@@ -745,8 +745,15 @@ class ParserGenerator:
 
                 symbol = self.symbol_dict[symbol_name]
 
-                # References are established inside this function
-                production.append(symbol)
+                # Add an RHS symbol
+                # Establishes from non-terminals to productions
+                # are established later when we construct the object
+                rhs_list.append(symbol)
+
+            # Finally construct an immutable class Production instance
+            # the status could no longer be changed after it is
+            # constructed
+            production = Production(self, current_nt, rhs_list)
 
             # The same production must not appear twice
             # otherwise it is an input error
