@@ -815,6 +815,8 @@ class ParserGenerator:
           (2) There is no indirect left recursion
           The above two are checked together because indirect
           left recursion includes direct left recursion in our case
+          (3) For LHS symbol S, all of its production must have
+              disjoint FIRST sets
 
         (This list is subject to change)
 
@@ -829,6 +831,26 @@ class ParserGenerator:
                 raise ValueError("Left recursion is detected" +
                                  " @ symbol %s" %
                                  (str(symbol), ))
+
+        # This checks condition 3
+        for symbol in self.non_terminal_set:
+            # Make it a list to support enumeration
+            lhs = list(symbol.lhs_set)
+            size = len(lhs)
+
+            for i in range(1, size):
+                for j in range(0, i):
+                    # This is the intersection of both sets
+                    s = lhs[i].first_set.intersection(lhs[j].first_set)
+                    if len(s) != 0:
+                        raise ValueError(
+                            ("The intersection of %s's first_set is not empty\n" +
+                             "  %s (%s)\n  %s (%s)") %
+                            (str(symbol),
+                             str(lhs[i]),
+                             str(lhs[i].first_set),
+                             str(lhs[j]),
+                             str(lhs[j].first_set)))
 
         return
 

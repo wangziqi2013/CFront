@@ -12,7 +12,8 @@ expression:
 
 assignment-expression:
     conditional-expression
-    unary-expression assignment-operator assignment-expression
+    assignment-expression assignment-operator conditional-expression
+    #unary-expression assignment-operator assignment-expression
 
 assignment-operator:
     T_ASSIGN
@@ -28,8 +29,12 @@ assignment-operator:
     T_BITOR_ASSIGN
   
 conditional-expression:
-    logical-OR-expression
-    logical-OR-expression T_QMARK expression T_COLON conditional-expression
+    logical-OR-expression conditional-expression-qmark
+    #logical-OR-expression T_QMARK expression T_COLON conditional-expression
+
+conditional-expression-qmark:
+    T_QMARK expression T_COLON conditional-expression
+    T_
 
 logical-OR-expression:
     logical-AND-expression
@@ -105,11 +110,13 @@ unary-expression:
 argument-expression-list:
     assignment-expression
     argument-expression-list T_COMMNA assignment-expression
+    T_
 
 postfix-expression:
     primary-expression
     postfix-expression T_LSPAREN expression T_RSPAREN
-    postfix-expression T_LPAREN T_RPAREN
+    # This will cause a conflict in FIRST set
+    #postfix-expression T_LPAREN T_RPAREN
     postfix-expression T_LPAREN argument-expression-list T_RPAREN
     postfix-expression T_DOT identifier
     postfix-expression T_ARROW identifier
