@@ -13,6 +13,7 @@ expression:
 assignment-expression:
     conditional-expression
     assignment-expression assignment-operator conditional-expression
+    # This will cause a FIRST set conflict
     #unary-expression assignment-operator assignment-expression
 
 assignment-operator:
@@ -30,6 +31,7 @@ assignment-operator:
   
 conditional-expression:
     logical-OR-expression conditional-expression-qmark
+    # Left factorization
     #logical-OR-expression T_QMARK expression T_COLON conditional-expression
 
 conditional-expression-qmark:

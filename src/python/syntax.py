@@ -911,6 +911,35 @@ class ParserGenerator:
 
         return
 
+    @staticmethod
+    def dump_symbol_set(fp, ss):
+        """
+        Dumps a set into a given file handle. This function is
+        for convenience of printing the FIRST and FOLLOW set
+
+        The set if printed as follows:
+           {eleemnt, element, .. }
+
+        :param fp: The file handler
+        :param ss: The set instance
+        :return: None
+        """
+        first = True
+        fp.write("{")
+        for i in ss:
+            # Must be a symbol element
+            assert(i.is_symbol() is True)
+            if first is False:
+                fp.write(", ")
+            else:
+                first = False
+
+            fp.write(i.name)
+
+        fp.write("}")
+
+        return
+
     def dump(self, file_name):
         """
         This file dumps the contents of the parser generator into a file
@@ -931,15 +960,11 @@ class ParserGenerator:
         nt_list.sort()
         # We preserve these symbols
         for symbol in nt_list:
-            fp.write("%s: FIRST =" % (symbol.name, ))
+            fp.write("%s: " % (symbol.name, ))
 
-            # Write the first and follow of the symbol
-            for first in symbol.first_set:
-                fp.write(" %s" % (first.name, ))
-
-            #fp.write(" FOLLOW =")
-            #for follow in symbol.follow_set:
-            #    fp.write(" %s" % (follow.name, ))
+            ParserGenerator.dump_symbol_set(fp, symbol.first_set)
+            fp.write(" ")
+            ParserGenerator.dump_symbol_set(fp, symbol.follow_set)
 
             # End the non-terminal line
             fp.write("\n")
@@ -949,15 +974,10 @@ class ParserGenerator:
                 for rhs in p.rhs_list:
                     fp.write(" %s" % (rhs.name, ))
 
-                # Write the first and follow of the production
-                fp.write(" FIRST =")
-
-                for first in p.first_set:
-                    fp.write(" %s" % (first.name,))
-
-                #fp.write("FOLLOW =")
-                #for follow in symbol.follow_set:
-                #    fp.write(" %s" % (follow.name,))
+                fp.write("; ")
+                ParserGenerator.dump_symbol_set(fp, p.first_set)
+                #fp.write(" ")
+                #ParserGenerator.dump_symbol_set(fp, symbol.follow_set)
 
                 fp.write("\n")
 
@@ -1047,11 +1067,13 @@ class ParserGenerator:
           left recursion includes direct left recursion in our case
           (3) For LHS symbol S, all of its production must have
               disjoint FIRST sets
-          (4) (FOLLOW SET)
+          (4) For A -> a | b if a derives empty string then FIRST(b)
+              and FOLLOW(A) are disjoint sets
           (5) For all productions, if T_ appears then it must be
               A -> T_
           (6) For all non-terminals S, it must only appear once in
               all productions where it appears
+          (7) Empty symbol does not appear in all FOLLOW sets
 
         (This list is subject to change)
 
@@ -1085,6 +1107,10 @@ class ParserGenerator:
                 # Make sure each non-terminal only appears once
                 # in all productions
                 assert(len(ret) == 1)
+
+        # This checks condition 7
+        for symbol in self.non_terminal_set:
+            assert(Symbol.get_empty_symbol() not in symbol.follow_set)
 
         # This checks condition 3
         for symbol in self.non_terminal_set:
