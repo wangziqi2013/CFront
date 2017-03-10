@@ -238,6 +238,12 @@ class NonTerminal(Symbol):
         # where B1 - Bj - 1 could derive terminal and
         # Bj could not
         for p in self.lhs_set:
+            # In most cases we will discard this later
+            # Only when all RHS symbols are terminals
+            # and all of them could derive empty symbols
+            # do we keep this in p.first_set
+            p.first_set.add(Symbol.get_empty_symbol())
+
             for symbol in p.rhs_list:
                 # For terminals just add it and process
                 # the next production
@@ -245,22 +251,39 @@ class NonTerminal(Symbol):
                     # Empty symbol is also added here if it
                     # is derived
                     self.first_set.add(symbol)
-                    continue
+
+                    # Also add it into the production
+                    p.first_set.add(symbol)
+
+                    # Remove the empty because we know empty symbol
+                    # must not appear
+                    p.first_set.discard(Symbol.get_empty_symbol())
+
+                    break
                 elif symbol == self:
                     raise ValueError("The grammar is not LL(1) because we" +
-                                     " encountered the same non-terminal")
+                                     " encountered the same non-terminal %s" %
+                                     (str(self), ))
 
                 # Recursively compute the FIRST set
                 # Since we have processed the symbol == self case here we
                 # could call this without checking
                 symbol.compute_first()
                 self.first_set = \
-                    self.first_set.union(symbol.first_set())
+                    self.first_set.union(symbol.first_set)
+
+                # This could contain empty symbol
+                p.first_set = \
+                    p.first_set.union(symbol.first_set)
 
                 # If the empty symbol could not be derived then
                 # we do not check the following non-terminals
                 if Symbol.get_empty_symbol() not in symbol.first_set:
-                    continue
+                    # If any non-terminal causes it to exit
+                    # then we discard the possible empty symbol
+                    p.first_set.discard(Symbol.get_empty_symbol())
+
+                    break
 
         return
 
@@ -498,6 +521,10 @@ class Production:
         assert(lhs.is_non_terminal() is True)
 
         self.pg = pg
+
+        # This is the first set of the production which we use to
+        # select rules for the same LHS
+        self.first_set = set()
 
         # Since we defined __setattr__() to prevent setting
         # these two names, we need to set them directly into
@@ -770,6 +797,8 @@ class ParserGenerator:
         self.process_root_symbol()
         # As suggested by name
         self.process_left_recursion()
+        # Compute the first and follow set
+        self.process_first_follow()
 
         # Check feasibility of LL(1)
         self.verify()
@@ -1090,6 +1119,11 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             dbg_printf("RHS set for %s: %s",
                        str(symbol),
                        str(symbol.first_rhs_set))
+
+        for symbol in pg.non_terminal_set:
+            dbg_printf("FIRST set for %s: %s",
+                       str(symbol),
+                       str(symbol.first_set))
 
         return
 
