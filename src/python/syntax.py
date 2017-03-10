@@ -194,8 +194,11 @@ class NonTerminal(Symbol):
 
         # These two are FIRST() and FOLLOW() described in
         # predictive parsers
-        self.first_set = set()
-        self.follow_set = set()
+        # They will be computed using recursion + memorization
+        # so set them to None here to indicate the sets are not
+        # computed yet
+        self.first_set = None
+        self.follow_set = None
 
         # This is the set of all possible symbols if we expand the
         # non-terminal
@@ -210,6 +213,63 @@ class NonTerminal(Symbol):
         # This is used to generate name for a new node
         self.new_name_index = 1
 
+        return
+
+    def compute_first(self):
+        """
+        This function computes the FIRST set for the non-terminal
+
+        We use a recursive algorithm to compute the first set. This
+        process is similar to the one we use to compute the first
+        RHS set, but in this case since we care about not only
+        the formation but also semantic meaning of production rules,
+        we also need to consider the EMPTY SYMBOL
+
+        :return: None
+        """
+        # If we have already processed this node then return
+        if self.first_set is not None:
+            return
+        else:
+            self.first_set = set()
+
+        # For all productions A -> B1 B2 .. Bi
+        # FIRST(A) is defined as FIRST(B1) union FIRST(Bj)
+        # where B1 - Bj - 1 could derive terminal and
+        # Bj could not
+        for p in self.lhs_set:
+            for symbol in p.rhs_list:
+                # For terminals just add it and process
+                # the next production
+                if symbol.is_terminal() is True:
+                    # Empty symbol is also added here if it
+                    # is derived
+                    self.first_set.add(symbol)
+                    continue
+                elif symbol == self:
+                    raise ValueError("The grammar is not LL(1) because we" +
+                                     " encountered the same non-terminal")
+
+                # Recursively compute the FIRST set
+                # Since we have processed the symbol == self case here we
+                # could call this without checking
+                symbol.compute_first()
+                self.first_set = \
+                    self.first_set.union(symbol.first_set())
+
+                # If the empty symbol could not be derived then
+                # we do not check the following non-terminals
+                if Symbol.get_empty_symbol() not in symbol.first_set:
+                    continue
+
+        return
+
+    def compute_follow(self):
+        """
+        This functions computes the FOLLOW set
+
+        :return: None
+        """
         return
 
     def get_new_symbol(self):
