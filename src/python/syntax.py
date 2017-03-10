@@ -401,6 +401,24 @@ class Production:
 
         return
 
+    def clear(self):
+        """
+        Clears all references from the production to non-terminal
+        objects
+
+        :return: None
+        """
+        # Remove this production from the LHS's LHS set
+        # This happens in-place
+        lhs.lhs_set.remove(self)
+        for symbol in self.rhs_list:
+            # If it is a non-terminal then we remove
+            # the production from its rhs set
+            if symbol.is_non_terminal() is True:
+                symbol.rhs_set.remove(self)
+
+        return
+
     def __setattr__(self, key, value):
         """
         Controls attribute access of this object because we do not allow
