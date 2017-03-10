@@ -14,10 +14,13 @@ from common import *
 class Symbol:
     # This is the name of the "eps" symbol
     EMPTY_SYMBOL_NAME = "T_"
+    # This is the symbol name indicating the end of input stream
+    END_SYMBOL_NAME = "T_EOF"
 
     # We must initialize this later because terminal object has
     # not yet been defined
     EMPTY_SYMBOL = None
+    END_SYMBOL = None
 
     """
     This class represents a grammar symbol that is either a terminal
@@ -795,7 +798,7 @@ class ParserGenerator:
 
         return
 
-    def dump(self):
+    def dump(self, file_name):
         """
         This file dumps the contents of the parser generator into a file
         that has similar syntax as the .syntax input file.
@@ -806,13 +809,49 @@ class ParserGenerator:
 
         :return:
         """
+        fp = open(file_name, "w")
+
         # Construct a list and sort them in alphabetical order
         # Since we have already defined the less than function for
         # non-terminal objects this is totally fine
         nt_list = list(self.non_terminal_set)
         nt_list.sort()
         # We preserve these symbols
-        for symbol in self.non_terminal_list:
+        for symbol in nt_list:
+            fp.write("%s: FIRST =" % (symbol.name, ))
+
+            # Write the first and follow of the symbol
+            for first in symbol.first_set:
+                fp.write(" %s" % (first.name, ))
+
+            #fp.write(" FOLLOW =")
+            #for follow in symbol.follow_set:
+            #    fp.write(" %s" % (follow.name, ))
+
+            # End the non-terminal line
+            fp.write("\n")
+
+            for p in symbol.lhs_set:
+                fp.write("   ")
+                for rhs in p.rhs_list:
+                    fp.write(" %s" % (rhs.name, ))
+
+                # Write the first and follow of the production
+                fp.write(" FIRST =")
+
+                for first in p.first_set:
+                    fp.write(" %s" % (first.name,))
+
+                #fp.write("FOLLOW =")
+                #for follow in symbol.follow_set:
+                #    fp.write(" %s" % (follow.name,))
+
+                fp.write("\n")
+
+            fp.write("\n")
+
+        fp.close()
+        return
 
 
     def read_file(self, file_name):
@@ -1243,6 +1282,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             dbg_printf("FIRST set for %s: %s",
                        str(symbol),
                        str(symbol.first_set))
+
+        # Finally dump the resulting file
+        pg.dump(file_name + ".dump")
 
         return
 
