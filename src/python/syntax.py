@@ -743,6 +743,23 @@ class ParserGenerator:
 
         return
 
+    def process_first_follow(self):
+        """
+        This function computes FIRST and FOLLOW set
+        for all non-terminals. The set of non-terminals
+        is not changed during iteration, so we do not
+        need to make a copy of the set
+
+        :return: None
+        """
+        for symbol in self.non_terminal_set:
+            symbol.compute_first()
+
+        for symbol in self.non_terminal_set:
+            symbol.compute_follow()
+
+        return
+
     def process_left_recursion(self):
         """
         This function removes left recursion for all rules
