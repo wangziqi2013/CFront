@@ -202,11 +202,11 @@ class NonTerminal(Symbol):
         # If we have visited this symbol before then just return
         # Since the set object is initialized to None on construction
         # this check guarantees we do not revisit symbols
-        if symbol.first_rhs_set is not None:
+        if self.first_rhs_set is not None:
             return
         else:
             # Initialize it to empty set
-            symbol.first_rhs_set = set()
+            self.first_rhs_set = set()
 
         # For all productions with this symbol as LHS, recursively
         # add all first RHS symbol into the set of this symbol
@@ -498,6 +498,7 @@ class ParserGenerator:
         self.process_root_symbol()
 
         # TODO: Add transformation here
+        #self.verify()
 
         return
 
@@ -507,12 +508,26 @@ class ParserGenerator:
         predictive recursive descent parser
 
         We check the following properties:
-          (1) There is no direct
+          (1) There is no direct left recursion
+          (2) There is no indirect left recursion
+          The above two are checked together because indirect
+          left recursion includes direct left recursion in our case
+
+        (This list is subject to change)
+
+        If any of these are not satisfied we throw an exception to
+        indicate the user that the grammar needs to be changed
 
         :return: None
         """
+        # This checks both condition
+        for symbol in self.non_terminal_set:
+            if symbol.exists_indirect_left_recursion() is True:
+                raise ValueError("Left recursion is detected" +
+                                 " @ symbol %s" %
+                                 (str(symbol), ))
 
-
+        return
 
     def process_root_symbol(self):
         """
@@ -766,6 +781,13 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         for i in pg.non_terminal_set:
             assert(i.is_non_terminal() is True)
+
+        # Manually build the set and print them
+        for symbol in pg.non_terminal_set:
+            symbol.build_first_rhs_set()
+            dbg_printf("RHS set for %s: %s",
+                       str(symbol),
+                       str(symbol.first_rhs_set))
 
         return
 
