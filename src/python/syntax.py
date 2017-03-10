@@ -1132,6 +1132,36 @@ class ParserGenerator:
                              str(lhs[j]),
                              str(lhs[j].first_set)))
 
+        # This checks condition 4
+        for symbol in self.non_terminal_set:
+            lhs = list(symbol.lhs_set)
+            size = len(lhs)
+
+            for i in range(1, size):
+                for j in range(0, i):
+                    # These two are two productions
+                    pi = lhs[i]
+                    pj = lhs[j]
+
+                    # If pi could derive empty string then FIRST(pj)
+                    # and follow A are disjoint
+                    if Symbol.get_empty_symbol() in pi.first_set:
+                        t = pj.first_set.intersection(symbol.follow_set)
+                        if len(t) != 0:
+                            raise ValueError(
+                                "FIRST/FOLLOW conflict for %s on: \n  %s\n  %s" %
+                                (str(symbol),
+                                 str(pi),
+                                 str(pj)))
+
+                    if Symbol.get_empty_symbol() in pj.first_set:
+                        t = pi.first_set.intersection(symbol.follow_set)
+                        if len(t) != 0:
+                            raise ValueError(
+                                "FIRST/FOLLOW conflict for %s on: \n  %s\n  %s" %
+                                (str(symbol),
+                                 str(pi),
+                                 str(pj)))
         return
 
     def process_first_follow(self):
