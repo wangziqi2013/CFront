@@ -12,6 +12,13 @@ from common import *
 #####################################################################
 
 class Symbol:
+    # This is the name of the "eps" symbol
+    EMPTY_SYMBOL_NAME = "T_"
+
+    # We must initialize this later because terminal object has
+    # not yet been defined
+    EMPTY_SYMBOL = None
+
     """
     This class represents a grammar symbol that is either a terminal
     or non-terminal
@@ -91,6 +98,39 @@ class Symbol:
         """
         return isinstance(self, NonTerminal)
 
+    def is_empty(self):
+        """
+        Whether the symbol node is empty terminal, i.e. "eps" in classical
+        representations. "eps" is nothing more than a terminal of a special
+        name "T_", which could either be shared or a newly created one.
+
+        :return: bool
+        """
+        # Note that empty node must also be terminal node
+        return self.is_terminal() and \
+               self.name == Symbol.EMPTY_SYMBOL_NAME
+
+    @staticmethod
+    def get_empty_symbol():
+        """
+        Returns an empty symbol, which is a reference to the shared
+        object stored within the class object. Please do not modify
+        the result returned by this function as it will affect all
+        objects
+
+        Instead of calling this function users could also create their
+        own instance of empty symbol using the name "T_". There is no
+        difference between creating a new instance and using the shared
+        instance (the latter saves memory, though)
+
+        :return: Terminal
+        """
+        if Symbol.EMPTY_SYMBOL is None:
+            Symbol.EMPTY_SYMBOL = \
+                Terminal(Symbol.EMPTY_SYMBOL_NAME)
+
+        return Symbol.EMPTY_SYMBOL
+
 #####################################################################
 # class Terminal
 #####################################################################
@@ -166,6 +206,43 @@ class NonTerminal(Symbol):
         #  V1 -> V4 V5
         #  V4 -> S V6
         self.first_rhs_set = None
+
+        # This is used to generate name for a new node
+        self.new_name_index = 1
+
+        return
+
+    def get_new_symbol(self):
+        """
+        This function returns a new non-terminal symbol whose
+        name is derived from the name of the current one.
+
+        The new symbol could be used in left recursion elimination
+        routines and other transformation. It is of the form:
+          original-name + "-" + new name index
+        and the index is incremented every time we created a new
+        name
+
+        :return: NonTerminal object with a synthesized name
+        """
+        # Synthesize a new name
+        new_name = self.name + "-" + str(self.new_name_index)
+        self.new_name_index += 1
+
+        return NonTerminal(new_name)
+
+    def eliminate_left_recursion(self):
+        """
+        This function eliminates direct left recursion for the
+        current non-terminal symbol. We do not deal with
+        indirect ones here
+
+        :return: None
+        """
+        # If there is no direct left recursion then return
+        # directly
+        if self.exists_direct_left_recursion() is False:
+            return
 
         return
 
@@ -467,6 +544,9 @@ class ParserGenerator:
         production. All right hand side tokens are separated by spaces,
         and we consider everything that is not space character as token
         names
+
+        The empty symbol "eps" is also a non-terminal, with the special
+        name T_ (T + underline)
 
         :param file_name: The name of the file to read the syntax
         :return: None
