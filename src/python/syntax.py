@@ -597,6 +597,30 @@ class Production:
 
         return
 
+    def get_symbol_index(self, symbol):
+        """
+        Returns a list of indices a symbol appear in the RHS list
+
+        Note that the symbol could be either terminal or non-terminal
+        and we do not check its identify. If the symbol does not
+        exist we return an empty list
+
+        :return: list(int)
+        """
+        # First of all it must be a symbol
+        assert(symbol.is_symbol() is True)
+
+        ret = []
+        # This tracks the index of the current item
+        index = 0
+        for s in self.rhs_list:
+            if s == symbol:
+                ret.push_back(index)
+
+            index += 1
+
+        return ret
+
     def compute_substring_first(self, index=0):
         """
         This function computes the FIRST set for a substring. An optional
@@ -951,6 +975,8 @@ class ParserGenerator:
           (4) (FOLLOW SET)
           (5) For all productions, if T_ appears then it must be
               A -> T_
+          (6) For all non-terminals S, it must only appear once in
+              all productions where it appears
 
         (This list is subject to change)
 
@@ -973,6 +999,12 @@ class ParserGenerator:
                     if len(p.rhs_list) != 1:
                         raise ValueError("Empty string in the" +
                                          " middle of production")
+
+        # This checks condition 6
+        for symbol in self.non_terminal_set:
+            for p in symbol.rhs_set:
+                pass
+
 
         # This checks condition 3
         for symbol in self.non_terminal_set:
