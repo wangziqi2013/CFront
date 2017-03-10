@@ -244,6 +244,12 @@ class NonTerminal(Symbol):
         if self.exists_direct_left_recursion() is False:
             return
 
+        # Make a backup here because we need it
+        lhs_set = self.lhs_set
+        # Clear all sets
+        for p in self.lhs_set:
+            pass
+
         return
 
     def exists_indirect_left_recursion(self):
@@ -354,7 +360,7 @@ class Production:
     This class represents a single production rule that has a left
     hand side non-terminal symbol and
     """
-    def __init__(self, pg, lhs):
+    def __init__(self, pg, lhs, rhs_list):
         """
         Initialize the production object
 
@@ -366,10 +372,53 @@ class Production:
         assert(lhs.is_non_terminal() is True)
 
         self.pg = pg
-        self.lhs = lhs
 
+        # Since we defined __setattr__() to prevent setting
+        # these two names, we need to set them directly into
+        # the underlying dict object
+        self.__dict__["lhs"] = lhs
         # We append elements into this list later
-        self.rhs_list = []
+        self.__dict__["rhs_list"] = rhs_list
+
+        # Only after this point could we add the production
+        # into any set, because the production becomes
+        # immutable regarding its identify (i.e. LHS and
+        # RHS list)
+
+        # Add a reference to all non-terminal RHS nodes
+        for symbol in self.rhs_list:
+            assert(symbol.is_symbol() is True)
+            if symbol.is_non_terminal() is True:
+                # We could add self in this way, because
+                # the identify of the set has been fixed
+                symbol.rhs_set.add(self)
+
+        # Also add a reference of this production into the LHS
+        # set of the non-terminal
+        # Note that since we add it into a set, the identity
+        # of the production can no longer be changed
+        lhs.lhs_set.add(self)
+
+        return
+
+    def __setattr__(self, key, value):
+        """
+        Controls attribute access of this object because we do not allow
+        accessing LHS and RHS list of this class directly
+
+        Note that unlink getattr(), this is always called on attribute
+        access.
+
+        :param key: The attribute name
+        :param value: The attribute value
+        :return: None
+        """
+        if key == "lhs" or key == "rhs_list":
+            raise KeyError("Cannot set key %s for class Production" %
+                           (key, ))
+
+        # Otherwise directly set the attribute into dict
+        self.__dict__[key] = value
 
         return
 
@@ -381,20 +430,6 @@ class Production:
         :return: The i-th object in the rhs list
         """
         return self.rhs_list[item]
-
-    def append(self, item):
-        """
-        This mimics the list syntax of appending a new element
-        at the back of rhs_list. We also do extra checking to
-        make sure that the item is a symbol object
-
-        :param item: The new syntax node
-        :return: None
-        """
-        assert(item.is_symbol() is True)
-        self.rhs_list.append(item)
-
-        return
 
     def __hash__(self):
         """
@@ -696,6 +731,7 @@ class ParserGenerator:
             has_body = True
 
             # Otherwise we know this is a new production
+            # This also adds the current production into the LHS set
             production = Production(self, current_nt)
 
             # This is a list of symbol names
@@ -708,13 +744,9 @@ class ParserGenerator:
                 assert(symbol_name in self.symbol_dict)
 
                 symbol = self.symbol_dict[symbol_name]
-                production.append(symbol)
 
-                # If a production rule refers to a non-terminal
-                # then we need to also add the production back
-                # to the non-terminal as a backward reference
-                if symbol.is_non_terminal() is True:
-                    symbol.rhs_set.add(production)
+                # References are established inside this function
+                production.append(symbol)
 
             # The same production must not appear twice
             # otherwise it is an input error
@@ -725,7 +757,6 @@ class ParserGenerator:
             # After appending all nodes we also add the production
             # into the set pf productions
             self.production_set.add(production)
-            current_nt.lhs_set.add(production)
 
         return
 
