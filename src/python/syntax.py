@@ -244,11 +244,77 @@ class NonTerminal(Symbol):
         if self.exists_direct_left_recursion() is False:
             return
 
-        # Make a backup here because we need it
-        lhs_set = self.lhs_set
-        # Clear all sets
-        for p in self.lhs_set:
-            pass
+        # Make a backup here because LHS set will be cleared
+        # A shallow copy is sufficient here because we just use
+        # LHS and RHS references
+        p_set = self.lhs_set.copy()
+
+        # This is the set of productions with left recursion
+        alpha_set = set()
+        # This is the set of productions without left recursion
+        beta_set = set()
+
+        pg = None
+        # Clear all productions - Note here we could not iterate on
+        # self.lhs because it will be changed in the iteration body
+        for p in p_set:
+            # This removes the production from this object
+            # and also removes it from other RHS objects
+            p.clear()
+
+            # If this is a left recursion production then add
+            # it to alpha set; otherwise to beta set
+            if p[0] == self:
+                alpha_set.add(p)
+            else:
+                beta_set.add(p)
+
+            # Check they all come from the same pg instance
+            if pg is None:
+                pg = p.pg
+            else:
+                assert(id(pg) == id(p.pg))
+
+        # It must have been cleared
+        assert(len(self.lhs_set) == 0)
+        assert(len(alpha_set) + len(beta_set) == len(p_set))
+
+        # Create a new symbol and add it into the set
+        new_symbol = self.get_new_symbol()
+        pg.non_terminal_set.add(new_symbol)
+
+        empty_symbol = Symbol.get_empty_symbol()
+        # Also add this into pg's terminal set
+        pg.terminal_set.add(empty_symbol)
+
+        # The scheme goes as follows:
+        #   For a left recursion like this:
+        #     A -> A a1 | A a2 | .. A ai | b1 | b2 | .. | bj
+        #   We create a new symbol A' (as above), and add
+        #     A  -> b1 A' | b2 A' | ... | bj A'
+        #     A' -> a1 A' | a2 A' | ... | ai A' | eps
+        #     where eps is the empty symbol
+
+        for beta in beta_set:
+            # Make a copy to avoid directly modifying the list
+            rhs_list = beta.rhs_list[:]
+            rhs_list.append(new_symbol)
+
+            # Add production: A -> bj A'
+            Production(pg, self, rhs_list)
+
+        for alpha in alpha_set:
+            # Make a slice (which is internally a shallow copy)
+            rhs_list = alpha.rhs_list[1:]
+            rhs_list.append(new_symbol)
+
+            # Add production: A -> bj A'
+            Production(pg, new_symbol, rhs_list)
+
+
+
+        # Add the last A' -> eps
+        Production(pg, new_symbol, [empty_symbol])
 
         return
 
@@ -399,6 +465,16 @@ class Production:
         # of the production can no longer be changed
         lhs.lhs_set.add(self)
 
+        # Make sure the user does not input duplicated
+        # productions
+        if self in self.pg.production_set:
+            raise KeyError("Production already defined: %s" %
+                           (str(self), ))
+
+        # Finally add itself into the production set of the
+        # containing pg object
+        self.pg.production_set.add(self)
+
         return
 
     def clear(self):
@@ -410,12 +486,15 @@ class Production:
         """
         # Remove this production from the LHS's LHS set
         # This happens in-place
-        lhs.lhs_set.remove(self)
+        self.lhs.lhs_set.remove(self)
         for symbol in self.rhs_list:
             # If it is a non-terminal then we remove
             # the production from its rhs set
             if symbol.is_non_terminal() is True:
                 symbol.rhs_set.remove(self)
+
+        # Then clear itself from the generator's
+        self.pg.production_set.remove(self)
 
         return
 
@@ -633,6 +712,14 @@ class ParserGenerator:
         # TODO: Add transformation here
         #self.verify()
 
+        # Make a copy to avoid changing the size of the set
+        temp = self.non_terminal_set.copy()
+
+        # Remove left recursion. Note we should iterate
+        # on the set above
+        for symbol in temp:
+            symbol.eliminate_left_recursion()
+
         return
 
     def verify(self):
@@ -771,17 +858,9 @@ class ParserGenerator:
             # Finally construct an immutable class Production instance
             # the status could no longer be changed after it is
             # constructed
-            production = Production(self, current_nt, rhs_list)
-
-            # The same production must not appear twice
-            # otherwise it is an input error
-            if production in self.production_set:
-                raise ValueError("Duplicated production: %s" %
-                                 (str(production), ))
-
-            # After appending all nodes we also add the production
-            # into the set pf productions
-            self.production_set.add(production)
+            # This also adds the production into the production
+            # set of the generator
+            Production(self, current_nt, rhs_list)
 
         return
 
