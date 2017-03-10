@@ -144,6 +144,20 @@ class Symbol:
 
         return Symbol.EMPTY_SYMBOL
 
+    @staticmethod
+    def get_end_symbol():
+        """
+        This function returns a reference to the constant END SYMBOL
+        which is the "$" symbol in many classical text books
+
+        :return: Terminal
+        """
+        if Symbol.END_SYMBOL is None:
+            Symbol.END_SYMBOL = \
+                Terminal(Symbol.END_SYMBOL_NAME)
+
+        return Symbol.END_SYMBOL
+
 #####################################################################
 # class Terminal
 #####################################################################
