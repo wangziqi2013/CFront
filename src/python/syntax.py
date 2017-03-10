@@ -69,6 +69,16 @@ class Symbol:
         """
         return self.name != other.name
 
+    def __lt__(self, other):
+        """
+        Check whether the current symbol has a name that is
+        smaller in alphabetical order
+
+        :param other: The other object
+        :return: bool
+        """
+        return self.name < other.name
+
     def is_symbol(self):
         """
         Checks whether the item is either a terminal or a
@@ -374,10 +384,12 @@ class NonTerminal(Symbol):
 
         for beta in beta_set:
             # Special case:
-            # # If it is "A -> A a1 | A a2 | eps" then
+            # # If it is "A -> A a1 | A a2 | eps | B1 | B2" then
             # we make it
-            #   A -> A'
-            #   A' -> a1 A' | a2 A'
+            #   A -> A' | B1 A' | B2 A'
+            #   A' -> a1 A' | a2 A' | eps
+            # As long as A', B1 B2 does not have common FIRST() element
+            # we are still safe
             if len(beta.rhs_list) == 1 and \
                beta.rhs_list[0] == Symbol.get_empty_symbol():
                 rhs_list = []
@@ -782,6 +794,26 @@ class ParserGenerator:
         self.read_file(file_name)
 
         return
+
+    def dump(self):
+        """
+        This file dumps the contents of the parser generator into a file
+        that has similar syntax as the .syntax input file.
+
+        We dump the following information:
+           (1) Revised rules
+           (2) FIRST and FOLLOW set for each rule
+
+        :return:
+        """
+        # Construct a list and sort them in alphabetical order
+        # Since we have already defined the less than function for
+        # non-terminal objects this is totally fine
+        nt_list = list(self.non_terminal_set)
+        nt_list.sort()
+        # We preserve these symbols
+        for symbol in self.non_terminal_list:
+
 
     def read_file(self, file_name):
         """
