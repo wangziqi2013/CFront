@@ -238,12 +238,6 @@ class NonTerminal(Symbol):
         # where B1 - Bj - 1 could derive terminal and
         # Bj could not
         for p in self.lhs_set:
-            # In most cases we will discard this later
-            # Only when all RHS symbols are terminals
-            # and all of them could derive empty symbols
-            # do we keep this in p.first_set
-            p.first_set.add(Symbol.get_empty_symbol())
-
             for symbol in p.rhs_list:
                 # For terminals just add it and process
                 # the next production
@@ -254,10 +248,6 @@ class NonTerminal(Symbol):
 
                     # Also add it into the production
                     p.first_set.add(symbol)
-
-                    # Remove the empty because we know empty symbol
-                    # must not appear
-                    p.first_set.discard(Symbol.get_empty_symbol())
 
                     break
                 elif symbol == self:
@@ -279,11 +269,12 @@ class NonTerminal(Symbol):
                 # If the empty symbol could not be derived then
                 # we do not check the following non-terminals
                 if Symbol.get_empty_symbol() not in symbol.first_set:
-                    # If any non-terminal causes it to exit
-                    # then we discard the possible empty symbol
-                    p.first_set.discard(Symbol.get_empty_symbol())
-
                     break
+            else:
+                # This is executed if all symbols are non-terminal
+                # and they could all derive empty string
+                p.first_set.add(Symbol.get_empty_symbol())
+                self.first_set.add(Symbol.get_empty_symbol())
 
         return
 
@@ -377,10 +368,23 @@ class NonTerminal(Symbol):
         #     A  -> b1 A' | b2 A' | ... | bj A'
         #     A' -> a1 A' | a2 A' | ... | ai A' | eps
         #     where eps is the empty symbol
+        #
+        # There is one exception: if bj is empty string then we
+        # just ignore it and add A -> A' instead
 
         for beta in beta_set:
-            # Make a copy to avoid directly modifying the list
-            rhs_list = beta.rhs_list[:]
+            # Special case:
+            # # If it is "A -> A a1 | A a2 | eps" then
+            # we make it
+            #   A -> A'
+            #   A' -> a1 A' | a2 A'
+            if len(beta.rhs_list) == 1 and \
+               beta.rhs_list[0] == Symbol.get_empty_symbol():
+                rhs_list = []
+            else:
+                # Make a copy to avoid directly modifying the list
+                rhs_list = beta.rhs_list[:]
+
             rhs_list.append(new_symbol)
 
             # Add production: A -> bj A'
@@ -563,6 +567,48 @@ class Production:
         self.pg.production_set.add(self)
 
         return
+
+    def compute_substring_first(self, index=0):
+        """
+        This function computes the FIRST set for a substring. An optional
+        index field is also provided to allow the user to start
+        computing from a certian starting index
+
+        :return: set(Terminal)
+        """
+        assert(index < len(self.rhs_list))
+
+        ret = set()
+        for i in range(index, len(self.rhs_list)):
+            rhs = self.rhs_list[i]
+
+            # If we have seen a terminal, then add it to the list
+            # and then return
+            if rhs.is_terminal() is True:
+                ret.add(rhs)
+                return ret
+            else:
+                # This makes sure that the first set must already been
+                # generated before calling this function
+                assert(len(rhs.first_set) > 0)
+
+                # Otherwise just union with the non-terminal's
+                # first_set
+                ret = ret.union(rhs.first_set)
+                # Remove potential empty symbol
+                ret.discard(Symbol.get_empty_symbol())
+
+                # If the non-terminal could not derive empty then
+                # that's it
+                if Symbol.get_empty_symbol() not in rhs.first_set:
+                    return ret
+
+        # When we get to here we know that all non-terminals could
+        # derive to empty string, and there is no terminal in the
+        # sequence, so need also to add empty symbol
+        ret.add(Symbol.get_empty_symbol())
+
+        return ret
 
     def clear(self):
         """
@@ -817,6 +863,9 @@ class ParserGenerator:
           left recursion includes direct left recursion in our case
           (3) For LHS symbol S, all of its production must have
               disjoint FIRST sets
+          (4) (FOLLOW SET)
+          (5) For all productions, if T_ appears then it must be
+              A -> T_
 
         (This list is subject to change)
 
@@ -831,6 +880,14 @@ class ParserGenerator:
                 raise ValueError("Left recursion is detected" +
                                  " @ symbol %s" %
                                  (str(symbol), ))
+
+        # This checks condition 5
+        for p in self.production_set:
+            for symbol in p.rhs_list:
+                if symbol == Symbol.get_empty_symbol():
+                    if len(p.rhs_list) != 1:
+                        raise ValueError("Empty string in the" +
+                                         " middle of production")
 
         # This checks condition 3
         for symbol in self.non_terminal_set:
@@ -1134,6 +1191,14 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         for i in pg.non_terminal_set:
             assert(i.is_non_terminal() is True)
+
+        for p in pg.production_set:
+            if p.first_set != p.compute_substring_first():
+                print p
+                print p.first_set
+                print p.compute_substring_first()
+
+            assert(p.first_set == p.compute_substring_first())
 
         # Manually build the set and print them
         for symbol in pg.non_terminal_set:
