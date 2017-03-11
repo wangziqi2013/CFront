@@ -1,10 +1,7 @@
 
-expression-root:
-    expression
 
-# Add it back later
-#constant-expression:
-#    conditional-expression
+constant-expression:
+    conditional-expression
 
 expression:
     assignment-expression
@@ -83,9 +80,7 @@ multiplicative-expression:
 
 cast-expression:
     unary-expression
-    # Since we have not defined types this is not added
-    # TODO: Add more syntax rules
-    #T_LPAREN type-name T_RPAREN cast-expression
+    T_LESS type-name T_GREATER cast-expression
 
 unary-operator:
     T_AMPERSAND
@@ -101,8 +96,7 @@ unary-expression:
     T_DEC unary-expression
     unary-operator cast-expression
     T_SIZEOF unary-expression
-    # Do not use type-name for now
-    #T_SIZEOF T_LPAREN type-name T_RPAREN
+    T_SIZEOF T_LESS type-name T_GREATER
 
 argument-expression-list:
     assignment-expression
@@ -113,8 +107,8 @@ postfix-expression:
     postfix-expression T_LSPAREN expression T_RSPAREN
     postfix-expression T_LPAREN T_RPAREN
     postfix-expression T_LPAREN argument-expression-list T_RPAREN
-    postfix-expression T_DOT identifier
-    postfix-expression T_ARROW identifier
+    postfix-expression T_DOT T_IDENT
+    postfix-expression T_ARROW T_IDENT
     postfix-expression T_INC
     postfix-expression T_DEC
 
@@ -125,4 +119,150 @@ primary-expression:
     T_STRING_CONST
     T_LPAREN expression T_RPAREN
 
+##################################
 # The following is the type system
+##################################
+
+declaration:
+    declaration-specifiers T_SEMICOLON
+    declaration-specifiers init-declarator-list T_SEMICOLON
+
+declaration-specifiers:
+    storage-class-specifier
+    type-specifier
+    type-qualifier
+    storage-class-specifier declaration-specifiers
+    type-specifier          declaration-specifiers
+    type-qualifier          declaration-specifiers
+
+init-declarator-list:
+    init-declarator
+    init-declarator-list T_COMMA init-declarator
+
+init-declarator:
+    declarator
+    declarator T_ASSIGN initializer
+
+storage-class-specifier:
+    T_TYPEDEF
+    T_EXTERN
+    T_STATIC
+    T_AUTO
+    T_REGISTER
+
+type-specifier:
+    T_VOID
+    T_CHAR
+    T_SHORT
+    T_INT
+    T_LONG
+    T_FLOAT
+    T_DOUBLE
+    T_SIGNED
+    T_UNSIGNED
+    struct-or-union-specifier
+    enum-specifier
+
+struct-or-union-specifier:
+    struct-or-union T_LCPAREN struct-declaration-list T_RCPAREN
+    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN
+    struct-or-union T_IDENT
+
+struct-or-union:
+    T_STRUCT
+    T_UNION
+
+struct-declaration-list:
+    struct-declaration
+    struct-declaration-list struct-declaration
+
+struct-declaration:
+    specifier-qualifier-list struct-declarator-list T_SEMICOLON
+
+specifier-qualifier-list:
+    type-specifier
+    type-qualifier
+    type-specifier specifier-qualifier-list
+    type-qualifier specifier-qualifier-list
+
+struct-declarator-list:
+    struct-declarator
+    struct-declarator-list T_COMMA struct-declarator
+
+struct-declarator:
+    declarator
+    T_COLON constant-expression
+    declarator T_COLON constant-expression
+
+enum-specifier:
+    enum T_LCPAREN enumerator-list T_RCPAREN
+    enum T_IDENT T_LCPAREN enumerator-list T_RCPAREN
+    enum T_IDENT
+
+enumerator-list:
+    enumerator
+    enumerator-list T_COMMA enumerator
+
+enumerator:
+    enumeration-constant
+    enumeration-constant A_ASSIGN constant-expression
+
+enumeration-constant:
+    T_IDENT
+
+type-qualifier:
+    T_CONST
+    T_VOLATILE
+
+declarator:
+    direct-declarator
+    pointer direct-declarator
+
+direct-declarator:
+    T_IDENT
+    T_LPAREN declarator T_RPAREN
+    direct-declarator T_LSPAREN T_RSPAREN
+    direct-declarator T_LSPAREN constant-expression T_RSPAREN
+    direct-declarator T_LPAREN T_RPAREN
+    direct-declarator T_LPAREN parameter-type-list T_RPAREN
+    direct-declarator T_LPAREN identifier-list T_RPAREN
+
+pointer:
+     T_STAR
+     T_STAR pointer
+     T_STAR type-qualifier-list
+     T_STAR type-qualifier-list pointer
+
+type-qualifier-list:
+    type-qualifier
+    type-qualifier-list type-qualifier
+
+parameter-type-list:
+    parameter-list
+    #TODO: DO NOT SUPPORT VARARG
+    #parameter-list , ...
+
+parameter-list:
+    parameter-declaration
+    parameter-list T_COMMA parameter-declaration
+
+parameter-declaration:
+    declaration-specifiers declarator
+    declaration-specifiers
+
+identifier-list:
+    T_IDENT
+    identifier-list T_COMMA T_IDENT
+
+type-name:
+    specifier-qualifier-list
+
+initializer:
+    assignment-expression
+    T_LCPAREN initializer-list T_RCPAREN
+    # Do not allow extra comma
+    #T_LCPAREN initializer-list T_COMMA T_RCPAREN
+
+initializer-list:
+    initializer
+    initializer-list T_COMMA initializer
