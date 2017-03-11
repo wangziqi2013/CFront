@@ -270,6 +270,16 @@ class NonTerminal(Symbol):
 
         return len(self.follow_set)
 
+    def clear_result_available(self):
+        """
+        This function clears the result available flag
+
+        :return: None
+        """
+        self.result_available = False
+
+        return
+
     def compute_first(self):
         """
         This function computes the FIRST set for the non-terminal
@@ -333,7 +343,7 @@ class NonTerminal(Symbol):
 
         return
 
-    def compute_follow(self, path_list=[]):
+    def compute_follow(self, path_list):
         """
         This functions computes the FOLLOW set. Note that the FOLLOW set
         is also computed recursively, and therefore we use memorization
@@ -360,6 +370,7 @@ class NonTerminal(Symbol):
         # When we compute FOLLOW(A') it is inevitable that this will happen
         if self in path_list:
             return
+            #pass
         else:
             path_list.append(self)
 
@@ -1225,7 +1236,7 @@ class ParserGenerator:
             dbg_printf("    Iteration %d", index)
 
             for symbol in self.non_terminal_set:
-                symbol.result_available = False
+                symbol.clear_result_available()
 
             for symbol in self.non_terminal_set:
                 symbol.compute_first()
@@ -1246,10 +1257,13 @@ class ParserGenerator:
             dbg_printf("    Iteration %d", index)
 
             for symbol in self.non_terminal_set:
-                symbol.result_available = False
+                symbol.clear_result_available()
 
             for symbol in self.non_terminal_set:
-                symbol.compute_follow()
+                # The path list must be empty list
+                # because we start from a fresh new state
+                # for every iteration
+                symbol.compute_follow([])
 
             t = [nt.get_follow_length() for nt in nt_list]
             if t == count_list:
