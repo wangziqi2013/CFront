@@ -1609,7 +1609,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         pt = pg.parsing_table
 
         # It's like the following:
-        # *p + a * b ? func(1, c) : 2
+        # *p + a * b ? func(1, c * *q) : 2
 
         test_str = [Terminal("T_STAR"),
                     Terminal("T_IDENT"),
@@ -1623,17 +1623,23 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                     Terminal("T_INT_CONST"),
                     Terminal("T_COMMA"),
                     Terminal("T_IDENT"),
+                    Terminal("T_STAR"),
+                    Terminal("T_STAR"),
+                    Terminal("T_IDENT"),
                     Terminal("T_RPAREN"),
                     Terminal("T_COLON"),
                     Terminal("T_INT_CONST"),
                     Symbol.get_end_symbol()]
 
         index = 0
+        step = 1
 
         # We use a stack to mimic the behavior of the parser
         stack = [pg.root_symbol]
         while len(stack) > 0:
-            print stack
+            print step, stack
+
+            step += 1
             top = stack.pop()
 
             if top.is_terminal() is True:
