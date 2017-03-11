@@ -958,6 +958,11 @@ class ParserGenerator:
         """
         first = True
         fp.write("{")
+
+        # Make each iteration produce uniform result
+        ss = list(ss)
+        ss.sort()
+
         for i in ss:
             # Must be a symbol element
             assert(i.is_symbol() is True)
