@@ -280,7 +280,7 @@ class NonTerminal(Symbol):
 
         return
 
-    def compute_first(self):
+    def compute_first(self, path_list):
         """
         This function computes the FIRST set for the non-terminal
 
@@ -297,6 +297,11 @@ class NonTerminal(Symbol):
             return
         else:
             self.result_available = True
+
+        if self in path_list:
+            return
+
+        path_list.append(self)
 
         # For all productions A -> B1 B2 .. Bi
         # FIRST(A) is defined as FIRST(B1) union FIRST(Bj)
@@ -315,15 +320,11 @@ class NonTerminal(Symbol):
                     p.first_set.add(symbol)
 
                     break
-                elif symbol == self:
-                    raise ValueError("The grammar is not LL(1) because we" +
-                                     " encountered the same non-terminal %s" %
-                                     (str(self), ))
 
                 # Recursively compute the FIRST set
                 # Since we have processed the symbol == self case here we
                 # could call this without checking
-                symbol.compute_first()
+                symbol.compute_first(path_list)
                 self.first_set = \
                     self.first_set.union(symbol.first_set)
 
@@ -340,6 +341,8 @@ class NonTerminal(Symbol):
                 # and they could all derive empty string
                 p.first_set.add(Symbol.get_empty_symbol())
                 self.first_set.add(Symbol.get_empty_symbol())
+
+        path_list.pop()
 
         return
 
@@ -368,17 +371,17 @@ class NonTerminal(Symbol):
         #   A  -> b A'
         #   A' -> eps | a A'
         # When we compute FOLLOW(A') it is inevitable that this will happen
-        if self in path_list:
-            return
-            #pass
-        else:
-            path_list.append(self)
 
         # This is how memorization works
         if self.result_available is True:
             return
         else:
             self.result_available = True
+
+        if self in path_list:
+            return
+
+        path_list.append(self)
 
         # For all productions where this terminal appears as a symbol
         for p in self.rhs_set:
@@ -1239,7 +1242,7 @@ class ParserGenerator:
                 symbol.clear_result_available()
 
             for symbol in self.non_terminal_set:
-                symbol.compute_first()
+                symbol.compute_first([])
 
             # This is the vector after iteration
             t = [nt.get_first_length() for nt in nt_list]
