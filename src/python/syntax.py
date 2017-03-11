@@ -1047,6 +1047,8 @@ class ParserGenerator:
 
         :return:
         """
+        dbg_printf("Dumping modified syntax to %s", file_name)
+
         fp = open(file_name, "w")
 
         # Construct a list and sort them in alphabetical order
@@ -1082,6 +1084,45 @@ class ParserGenerator:
         fp.close()
         return
 
+    def dump_parsing_table(self, file_name):
+        """
+        This function dumps a parsing table into a specified file.
+        The table is dumped in a format like the following:
+
+           (NonTerminal, Terminal): Production Rule
+
+        And for each entry in the table there is a line like this.
+        Empty strings should not appear (they are always the default
+        case), and EOF is displayed as T_EOF
+
+        :param file_name: The name of the dumping file
+        :return: None
+        """
+        dbg_printf("Dumping parsing table into %s", file_name)
+
+        fp = open(file_name, "w")
+
+        # Sort the list of keys such that NonTerminals group together
+        # and then terminals group together
+        key_list = self.parsing_table.keys()
+        key_list.sort()
+
+        prev_key = None
+        for k in key_list:
+            # If the key changes we also print a new line
+            if prev_key is None:
+                prev_key = k[0]
+            elif prev_key != k[0]:
+                fp.write("\n")
+                prev_key = k[0]
+
+            p = self.parsing_table[k]
+            fp.write("(%s, %s): %s\n" %
+                     (k[0].name, k[1].name, str(p)))
+
+        fp.close()
+
+        return
 
     def read_file(self, file_name):
         """
@@ -1557,6 +1598,57 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         return
 
+    def demo(self):
+        """
+        Interactive mode to display how a string is parsed
+
+        :return: None
+        """
+        pg = self.pg
+        pt = pg.parsing_table
+
+        test_str = [Terminal("T_STAR"),
+                    Terminal("T_IDENT"),
+                    Terminal("T_PLUS"),
+                    Terminal("T_IDENT"),
+                    Terminal("T_STAR"),
+                    Terminal("T_IDENT"),
+                    Symbol.get_end_symbol()]
+
+        index = 0
+
+        # We use a stack to mimic the behavior of the parser
+        stack = [pg.root_symbol]
+        while len(stack) > 0:
+            print stack
+            top = stack.pop()
+
+            if top.is_terminal() is True:
+                if top == Symbol.get_empty_symbol():
+                    # Empty symbol does not consume any
+                    # tokens in the token stream
+                    continue
+                elif top == test_str[index]:
+                    index += 1
+                    continue
+                else:
+                    raise ValueError("Could not match token: %s @ %d" %
+                                     (str(test_str[index]), index))
+
+            pair = (top, test_str[index])
+            if pair not in pt:
+                dbg_printf("Pair %s (index %d) not in parsing table",
+                           pair,
+                           index)
+                raise ValueError("Could not find entry in parsing table")
+
+            p = pt[pair]
+            for i in reversed(p.rhs_list):
+                stack.append(i)
+
+        return
+
+
     @TestNode()
     def test_read_file(self, argv):
         """
@@ -1595,6 +1687,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # Finally dump the resulting file
         pg.dump(file_name + ".dump")
+        pg.dump_parsing_table(file_name + ".table")
+
+        self.demo()
 
         return
 
