@@ -279,7 +279,8 @@ class NonTerminal(Symbol):
         """
         # If we have already processed this node then return
         if self.first_set is not None:
-            return
+            #return
+            pass
         else:
             self.first_set = set()
 
@@ -362,7 +363,8 @@ class NonTerminal(Symbol):
         if self.follow_set is None:
             self.follow_set = set()
         else:
-            return
+            #return
+            pass
 
         # For all productions where this terminal appears as a symbol
         for p in self.rhs_set:
@@ -376,17 +378,9 @@ class NonTerminal(Symbol):
 
             # If the symbol appears as the last one in the production
             if index == (len(p.rhs_list) - 1):
-                if self.name == "conditional-expression-qmark":
-                    print p.lhs.follow_set
-                    print path_list
-
                 # This could be a self recursion but we have prevented this
                 # at the beginning of this function
                 p.lhs.compute_follow(path_list)
-
-                if self.name == "conditional-expression-qmark":
-                    print p.lhs.follow_set
-                    assert False
 
                 self.follow_set = \
                     self.follow_set.union(p.lhs.follow_set)
@@ -1197,6 +1191,7 @@ class ParserGenerator:
                                 (str(symbol),
                                  str(pi),
                                  str(pj)))
+
         return
 
     def process_first_follow(self):
@@ -1211,30 +1206,35 @@ class ParserGenerator:
         # We use this to fix the order of iteration
         nt_list = list(self.non_terminal_set)
 
+        dbg_printf("Compute FIRST set")
+
         # A list of FIRST set sizes; we iterate until this
         # becomes stable
-        count_list = [len(nt.first_set) for nt in nt_list]
+        count_list = [nt.get_first_length() for nt in nt_list]
         while True:
             for symbol in self.non_terminal_set:
                 symbol.compute_first()
 
             # This is the vector after iteration
-            t = [len(nt.first_set) for nt in nt_list]
+            t = [nt.get_first_length() for nt in nt_list]
             if t == count_list:
                 break
-            else:
-                count_list = t
 
-        count_list = [len(nt.follow_set) for nt in nt_list]
+            count_list = t
+
+        dbg_printf("Compute FOLLOW set")
+
+        count_list = [nt.get_follow_length() for nt in nt_list]
         while True:
             for symbol in self.non_terminal_set:
+                dbg_printf("%s", symbol)
                 symbol.compute_follow()
 
-            t = [len(nt.follow_set) for nt in nt_list]
+            t = [nt.get_follow_length() for nt in nt_list]
             if t == count_list:
                 break
-            else:
-                count_list = t
+
+            count_list = t
 
         return
 
@@ -1509,18 +1509,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                 print p.compute_substring_first()
 
             assert(p.first_set == p.compute_substring_first())
-
-        # Manually build the set and print them
-        for symbol in pg.non_terminal_set:
-            symbol.build_first_rhs_set()
-            dbg_printf("RHS set for %s: %s",
-                       str(symbol),
-                       str(symbol.first_rhs_set))
-
-        for symbol in pg.non_terminal_set:
-            dbg_printf("FIRST set for %s: %s",
-                       str(symbol),
-                       str(symbol.first_set))
 
         # Finally dump the resulting file
         pg.dump(file_name + ".dump")
