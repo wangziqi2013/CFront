@@ -237,6 +237,11 @@ class NonTerminal(Symbol):
 
         # This is used to generate name for a new node
         self.new_name_index = 1
+        # This is for derived names, e.g. from left recursion elimination
+        # or left factorization, because we want to keep the root node
+        # for a derived node, in case we need to derive name from a
+        # derived node
+        self.name_derived_from = self
 
         # This is used to compute the FIRST and FOLLOW
         # Since we always do these two recursively and iteratively
@@ -441,11 +446,21 @@ class NonTerminal(Symbol):
 
         :return: NonTerminal object with a synthesized name
         """
-        # Synthesize a new name
-        new_name = self.name + "-" + str(self.new_name_index)
-        self.new_name_index += 1
+        # We always use the counter in the non-artificial node
+        derived_from_node = self.name_derived_from
 
-        return NonTerminal(new_name)
+        # Synthesize a new name
+        new_name = derived_from_node.name + \
+                   "-" + \
+                   str(derived_from_node.new_name_index)
+
+        derived_from_node.new_name_index += 1
+        nt = NonTerminal(new_name)
+
+        # Also link it to the root node
+        nt.name_derived_from = derived_from_node
+
+        return nt
 
     def eliminate_left_recursion(self):
         """
@@ -453,12 +468,12 @@ class NonTerminal(Symbol):
         current non-terminal symbol. We do not deal with
         indirect ones here
 
-        :return: None
+        :return: True if there is eliminated left recursion
         """
         # If there is no direct left recursion then return
         # directly
         if self.exists_direct_left_recursion() is False:
-            return
+            return False
 
         # Make a backup here because LHS set will be cleared
         # A shallow copy is sufficient here because we just use
@@ -542,12 +557,10 @@ class NonTerminal(Symbol):
             # Add production: A -> bj A'
             Production(pg, new_symbol, rhs_list)
 
-
-
         # Add the last A' -> eps
         Production(pg, new_symbol, [empty_symbol])
 
-        return
+        return True
 
     def exists_indirect_left_recursion(self):
         """
@@ -1379,10 +1392,23 @@ class ParserGenerator:
         # Make a copy to avoid changing the size of the set
         temp = self.non_terminal_set.copy()
 
+        # This is the number of left recursions we have removed
+        count = 0
+
         # Remove left recursion. Note we should iterate
-        # on the set above
+        # on the set above - it is guaranteed that the
+        # newly added symbols will not create left recursion
         for symbol in temp:
-            symbol.eliminate_left_recursion()
+            ret = symbol.eliminate_left_recursion()
+            if ret is True:
+                count += 1
+
+        # Verify that we have eliminated all left recursions
+        for symbol in self.non_terminal_set:
+            assert(symbol.exists_direct_left_recursion() is False)
+
+        dbg_printf("Removed left recursion for %d non-terminals",
+                   count)
 
         return
 

@@ -131,3 +131,5 @@ primary-expression:
     T_CHAR_CONST
     T_STRING_CONST
     T_LPAREN expression T_RPAREN
+
+# The following is the type system
