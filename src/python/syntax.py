@@ -242,6 +242,29 @@ class NonTerminal(Symbol):
 
         return
 
+    def get_first_length(self):
+        """
+        This function returns the length of the FIRST set. If it is
+        None then return 0
+
+        :return: int
+        """
+        if self.first_set is None:
+            return 0
+
+        return len(self.first_set)
+
+    def get_follow_length(self):
+        """
+        Same as get-first_length() except that it works on FOLLOW set
+
+        :return: int
+        """
+        if self.follow_set is None:
+            return 0
+
+        return len(self.follow_set)
+
     def compute_first(self):
         """
         This function computes the FIRST set for the non-terminal
@@ -305,11 +328,14 @@ class NonTerminal(Symbol):
 
         return
 
-    def compute_follow(self, path_set=set()):
+    def compute_follow(self, path_list=[]):
         """
         This functions computes the FOLLOW set. Note that the FOLLOW set
         is also computed recursively, and therefore we use memorization
         to compute it
+
+        Note that this should be run for multiple rounds for correctness
+        until no symbol could be added
 
         :return: None
         """
@@ -327,10 +353,10 @@ class NonTerminal(Symbol):
         #   A  -> b A'
         #   A' -> eps | a A'
         # When we compute FOLLOW(A') it is inevitable that this will happen
-        if self in path_set:
+        if self in path_list:
             return
         else:
-            path_set.add(self)
+            path_list.append(self)
 
         # This is how memorization works
         if self.follow_set is None:
@@ -350,9 +376,18 @@ class NonTerminal(Symbol):
 
             # If the symbol appears as the last one in the production
             if index == (len(p.rhs_list) - 1):
+                if self.name == "conditional-expression-qmark":
+                    print p.lhs.follow_set
+                    print path_list
+
                 # This could be a self recursion but we have prevented this
                 # at the beginning of this function
-                p.lhs.compute_follow()
+                p.lhs.compute_follow(path_list)
+
+                if self.name == "conditional-expression-qmark":
+                    print p.lhs.follow_set
+                    assert False
+
                 self.follow_set = \
                     self.follow_set.union(p.lhs.follow_set)
             else:
@@ -363,7 +398,7 @@ class NonTerminal(Symbol):
                 # If the string after the non-terminal could be
                 # empty then we also need to add the FOLLOW of the LHS
                 if Symbol.get_empty_symbol() in substr_first_set:
-                    p.lhs.compute_follow()
+                    p.lhs.compute_follow(path_list)
                     self.follow_set = \
                         self.follow_set.union(p.lhs.follow_set)
 
@@ -378,7 +413,7 @@ class NonTerminal(Symbol):
 
         # Do not forget to remove this in the path set (we know
         # it does not exist before entering this function)
-        path_set.remove(self)
+        path_list.pop()
 
         return
 
@@ -1173,11 +1208,33 @@ class ParserGenerator:
 
         :return: None
         """
-        for symbol in self.non_terminal_set:
-            symbol.compute_first()
+        # We use this to fix the order of iteration
+        nt_list = list(self.non_terminal_set)
 
-        for symbol in self.non_terminal_set:
-            symbol.compute_follow()
+        # A list of FIRST set sizes; we iterate until this
+        # becomes stable
+        count_list = [len(nt.first_set) for nt in nt_list]
+        while True:
+            for symbol in self.non_terminal_set:
+                symbol.compute_first()
+
+            # This is the vector after iteration
+            t = [len(nt.first_set) for nt in nt_list]
+            if t == count_list:
+                break
+            else:
+                count_list = t
+
+        count_list = [len(nt.follow_set) for nt in nt_list]
+        while True:
+            for symbol in self.non_terminal_set:
+                symbol.compute_follow()
+
+            t = [len(nt.follow_set) for nt in nt_list]
+            if t == count_list:
+                break
+            else:
+                count_list = t
 
         return
 

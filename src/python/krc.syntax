@@ -111,7 +111,7 @@ unary-expression:
 
 argument-expression-list:
     assignment-expression
-    argument-expression-list T_COMMNA assignment-expression
+    argument-expression-list T_COMMA assignment-expression
     T_
 
 postfix-expression:
