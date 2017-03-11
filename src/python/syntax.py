@@ -1342,6 +1342,11 @@ class ParserGenerator:
 
         dbg_printf("Compute FOLLOW set")
 
+        # First add EOF symbol into the root symbol
+        # We need to do this before the algorithm converges
+        assert (self.root_symbol is not None)
+        self.root_symbol.follow_set.add(Symbol.get_end_symbol())
+
         count_list = [nt.get_follow_length() for nt in nt_list]
         index = 0
         while True:
@@ -1362,10 +1367,6 @@ class ParserGenerator:
                 break
 
             count_list = t
-
-        # Finally adding EOF symbol into the root symbol
-        assert(self.root_symbol is not None)
-        self.root_symbol.follow_set.add(Symbol.get_end_symbol())
 
         return
 
@@ -1613,6 +1614,15 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                     Terminal("T_IDENT"),
                     Terminal("T_STAR"),
                     Terminal("T_IDENT"),
+                    Terminal("T_QMARK"),
+                    Terminal("T_IDENT"),
+                    Terminal("T_LPAREN"),
+                    Terminal("T_INT_CONST"),
+                    Terminal("T_COMMA"),
+                    Terminal("T_IDENT"),
+                    Terminal("T_RPAREN"),
+                    Terminal("T_COLON"),
+                    Terminal("T_INT_CONST"),
                     Symbol.get_end_symbol()]
 
         index = 0
