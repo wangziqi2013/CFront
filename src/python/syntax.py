@@ -506,10 +506,14 @@ class NonTerminal(Symbol):
         if common_prefix is False:
             return False
 
+        count = 0
         # Then iterate over all pairs, and skip those
         # with only one element in the list of productions
         for key, value in d.items():
             if len(value) == 1:
+                continue
+            elif key == self:
+                # This should be processed by left recursion
                 continue
 
             pg = None
@@ -535,7 +539,15 @@ class NonTerminal(Symbol):
                     Production(p.pg, new_nt, p.rhs_list[1:])
 
             # Also link the current symbol with the artificial one
-            Production(pg, self, new_nt)
+            Production(pg, self, [key, new_nt])
+            # Also add the new symbol into terminal set
+            pg.non_terminal_set.add(new_nt)
+
+            count += 1
+
+        # Because still we did not process anything
+        if count == 0:
+            return False
 
         return True
 
@@ -1272,11 +1284,11 @@ class ParserGenerator:
         # This sets self.root_symbol and throws exception is there
         # is problem finding it
         self.process_root_symbol()
-        # This must be done before left recursion elimination
-        # because it might expose left recursion
-        self.process_common_prefix()
         # As suggested by name
         self.process_left_recursion()
+        # This must be done after left recursion elimination
+        # because left recursion may expose common prefix
+        self.process_common_prefix()
         # Compute the first and follow set
         self.process_first_follow()
 
