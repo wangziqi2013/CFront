@@ -1274,6 +1274,10 @@ class ParserGenerator:
 
             count_list = t
 
+        # Finally adding EOF symbol into the root symbol
+        assert(self.root_symbol is not None)
+        self.root_symbol.follow_set.add(Symbol.get_end_symbol())
+
         return
 
     def process_left_recursion(self):
