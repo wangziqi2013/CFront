@@ -1608,6 +1608,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         pg = self.pg
         pt = pg.parsing_table
 
+        # It's like the following:
+        # *p + a * b ? func(1, c) : 2
+
         test_str = [Terminal("T_STAR"),
                     Terminal("T_IDENT"),
                     Terminal("T_PLUS"),
