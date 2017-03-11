@@ -525,7 +525,14 @@ class NonTerminal(Symbol):
                 # Clear the references for the production
                 p.clear()
                 # Add new rule: LHS-1 -> RHS[1:]
-                Production(p.pg, new_nt, p.rhs_list[1:])
+                # Special case for RHS length being 1 because in this case
+                # we just add empty string
+                if len(p.rhs_list) == 1:
+                    Production(p.pg,
+                               new_nt,
+                               [Symbol.get_empty_symbol()])
+                else:
+                    Production(p.pg, new_nt, p.rhs_list[1:])
 
             # Also link the current symbol with the artificial one
             Production(pg, self, new_nt)
@@ -1265,6 +1272,9 @@ class ParserGenerator:
         # This sets self.root_symbol and throws exception is there
         # is problem finding it
         self.process_root_symbol()
+        # This must be done before left recursion elimination
+        # because it might expose left recursion
+        self.process_common_prefix()
         # As suggested by name
         self.process_left_recursion()
         # Compute the first and follow set
@@ -1450,6 +1460,42 @@ class ParserGenerator:
                 break
 
             count_list = t
+
+        return
+
+    def process_common_prefix(self):
+        """
+        This function iteratively eliminates all common left
+        prefixes by applying left factorization using artificial
+        non-terminal nodes. This process must be performed by multiple
+        rounds until no more left factorization could be done
+
+        :return: None
+        """
+        total_count = 0
+        # This counts the number of iteration
+        it_count = 0
+        while True:
+            it_count += 1
+
+            count = 0
+            # Always make a new copy here because LF will add
+            # new terminals
+            temp = self.non_terminal_set.copy()
+
+            for symbol in temp:
+                ret = symbol.left_factorize()
+                if ret is True:
+                    count += 1
+
+            if count == 0:
+                break
+            else:
+                total_count += count
+
+        dbg_printf("Left factorized for %d symbols in %d iterations",
+                   total_count,
+                   it_count)
 
         return
 
