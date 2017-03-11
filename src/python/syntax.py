@@ -952,8 +952,53 @@ class ParserGenerator:
         # This is the non-terminal where parsing starts
         self.root_symbol = None
 
+        # It is a directory structure using (NonTerminal, Terminal)
+        # pair as keys, and production rule object as value (note
+        # that we only allow one production per key)
+        self.parsing_table = {}
+
         # Reading the file
         self.read_file(file_name)
+
+        return
+
+    def generate_parsing_table(self):
+        """
+        This function generates the parsing table with (A, alpha)
+        as keys and productions to use as values
+
+        :return: None
+        """
+        for p in self.production_set:
+            lhs = p.lhs
+            for i in p.first_set:
+                # Do not add empty symbol
+                if i == Symbol.get_empty_symbol():
+                    continue
+
+                pair = (lhs, i)
+                if pair in self.parsing_table:
+                    raise KeyError(
+                        "Duplicated (A, FIRST) entry for %s" %
+                        (str(pair), ))
+
+                self.parsing_table[pair] = p
+
+            # If the production produces empty string
+            # then we also need to add everything in FOLLOW(lhs)
+            # into the jump table
+            # Since we already verified that no FIRST in other
+            # productions could overlap with LHS's FOLLOW set
+            # this is entirely safe
+            if Symbol.get_empty_symbol() in p.first_set:
+                for i in lhs.follow_set:
+                    pair = (lhs, i)
+                    if pair in self.parsing_table:
+                        raise KeyError(
+                            "Duplicated (A, FOLLOW) entry for %s" %
+                            (str(pair), ))
+
+                    self.parsing_table[pair] = p
 
         return
 
@@ -1103,6 +1148,9 @@ class ParserGenerator:
 
         # Check feasibility of LL(1)
         self.verify()
+
+        # Then generates the parsing table
+        self.generate_parsing_table()
 
         return
 
