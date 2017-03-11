@@ -444,6 +444,14 @@ class NonTerminal(Symbol):
         and the index is incremented every time we created a new
         name
 
+        Note that this works even on artificial nodes, because
+        each artificial node contains a reference back to the original
+        non-artificial node from which its name derives. In
+        this case if we call this function on an artificial node,
+        it will go directly to the non-artificial node and use
+        the name and counter there, i.e. name allocation is centralized
+        to non-artificial nodes
+
         :return: NonTerminal object with a synthesized name
         """
         # We always use the counter in the non-artificial node
@@ -461,6 +469,68 @@ class NonTerminal(Symbol):
         nt.name_derived_from = derived_from_node
 
         return nt
+
+    def left_factorize(self):
+        """
+        This function performs left factorization on the LHS
+        non-terminal
+
+        The way we perform LF is to build a set of first RHSs
+        for all productions for this LHS, if the size of the
+        set is smaller than the number of productions then
+        we know there are common prefixes
+
+        :return: True if LF is detected and fixed
+        """
+        # This is the dict we use to group objects
+        d = {}
+        # This is used to decide whether there are common
+        # prefixes
+        common_prefix = False
+        for p in self.lhs_set:
+            assert(len(p.rhs_list) > 0)
+            first_rhs = p.rhs_list[0]
+
+            # If the RHS has not yet been added
+            # just add it as a list
+            if first_rhs not in d:
+                d[first_rhs] = [p]
+            else:
+                # Otherwise just add it into the list
+                # and we have found a common prefix
+                d[first_rhs].append(p)
+                common_prefix = True
+
+        # The number of unique first RHS symbols
+        # equals the number of productions
+        if common_prefix is False:
+            return False
+
+        # Then iterate over all pairs, and skip those
+        # with only one element in the list of productions
+        for key, value in d.items():
+            if len(value) == 1:
+                continue
+
+            pg = None
+            # This will create a new artificial name
+            new_nt = self.get_new_symbol()
+            for p in value:
+                # Verify that pgs are identical
+                if pg is None:
+                    pg = p.pg
+                else:
+                    assert(id(pg) == id(p.pg))
+
+                # Clear the references for the production
+                p.clear()
+                # Add new rule: LHS-1 -> RHS[1:]
+                Production(p.pg, new_nt, p.rhs_list[1:])
+
+            # Also link the current symbol with the artificial one
+            Production(pg, self, new_nt)
+
+        return True
 
     def eliminate_left_recursion(self):
         """
