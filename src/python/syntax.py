@@ -222,10 +222,8 @@ class NonTerminal(Symbol):
         # These two are FIRST() and FOLLOW() described in
         # predictive parsers
         # They will be computed using recursion + memorization
-        # so set them to None here to indicate the sets are not
-        # computed yet
-        self.first_set = None
-        self.follow_set = None
+        self.first_set = set()
+        self.follow_set = set()
 
         # This is the set of all possible symbols if we expand the
         # non-terminal
@@ -239,6 +237,13 @@ class NonTerminal(Symbol):
 
         # This is used to generate name for a new node
         self.new_name_index = 1
+
+        # This is used to compute the FIRST and FOLLOW
+        # Since we always do these two recursively and iteratively
+        # for each iteration we mark the result to True after
+        # results are computed, and clear the flag to enable recomputing
+        # between different iterations
+        self.result_available = False
 
         return
 
@@ -278,11 +283,10 @@ class NonTerminal(Symbol):
         :return: None
         """
         # If we have already processed this node then return
-        if self.first_set is not None:
-            #return
-            pass
+        if self.result_available is True:
+            return
         else:
-            self.first_set = set()
+            self.result_available = True
 
         # For all productions A -> B1 B2 .. Bi
         # FIRST(A) is defined as FIRST(B1) union FIRST(Bj)
@@ -360,11 +364,10 @@ class NonTerminal(Symbol):
             path_list.append(self)
 
         # This is how memorization works
-        if self.follow_set is None:
-            self.follow_set = set()
+        if self.result_available is True:
+            return
         else:
-            #return
-            pass
+            self.result_available = True
 
         # For all productions where this terminal appears as a symbol
         for p in self.rhs_set:
@@ -1211,7 +1214,14 @@ class ParserGenerator:
         # A list of FIRST set sizes; we iterate until this
         # becomes stable
         count_list = [nt.get_first_length() for nt in nt_list]
+        index = 0
         while True:
+            index += 1
+            dbg_printf("    Iteration %d", index)
+
+            for symbol in self.non_terminal_set:
+                symbol.result_available = False
+
             for symbol in self.non_terminal_set:
                 symbol.compute_first()
 
@@ -1225,9 +1235,15 @@ class ParserGenerator:
         dbg_printf("Compute FOLLOW set")
 
         count_list = [nt.get_follow_length() for nt in nt_list]
+        index = 0
         while True:
+            index += 1
+            dbg_printf("    Iteration %d", index)
+
             for symbol in self.non_terminal_set:
-                dbg_printf("%s", symbol)
+                symbol.result_available = False
+
+            for symbol in self.non_terminal_set:
                 symbol.compute_follow()
 
             t = [nt.get_follow_length() for nt in nt_list]
@@ -1485,13 +1501,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # and parse its contents
         self.pg = ParserGenerator(file_name)
         pg = self.pg
-
-        dbg_printf("Terminals: %s", str(pg.terminal_set))
-        dbg_printf("Non-Terminals: %s", str(pg.non_terminal_set))
-        dbg_printf("Productions:")
-        for symbol in pg.non_terminal_set:
-            for p in symbol.lhs_set:
-                dbg_printf("%s", str(p))
 
         dbg_printf("Root symbol: %s", pg.root_symbol)
 
