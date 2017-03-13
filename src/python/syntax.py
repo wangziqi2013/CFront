@@ -1789,7 +1789,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         step = 1
 
         # We use a stack to mimic the behavior of the parser
-        stack = [pg.root_symbol]
+        stack = [NonTerminal("expression")]
         while len(stack) > 0:
             print step, stack
 

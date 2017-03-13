@@ -247,15 +247,43 @@ parameter-list:
     parameter-list T_COMMA parameter-declaration
 
 parameter-declaration:
+    # We do not allow abstract type here, otherwise it conflicts
+    # with the declarator
     declaration-specifiers declarator
     declaration-specifiers
+    # Do not allow abstract type
+    #declaration-specifiers abstract-declarator
 
 identifier-list:
     T_IDENT
     identifier-list T_COMMA T_IDENT
 
+# This is used in cast expression or sizeof operator
+# Since we use < and > pair to denote abstract type in those
+# two cases, the abstract declarator could be used
+# In function declarations we could not rely on abstract declarator
 type-name:
     specifier-qualifier-list
+    # We could use abstract declarator in type name for type casting
+    # because it is easier for us to specify an abstract type
+    # without giving a name
+    specifier-qualifier-list abstract-declarator
+
+abstract-declarator:
+    pointer
+    direct-abstract-declarator
+    pointer direct-abstract-declarator
+
+direct-abstract-declarator:
+    T_LPAREN abstract-declarator T_RPAREN
+    T_LSPAREN T_RSPAREN
+    T_LSPAREN constant-expression T_RSPAREN
+    T_LPAREN T_RPAREN
+    T_LPAREN parameter-type-list T_RPAREN
+    direct-abstract-declarator T_LSPAREN T_RSPAREN
+    direct-abstract-declarator T_LSPAREN constant-expression T_RSPAREN
+    direct-abstract-declarator T_LPAREN T_RPAREN
+    direct-abstract-declarator T_LPAREN parameter-type-list T_RPAREN
 
 initializer:
     assignment-expression
