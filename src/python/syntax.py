@@ -303,6 +303,8 @@ class NonTerminal(Symbol):
         else:
             self.result_available = True
 
+        # This even works for left-recursive grammar
+        # because we may also use this for LR
         if self in path_list:
             return
 
@@ -1028,12 +1030,15 @@ class Production:
 
 class ParserGenerator:
     """
-    This class is the main class we use to generate the parsing code
-    for a given LL(1) syntax
+    This class represents the abstract parser generator which provides
+    common functionality for supporting either LL or LR grammar
     """
     def __init__(self, file_name):
         """
-        Initialize the generator object
+        Open a grammar file and loads its content as terminals, non-terminals
+        and productions
+
+        :param file_name: The name of the grammar file we want to load
         """
         # This is the name of the syntax definition file
         self.file_name = file_name
@@ -1054,13 +1059,292 @@ class ParserGenerator:
         # This is the non-terminal where parsing starts
         self.root_symbol = None
 
+        return
+
+    def read_file(self, file_name):
+        """
+        Read the file into the instance, and do first pass analyze
+
+        The input file is written in the following format:
+
+        # This is a set of production rules:
+        # S1 -> V1 V2 V3
+        # S1 -> V2 V3
+        S1:
+          V1 V2 V3
+          V2 V3
+          ...
+
+        # We use hash tag as comment line indicator
+        S2:
+          V2 V4
+          V1 V3
+          ...
+
+        i.e. We treat the line ending with a colon as the left hand side
+        of a production rule, and all following lines that do not end
+        with a colon as right hand side. Each line represents a separate
+        production. All right hand side tokens are separated by spaces,
+        and we consider everything that is not space character as token
+        names
+
+        The empty symbol "eps" is also a non-terminal, with the special
+        name T_ (T + underline)
+
+        :param file_name: The name of the file to read the syntax
+        :return: None
+        """
+        fp = open(file_name, "r")
+        s = fp.read()
+        fp.close()
+
+        # Split the content of the file into lines
+        line_list = s.splitlines()
+
+        # Since we need to iterate through this twice, so let's
+        # do the filtering for only once
+        # We use list comprehension to filter out lines that are
+        # empty or starts with '#'
+        line_list = \
+            [line.strip()
+             for line in line_list
+             if (len(line.strip()) != 0 and line.strip()[0] != '#')]
+
+        # The following must follow the processing of the
+        # syntax file because otherwise the syntax would be
+        # incomplete
+
+        # This function recognizes terminals and non-terminals
+        # and stores them into the corresponding set structure
+        self.process_symbol(line_list)
+        # This function adds productions and references between
+        # productions and symbols
+        self.process_production(line_list)
+        # This sets self.root_symbol and throws exception is there
+        # is problem finding it
+        self.process_root_symbol()
+
+        return
+
+    def process_root_symbol(self):
+        """
+        This function finds root symbols. The root symbol is defined as
+        the non-terminal symbol with no reference in its rhs_set, which
+        indicates in our rule that the symbol is the starting point of
+        parsing
+
+        Note that even in the case that root symbol cannot be found, we
+        could always define an artificial root symbol by adding:
+            S_ROOT -> S
+        if S is supposed to be the root but is referred to in some
+        productions. This is guaranteed to work.
+
+        In the case that multiple root symbols are present, i.e. there
+        are multiple nodes with RHS list being empty, we report error
+        and print all possibilities
+
+        :return: None
+        """
+        # We use this set to find the root symbol
+        # It should only contain 1 element
+        root_symbol_list = []
+        for symbol in self.non_terminal_set:
+            if len(symbol.rhs_set) == 0:
+                root_symbol_list.append(symbol)
+
+        # These two are abnormal case
+        if len(root_symbol_list) > 1:
+            dbg_printf("Multiple root symbols found. " +
+                       "Could not decide which one")
+
+            # Print each candidate and exit
+            for symbol in root_symbol_list:
+                dbg_printf("    Candidate: %s", str(symbol))
+
+            raise ValueError("Multiple root symbols")
+        elif len(root_symbol_list) == 0:
+            dbg_printf("Root symbol is not found. " +
+                       "May be you should define an artificial one")
+
+            raise ValueError("Root symbol not found")
+
+        # This is the normal case - exactly 1 is found
+        self.root_symbol = root_symbol_list[0]
+
+        return
+
+    def process_production(self, line_list):
+        """
+        This function constructs productions and place them into
+        a list of productions. It also establishes referencing relations
+        between productions and non-terminal symbols (i.e. which symbol
+        is referred to in which production)
+
+        :return: None
+        """
+        # This is the current non-terminal node, and we change it
+        # every time a line with ':' is seen
+        current_nt = None
+        has_body = True
+        for line in line_list:
+            if line[-1] == ':':
+                # When we see the start of a production, must make
+                # sure that the previous production has been finished
+                if has_body is False:
+                    raise ValueError(
+                        "Production %s does not have a body" %
+                        (line, ))
+                else:
+                    has_body = False
+
+                current_nt_name = line[:-1]
+                assert(current_nt_name in self.symbol_dict)
+
+                current_nt = self.symbol_dict[current_nt_name]
+                continue
+
+            # There must be a non-terminal node to use
+            if current_nt is None:
+                raise ValueError("The syntax must start with a non-terminal")
+            else:
+                assert(current_nt.is_non_terminal() is True)
+
+            # We have seen a production body
+            has_body = True
+
+            # This will be passed into the constructor of
+            # class Production
+            rhs_list = []
+
+            # This is a list of symbol names
+            # which have all been converted into terminals
+            # or non-terminals in the first pass
+            symbol_list = line.split()
+            for symbol_name in symbol_list:
+                # The key must exist because we already had one
+                # pass to add all symbols
+                assert(symbol_name in self.symbol_dict)
+
+                symbol = self.symbol_dict[symbol_name]
+
+                # Add an RHS symbol
+                # Establishes from non-terminals to productions
+                # are established later when we construct the object
+                rhs_list.append(symbol)
+
+            # Finally construct an immutable class Production instance
+            # the status could no longer be changed after it is
+            # constructed
+            # This also adds the production into the production
+            # set of the generator
+            Production(self, current_nt, rhs_list)
+
+        return
+
+    def process_symbol(self, line_list):
+        """
+        Recognize symbols, and store them into the dictionary for
+        symbols, as well as the sets for terminals and non-terminals
+
+        :param line_list: A list of lines
+        :return: None
+        """
+        # This is a set of names for which we are not certain whether
+        # it is a terminal or non-terminal
+        in_doubt_set = set()
+
+        for line in line_list:
+            # We have seen a new LHS of the production rule
+            # Also non-terminal is very easy to identify because
+            # it must be on the LHS side at least once
+            if line[-1] == ':':
+                # This is the name of the terminal
+                name = line[:-1]
+                # Create the non-terminal object and then
+                non_terminal = NonTerminal(name)
+
+                # If the non-terminal object already exists then we have
+                # seen duplicated definition
+                if non_terminal in self.symbol_dict:
+                    raise KeyError("Duplication definition of non-terminal: %s" %
+                                   (name, ))
+
+                # Add the non-terminal node into both symbol dictionary
+                # and the non-terminal set
+                self.symbol_dict[name] = non_terminal
+                self.non_terminal_set.add(non_terminal)
+
+                # Since we already know that name is a non-terminal
+                # we could remove it from this set
+                # discard() does not raise error even if the name
+                # is not in the set
+                in_doubt_set.discard(name)
+            else:
+                # Split the line using space characters
+                name_list = line.split()
+                # We do not know whether name is a terminal or non-terminal
+                # but we could rule out those that are known to be
+                # non-terminals
+                for name in name_list:
+                    # If the name is already seen and it is a terminal
+                    # then we skip it
+                    if name in self.symbol_dict:
+                        continue
+
+                    # Add the name into in_doubt_set because
+                    # we are unsure about its status
+                    in_doubt_set.add(name)
+
+        # After this loop, in_doubt_set contains names that do not
+        # appear as the left hand side, and must be terminals
+        for name in in_doubt_set:
+            assert(name not in self.symbol_dict)
+            terminal = Terminal(name)
+            self.symbol_dict[name] = terminal
+
+            # And then add terminals into the terminal set
+            assert(terminal not in self.terminal_set)
+            self.terminal_set.add(terminal)
+
+        return
+
+#####################################################################
+# class ParserGeneratorLL1
+#####################################################################
+
+class ParserGeneratorLL1(ParserGenerator):
+    """
+    This class is the main class we use to generate the parsing code
+    for a given LL(1) syntax
+    """
+    def __init__(self, file_name):
+        """
+        Initialize the generator object
+        """
+        ParserGenerator.__init__(self, file_name)
+
         # It is a directory structure using (NonTerminal, Terminal)
         # pair as keys, and production rule object as value (note
         # that we only allow one production per key)
         self.parsing_table = {}
 
-        # Reading the file
+        # Reading the file, process symbols, productions
+        # and the root symbol
         self.read_file(file_name)
+
+        # As suggested by name
+        self.process_left_recursion()
+        # This must be done after left recursion elimination
+        # because left recursion may expose common prefix
+        self.process_common_prefix()
+        # Compute the first and follow set
+        self.process_first_follow()
+
+        # Check feasibility of LL(1)
+        self.verify()
+
+        # Then generates the parsing table
+        self.generate_parsing_table()
 
         return
 
@@ -1111,7 +1395,7 @@ class ParserGenerator:
         for convenience of printing the FIRST and FOLLOW set
 
         The set if printed as follows:
-           {eleemnt, element, .. }
+           {element, element, .. }
 
         :param fp: The file handler
         :param ss: The set instance
@@ -1147,7 +1431,8 @@ class ParserGenerator:
            (1) Revised rules
            (2) FIRST and FOLLOW set for each rule
 
-        :return:
+        :param file_name: The file name we dump into
+        :return: None
         """
         dbg_printf("Dumping modified syntax to %s", file_name)
 
@@ -1226,79 +1511,7 @@ class ParserGenerator:
 
         return
 
-    def read_file(self, file_name):
-        """
-        Read the file into the instance, and do first pass analyze
 
-        The input file is written in the following format:
-
-        # This is a set of production rules:
-        # S1 -> V1 V2 V3
-        # S1 -> V2 V3
-        S1:
-          V1 V2 V3
-          V2 V3
-          ...
-
-        # We use hash tag as comment line indicator
-        S2:
-          V2 V4
-          V1 V3
-          ...
-
-        i.e. We treat the line ending with a colon as the left hand side
-        of a production rule, and all following lines that do not end
-        with a colon as right hand side. Each line represents a separate
-        production. All right hand side tokens are separated by spaces,
-        and we consider everything that is not space character as token
-        names
-
-        The empty symbol "eps" is also a non-terminal, with the special
-        name T_ (T + underline)
-
-        :param file_name: The name of the file to read the syntax
-        :return: None
-        """
-        fp = open(file_name, "r")
-        s = fp.read()
-        fp.close()
-
-        # Split the content of the file into lines
-        line_list = s.splitlines()
-
-        # Since we need to iterate through this twice, so let's
-        # do the filtering for only once
-        # We use list comprehension to filter out lines that are
-        # empty or starts with '#'
-        line_list = \
-            [line.strip()
-             for line in line_list
-             if (len(line.strip()) != 0 and line.strip()[0] != '#')]
-
-        # This function recognizes terminals and non-terminals
-        # and stores them into the corresponding set structure
-        self.process_symbol(line_list)
-        # This function adds productions and references between
-        # productions and symbols
-        self.process_production(line_list)
-        # This sets self.root_symbol and throws exception is there
-        # is problem finding it
-        self.process_root_symbol()
-        # As suggested by name
-        self.process_left_recursion()
-        # This must be done after left recursion elimination
-        # because left recursion may expose common prefix
-        self.process_common_prefix()
-        # Compute the first and follow set
-        self.process_first_follow()
-
-        # Check feasibility of LL(1)
-        self.verify()
-
-        # Then generates the parsing table
-        self.generate_parsing_table()
-
-        return
 
     def verify(self):
         """
@@ -1540,187 +1753,7 @@ class ParserGenerator:
 
         return
 
-    def process_root_symbol(self):
-        """
-        This function finds root symbols. The root symbol is defined as
-        the non-terminal symbol with no reference in its rhs_set, which
-        indicates in our rule that the symbol is the starting point of
-        parsing
 
-        Note that even in the case that root symbol cannot be found, we
-        could always define an artificial root symbol by adding:
-            S_ROOT -> S
-        if S is supposed to be the root but is referred to in some
-        productions. This is guaranteed to work.
-
-        In the case that multiple root symbols are present, i.e. there
-        are multiple nodes with RHS list being empty, we report error
-        and print all possibilities
-
-        :return: None
-        """
-        # We use this set to find the root symbol
-        # It should only contain 1 element
-        root_symbol_list = []
-        for symbol in self.non_terminal_set:
-            if len(symbol.rhs_set) == 0:
-                root_symbol_list.append(symbol)
-
-        # These two are abnormal case
-        if len(root_symbol_list) > 1:
-            dbg_printf("Multiple root symbols found. " +
-                       "Could not decide which one")
-
-            # Print each candidate and exit
-            for symbol in root_symbol_list:
-                dbg_printf("    Candidate: %s", str(symbol))
-
-            raise ValueError("Multiple root symbols")
-        elif len(root_symbol_list) == 0:
-            dbg_printf("Root symbol is not found. " +
-                       "May be you should define an artificial one")
-
-            raise ValueError("Root symbol not found")
-
-        # This is the normal case - exactly 1 is found
-        self.root_symbol = root_symbol_list[0]
-
-        return
-
-    def process_production(self, line_list):
-        """
-        This function constructs productions and place them into
-        a list of productions. It also establishes referencing relations
-        between productions and non-terminal symbols (i.e. which symbol
-        is referred to in which production)
-
-        :return: None
-        """
-        # This is the current non-terminal node, and we change it
-        # every time a line with ':' is seen
-        current_nt = None
-        has_body = True
-        for line in line_list:
-            if line[-1] == ':':
-                # When we see the start of a production, must make
-                # sure that the previous production has been finished
-                if has_body is False:
-                    raise ValueError(
-                        "Production %s does not have a body" %
-                        (line, ))
-                else:
-                    has_body = False
-
-                current_nt_name = line[:-1]
-                assert(current_nt_name in self.symbol_dict)
-
-                current_nt = self.symbol_dict[current_nt_name]
-                continue
-
-            # There must be a non-terminal node to use
-            if current_nt is None:
-                raise ValueError("The syntax must start with a non-terminal")
-            else:
-                assert(current_nt.is_non_terminal() is True)
-
-            # We have seen a production body
-            has_body = True
-
-            # This will be passed into the constructor of
-            # class Production
-            rhs_list = []
-
-            # This is a list of symbol names
-            # which have all been converted into terminals
-            # or non-terminals in the first pass
-            symbol_list = line.split()
-            for symbol_name in symbol_list:
-                # The key must exist because we already had one
-                # pass to add all symbols
-                assert(symbol_name in self.symbol_dict)
-
-                symbol = self.symbol_dict[symbol_name]
-
-                # Add an RHS symbol
-                # Establishes from non-terminals to productions
-                # are established later when we construct the object
-                rhs_list.append(symbol)
-
-            # Finally construct an immutable class Production instance
-            # the status could no longer be changed after it is
-            # constructed
-            # This also adds the production into the production
-            # set of the generator
-            Production(self, current_nt, rhs_list)
-
-        return
-
-    def process_symbol(self, line_list):
-        """
-        Recognize symbols, and store them into the dictionary for
-        symbols, as well as the sets for terminals and non-terminals
-
-        :param line_list: A list of lines
-        :return:
-        """
-        # This is a set of names for which we are not certain whether
-        # it is a terminal or non-terminal
-        in_doubt_set = set()
-
-        for line in line_list:
-            # We have seen a new LHS of the production rule
-            # Also non-terminal is very easy to identify because
-            # it must be on the LHS side at least once
-            if line[-1] == ':':
-                # This is the name of the terminal
-                name = line[:-1]
-                # Create the non-terminal object and then
-                non_terminal = NonTerminal(name)
-
-                # If the non-terminal object already exists then we have
-                # seen duplicated definition
-                if non_terminal in self.symbol_dict:
-                    raise KeyError("Duplication definition of non-terminal: %s" %
-                                   (name, ))
-
-                # Add the non-terminal node into both symbol dictionary
-                # and the non-terminal set
-                self.symbol_dict[name] = non_terminal
-                self.non_terminal_set.add(non_terminal)
-
-                # Since we already know that name is a non-terminal
-                # we could remove it from this set
-                # discard() does not raise error even if the name
-                # is not in the set
-                in_doubt_set.discard(name)
-            else:
-                # Split the line using space characters
-                name_list = line.split()
-                # We do not know whether name is a terminal or non-terminal
-                # but we could rule out those that are known to be
-                # non-terminals
-                for name in name_list:
-                    # If the name is already seen and it is a terminal
-                    # then we skip it
-                    if name in self.symbol_dict:
-                        continue
-
-                    # Add the name into in_doubt_set because
-                    # we are unsure about its status
-                    in_doubt_set.add(name)
-
-        # After this loop, in_doubt_set contains names that do not
-        # appear as the left hand side, and must be terminals
-        for name in in_doubt_set:
-            assert(name not in self.symbol_dict)
-            terminal = Terminal(name)
-            self.symbol_dict[name] = terminal
-
-            # And then add terminals into the terminal set
-            assert(terminal not in self.terminal_set)
-            self.terminal_set.add(terminal)
-
-        return
 
 #####################################################################
 #####################################################################
