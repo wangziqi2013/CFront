@@ -1023,6 +1023,62 @@ class Production:
         """
         return len(self.rhs_list)
 
+#####################################################################
+# class LRItem
+#####################################################################
+
+class LRItem:
+    """
+    This class represents a LR item, i.e. a production with a position
+    indicating the current parsing state of the production
+
+    This class is hashable, and printable
+    """
+    def __init__(self, p, index):
+        """
+        Initialize the object with a production object and a position
+        as the index into the production
+
+        Note that position i means that the dot is before the i-th
+        RHS element of the production, e.g. for S -> A B C ; 2 it
+        represents an item:
+           S -> A B [dot] C
+
+        Once p and index are initialized further alternation of these
+        two members are prohibited
+        """
+        self.p = p
+        self.index = index
+
+        return
+
+    def __hash__(self):
+        """
+        Returns the hash code of the item. We compute hash code using
+        the hash of the production XOR-ed by the hash of the index
+
+        :return: hash code
+        """
+        return hash(self.p) ^ hash(self.index)
+
+    def __eq__(self, other):
+        """
+        Checks equality of two item objects
+
+        :param other: The other LRItem object
+        :return: bool
+        """
+        return self.p == other.p and \
+               self.index == other.index
+
+    def __ne__(self, other):
+        """
+        Checks whether this object does not equal another object
+
+        :param other: The other LRItem object
+        :return: bool
+        """
+        return not self.__eq__(other)
 
 #####################################################################
 # class ParserGenerator
