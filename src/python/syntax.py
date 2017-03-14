@@ -1126,6 +1126,76 @@ class ParserGenerator:
 
         return
 
+    def process_first_follow(self):
+        """
+        This function computes FIRST and FOLLOW set
+        for all non-terminals. The set of non-terminals
+        is not changed during iteration, so we do not
+        need to make a copy of the set
+
+        Note that even for grammars with left-recursions, we
+        could also compute the FIRST and FOLLOW set, in a sense
+        that the FIRST set of S for ruleS -> S does not affect S
+        at all
+
+        :return: None
+        """
+        # We use this to fix the order of iteration
+        nt_list = list(self.non_terminal_set)
+
+        dbg_printf("Compute FIRST set")
+
+        # A list of FIRST set sizes; we iterate until this
+        # becomes stable
+        count_list = [nt.get_first_length() for nt in nt_list]
+        index = 0
+        while True:
+            index += 1
+            dbg_printf("    Iteration %d", index)
+
+            for symbol in self.non_terminal_set:
+                symbol.clear_result_available()
+
+            for symbol in self.non_terminal_set:
+                symbol.compute_first([])
+
+            # This is the vector after iteration
+            t = [nt.get_first_length() for nt in nt_list]
+            if t == count_list:
+                break
+
+            count_list = t
+
+        dbg_printf("Compute FOLLOW set")
+
+        # First add EOF symbol into the root symbol
+        # We need to do this before the algorithm converges
+        assert (self.root_symbol is not None)
+        self.root_symbol.follow_set.add(Symbol.get_end_symbol())
+
+        count_list = [nt.get_follow_length() for nt in nt_list]
+        index = 0
+        while True:
+            index += 1
+            dbg_printf("    Iteration %d", index)
+
+            for symbol in self.non_terminal_set:
+                symbol.clear_result_available()
+
+            for symbol in self.non_terminal_set:
+                # The path list must be empty list
+                # because we start from a fresh new state
+                # for every iteration
+                symbol.compute_follow([])
+
+            t = [nt.get_follow_length() for nt in nt_list]
+            if t == count_list:
+                break
+
+            count_list = t
+
+        return
+
     def process_root_symbol(self):
         """
         This function finds root symbols. The root symbol is defined as
@@ -1308,6 +1378,40 @@ class ParserGenerator:
 
         return
 
+    @staticmethod
+    def dump_symbol_set(fp, ss):
+        """
+        Dumps a set into a given file handle. This function is
+        for convenience of printing the FIRST and FOLLOW set
+
+        The set if printed as follows:
+           {element, element, .. }
+
+        :param fp: The file handler
+        :param ss: The set instance
+        :return: None
+        """
+        first = True
+        fp.write("{")
+
+        # Make each iteration produce uniform result
+        ss = list(ss)
+        ss.sort()
+
+        for i in ss:
+            # Must be a symbol element
+            assert (i.is_symbol() is True)
+            if first is False:
+                fp.write(", ")
+            else:
+                first = False
+
+            fp.write(i.name)
+
+        fp.write("}")
+
+        return
+
 #####################################################################
 # class ParserGeneratorLL1
 #####################################################################
@@ -1337,7 +1441,11 @@ class ParserGeneratorLL1(ParserGenerator):
         # This must be done after left recursion elimination
         # because left recursion may expose common prefix
         self.process_common_prefix()
+
         # Compute the first and follow set
+        # Note that this function is defined in the base class
+        # and we call this after we have processed left recursion
+        # and common prefix
         self.process_first_follow()
 
         # Check feasibility of LL(1)
@@ -1388,40 +1496,6 @@ class ParserGeneratorLL1(ParserGenerator):
 
         return
 
-    @staticmethod
-    def dump_symbol_set(fp, ss):
-        """
-        Dumps a set into a given file handle. This function is
-        for convenience of printing the FIRST and FOLLOW set
-
-        The set if printed as follows:
-           {element, element, .. }
-
-        :param fp: The file handler
-        :param ss: The set instance
-        :return: None
-        """
-        first = True
-        fp.write("{")
-
-        # Make each iteration produce uniform result
-        ss = list(ss)
-        ss.sort()
-
-        for i in ss:
-            # Must be a symbol element
-            assert(i.is_symbol() is True)
-            if first is False:
-                fp.write(", ")
-            else:
-                first = False
-
-            fp.write(i.name)
-
-        fp.write("}")
-
-        return
-
     def dump(self, file_name):
         """
         This file dumps the contents of the parser generator into a file
@@ -1461,8 +1535,6 @@ class ParserGeneratorLL1(ParserGenerator):
 
                 fp.write("; ")
                 ParserGenerator.dump_symbol_set(fp, p.first_set)
-                #fp.write(" ")
-                #ParserGenerator.dump_symbol_set(fp, symbol.follow_set)
 
                 fp.write("\n")
 
@@ -1510,8 +1582,6 @@ class ParserGeneratorLL1(ParserGenerator):
         fp.close()
 
         return
-
-
 
     def verify(self):
         """
@@ -1623,71 +1693,6 @@ class ParserGeneratorLL1(ParserGenerator):
 
         return
 
-    def process_first_follow(self):
-        """
-        This function computes FIRST and FOLLOW set
-        for all non-terminals. The set of non-terminals
-        is not changed during iteration, so we do not
-        need to make a copy of the set
-
-        :return: None
-        """
-        # We use this to fix the order of iteration
-        nt_list = list(self.non_terminal_set)
-
-        dbg_printf("Compute FIRST set")
-
-        # A list of FIRST set sizes; we iterate until this
-        # becomes stable
-        count_list = [nt.get_first_length() for nt in nt_list]
-        index = 0
-        while True:
-            index += 1
-            dbg_printf("    Iteration %d", index)
-
-            for symbol in self.non_terminal_set:
-                symbol.clear_result_available()
-
-            for symbol in self.non_terminal_set:
-                symbol.compute_first([])
-
-            # This is the vector after iteration
-            t = [nt.get_first_length() for nt in nt_list]
-            if t == count_list:
-                break
-
-            count_list = t
-
-        dbg_printf("Compute FOLLOW set")
-
-        # First add EOF symbol into the root symbol
-        # We need to do this before the algorithm converges
-        assert (self.root_symbol is not None)
-        self.root_symbol.follow_set.add(Symbol.get_end_symbol())
-
-        count_list = [nt.get_follow_length() for nt in nt_list]
-        index = 0
-        while True:
-            index += 1
-            dbg_printf("    Iteration %d", index)
-
-            for symbol in self.non_terminal_set:
-                symbol.clear_result_available()
-
-            for symbol in self.non_terminal_set:
-                # The path list must be empty list
-                # because we start from a fresh new state
-                # for every iteration
-                symbol.compute_follow([])
-
-            t = [nt.get_follow_length() for nt in nt_list]
-            if t == count_list:
-                break
-
-            count_list = t
-
-        return
-
     def process_common_prefix(self):
         """
         This function iteratively eliminates all common left
@@ -1753,8 +1758,6 @@ class ParserGeneratorLL1(ParserGenerator):
 
         return
 
-
-
 #####################################################################
 #####################################################################
 #####################################################################
@@ -1786,10 +1789,12 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         return
 
-    def demo(self):
+    @TestNode("test_read_file")
+    def test_parse(self, _):
         """
         Interactive mode to display how a string is parsed
 
+        :param _: Unused argv
         :return: None
         """
         pg = self.pg
@@ -1871,7 +1876,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # Initialize the object - it will read the file
         # and parse its contents
-        self.pg = ParserGenerator(file_name)
+        self.pg = ParserGeneratorLL1(file_name)
         pg = self.pg
 
         dbg_printf("Root symbol: %s", pg.root_symbol)
@@ -1894,8 +1899,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # Finally dump the resulting file
         pg.dump(file_name + ".dump")
         pg.dump_parsing_table(file_name + ".table")
-
-        self.demo()
 
         return
 
