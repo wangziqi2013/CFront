@@ -1052,6 +1052,23 @@ class LRItem:
 
         return
 
+    def __setattr__(self, key, value):
+        """
+        Customized definition of setattr(). We need this because we want
+        to prevent alternation of p and index fields
+
+        :param key: The attribute name
+        :param value: The attribute value
+        :return: None
+        """
+        if key == "p" or key == "index":
+            raise KeyError("Could not set read-only attribute %s" %
+                           (key, ))
+
+        self.__dict__[key] = value
+
+        return
+
     def __hash__(self):
         """
         Returns the hash code of the item. We compute hash code using
