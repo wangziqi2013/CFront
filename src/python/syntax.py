@@ -1195,6 +1195,35 @@ class LRItem:
         return not self.__eq__(other)
 
 #####################################################################
+# class ItemSet
+#####################################################################
+
+class ItemSet:
+    """
+    This class represents a set of LRItems with additional
+    functionality such as computing the closure
+    """
+    def __init__(self):
+        """
+        Initialize an empty item set
+        """
+        # This is the set of items
+        self.item_set = set()
+
+        # This maps GOTO with terminals and non-terminals
+        # to the next state
+        self.goto_table = {}
+
+        # The union of below two sets is the goto table's key
+        # The set of terminals c for S -> A B [dot] c
+        # Note that empty string could not appear in this set
+        self.terminal_set = set()
+        # The set of non-terminals C for S -> A B [dot] C
+        self.non_terminal_set = set()
+
+        return
+
+#####################################################################
 # class ParserGenerator
 #####################################################################
 
