@@ -2281,7 +2281,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         return
 
     @TestNode("test_read_file")
-    def test_parse(self, _):
+    def test_ll_parse(self, _):
         """
         Interactive mode to display how a string is parsed
 
@@ -2289,6 +2289,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :return: None
         """
         print_test_name()
+
+        if argv.has_keys("ll") is False:
+            dbg_printf("Please use --ll to test LL(1) parser generator")
 
         pg = self.pg
         pt = pg.parsing_table
@@ -2353,7 +2356,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         return
 
     @TestNode()
-    def test_read_file(self, argv):
+    def test_ll(self, argv):
         """
         This function tests whether the input file could be read
         and parsed correctly
@@ -2361,6 +2364,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :return: None
         """
         print_test_name()
+
+        if argv.has_keys("ll") is False:
+            dbg_printf("Please use --ll to test LL(1) parser generator")
 
         # The first argument is the file name
         file_name = argv.arg_list[0]
@@ -2391,6 +2397,32 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # Finally dump the resulting file
         pg.dump(file_name + ".dump")
         pg.dump_parsing_table(file_name + ".table")
+
+        return
+
+    @TestNode()
+    def test_lr(self, argv):
+        """
+        This function tests LR parser generator
+
+        :param argv: Argument vector
+        :return: None
+        """
+        print_test_name()
+
+        if argv.has_keys("lr") is False:
+            dbg_printf("Please use --lr to test LR parser generator")
+
+        # The first argument is the file name
+        file_name = argv.arg_list[0]
+        dbg_printf("Opening file: %s", file_name)
+
+        # Initialize the object - it will read the file
+        # and parse its contents
+        self.pg = ParserGeneratorLR(file_name)
+        pg = self.pg
+
+        dbg_printf("Root symbol: %s", pg.root_symbol)
 
         return
 
