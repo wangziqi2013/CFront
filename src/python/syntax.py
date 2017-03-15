@@ -1262,6 +1262,12 @@ class ItemSet:
         # This will be set to True if compute_goto() is called
         self.has_goto_flag = False
 
+        # This is the index used for parsing
+        # we do not set this member in this class, and instead
+        # fix its index after the canonical set has been
+        # computed
+        self.index = None
+
         return
 
     def has_goto_table(self):
@@ -1808,6 +1814,13 @@ class ParserGeneratorLR(ParserGenerator):
     """
     This class is the main class we use to generate a LR parser
     """
+
+    # The following constants defines the action a parser could take
+    ACTION_SHIFT = 0
+    ACTION_REDUCE = 1
+    ACTION_GOTO = 2
+    ACTION_ACCEPT = 3
+
     def __init__(self, file_name):
         """
         Read syntax file into the class and analyze its symbols and
@@ -1980,7 +1993,10 @@ class ParserGeneratorLR(ParserGenerator):
             # We start parsing on starting state
             if self.item_set_list[i] == self.starting_item_set:
                 self.starting_state = i
-                break
+
+            # Also set the index of the item set
+            assert(self.item_set_list[i].index is None)
+            self.item_set_list[i].index = i
 
         assert(self.starting_state is not None)
 
