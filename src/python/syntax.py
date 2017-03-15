@@ -1053,8 +1053,8 @@ class LRItem:
         Once p and index are initialized further alternation of these
         two members are prohibited
         """
-        self.p = p
-        self.index = index
+        self.__dict__["p"] = p
+        self.__dict__["index"] = index
 
         # Whether p is an empty production, because for empty
         # production it is always reduce-able
@@ -1329,7 +1329,7 @@ class ItemSet:
 
             # Must make a list first because the set will be changed
             # during the iteration
-            item_list = list(elf.item_set)
+            item_list = list(self.item_set)
 
             # Iterator on the item list
             for item in item_list:
@@ -1415,7 +1415,7 @@ class ParserGenerator:
         self.root_symbol = None
 
         # Read file and process symbols and productions
-        self.read_file()
+        self.read_file(file_name)
 
         return
 
@@ -2280,18 +2280,19 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         return
 
-    @TestNode("test_read_file")
-    def test_ll_parse(self, _):
+    @TestNode("test_ll")
+    def test_ll_parse(self, argv):
         """
         Interactive mode to display how a string is parsed
 
-        :param _: Unused argv
+        :param argv: Argument vector
         :return: None
         """
         print_test_name()
 
         if argv.has_keys("ll") is False:
             dbg_printf("Please use --ll to test LL(1) parser generator")
+            return
 
         pg = self.pg
         pt = pg.parsing_table
@@ -2367,6 +2368,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         if argv.has_keys("ll") is False:
             dbg_printf("Please use --ll to test LL(1) parser generator")
+            return
 
         # The first argument is the file name
         file_name = argv.arg_list[0]
