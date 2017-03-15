@@ -1032,7 +1032,9 @@ class LRItem:
     This class represents a LR item, i.e. a production with a position
     indicating the current parsing state of the production
 
-    This class is hashable, and printable
+    This class is hashable, and printable. Note also that this class
+    does not pertain any state, so we could create arbitrarily many of
+    them with the same content
     """
     def __init__(self, p, index):
         """
@@ -1043,6 +1045,10 @@ class LRItem:
         RHS element of the production, e.g. for S -> A B C ; 2 it
         represents an item:
            S -> A B [dot] C
+        Note that it is also allowed for the dot to appear after all
+        symbols in the RHS list:
+           S -> A B C [dot]
+        and in this special case the
 
         Once p and index are initialized further alternation of these
         two members are prohibited
@@ -1050,7 +1056,98 @@ class LRItem:
         self.p = p
         self.index = index
 
+        # Whether p is an empty production, because for empty
+        # production it is always reduce-able
+        self.is_empty_production = False
+
+        # If it is after any symbol then index == len..
+        assert(index <= len(p.rhs_list))
+
+        # If this is an empty production then we also
+        # restrict the index to be only 0
+        # because empty string does not conceptually take
+        # terminals and therefore could not have two separate
+        # states
+        if p.rhs_list[0] == Symbol.get_empty_symbol():
+            assert(index == 0)
+            self.is_empty_production = True
+
         return
+
+    def could_reduce(self):
+        """
+        Whether the dot is after all symbols. The special case is for
+        empty production: S -> T_ where even if index == 0 for this
+        case we still return True
+
+        :return: bool
+        """
+        # Empty production could always reduce
+        if self.is_empty_production is True:
+            return True
+        elif self.index == len(self.p.rhs_list):
+            # If the dot is after all symbols then
+            # we could also reduce
+            return True
+
+        return False
+
+    def get_reduce_symbol(self):
+        """
+        Return the LHS symbol of the production if this item could
+        be reduced. If not assertion fails
+
+        :return: NonTerminal
+        """
+        assert(self.could_reduce() is True)
+
+        return self.p.lhs
+
+    def get_dotted_symbol(self):
+        """
+        This function returns the symbol that the dot is on. If
+        the dot is after all symbols then return None
+
+        Note that this function may return Terminals and NonTerminals
+        and the caller is responsible for filtering out unnecessary
+        ones
+
+        For empty string T_ we always return None because it does not
+        have any symbol
+
+        :return: Terminal/NonTerminal/None
+        """
+        # The dot is after all symbols
+        if self.could_reduce() is True:
+            return None
+
+        return self.p.rhs_list[self.index]
+
+    def compute_closure(self):
+        """
+        Computes the closure of the item. The closure for an item is
+        defined as returning a set of items for items RHS[index]'s
+        production with index = 0. Note that this is the closure for
+        an item set.
+
+        :return: set(LRItem)
+        """
+        # This is the set we will add items into and return
+        ret_set = set()
+        symbol = self.get_dotted_symbol()
+        if symbol is None:
+            return ret_set
+        elif symbol.is_terminal() is True:
+            # Note that the empty symbol is also
+            # included
+            return ret_set
+
+        # Then add every production into the set and return
+        for p in symbol.rhs_set:
+            item = LRItem(p, 0)
+            ret_set.add(item)
+
+        return ret_set
 
     def __setattr__(self, key, value):
         """
