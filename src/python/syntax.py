@@ -1241,6 +1241,18 @@ class ItemSet:
 
         return
 
+    def has_goto_table(self):
+        """
+        Whether the root table has already been computed
+        If this returns true then we do not try to compute its
+        GOTO table and also do not add its GOTO target into the
+        set
+
+        :return: bool
+        """
+        # If the length is 0 then we have not computed the symbol set
+        return len(self.goto_symbol_set) == 0
+
     def compute_goto(self):
         """
         Computes the GOTO sets of the current item set
@@ -1250,14 +1262,16 @@ class ItemSet:
         We also store the set of symbols that could lead to a GOTO
         action in this class for membership testing.
 
-        For newly added ItemSet objects inside goto_map, we always
+        For newly added ItemSet objects inside goto_table, we always
         compute closure for them such that they could be added
         into a higher level set after this function returns. However
-        we do not recursively compute its goto_map recursively since
+        we do not recursively compute its goto_table recursively since
         there may be an infinite recursion computing that
 
         :return: None
         """
+        assert(self.has_goto_table() is False)
+
         for item in self.item_set:
             # If the item could reduce then there is no
             # next symbol
@@ -1774,6 +1788,20 @@ class ParserGeneratorLR(ParserGenerator):
         # read file is called inside the constructor
         ParserGenerator.__init__(self, file_name)
 
+        # This is a set of the ItemSet object
+        self.item_set_set = set()
+
+        # This is an identity mapping - we map an item set to itself
+        # The reason for this map is that item set could be identical
+        # without being the same object, i.e. we check equality of two
+        # items only by comparing their items but not other attributes
+        # such as the GOTO table. However we do need to recognize
+        # items that already exist and has GOTO table when we have one
+        # without GOTO table, and therefore this table provides translation
+        # between identity (i.e. the attribute we care for equality)
+        # and all contents
+        self.item_set_identity_dict = {}
+
         # Compute the follow set of all productions
         # LR generator does not modify the grammar so we could
         # compute the FOLLOW set before everything else
@@ -1783,6 +1811,101 @@ class ParserGeneratorLR(ParserGenerator):
         self.process_item_set()
 
         return
+
+    def process_item_set(self):
+        """
+        This function computes the canonical LR item sets
+
+        :return: None
+        """
+        new_item_set = ItemSet()
+
+        # Construct the first closure using the root symbol
+        for p in self.root_symbol.lhs_set:
+            # Build a new item with index = 0
+            new_item = LRItem(p, 0)
+            new_item_set.item_set.add(new_item)
+
+        # Adds the new item set after computing its closure
+        # and then we begin iteration
+        new_item_set.compute_closure()
+
+        # Register this into the generator
+        self.item_set_set.add(new_item_set)
+        # Map identity to contents
+        self.item_set_identity_dict[new_item_set] = \
+            new_item_set
+
+        # Number of iterations it takes to build the LR
+        # canonical set
+        iteration = 0
+        while True:
+            iteration += 1
+
+            prev_count = len(self.item_set_set)
+            # We must iterate on the list because the item set
+            # will be changed
+            item_set_list = list(self.item_set_set)
+
+            # For each item set computes its GOTO table
+            # if it does not have one
+            for item_set in item_set_list:
+                # If we have already processed this then
+                # skip it because it will not add any new item set
+                if item_set.has_goto_table() is True:
+                    continue
+
+                # Compute the goto set of this item set
+                item_set.compute_goto()
+
+                # For every new item set included in its goto
+                # map, find those that could be added as new item
+                # sets
+                for symbol, goto_item_set in item_set.goto_table.items():
+                    # Already exists, skip for now, and we will
+                    # update it later
+                    if goto_item_set in self.item_set_set:
+                        continue
+
+                    # Treat it as the content provider for the identity
+                    # it has
+                    self.item_set_set.add(goto_item_set)
+                    self.item_set_identity_dict[goto_item_set] = \
+                        goto_item_set
+
+            # If the set does not change, i.e. all newly computed
+            # GOTO sets are already in the set then we know we
+            # have done
+            if prev_count == len(self.item_set_set):
+                break
+
+            # Make sure they are always consistent
+            assert(len(self.item_set_set) == \
+                   len(self.item_set_identity_dict))
+
+        # Then update the goto table to always use item sets that
+        # have a GOTO table because they may refer to other sets
+        for item_set in self.item_set_set:
+            # Check whether there is any bug
+            assert(item_set.has_goto_table() is True)
+            # Check whether the goto table always use
+            # item sets that have GOTO table; if not then
+            # update it using the identity map
+            for symbol, goto_item_set in item_set.goto_table.items():
+                # Replace it
+                if goto_item_set.has_goto_table() is False:
+                    # Use identity to query contents
+                    replacement = self.item_set_identity_dict[goto_item_set]
+                    # And then replace the previous one
+                    goto_item_set.goto_table[symbol] = replacement
+
+        dbg_printf("Computed the canonical set in %d steps",
+                   iteration)
+        dbg_printf("    There are %d elements in the canonical set",
+                   len(self.item_set_set))
+
+        return
+
 
 #####################################################################
 # class ParserGeneratorLL1
@@ -2165,6 +2288,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :param _: Unused argv
         :return: None
         """
+        print_test_name()
+
         pg = self.pg
         pt = pg.parsing_table
 
@@ -2226,7 +2351,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                 stack.append(i)
 
         return
-
 
     @TestNode()
     def test_read_file(self, argv):
