@@ -1062,6 +1062,7 @@ class LRItem:
 
         # If it is after any symbol then index == len..
         assert(index <= len(p.rhs_list))
+        assert(len(p.rhs_list) > 0)
 
         # If this is an empty production then we also
         # restrict the index to be only 0
@@ -1233,12 +1234,88 @@ class ItemSet:
         # to the next state
         self.goto_table = {}
 
-        # The union of below two sets is the goto table's key
-        # The set of terminals c for S -> A B [dot] c
+        # The union of below two sets is the goto table's key,
+        # either Terminal or NonTerminal
         # Note that empty string could not appear in this set
-        self.terminal_set = set()
-        # The set of non-terminals C for S -> A B [dot] C
-        self.non_terminal_set = set()
+        self.goto_symbol_set = set()
+
+        return
+
+    def compute_goto(self):
+        """
+        Computes the goto sets of the current item set
+
+        This class maintains a mapping between the symbols that
+        could lead to a GOTO (either terminal and non-terminal)
+        We also store the set of symbols that could lead to a GOTO
+        action in this class for membership testing.
+
+        For newly added ItemSet objects inside goto_map, we always
+        compute closure for them such that they could be added
+        into a higher level set after this function returns. However
+        we do not recursively compute its goto_map recursively since
+        there may be an infinite recursion computing that
+
+        :return: None
+        """
+        for item in self.item_set:
+            # If the item could reduce then there is no
+            # next symbol
+            if item.could_reduce() is True:
+                continue
+
+            # Then get the next symbol after the dot
+            # and add it into the goto set because this
+            # symbol could be used to compute the GOTO
+            # item set
+            symbol = item.get_dotted_symbol()
+            self.goto_symbol_set.add(symbol)
+
+        # Then for every symbol that could lead to a new set
+        # we just add it
+        for symbol in self.goto_symbol_set:
+            # Create a new empty item set and we add items
+            # later
+            item_set = ItemSet()
+
+            for item in self.item_set:
+                # If this item could be used to GOTO
+                if item.get_dotted_symbol == symbol:
+                    # Then move the dot to the next position
+                    # which is guaranteed to be valid
+                    new_item = LRItem(item.p, item.index + 1)
+
+
+    def compute_closure(self):
+        """
+        Computes the closure for this set. This function modifies
+        self.item_set and therefore must be called this is added
+        to any set
+
+        :return: None
+        """
+        while True:
+            # This is the count of items before the current
+            # iteration. If this does not change after the
+            # iteration then we know we have had a closure
+            prev_count = len(self.item_set)
+
+            # Must make a list first because the set will be changed
+            # during the iteration
+            item_list = list(elf.item_set)
+
+            # Iterator on the item list
+            for item in item_list:
+                item_closure = item.compute_closure()
+                # Union the closure for an item into the
+                # item set
+                self.item_set = \
+                    self.item_set.union(item_closure)
+
+            # If the size of the set does not change
+            # then we have reached a stable state
+            if len(self.item_set) == prev_count:
+                break
 
         return
 
