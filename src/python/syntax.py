@@ -17,10 +17,16 @@ class Symbol:
     # This is the symbol name indicating the end of input stream
     END_SYMBOL_NAME = "T_EOF"
 
+    # This is the root of the artificial starting symbol
+    # We need it for LR parsing; for LL it is not required, and the
+    # root is always referred to as the actual root from the grammar
+    ROOT_SYMBOL_NAME = "T__"
+
     # We must initialize this later because terminal object has
     # not yet been defined
     EMPTY_SYMBOL = None
     END_SYMBOL = None
+    ROOT_SYMBOL = None
 
     """
     This class represents a grammar symbol that is either a terminal
@@ -157,6 +163,19 @@ class Symbol:
                 Terminal(Symbol.END_SYMBOL_NAME)
 
         return Symbol.END_SYMBOL
+
+    @staticmethod
+    def get_root_symbol():
+        """
+        This returns the root symbol which is used for LR parsing
+
+        :return: Terminal
+        """
+        if Symbol.ROOT_SYMBOL is None:
+            Symbol.ROOT_SYMBOL = \
+                Terminal(Symbol.ROOT_SYMBOL_NAME)
+
+        return Symbol.ROOT_SYMBOL
 
 #####################################################################
 # class Terminal
