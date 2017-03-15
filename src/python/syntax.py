@@ -1239,6 +1239,9 @@ class ItemSet:
         # Note that empty string could not appear in this set
         self.goto_symbol_set = set()
 
+        # This will be set to True if compute_goto() is called
+        self.has_goto_flag = False
+
         return
 
     def has_goto_table(self):
@@ -1250,8 +1253,7 @@ class ItemSet:
 
         :return: bool
         """
-        # If the length is 0 then we have not computed the symbol set
-        return len(self.goto_symbol_set) == 0
+        return self.has_goto_flag
 
     def compute_goto(self):
         """
@@ -1293,8 +1295,13 @@ class ItemSet:
             new_item_set = ItemSet()
 
             for item in self.item_set:
+                dotted_symbol = item.get_dotted_symbol()
+                # Skip it if we have seen None
+                if dotted_symbol is None:
+                    continue
+
                 # If this item could be used to GOTO
-                if item.get_dotted_symbol == symbol:
+                if dotted_symbol == symbol:
                     # Then move the dot to the next position
                     # which is guaranteed to be valid
                     new_item = LRItem(item.p, item.index + 1)
@@ -1310,6 +1317,9 @@ class ItemSet:
                 # such that we could know how many possible
                 # states this state could transit to
                 self.goto_table[symbol] = new_item_set
+
+        # Make this instance as having the goto table
+        self.has_goto_flag = True
 
         return
 
@@ -1818,6 +1828,8 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
+        dbg_printf("Compute canonical LR set")
+
         new_item_set = ItemSet()
 
         # Construct the first closure using the root symbol
@@ -1843,6 +1855,11 @@ class ParserGeneratorLR(ParserGenerator):
             iteration += 1
 
             prev_count = len(self.item_set_set)
+
+            dbg_printf("    Iteration %d; states %d",
+                       iteration,
+                       prev_count)
+
             # We must iterate on the list because the item set
             # will be changed
             item_set_list = list(self.item_set_set)
