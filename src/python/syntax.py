@@ -167,13 +167,14 @@ class Symbol:
     @staticmethod
     def get_root_symbol():
         """
-        This returns the root symbol which is used for LR parsing
+        This returns the root symbol which is used for LR parsing.
+        Note that this symbol is a non-terminal
 
-        :return: Terminal
+        :return: NonTerminal
         """
         if Symbol.ROOT_SYMBOL is None:
             Symbol.ROOT_SYMBOL = \
-                Terminal(Symbol.ROOT_SYMBOL_NAME)
+                NonTerminal(Symbol.ROOT_SYMBOL_NAME)
 
         return Symbol.ROOT_SYMBOL
 
@@ -1820,6 +1821,11 @@ class ParserGeneratorLR(ParserGenerator):
         # This is a set of the ItemSet object
         self.item_set_set = set()
 
+        # After computing the item set set we use it to
+        # fix the order of items and use the index to refer to
+        # the i-th element in this set
+        self.item_set_list = []
+
         # This is an identity mapping - we map an item set to itself
         # The reason for this map is that item set could be identical
         # without being the same object, i.e. we check equality of two
@@ -1838,7 +1844,15 @@ class ParserGeneratorLR(ParserGenerator):
 
         # Use the fake root symbol to derive root symbol
         # because we need it to be the sign of termination
-        Production(self, fake_root_symbol, [self.root_symbol])
+        # We use the fake production also to find starting state
+        self.fake_production = \
+            Production(self, fake_root_symbol, [self.root_symbol])
+
+        # This is the item set we start parsing and it will
+        # be set later
+        self.starting_item_set = None
+        # This is the state ID from which we start parsing
+        self.starting_state = None
 
         # Compute the follow set of all productions
         # LR generator does not modify the grammar so we could
@@ -1860,15 +1874,16 @@ class ParserGeneratorLR(ParserGenerator):
 
         new_item_set = ItemSet()
 
-        # Construct the first closure using the root symbol
-        for p in self.root_symbol.lhs_set:
-            # Build a new item with index = 0
-            new_item = LRItem(p, 0)
-            new_item_set.item_set.add(new_item)
+        # Fake item is the starting point
+        new_item = LRItem(self.fake_production, 0)
+        new_item_set.item_set.add(new_item)
 
         # Adds the new item set after computing its closure
         # and then we begin iteration
         new_item_set.compute_closure()
+
+        # Set it here such that we could find it later
+        self.starting_item_set = new_item_set
 
         # Register this into the generator
         self.item_set_set.add(new_item_set)
@@ -1943,6 +1958,16 @@ class ParserGeneratorLR(ParserGenerator):
                     replacement = self.item_set_identity_dict[goto_item_set]
                     # And then replace the previous one
                     goto_item_set.goto_table[symbol] = replacement
+
+        # From now on we use the item set list
+        self.item_set_list = list(self.item_set_set)
+        for i in range(0, len(self.item_set_list)):
+            # We start parsing on starting state
+            if self.item_set_list[i] == self.starting_item_set:
+                self.starting_state = i
+                break
+
+        assert(self.starting_state is not None)
 
         dbg_printf("Computed the canonical set in %d steps",
                    iteration)
@@ -2470,6 +2495,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         pg = self.pg
 
         dbg_printf("Real root symbol: %s", pg.root_symbol)
+        dbg_printf("Starting state: %d", pg.starting_state)
 
         return
 
