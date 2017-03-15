@@ -412,42 +412,39 @@ class NonTerminal(Symbol):
 
         # For all productions where this terminal appears as a symbol
         for p in self.rhs_set:
-            # This is a list of indices that this symbol appears
-            # Current we only allow it to have exactly 1 element
-            # Because a non-terminal is not allowed to appear twice
+            # We allow one symbol to appear in a production for multiple
+            # times because that is how for() loop is defined
             index_list = p.get_symbol_index(self)
-            assert(len(index_list) == 1)
 
-            index = index_list[0]
-
-            # If the symbol appears as the last one in the production
-            if index == (len(p.rhs_list) - 1):
-                # This could be a self recursion but we have prevented this
-                # at the beginning of this function
-                p.lhs.compute_follow(path_list)
-
-                self.follow_set = \
-                    self.follow_set.union(p.lhs.follow_set)
-            else:
-                # Compute the FIRST set for the substring after the
-                # terminal symbol
-                substr_first_set = p.compute_substring_first(index + 1)
-
-                # If the string after the non-terminal could be
-                # empty then we also need to add the FOLLOW of the LHS
-                if Symbol.get_empty_symbol() in substr_first_set:
+            for index in index_list:
+                # If the symbol appears as the last one in the production
+                if index == (len(p.rhs_list) - 1):
+                    # This could be a self recursion but we have prevented this
+                    # at the beginning of this function
                     p.lhs.compute_follow(path_list)
+
                     self.follow_set = \
                         self.follow_set.union(p.lhs.follow_set)
+                else:
+                    # Compute the FIRST set for the substring after the
+                    # terminal symbol
+                    substr_first_set = p.compute_substring_first(index + 1)
 
-                    # Remove the empty symbol because empty could not
-                    # appear in FOLLOW set
-                    substr_first_set.remove(Symbol.get_empty_symbol())
+                    # If the string after the non-terminal could be
+                    # empty then we also need to add the FOLLOW of the LHS
+                    if Symbol.get_empty_symbol() in substr_first_set:
+                        p.lhs.compute_follow(path_list)
+                        self.follow_set = \
+                            self.follow_set.union(p.lhs.follow_set)
 
-                # At last, merge the FIRST() without empty symbol
-                # into the current FOLLOW set
-                self.follow_set = \
-                    self.follow_set.union(substr_first_set)
+                        # Remove the empty symbol because empty could not
+                        # appear in FOLLOW set
+                        substr_first_set.remove(Symbol.get_empty_symbol())
+
+                    # At last, merge the FIRST() without empty symbol
+                    # into the current FOLLOW set
+                    self.follow_set = \
+                        self.follow_set.union(substr_first_set)
 
         # Do not forget to remove this in the path set (we know
         # it does not exist before entering this function)
