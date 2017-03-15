@@ -1756,6 +1756,31 @@ class ParserGenerator:
 
         return
 
+#####################################################################
+# class ParserGeneratorLR
+#####################################################################
+
+class ParserGeneratorLR(ParserGenerator):
+    """
+    This class is the main class we use to generate a LR parser
+    """
+    def __init__(self, file_name):
+        """
+        Read syntax file into the class and analyze its symbols and
+        productions
+
+        :param file_name: The file name of the syntax file
+        """
+        # read file is called inside the constructor
+        ParserGenerator.__init__(self, file_name)
+
+        # Compute the follow set of all productions
+        # LR generator does not modify the grammar so we could
+        # compute the FOLLOW set before everything else
+        self.process_first_follow()
+
+        # This function generates the canonical LR set
+        self.process_item_set()
 
         return
 
