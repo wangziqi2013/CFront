@@ -1831,6 +1831,15 @@ class ParserGeneratorLR(ParserGenerator):
         # and all contents
         self.item_set_identity_dict = {}
 
+        # Add an artificial root symbol for LR parsing
+        # This must be done before computing FIRST/FOLLOW set
+        fake_root_symbol = Symbol.get_root_symbol()
+        self.terminal_set.add(fake_root_symbol)
+
+        # Use the fake root symbol to derive root symbol
+        # because we need it to be the sign of termination
+        Production(self, fake_root_symbol, [self.root_symbol])
+
         # Compute the follow set of all productions
         # LR generator does not modify the grammar so we could
         # compute the FOLLOW set before everything else
@@ -2460,7 +2469,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         self.pg = ParserGeneratorLR(file_name)
         pg = self.pg
 
-        dbg_printf("Root symbol: %s", pg.root_symbol)
+        dbg_printf("Real root symbol: %s", pg.root_symbol)
 
         return
 
