@@ -2464,6 +2464,29 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         return
 
+    @TestNode("test_lr")
+    def test_lr_parse(self, argv):
+        """
+        Tests whether LR parse works
+
+        :param argv: Argument vector
+        :return: None
+        """
+        print_test_name()
+        if argv.has_keys("lr") is False:
+            dbg_printf("Please use --lr to test LR parser generator")
+            return
+
+        pg = self.pg
+        assert(pg is not None)
+
+        current_state = pg.starting_state
+        stack = []
+
+        return
+
+
+
     @TestNode("test_ll")
     def test_ll_parse(self, argv):
         """
