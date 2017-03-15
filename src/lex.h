@@ -846,7 +846,23 @@ class SourceFile {
     char ch = GetNextChar();
     
     switch(ch) {
-      case '.': return TokenType::T_DOT;
+      case '.': {
+        // This fetches two future characters
+        char ch2 = PeekChar(0); 
+        char ch3 = PeekChar(1);
+        
+        // For ... it is ellipsis which is also a valid token in C
+        if(ch2 == '.' && ch3 == '.') {
+          // Skip these two because we already know its content
+          GetNextChar();
+          GetNextChar();
+          
+          return TokenType::T_ELLIPSIS; 
+        }
+        
+        // Otherwise one dot could only be the dot operator
+        return TokenType::T_DOT;
+      }
       case '(': return TokenType::T_LPAREN;
       case ')': return TokenType::T_RPAREN;
       case '[': return TokenType::T_LSPAREN;

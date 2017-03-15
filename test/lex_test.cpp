@@ -163,7 +163,7 @@ void TestGetNextToken() {
   char data[] = " /* \n\
                    * main2() - The entrance point of the program \n\
                    */ \n\
-                  int main() { \n\
+                  int main(int argv, char **argv, ...) { \n\
                     // This is a pointer \n\
                     int *p = 0x7c000000; \n\
                     \n\

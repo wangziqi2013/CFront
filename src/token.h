@@ -128,6 +128,13 @@ enum class TokenType {
   T_BITOR_ASSIGN,
   T_SIZEOF = 147,
   
+  // This is a primitive keyword that is used to indicate 
+  // varargs in C
+  // This is neither a keyword nor an operator, in a sense that
+  // on one hand it is not parsed as a keyword, and on the other hand
+  // it does not have operator attributes related to it
+  T_ELLIPSIS = 148,
+  
   // The following are operator types for overloading in C
   // e.g. ++ and -- have pre- and post-fix form
   
@@ -305,10 +312,7 @@ class TokenInfo {
   static const std::string &GetTokenName(TokenType type) {
     auto it = TokenInfo::token_name_map.find(type);
 
-    // If does not find then return nullptr to indicate this
-    // is not a valid operator type
-    //
-    // This branch is useful since
+    // Just avoid using unseen tokens in the program
     assert(it != TokenInfo::token_name_map.end());
 
     return it->second;

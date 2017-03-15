@@ -224,10 +224,12 @@ const TokenInfo::token_name_map_type TokenInfo::token_name_map = {
   TokenInfo::token_name_map_value_type{TokenType::T_USHORT, "T_USHORT"},
   TokenInfo::token_name_map_value_type{TokenType::T_UINT, "T_UINT"},
   TokenInfo::token_name_map_value_type{TokenType::T_ULONG, "T_ULONG"},
+  
   TokenInfo::token_name_map_value_type{TokenType::T_IDENT, "T_IDENT"},
   TokenInfo::token_name_map_value_type{TokenType::T_INT_CONST, "T_INT_CONST"},
   TokenInfo::token_name_map_value_type{TokenType::T_STRING_CONST, "T_STRING_CONST"},
   TokenInfo::token_name_map_value_type{TokenType::T_CHAR_CONST, "T_CHAR_CONST"},
+  
   TokenInfo::token_name_map_value_type{TokenType::T_INC, "T_INC"},
   TokenInfo::token_name_map_value_type{TokenType::T_DEC, "T_DEC"},
   TokenInfo::token_name_map_value_type{TokenType::T_LPAREN, "T_LPAREN"},
@@ -276,6 +278,8 @@ const TokenInfo::token_name_map_type TokenInfo::token_name_map = {
   TokenInfo::token_name_map_value_type{TokenType::T_BITXOR_ASSIGN, "T_BITXOR_ASSIGN"},
   TokenInfo::token_name_map_value_type{TokenType::T_BITOR_ASSIGN, "T_BITOR_ASSIGN"},
   TokenInfo::token_name_map_value_type{TokenType::T_SIZEOF, "T_SIZEOF"},
+  TokenInfo::token_name_map_value_type{TokenType::T_ELLIPSIS, "T_ELLIPSIS"},
+  
   TokenInfo::token_name_map_value_type{TokenType::T_POST_INC, "T_POST_INC"},
   TokenInfo::token_name_map_value_type{TokenType::T_PRE_INC, "T_PRE_INC"},
   TokenInfo::token_name_map_value_type{TokenType::T_POST_DEC, "T_POST_DEC"},
