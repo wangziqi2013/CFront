@@ -1194,6 +1194,22 @@ class LRItem:
         """
         return not self.__eq__(other)
 
+    def __repr__(self):
+        """
+        Returns a string for identifying this object
+
+        :return: str
+        """
+        return "[%s, %d]" % (str(self.p), self.index)
+
+    def __str__(self):
+        """
+        Returns a string for printing
+
+        :return: str
+        """
+        return self.__repr__()
+
 #####################################################################
 # class ItemSet
 #####################################################################
@@ -1206,6 +1222,9 @@ class ItemSet:
     def __init__(self):
         """
         Initialize an empty item set
+
+        Note that after being sealed the item set could not change
+        such that the hash and identity remains the same
         """
         # This is the set of items
         self.item_set = set()
@@ -1222,6 +1241,36 @@ class ItemSet:
         self.non_terminal_set = set()
 
         return
+
+    def __hash__(self):
+        """
+        Compute the hash code of the set.
+
+        The hash code is defined as the XOR of the hash of all items
+        in the item_set
+
+        :return: hash code
+        """
+        # Since hash itself is integer type
+        h = 0
+        for item in self.item_set:
+            h ^= hash(item)
+
+        return h
+
+    def __eq__(self, other):
+        """
+        Checks whether two items are equal
+
+        This is very simple - we just check whether the two sets
+        are equal. Since python already defines equality checking
+        for sets (by testing membership for each over another)
+        we do not implement our own
+
+        :param other: The other object
+        :return: bool
+        """
+        return self.item_set == other.item_set
 
 #####################################################################
 # class ParserGenerator
