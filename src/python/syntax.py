@@ -1243,7 +1243,7 @@ class ItemSet:
 
     def compute_goto(self):
         """
-        Computes the goto sets of the current item set
+        Computes the GOTO sets of the current item set
 
         This class maintains a mapping between the symbols that
         could lead to a GOTO (either terminal and non-terminal)
@@ -1276,7 +1276,7 @@ class ItemSet:
         for symbol in self.goto_symbol_set:
             # Create a new empty item set and we add items
             # later
-            item_set = ItemSet()
+            new_item_set = ItemSet()
 
             for item in self.item_set:
                 # If this item could be used to GOTO
@@ -1284,7 +1284,20 @@ class ItemSet:
                     # Then move the dot to the next position
                     # which is guaranteed to be valid
                     new_item = LRItem(item.p, item.index + 1)
+                    # Add this into the new item set
+                    new_item_set.item_set.add(new_item)
 
+                # This will add other items into the set
+                # until no more could be added - add items
+                # are newly created
+                new_item_set.compute_closure()
+
+                # And then put this into the goto table
+                # such that we could know how many possible
+                # states this state could transit to
+                self.goto_table[symbol] = new_item_set
+
+        return
 
     def compute_closure(self):
         """
@@ -1363,6 +1376,9 @@ class ParserGenerator:
         Open a grammar file and loads its content as terminals, non-terminals
         and productions
 
+        This function loads the file and processes symbols and productions
+        so child class do not need to call read_file again
+
         :param file_name: The name of the grammar file we want to load
         """
         # This is the name of the syntax definition file
@@ -1383,6 +1399,9 @@ class ParserGenerator:
 
         # This is the non-terminal where parsing starts
         self.root_symbol = None
+
+        # Read file and process symbols and productions
+        self.read_file()
 
         return
 
@@ -1737,6 +1756,9 @@ class ParserGenerator:
 
         return
 
+
+        return
+
 #####################################################################
 # class ParserGeneratorLL1
 #####################################################################
@@ -1756,10 +1778,6 @@ class ParserGeneratorLL1(ParserGenerator):
         # pair as keys, and production rule object as value (note
         # that we only allow one production per key)
         self.parsing_table = {}
-
-        # Reading the file, process symbols, productions
-        # and the root symbol
-        self.read_file(file_name)
 
         # As suggested by name
         self.process_left_recursion()
