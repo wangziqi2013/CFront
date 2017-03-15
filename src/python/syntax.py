@@ -1850,9 +1850,14 @@ class ParserGeneratorLR(ParserGenerator):
         # and all contents
         self.item_set_identity_dict = {}
 
-        # It maps a tuple (current state, symbol) to (action, next state)
+        # It maps a tuple (current state, symbol) to
+        #                 (action, data1, data2, i.e. pop_length)
         #    1. If symbol is a terminal then action could be SHIFT or REDUCE
-        #       and next state is the next state we enter
+        #       1.1 If action is SHIFT then data 1 is the next state and
+        #           there is no data2
+        #       1.2 If action is REDUCE then data 1 is the symbol that it
+        #           reduces to, and data2 is the length of the production
+        #           we use to reduce (pop_length)
         #    2. If symbol is a non-terminal then action is always GOTO
         #       and next state is the state we enter
         self.parsing_table = {}
@@ -1861,6 +1866,10 @@ class ParserGeneratorLR(ParserGenerator):
         # This must be done before computing FIRST/FOLLOW set
         fake_root_symbol = Symbol.get_root_symbol()
         self.non_terminal_set.add(fake_root_symbol)
+
+        # Also add end symbol T_EOF (i.e. $ symbol) into the
+        # terminal set
+        self.terminal_set.add(Symbol.get_end_symbol())
 
         # Use the fake root symbol to derive root symbol
         # because we need it to be the sign of termination
@@ -1882,6 +1891,11 @@ class ParserGeneratorLR(ParserGenerator):
         # This function generates the canonical LR set
         self.process_item_set()
 
+        # Finally...
+        # This function will throw conflict exception as KeyError
+        # if there is any conflict
+        self.generate_parsing_table()
+
         return
 
     def generate_parsing_table(self):
@@ -1890,7 +1904,76 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
+        dbg_printf("Generating parsing table...")
 
+        # Iterate over all items
+        for item_set in self.item_set_set:
+            for symbol, goto_item_set in \
+                    item_set.goto_table.items():
+                # Current state, symbol
+                k = (item_set.index, symbol)
+                if k in self.parsing_table:
+                    conflict_action = self.parsing_table[k][0]
+                    # Could only be REDUCE
+                    assert(conflict_action == self.ACTION_REDUCE)
+                    raise KeyError("SHIFT-REDUCE conflict")
+
+                # If it is terminal then we do SHIFT
+                if symbol.is_terminal() is True:
+                    # Shift to the next state
+                    self.parsing_table[k] = \
+                        (self.ACTION_SHIFT, goto_item_set.index)
+                else:
+                    self.parsing_table[k] = \
+                        (self.ACTION_GOTO, goto_item_set.index)
+
+            # Then add reduce
+            for item in item_set.item_set:
+                # We only process those that can reduce
+                if item.could_reduce() is False:
+                    continue
+
+                # This is the LHS of the production that could be reduced
+                lhs = item.p.lhs
+
+                # If the LHS is fake root then we know if we see an
+                # EOF we could finish parsing; However if it is not EOF
+                # then parsing may continue
+                if lhs == self.fake_production.lhs:
+                    dbg_printf("Setting finish state for fake root symbol")
+                    k = (item_set.index, Symbol.get_end_symbol())
+                    assert(k not in self.parsing_table)
+
+                    self.parsing_table[k] = (self.ACTION_ACCEPT, )
+
+                    # Do not compute using fake root's FOLLOW set
+                    continue
+
+                # The look-ahead symbol is the follow set of the
+                # LHS symbol of the item
+                for symbol in lhs.follow_set:
+                    assert(symbol.is_terminal() is True)
+
+                    k = (item_set.index, symbol)
+                    if k in self.parsing_table:
+                        conflict_action = self.parsing_table[k][0]
+
+                        # Could be both because REDUCE adds multiple
+                        # symbols
+                        assert(conflict_action == self.ACTION_SHIFT or
+                               conflict_action == self.ACTION_REDUCE)
+                        if conflict_action == self.ACTION_SHIFT:
+                            raise KeyError("SHIFT-REDUCE conflict")
+                        elif conflict_action == self.ACTION_REDUCE:
+                            raise KeyError("REDUCE-REDUCE conflict")
+
+                    # Then set reduce action
+                    self.parsing_table[k] = \
+                        (self.ACTION_REDUCE, lhs, len(item.p.rhs_list))
+
+        dbg_printf("    Parsing table has %d entries", len(self.parsing_table))
+
+        return
 
     def process_item_set(self):
         """
