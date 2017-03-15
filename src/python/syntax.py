@@ -1837,6 +1837,13 @@ class ParserGeneratorLR(ParserGenerator):
         # and all contents
         self.item_set_identity_dict = {}
 
+        # It maps a tuple (current state, symbol) to (action, next state)
+        #    1. If symbol is a terminal then action could be SHIFT or REDUCE
+        #       and next state is the next state we enter
+        #    2. If symbol is a non-terminal then action is always GOTO
+        #       and next state is the state we enter
+        self.parsing_table = {}
+
         # Add an artificial root symbol for LR parsing
         # This must be done before computing FIRST/FOLLOW set
         fake_root_symbol = Symbol.get_root_symbol()
@@ -1863,6 +1870,14 @@ class ParserGeneratorLR(ParserGenerator):
         self.process_item_set()
 
         return
+
+    def generate_parsing_table(self):
+        """
+        This function generates a parsing table for the LR parser
+
+        :return: None
+        """
+
 
     def process_item_set(self):
         """
