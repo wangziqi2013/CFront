@@ -1164,7 +1164,7 @@ class LRItem:
             return ret_set
 
         # Then add every production into the set and return
-        for p in symbol.rhs_set:
+        for p in symbol.lhs_set:
             item = LRItem(p, 0)
             ret_set.add(item)
 
@@ -1840,7 +1840,7 @@ class ParserGeneratorLR(ParserGenerator):
         # Add an artificial root symbol for LR parsing
         # This must be done before computing FIRST/FOLLOW set
         fake_root_symbol = Symbol.get_root_symbol()
-        self.terminal_set.add(fake_root_symbol)
+        self.non_terminal_set.add(fake_root_symbol)
 
         # Use the fake root symbol to derive root symbol
         # because we need it to be the sign of termination
