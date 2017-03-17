@@ -2481,6 +2481,48 @@ class ParserGeneratorLL1(ParserGenerator):
         return
 
 #####################################################################
+# class SyntaxNode
+#####################################################################
+
+class SyntaxNode:
+    """
+    This is the syntax node we use for demonstrating the parser's
+    parsing process
+    """
+    def __init__(self, symbol):
+        """
+        Initialize the node with a symbol. The symbol could be
+        either terminal or non-terminal
+
+        :param symbol: The symbol of this syntax node
+        """
+        self.symbol = symbol
+        # These are child nodes that appear as derived nodes
+        # in the syntax specification
+        self.child_list = []
+
+        return
+
+    def append(self, symbol):
+        """
+        Append a new symbol into the child list
+
+        :param symbol: Terminal or NonTerminal
+        :return: None
+        """
+        self.child_list.append(symbol)
+        return
+
+    def __getitem__(self, item):
+        """
+        Returns the i-th item in the child node
+
+        :param item: integer
+        :return: Symbol
+        """
+        return self.child_list[item]
+
+#####################################################################
 #####################################################################
 #####################################################################
 # class ParserGeneratorTestCase - Test cases
@@ -2531,8 +2573,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         stack = []
 
         return
-
-
 
     @TestNode("test_ll")
     def test_ll_parse(self, argv):
