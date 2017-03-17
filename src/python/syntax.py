@@ -1895,6 +1895,28 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
+    @staticmethod
+    def print_item_set(item_set, ident=0):
+        """
+        This function prints an item set on stdout. The printing is of
+        the following format:
+            item 1
+            item 2
+            ..
+            item k
+        with optional space characters specified in ident
+
+        :param item_set: The item set we print
+        :return: None
+        """
+        for item in item_set.item_set:
+            s = " " * ident
+            s += ("%s" % (item, ))
+            dbg_printf("%s", s)
+
+        return
+
+
     def generate_parsing_table(self):
         """
         This function generates a parsing table for the LR parser
@@ -1952,6 +1974,8 @@ class ParserGeneratorLR(ParserGenerator):
                     assert(symbol.is_terminal() is True)
 
                     k = (item_set.index, symbol)
+
+                    # If this is True then we have seen a conflict
                     if k in self.parsing_table:
                         conflict_action = self.parsing_table[k][0]
 
@@ -1960,8 +1984,24 @@ class ParserGeneratorLR(ParserGenerator):
                         assert(conflict_action == self.ACTION_SHIFT or
                                conflict_action == self.ACTION_REDUCE)
                         if conflict_action == self.ACTION_SHIFT:
-                            raise KeyError("SHIFT-REDUCE conflict")
+                            dbg_printf("SHIFT-REDUCE conflict on symbol %s, state %d",
+                                       symbol,
+                                       item_set.index)
+
+                            # Print it out with ident = 4
+                            ParserGeneratorLR.print_item_set(item_set, 4)
+
+                            dbg_printf("Reduce: %s", item)
+                            dbg_printf("    FOLLOW: %s", item.p.lhs.follow_set)
+
+                            # In favor of shift
+                            continue
+                            #raise KeyError("SHIFT-REDUCE conflict")
                         elif conflict_action == self.ACTION_REDUCE:
+                            dbg_printf("REDUCE-REDUCE conflict on symbol %s",
+                                       symbol)
+                            dbg_printf("    ItemSet %s", item_set.item_set)
+
                             raise KeyError("REDUCE-REDUCE conflict")
 
                     # Then set reduce action
@@ -2078,6 +2118,17 @@ class ParserGeneratorLR(ParserGenerator):
             assert(self.item_set_list[i].index is None)
             self.item_set_list[i].index = i
 
+        # Debug: find who GOTO to #248, the SHIFT-REDUCE conflict
+        # state on T_COLON to decide whether to parse a labelled statement
+        # or an identifier primary expression
+        """
+        for i in self.item_set_list:
+            for j in i.goto_table.values():
+                if j.index == 248:
+                    dbg_printf("========================", )
+                    ParserGeneratorLR.print_item_set(i, 4)
+        """
+
         assert(self.starting_state is not None)
 
         dbg_printf("Computed the canonical set in %d steps",
@@ -2086,7 +2137,6 @@ class ParserGeneratorLR(ParserGenerator):
                    len(self.item_set_set))
 
         return
-
 
 #####################################################################
 # class ParserGeneratorLL1
