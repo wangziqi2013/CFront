@@ -2557,6 +2557,27 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         return
 
     @staticmethod
+    def print_parse_tree(t, ident=0):
+        """
+        This function prints the parse tree recursively
+
+        :param t: The SyntaxNode object
+        :param ident: The number of spaces
+        :return: None
+        """
+        prefix = " " * ident
+
+        if not isinstance(t, SyntaxNode):
+            print prefix + str(t)
+        else:
+            print prefix + str(t.symbol)
+            for symbol in t.child_list:
+                ParserGeneratorTestCase.print_parse_tree(symbol,
+                                                         ident + 1)
+
+        return
+
+    @staticmethod
     def load_token_list(file_name):
         """
         This function loads a token list and build a list of
@@ -2641,8 +2662,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             t = pg.parsing_table[k]
             action = t[0]
 
-            print t
-
             # If we shift then consume a terminal and
             # goto the next state
             if action == ParserGeneratorLR.ACTION_SHIFT:
@@ -2682,6 +2701,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # Symbol stack and state stack should all have one element
         dbg_printf("Symbol stack: %s", symbol_stack)
         dbg_printf("State stack: %s", state_stack)
+
+        # Print the tree
+        ParserGeneratorTestCase.print_parse_tree(symbol_stack[0])
 
         return
 
