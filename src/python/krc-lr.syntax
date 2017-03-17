@@ -1,0 +1,364 @@
+primary-expression:
+    T_IDENT
+    T_INT_CONST
+    T_STRING_CONST
+    T_CHAR_CONST
+    T_LPAREN expression T_RPAREN
+ 
+postfix-expression:
+    primary-expression
+    postfix-expression T_LSPAREN expression T_RSPAREN
+    postfix-expression T_LPAREN T_RPAREN
+    postfix-expression T_LPAREN argument-expression-list T_RPAREN
+    postfix-expression T_DOT T_IDENT
+    postfix-expression T_ARROW T_IDENT
+    postfix-expression T_INC
+    postfix-expression T_DEC
+ 
+argument-expression-list:
+    assignment-expression
+    argument-expression-list T_COMMA assignment-expression
+ 
+unary-expression:
+    postfix-expression
+    T_INC unary-expression
+    T_DEC unary-expression
+    unary-operator cast-expression
+    T_SIZEOF unary-expression
+    T_SIZEOF T_LPAREN type-name T_RPAREN
+ 
+unary-operator:
+    T_AMPERSAND
+    T_STAR
+    T_PLUS
+    T_MINUS
+    T_BITNOT
+    T_NOT
+ 
+cast-expression:
+    unary-expression
+    T_LPAREN type-name T_RPAREN cast-expression
+
+logical-OR-expression:
+    logical-AND-expression
+    logical-OR-expression T_OR logical-AND-expression
+
+logical-AND-expression:
+    inclusive-OR-expression
+    logical-AND-expression T_AND inclusive-OR-expression
+
+inclusive-OR-expression:
+    exclusive-OR-expression
+    inclusive-OR-expression T_BIT_OR exclusive-OR-expression
+
+exclusive-OR-expression:
+    AND-expression
+    exclusive-OR-expression T_BIT_XOR AND-expression
+
+AND-expression:
+    equality-expression
+    AND-expression T_BIT_AND equality-expression
+
+equality-expression:
+    relational-expression
+    equality-expression T_EQ relational-expression
+    equality-expression T_NOTEQ relational-expression
+
+relational-expression:
+    shift-expression
+    relational-expression T_LESS shift-expression
+    relational-expression T_LESSEQ shift-expression
+    relational-expression T_GREATER shift-expression
+    relational-expression T_GREATEREQ shift-expression
+
+shift-expression:
+    additive-expression
+    shift-expression T_LSHIFT additive-expression
+    shift-expression T_RSHIFT additive-expression
+
+additive-expression:
+    multiplicative-expression
+    additive-expression T_PLUS multiplicative-expression
+    additive-expression T_MINUS multiplicative-expression
+
+multiplicative-expression:
+    cast-expression
+    multiplicative-expression T_STAR cast-expression
+    multiplicative-expression T_DIV cast-expression
+    multiplicative-expression T_MOD cast-expression
+ 
+conditional-expression:
+    logical-OR-expression
+    logical-OR-expression T_QMARK expression T_COLON conditional-expression
+ 
+assignment-expression:
+    conditional-expression
+    conditional-expression assignment-operator assignment-expression
+    # TODO: This will cause SHIFT-REDUCE conflict
+    #unary-expression assignment-operator assignment-expression
+ 
+assignment-operator:
+    T_ASSIGN
+    T_PLUS_ASSIGN
+    T_MINUS_ASSIGN
+    T_STAR_ASSIGN
+    T_DIV_ASSIGN
+    T_MOD_ASSIGN
+    T_LSHIFT_ASSIGN
+    T_RSHIFT_ASSIGN
+    T_AMPERSAND_ASSIGN
+    T_BITXOR_ASSIGN
+    T_BITOR_ASSIGN
+ 
+expression:
+    assignment-expression
+    expression T_COMMA assignment-expression
+ 
+constant-expression:
+    conditional-expression
+ 
+#
+# C declaration rules
+#
+ 
+declaration:
+    declaration-specifiers T_SEMICOLON
+    declaration-specifiers init-declarator-list T_SEMICOLON
+ 
+declaration-specifiers:
+    storage-class-specifier
+    type-specifier
+    type-qualifier
+    storage-class-specifier declaration-specifiers
+    type-specifier          declaration-specifiers
+    type-qualifier          declaration-specifiers
+ 
+init-declarator-list:
+    init-declarator
+    init-declarator-list T_COMMA init-declarator
+ 
+init-declarator:
+    declarator
+    declarator T_ASSIGN initializer
+ 
+storage-class-specifier:
+    T_TYPEDEF
+    T_EXTERN
+    T_STATIC
+    T_AUTO
+    T_REGISTER
+ 
+type-specifier:
+    T_VOID
+    T_CHAR
+    T_SHORT
+    T_INT
+    T_LONG
+    T_FLOAT
+    T_DOUBLE
+    T_SIGNED
+    T_UNSIGNED
+    struct-or-union-specifier
+    enum-specifier
+    # TODO: Please see typedef-name definition (commented out)
+    #typedef-name
+ 
+struct-or-union-specifier:
+    struct-or-union T_LCPAREN struct-declaration-list T_RCPAREN
+    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN
+    struct-or-union T_IDENT
+ 
+struct-or-union:
+    T_STRUCT
+    T_UNION
+ 
+struct-declaration-list:
+    struct-declaration
+    struct-declaration-list struct-declaration
+ 
+struct-declaration:
+    specifier-qualifier-list struct-declarator-list T_SEMICOLON
+ 
+specifier-qualifier-list:
+    type-specifier
+    type-qualifier
+    type-specifier specifier-qualifier-list 
+    type-qualifier specifier-qualifier-list 
+ 
+struct-declarator-list:
+    struct-declarator
+    struct-declarator-list T_COMMA struct-declarator
+ 
+struct-declarator:
+    declarator
+    T_COLON constant-expression
+    declarator T_COLON constant-expression
+ 
+enum-specifier:
+    T_ENUM T_LCPAREN enumerator-list T_RCPAREN
+    T_ENUM T_IDENT T_LCPAREN enumerator-list T_RCPAREN
+    T_ENUM T_IDENT
+ 
+enumerator-list:
+    enumerator
+    enumerator-list T_COMMA enumerator
+ 
+enumerator:
+    enumeration-constant
+    enumeration-constant T_ASSIGN constant-expression
+ 
+enumeration-constant:
+    T_IDENT
+ 
+type-qualifier:
+    T_CONST
+    T_VOLATILE
+ 
+declarator:
+    direct-declarator
+    pointer direct-declarator
+ 
+direct-declarator:
+    T_IDENT
+    T_LPAREN declarator T_RPAREN
+    direct-declarator T_LSPAREN T_RSPAREN
+    direct-declarator T_LSPAREN constant-expression T_RSPAREN
+    direct-declarator T_LPAREN T_RPAREN
+    direct-declarator T_LPAREN parameter-type-list T_RPAREN
+    direct-declarator T_LPAREN identifier-list T_RPAREN
+ 
+pointer:
+     T_STAR
+     T_STAR pointer
+     T_STAR type-qualifier-list
+     T_STAR type-qualifier-list pointer
+ 
+type-qualifier-list:
+    type-qualifier
+    type-qualifier-list type-qualifier
+ 
+parameter-type-list:
+    parameter-list
+    parameter-list T_COMMA T_ELLIPSIS
+ 
+parameter-list:
+    parameter-declaration
+    parameter-list T_COMMA parameter-declaration
+ 
+parameter-declaration:
+    declaration-specifiers declarator
+    declaration-specifiers
+    declaration-specifiers abstract-declarator
+ 
+identifier-list:
+    T_IDENT
+    identifier-list T_COMMA T_IDENT
+ 
+type-name:
+    specifier-qualifier-list
+    specifier-qualifier-list abstract-declarator
+ 
+abstract-declarator:
+    pointer
+    direct-abstract-declarator
+    pointer direct-abstract-declarator
+ 
+direct-abstract-declarator:
+    T_LPAREN abstract-declarator T_RPAREN
+    T_LSPAREN T_RSPAREN
+    T_LSPAREN constant-expression T_RSPAREN
+    T_LPAREN T_RPAREN
+    T_LPAREN parameter-type-list T_RPAREN
+    direct-abstract-declarator T_LSPAREN T_RSPAREN
+    direct-abstract-declarator T_LSPAREN constant-expression T_RSPAREN
+    direct-abstract-declarator T_LPAREN T_RPAREN
+    direct-abstract-declarator T_LPAREN parameter-type-list T_RPAREN
+
+# TODO: This does not work without symbol table hack
+#typedef-name:
+#    T_IDENT
+ 
+initializer:
+    assignment-expression
+    T_LCPAREN initializer-list T_RCPAREN
+    T_LCPAREN initializer-list T_COMMA T_RCPAREN
+ 
+initializer-list:
+    initializer
+    initializer-list T_COMMA initializer
+ 
+#
+# C statement rules
+#
+ 
+statement:
+    labeled-statement
+    compound-statement
+    expression-statement
+    selection-statement
+    iteration-statement
+    jump-statement
+ 
+labeled-statement:
+    T_IDENT T_COLON statement
+    T_CASE constant-expression T_COLON statement
+    T_DEFAULT T_COLON statement
+ 
+compound-statement:
+    T_LCPAREN T_RCPAREN
+    T_LCPAREN declaration-list T_RCPAREN
+    T_LCPAREN statement-list T_RCPAREN
+    T_LCPAREN declaration-list statement-list T_RCPAREN
+ 
+declaration-list:
+    declaration
+    declaration-list declaration
+ 
+statement-list:
+    statement
+    statement-list statement
+ 
+expression-statement:
+    T_SEMICOLON
+    expression T_SEMICOLON
+ 
+selection-statement:
+    T_IF T_LPAREN expression T_RPAREN statement
+    T_IF T_LPAREN expression T_RPAREN statement T_ELSE statement
+    T_SWITCH T_LPAREN expression T_RPAREN statement
+ 
+iteration-statement:
+    T_WHILE T_LPAREN expression T_RPAREN statement
+    T_DO statement while T_LPAREN expression T_RPAREN T_SEMICOLON
+    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON            T_RPAREN statement
+    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement
+    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement
+    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement
+    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON            T_RPAREN statement
+    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement
+    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement
+    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement
+ 
+jump-statement:
+    T_GOTO T_IDENT T_SEMICOLON
+    T_CONTINUE T_SEMICOLON
+    T_BREAK T_SEMICOLON
+    T_RETURN T_SEMICOLON
+    T_RETURN expression T_SEMICOLON
+
+root:
+    translation-unit
+
+translation-unit:
+    external-declaration
+    translation-unit external-declaration
+ 
+external-declaration:
+    function-definition
+    declaration
+ 
+function-definition:
+                           declarator                  compound-statement
+    declaration-specifiers declarator                  compound-statement
+                           declarator declaration-list compound-statement
+    declaration-specifiers declarator declaration-list compound-statement
