@@ -2108,7 +2108,7 @@ class ParserGeneratorLR(ParserGenerator):
                     replacement = self.item_set_identity_dict[goto_item_set]
 
                     # And then replace the previous one
-                    goto_item_set.goto_table[symbol] = replacement
+                    item_set.goto_table[symbol] = replacement
 
         # From now on we use the item set list
         self.item_set_list = list(self.item_set_set)
