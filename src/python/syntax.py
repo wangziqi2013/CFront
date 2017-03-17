@@ -2096,14 +2096,17 @@ class ParserGeneratorLR(ParserGenerator):
         for item_set in self.item_set_set:
             # Check whether there is any bug
             assert(item_set.has_goto_table() is True)
+
             # Check whether the goto table always use
             # item sets that have GOTO table; if not then
             # update it using the identity map
-            for symbol, goto_item_set in item_set.goto_table.items():
+            goto_table_item_list = list(item_set.goto_table.items())
+            for symbol, goto_item_set in goto_table_item_list:
                 # Replace it
                 if goto_item_set.has_goto_table() is False:
                     # Use identity to query contents
                     replacement = self.item_set_identity_dict[goto_item_set]
+
                     # And then replace the previous one
                     goto_item_set.goto_table[symbol] = replacement
 
@@ -2615,11 +2618,70 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             dbg_printf("Please use --lr to test LR parser generator")
             return
 
+        if argv.has_keys("token-file") is False:
+            dbg_printf("Please use --token-file to specify lex output")
+            return
+
         pg = self.pg
         assert(pg is not None)
 
-        current_state = pg.starting_state
-        stack = []
+        token_file_name = argv.get_all_values("token-file")[0]
+        terminal_list = \
+            ParserGeneratorTestCase.load_token_list(token_file_name)
+        terminal_index = 0
+
+        state_stack = [pg.starting_state]
+        symbol_stack = []
+
+        while True:
+            top_state = state_stack[-1]
+            terminal = terminal_list[terminal_index]
+
+            k = (top_state, terminal)
+            t = pg.parsing_table[k]
+            action = t[0]
+
+            print t
+
+            # If we shift then consume a terminal and
+            # goto the next state
+            if action == ParserGeneratorLR.ACTION_SHIFT:
+                assert(isinstance(t[1], int))
+                state_stack.append(t[1])
+                symbol_stack.append(terminal)
+
+                terminal_index += 1
+            elif action == ParserGeneratorLR.ACTION_REDUCE:
+                assert(t[1].is_non_terminal() is True)
+
+                sn = SyntaxNode(t[1])
+                # The third component is the pop length
+                sn.child_list = symbol_stack[-t[2]:]
+
+                # Remove the same number of elements
+                for i in range(0, t[2]):
+                    symbol_stack.pop()
+                    state_stack.pop()
+
+                # This is the state we use to compute GOTO
+                top_state = state_stack[-1]
+
+                goto_tuple = pg.parsing_table[(top_state, t[1])]
+                assert(goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
+
+                # Push new non-terminal into the list
+                symbol_stack.append(sn)
+                # Push the new symbol after reduction into the list
+                state_stack.append(goto_tuple[1])
+            elif action == ParserGeneratorLR.ACTION_ACCEPT:
+                break
+            else:
+                raise ValueError("Unknown parser state: %s" %
+                                 (t[0], ))
+
+        # Symbol stack and state stack should all have one element
+        dbg_printf("Symbol stack: %s", symbol_stack)
+        dbg_printf("State stack: %s", state_stack)
 
         return
 
