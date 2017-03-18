@@ -1895,6 +1895,44 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
+    def dump_parsing_table(self, file_name):
+        """
+        Dumps the parsing table into a file. The format of the file is specified as
+        follows:
+
+        The file is dumped as a set of lines, and each line represents an entry in
+        the parsing table. The format of the line is like the following:
+            current_state symbol action ...
+        The above three columns are common to all action types. For ACTION_SHIFT
+        the ... is the next state and symbol must be a terminal; for ACTION_GOTO,
+        the ... is the next state and symbol must be a non-terminal; for
+        ACTION_REDUCE ... is the non-terminal to reduce to followed by the length
+        of the production which is an integer. For ACTION_ACCEPT ... is empty
+
+        :param file_name: The file to dump the parsing table into
+        :return: None
+        """
+        dbg_printf("Dumping parsing table into file: %s", file_name)
+
+        fp = open(file_name, "w")
+        for key, value in self.parsing_table.items():
+            fp.write("%d %s " % (key[0], key[1].name))
+            action = value[0]
+            if action == self.ACTION_SHIFT:
+                fp.write("SHIFT %d\n" % (value[1], ))
+            elif action == self.ACTION_GOTO:
+                fp.write("GOTO %d\n" % (value[1], ))
+            elif action == self.ACTION_ACCEPT:
+                fp.write("ACCEPT\n")
+            elif action == self.ACTION_REDUCE:
+                fp.write("REDUCE %s %d\n" % (value[1].name, value[2]))
+            else:
+                raise ValueError("Unknown action: %d" % (action, ))
+
+        fp.close()
+
+        return
+
     @staticmethod
     def print_item_set(item_set, ident=0):
         """
@@ -1904,7 +1942,7 @@ class ParserGeneratorLR(ParserGenerator):
             item 2
             ..
             item k
-        with optional space characters specified in ident
+        with optional space characters specified in identifier
 
         :param item_set: The item set we print
         :return: None
@@ -2853,6 +2891,11 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         dbg_printf("Real root symbol: %s", pg.root_symbol)
         dbg_printf("Starting state: %d", pg.starting_state)
+
+        # If there is request to dump the parsing table
+        if argv.has_keys("dump-file"):
+            dump_file_name = argv.get_all_values("dump-file")[0]
+            pg.dump_parsing_table(dump_file_name)
 
         return
 
