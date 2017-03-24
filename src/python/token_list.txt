@@ -45,10 +45,37 @@ TokenType = T_IDENT                 ; Identifier = c
 TokenType = T_COLON                 ; Other token type
 TokenType = T_INT_CONST             ; Int const = 2080374784
 TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_IF                    ; Other token type
+TokenType = T_LPAREN                ; Other token type
+TokenType = T_IDENT                 ; Identifier = i
+TokenType = T_LESS                  ; Other token type
+TokenType = T_INT_CONST             ; Int const = 10
+TokenType = T_RPAREN                ; Other token type
+TokenType = T_IDENT                 ; Identifier = i
+TokenType = T_ASSIGN                ; Other token type
+TokenType = T_INT_CONST             ; Int const = 100
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_ELSE                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = i
+TokenType = T_STAR_ASSIGN           ; Other token type
+TokenType = T_INT_CONST             ; Int const = 2
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_FOR                   ; Other token type
+TokenType = T_LPAREN                ; Other token type
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_IDENT                 ; Identifier = i
+TokenType = T_LESS                  ; Other token type
+TokenType = T_INT_CONST             ; Int const = 20
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_RPAREN                ; Other token type
+TokenType = T_LCPAREN               ; Other token type
+TokenType = T_IDENT                 ; Identifier = i
+TokenType = T_PLUS                  ; Other token type
+TokenType = T_INT_CONST             ; Int const = 2
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_RCPAREN               ; Other token type
 TokenType = T_STAR                  ; Other token type
 TokenType = T_IDENT                 ; Identifier = a
-#TokenType = T_PLUS                  ; The following two tests assignment expression
-#TokenType = T_IDENT                 ;
 TokenType = T_ASSIGN                ; Other token type
 TokenType = T_STAR                  ; Other token type
 TokenType = T_IDENT                 ; Identifier = b

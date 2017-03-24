@@ -169,6 +169,8 @@ void TestGetNextToken() {
 "  int (*q)(int, char *), *p = 5; \n"
 "\n"
 "  p = a + 2 > *b[1] ? c : 0x7c000000;\n"
+"  if(i < 10) i = 100; else i *= 2; \n"
+"  for(;i < 20;) {i + 2;}"
 "  *a = *b = ~c;\n"
 "  printf(\"Hello, world\\n\"); \n"
 "\n"
