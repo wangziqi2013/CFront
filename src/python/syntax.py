@@ -1360,27 +1360,23 @@ class LR1Item(LRItem):
             # included
             return
 
+        # We always create a new lookahead set for the new item
+        # object to avoid complicated bugs
+        if self.index + 1 == len(self.p.rhs_list):
+            lookahead_set = self.lookahead_set
+        else:
+            # Get the FIRST set of the substring after the
+            # dot symbol
+            lookahead_set = \
+                self.p.compute_substring_first(self.index + 1)
+            if Symbol.get_empty_symbol() in lookahead_set:
+                lookahead_set = lookahead_set.copy()
+                lookahead_set.remove(Symbol.get_empty_symbol())
+                lookahead_set = \
+                    lookahead_set.union(self.lookahead_set)
+
         # Then add every production into the set and return
         for p in symbol.lhs_set:
-            # Inside this branch we know self.index must
-            # be valid
-            assert(self.is_empty_production is False)
-            assert(self.index < len(self.p.rhs_list))
-
-            # We always create a new lookahead set for the new item
-            # object to avoid complicated bugs
-            if self.index + 1 == len(self.p.rhs_list):
-                lookahead_set = self.lookahead_set.copy()
-            else:
-                # Get the FIRST set of the substring after the
-                # dot symbol
-                lookahead_set = \
-                    self.p.compute_substring_first(self.index + 1).copy()
-                if Symbol.get_empty_symbol() in lookahead_set:
-                    lookahead_set.remove(Symbol.get_empty_symbol())
-                    lookahead_set = \
-                        lookahead_set.union(self.lookahead_set)
-
             item = LR1Item(p, 0, lookahead_set)
             item_set.add(item)
 
