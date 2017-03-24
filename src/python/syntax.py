@@ -1921,7 +1921,12 @@ class ParserGeneratorLR(ParserGenerator):
     ACTION_GOTO = 2
     ACTION_ACCEPT = 3
 
-    def __init__(self, file_name):
+    # Type of LR items we support
+    LR_TYPE_SLR = 0
+    LR_TYPE_LR1 = 1
+    LR_TYPE_LALR = 2
+
+    def __init__(self, file_name, lr_type=LR_TYPE_SLR):
         """
         Read syntax file into the class and analyze its symbols and
         productions
@@ -1930,6 +1935,9 @@ class ParserGeneratorLR(ParserGenerator):
         """
         # read file is called inside the constructor
         ParserGenerator.__init__(self, file_name)
+
+        # We build different items based on this
+        self.lr_type = lr_type
 
         # After computing the item set set we use it to
         # fix the order of items and use the index to refer to
@@ -2059,7 +2067,6 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
-
     def generate_parsing_table(self):
         """
         This function generates a parsing table for the LR parser
@@ -2166,9 +2173,17 @@ class ParserGeneratorLR(ParserGenerator):
         new_item_set = ItemSet()
 
         # Fake item is the starting point
-        new_item = LRItem(self.fake_production, 0)
-        new_item_set.item_set.add(new_item)
+        if self.lr_type == ParserGeneratorLR.LR_TYPE_SLR:
+            new_item = LRItem(self.fake_production, 0)
+        elif self.lr_type == ParserGeneratorLR.LR_TYPE_LR1:
+            new_item = LR1Item(self.fake_production,
+                               0,
+                               set([Symbol.get_end_symbol()]))
+        else:
+            raise TypeError("Unknown LR parser type: %d" %
+                            (self.lr_type, ))
 
+        new_item_set.item_set.add(new_item)
         # Adds the new item set after computing its closure
         # and then we begin iteration
         new_item_set.compute_closure()
@@ -2945,8 +2960,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         """
         print_test_name()
 
-        if argv.has_keys("lr") is False:
-            dbg_printf("Please use --lr to test LR parser generator")
+        if argv.has_keys("slr", "lr1") is False:
+            dbg_printf("Please use --lr1 or --slr to" +
+                       " test LR parser generator")
+            return
 
         # The first argument is the file name
         file_name = argv.arg_list[0]
@@ -2954,7 +2971,13 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # Initialize the object - it will read the file
         # and parse its contents
-        self.pg = ParserGeneratorLR(file_name)
+        if argv.has_keys("slr"):
+            self.pg = ParserGeneratorLR(file_name,
+                                        ParserGeneratorLR.LR_TYPE_SLR)
+        elif argv.has_keys("lr1"):
+            self.pg = ParserGeneratorLR(file_name,
+                                        ParserGeneratorLR.LR_TYPE_LR1)
+
         pg = self.pg
 
         dbg_printf("Real root symbol: %s", pg.root_symbol)
