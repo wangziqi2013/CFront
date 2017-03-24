@@ -2299,7 +2299,6 @@ class ParserGeneratorLR(ParserGenerator):
                     # Then set reduce action
                     self.parsing_table[k] = v
 
-
         dbg_printf("    Parsing table has %d entries", len(self.parsing_table))
 
         return

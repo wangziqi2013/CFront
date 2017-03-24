@@ -45,6 +45,17 @@ TokenType = T_IDENT                 ; Identifier = c
 TokenType = T_COLON                 ; Other token type
 TokenType = T_INT_CONST             ; Int const = 2080374784
 TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = a
+TokenType = T_PLUS                  ; The following two tests assignment expression
+TokenType = T_IDENT                 ;
+TokenType = T_ASSIGN                ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = b
+TokenType = T_ASSIGN                ; Other token type
+TokenType = T_BITNOT                ; Other token type
+TokenType = T_IDENT                 ; Identifier = c
+TokenType = T_SEMICOLON             ; Other token type
 TokenType = T_IDENT                 ; Identifier = printf
 TokenType = T_LPAREN                ; Other token type
 TokenType = T_STRING_CONST          ; String const = "Hello, world"
@@ -60,4 +71,4 @@ TokenType = T_STAR                  ; Other token type
 TokenType = T_IDENT                 ; Identifier = p
 TokenType = T_SEMICOLON             ; Other token type
 TokenType = T_RCPAREN               ; Other token type
-TokenType = T_EOF                   ; End of file
+TokenType = T_EOF                   ; EOF

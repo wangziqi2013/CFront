@@ -169,6 +169,7 @@ void TestGetNextToken() {
 "  int (*q)(int, char *), *p = 5; \n"
 "\n"
 "  p = a + 2 > *b[1] ? c : 0x7c000000;\n"
+"  *a = *b = ~c;\n"
 "  printf(\"Hello, world\\n\"); \n"
 "\n"
 "ret:\n"

@@ -93,9 +93,9 @@ conditional-expression:
  
 assignment-expression:
     conditional-expression
-    conditional-expression assignment-operator assignment-expression
+    #conditional-expression assignment-operator assignment-expression
     # TODO: This will cause SHIFT-REDUCE conflict
-    #unary-expression assignment-operator assignment-expression
+    unary-expression assignment-operator assignment-expression
  
 assignment-operator:
     T_ASSIGN
