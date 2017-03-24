@@ -831,6 +831,26 @@ class Production:
         # containing pg object
         self.pg.production_set.add(self)
 
+        # This is the table for holding the FIRST set for
+        # all prefixes of the production
+        # We need this to be computed very fast because LR(1)
+        # items heavily rely on it
+        self.substring_first_set_list = []
+
+        return
+
+    def prepare_substring_first(self):
+        """
+        This function prepares all possible substring FIRST
+        set in a table for later use.
+
+        :return: None
+        """
+        for i in range(0, len(self.rhs_list)):
+            self.substring_first_set_list.append(
+                self._compute_substring_first(i)
+            )
+
         return
 
     def get_symbol_index(self, symbol):
@@ -857,7 +877,7 @@ class Production:
 
         return ret
 
-    def compute_substring_first(self, index=0):
+    def _compute_substring_first(self, index=0):
         """
         This function computes the FIRST set for a substring. An optional
         index field is also provided to allow the user to start
