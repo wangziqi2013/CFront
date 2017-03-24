@@ -2261,10 +2261,14 @@ class ParserGeneratorLR(ParserGenerator):
                 for symbol in lookahead_set:
                     assert(symbol.is_terminal() is True)
 
+                    # Key and value in the mapping table
                     k = (item_set.index, symbol)
+                    v = (self.ACTION_REDUCE, lhs, len(item.p.rhs_list))
 
-                    # If this is True then we have seen a conflict
-                    if k in self.parsing_table:
+                    # If the entry exists and the value is different
+                    # then we know there is a conflict
+                    if k in self.parsing_table and \
+                       self.parsing_table[k] != v:
                         conflict_action = self.parsing_table[k][0]
 
                         # Could be both because REDUCE adds multiple
@@ -2293,8 +2297,8 @@ class ParserGeneratorLR(ParserGenerator):
                             raise KeyError("REDUCE-REDUCE conflict")
 
                     # Then set reduce action
-                    self.parsing_table[k] = \
-                        (self.ACTION_REDUCE, lhs, len(item.p.rhs_list))
+                    self.parsing_table[k] = v
+
 
         dbg_printf("    Parsing table has %d entries", len(self.parsing_table))
 
