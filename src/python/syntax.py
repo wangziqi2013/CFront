@@ -2873,6 +2873,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                      s.splitlines() if
                      len(line.strip()) != 0]
         for line in line_list:
+            # Skip commented lines
+            if line[0] == '#':
+                continue
+
             if line.startswith("TokenType = ") is False:
                 raise ValueError("Illegal line: %s" %
                                  (line, ))
