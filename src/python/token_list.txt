@@ -1,0 +1,63 @@
+TokenType = T_INT                   ; Other token type
+TokenType = T_IDENT                 ; Identifier = main
+TokenType = T_LPAREN                ; Other token type
+TokenType = T_INT                   ; Other token type
+TokenType = T_IDENT                 ; Identifier = argv
+TokenType = T_COMMA                 ; Other token type
+TokenType = T_CHAR                  ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = argv
+TokenType = T_COMMA                 ; Other token type
+TokenType = T_ELLIPSIS              ; Other token type
+TokenType = T_RPAREN                ; Other token type
+TokenType = T_LCPAREN               ; Other token type
+TokenType = T_INT                   ; Other token type
+TokenType = T_LPAREN                ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = q
+TokenType = T_RPAREN                ; Other token type
+TokenType = T_LPAREN                ; Other token type
+TokenType = T_INT                   ; Other token type
+TokenType = T_COMMA                 ; Other token type
+TokenType = T_CHAR                  ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_RPAREN                ; Other token type
+TokenType = T_COMMA                 ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = p
+TokenType = T_ASSIGN                ; Other token type
+TokenType = T_INT_CONST             ; Int const = 5
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_IDENT                 ; Identifier = p
+TokenType = T_ASSIGN                ; Other token type
+TokenType = T_IDENT                 ; Identifier = a
+TokenType = T_PLUS                  ; Other token type
+TokenType = T_INT_CONST             ; Int const = 2
+TokenType = T_GREATER               ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = b
+TokenType = T_LSPAREN               ; Other token type
+TokenType = T_INT_CONST             ; Int const = 1
+TokenType = T_RSPAREN               ; Other token type
+TokenType = T_QMARK                 ; Other token type
+TokenType = T_IDENT                 ; Identifier = c
+TokenType = T_COLON                 ; Other token type
+TokenType = T_INT_CONST             ; Int const = 2080374784
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_IDENT                 ; Identifier = printf
+TokenType = T_LPAREN                ; Other token type
+TokenType = T_STRING_CONST          ; String const = "Hello, world"
+TokenType = T_RPAREN                ; Other token type
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_IDENT                 ; Identifier = ret
+TokenType = T_COLON                 ; Other token type
+TokenType = T_RETURN                ; Other token type
+TokenType = T_MINUS                 ; Other token type
+TokenType = T_INT_CONST             ; Int const = 1
+TokenType = T_STAR                  ; Other token type
+TokenType = T_STAR                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = p
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_RCPAREN               ; Other token type
+TokenType = T_EOF                   ; End of file
