@@ -1191,7 +1191,7 @@ class LRItem:
 
         :return: hash code
         """
-        return hash(self.p) ^ hash(self.index)
+        return id(self.p) ^ id(self.index)
 
     def __eq__(self, other):
         """
@@ -1200,7 +1200,7 @@ class LRItem:
         :param other: The other LRItem object
         :return: bool
         """
-        return self.p == other.p and \
+        return id(self.p) == id(other.p) and \
                self.index == other.index
 
     def __ne__(self, other):
