@@ -1092,6 +1092,19 @@ class LRItem:
 
         return
 
+    def advance(self):
+        """
+        Returns a new item with index ++. This is particularly
+        useful for unifying the SLR and LR(1) algorithm under
+        the same framework
+
+        :return: LRItem object
+        """
+        # There must be at least a symbol
+        assert(self.get_dotted_symbol() is not None)
+
+        return LRItem(self.p, self.index + 1)
+
     def could_reduce(self):
         """
         Whether the dot is after all symbols. The special case is for
@@ -1272,7 +1285,7 @@ class LR1Item(LRItem):
         return LRItem.__eq__(self, other) and \
                self.lookahead_set == other.lookahead_set
 
-    def __hash__(self, other):
+    def __hash__(self):
         """
         Hashes the LR(1) item into a hash code
 
@@ -1313,16 +1326,21 @@ class LR1Item(LRItem):
             assert(self.is_empty_production is False)
             assert(self.index < len(self.p.rhs_list))
 
-            # Get the FIRST set of the substring after the
-            # dot symbol
-            lookahead_set = \
-                self.p.compute_substring_first(self.index)
-            if Symbol.get_empty_symbol() in lookahead_set:
-                lookahead_set.remove(Symbol.get_empty_symbol())
+            # We always create a new lookahead set for the new item
+            # object to avoid complicated bugs
+            if self.index + 1 == len(self.p.rhs_list):
+                lookahead_set = self.lookahead_set.copy()
+            else:
+                # Get the FIRST set of the substring after the
+                # dot symbol
                 lookahead_set = \
-                    lookahead_set.union(self.lookahead_set)
+                    self.p.compute_substring_first(self.index + 1)
+                if Symbol.get_empty_symbol() in lookahead_set:
+                    lookahead_set.remove(Symbol.get_empty_symbol())
+                    lookahead_set = \
+                        lookahead_set.union(self.lookahead_set)
 
-            item = LRItem(p, 0, lookahead_set)
+            item = LR1Item(p, 0, lookahead_set)
             item_set.add(item)
 
         return
@@ -1426,7 +1444,10 @@ class ItemSet:
                 if dotted_symbol == symbol:
                     # Then move the dot to the next position
                     # which is guaranteed to be valid
-                    new_item = LRItem(item.p, item.index + 1)
+                    # Note that here we could not hard code the
+                    # LR item type being used here because it
+                    # might as well be an LR1Item
+                    new_item = item.advance() #LRItem(item.p, item.index + 1)
                     # Add this into the new item set
                     new_item_set.item_set.add(new_item)
 
@@ -2756,8 +2777,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :return: None
         """
         print_test_name()
-        if argv.has_keys("lr") is False:
-            dbg_printf("Please use --lr to test LR parser generator")
+        if argv.has_keys("slr", "lr1") is False:
+            dbg_printf("Please use --slr or --lr1 to" +
+                       " test LR parser generator")
             return
 
         if argv.has_keys("token-file") is False:
