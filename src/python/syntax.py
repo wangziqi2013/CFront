@@ -1158,7 +1158,7 @@ class LRItem:
         elif symbol.is_terminal() is True:
             # Note that the empty symbol is also
             # included
-            return None
+            return
 
         # Then add every production into the set and return
         for p in symbol.lhs_set:
@@ -1296,24 +1296,36 @@ class LR1Item(LRItem):
         we also add the lookahead of the current item into the
         lookahead set
 
-        :return: set(LR1Item) or None
+        :return: None
         """
-        # This is the set we will add items into and return
-        ret_set = set()
         symbol = self.get_dotted_symbol()
         if symbol is None:
-            return None
+            return
         elif symbol.is_terminal() is True:
             # Note that the empty symbol is also
             # included
-            return None
+            return
 
         # Then add every production into the set and return
         for p in symbol.lhs_set:
-            item = LRItem(p, 0)
-            ret_set.add(item)
+            # Inside this branch we know self.index must
+            # be valid
+            assert(self.is_empty_production is False)
+            assert(self.index < len(self.p.rhs_list))
 
-        return ret_set
+            # Get the FIRST set of the substring after the
+            # dot symbol
+            lookahead_set = \
+                self.p.compute_substring_first(self.index)
+            if Symbol.get_empty_symbol() in lookahead_set:
+                lookahead_set.remove(Symbol.get_empty_symbol())
+                lookahead_set = \
+                    lookahead_set.union(self.lookahead_set)
+
+            item = LRItem(p, 0, lookahead_set)
+            item_set.add(item)
+
+        return
 
 #####################################################################
 # class ItemSet
@@ -1461,8 +1473,7 @@ class ItemSet:
                 # Pass the item set into the closure function
                 # for adding new items without creating new
                 # data structure
-                item_closure = \
-                    item.compute_closure(self.item_set)
+                item.compute_closure(self.item_set)
 
             # If the size of the set does not change
             # then we have reached a stable state
