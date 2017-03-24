@@ -1147,8 +1147,8 @@ class LRItem:
         """
         Computes the closure of the item. The closure for an item is
         defined as returning a set of items for items RHS[index]'s
-        production with index = 0. Note that this is the closure for
-        an item set.
+        production with index = 0. Note that this is not the closure
+        for an item set.
 
         :return: set(LRItem)
         """
@@ -1239,7 +1239,6 @@ class LR1Item(LRItem):
     This class represents an LR(1) item, which is an extension based
     on LR(0) item, plus a lookahead set
     """
-
     def __init__(self, p, index, lookahead_set):
         """
         Initializes the LR(1) item
@@ -1251,6 +1250,11 @@ class LR1Item(LRItem):
         Note that the underlying LR(0) item should be immutable
         after initialization. We should enforce this in LR(1) item
         and do not modify either index or p
+
+        The lookahead set is the set of applicable symbols for the
+        LHS of the production. Therefore, no matter how the index
+        changes within an item, the lookahead set always does not
+        change.
         """
         LRItem.__init__(self, p, index)
 
@@ -1258,7 +1262,30 @@ class LR1Item(LRItem):
 
         return
 
-    
+    def __eq__(self, other):
+        """
+        Compares two LR(1) items
+
+        :param other: The other LR(1) item
+        :return: None
+        """
+        # First we compare the LR(0) part, and then compare
+        # LR(1) part
+        return LRItem.__eq__(self, other) and \
+               self.lookahead_set == other.lookahead_set
+
+    def __hash__(self, other):
+        """
+        Hashes the LR(1) item into a hash code
+
+        :param other: The other LR(1) item
+        :return: hash code
+        """
+        # This is special because the hash
+        # of the lookahead symbol set is not easy to
+        # compute, so we just use the hash of the underlying
+        # LR(0) item
+        return LRItem.__hash__(self)
 
 #####################################################################
 # class ItemSet
