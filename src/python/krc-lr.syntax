@@ -329,7 +329,7 @@ selection-statement:
  
 iteration-statement:
     T_WHILE T_LPAREN expression T_RPAREN statement
-    T_DO statement while T_LPAREN expression T_RPAREN T_SEMICOLON
+    T_DO statement T_WHILE T_LPAREN expression T_RPAREN T_SEMICOLON
     T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON            T_RPAREN statement
     T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement
     T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement
