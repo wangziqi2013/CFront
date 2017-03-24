@@ -1258,10 +1258,6 @@ class ItemSet:
 
         # This will be set to True if compute_goto() is called
         self.has_goto_flag = False
-        # Whether the content of this item set has been fixed and will
-        # never change (this flag will be used to skip item sets that
-        # have already been processed when we compute item sets)
-        self.is_stable_flag = False
 
         # This is the index used for parsing
         # we do not set this member in this class, and instead
@@ -1281,35 +1277,6 @@ class ItemSet:
         :return: bool
         """
         return self.has_goto_flag
-
-    def is_stable(self):
-        """
-        Returns True if the item set has been computed (incl. GOTO table
-        and replacing GOTO table with the ones stored inside the
-        parser generator)
-
-        The flag will be set when an item set is added and its
-        GOTO table has been refreshed
-
-        :return: bool
-        """
-        return self.is_stable_flag
-
-    def make_stable(self):
-        """
-        Make this item set stable such that later processing of ite,
-        sets will skip this object
-
-        This function should only be called once in the parser
-        generator, otherwise assertion would fail
-
-        :return: None
-        """
-        assert(self.is_stable_flag is False)
-
-        self.is_stable_flag = True
-        
-        return
 
     def compute_goto(self):
         """
@@ -2139,7 +2106,6 @@ class ParserGeneratorLR(ParserGenerator):
                 if item_set.has_goto_table() is True:
                     continue
 
-                # Compute the goto set of this item set
                 item_set.compute_goto()
 
                 # For every new item set included in its goto
