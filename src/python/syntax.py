@@ -1273,30 +1273,17 @@ class LR1Item(LRItem):
 
         return
 
-    def __eq__(self, other):
+    def advance(self):
         """
-        Compares two LR(1) items
+        Go to the next symbol. This function returns a new LR1Item
+        object with lookahead set unchanged (so no need to make
+        a new set because it will be copied in closure function).
 
-        :param other: The other LR(1) item
-        :return: None
+        :return: LR1Item object
         """
-        # First we compare the LR(0) part, and then compare
-        # LR(1) part
-        return LRItem.__eq__(self, other) and \
-               self.lookahead_set == other.lookahead_set
+        assert(self.get_dotted_symbol() is not None)
 
-    def __hash__(self):
-        """
-        Hashes the LR(1) item into a hash code
-
-        :param other: The other LR(1) item
-        :return: hash code
-        """
-        # This is special because the hash
-        # of the lookahead symbol set is not easy to
-        # compute, so we just use the hash of the underlying
-        # LR(0) item
-        return LRItem.__hash__(self)
+        return LR1Item(self.p, self.index + 1, self.lookahead_set)
 
     def compute_closure(self, item_set):
         """
@@ -1344,6 +1331,31 @@ class LR1Item(LRItem):
             item_set.add(item)
 
         return
+
+    def __eq__(self, other):
+        """
+        Compares two LR(1) items
+
+        :param other: The other LR(1) item
+        :return: None
+        """
+        # First we compare the LR(0) part, and then compare
+        # LR(1) part
+        return LRItem.__eq__(self, other) and \
+               self.lookahead_set == other.lookahead_set
+
+    def __hash__(self):
+        """
+        Hashes the LR(1) item into a hash code
+
+        :param other: The other LR(1) item
+        :return: hash code
+        """
+        # This is special because the hash
+        # of the lookahead symbol set is not easy to
+        # compute, so we just use the hash of the underlying
+        # LR(0) item
+        return LRItem.__hash__(self)
 
 #####################################################################
 # class ItemSet
