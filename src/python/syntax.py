@@ -1865,7 +1865,7 @@ class ParserGeneratorLR(ParserGenerator):
         self.non_terminal_set.add(fake_root_symbol)
 
         # Also add end symbol T_EOF (i.e. $ symbol) into the
-        # terminal set
+        # terminal set. This will appear in the FOLLOW set
         self.terminal_set.add(Symbol.get_end_symbol())
 
         # Use the fake root symbol to derive root symbol
@@ -1902,7 +1902,8 @@ class ParserGeneratorLR(ParserGenerator):
 
         The file is dumped as a set of lines, and each line represents an entry in
         the parsing table. The format of the line is like the following:
-            current_state symbol action ...
+            starting_state                            <- First line
+            current_state symbol action ...           <- Repeat
         The above three columns are common to all action types. For ACTION_SHIFT
         the ... is the next state and symbol must be a terminal; for ACTION_GOTO,
         the ... is the next state and symbol must be a non-terminal; for
@@ -1915,6 +1916,10 @@ class ParserGeneratorLR(ParserGenerator):
         dbg_printf("Dumping parsing table into file: %s", file_name)
 
         fp = open(file_name, "w")
+
+        # Write the starting state first
+        fp.write("%d\n" % (self.starting_state, ))
+
         for key, value in self.parsing_table.items():
             fp.write("%d %s " % (key[0], key[1].name))
             action = value[0]
