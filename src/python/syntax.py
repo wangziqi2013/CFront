@@ -1143,31 +1143,29 @@ class LRItem:
 
         return self.p.rhs_list[self.index]
 
-    def compute_closure(self):
+    def compute_closure(self, item_set):
         """
         Computes the closure of the item. The closure for an item is
         defined as returning a set of items for items RHS[index]'s
         production with index = 0. Note that this is not the closure
         for an item set.
 
-        :return: set(LRItem)
+        :return: None
         """
-        # This is the set we will add items into and return
-        ret_set = set()
         symbol = self.get_dotted_symbol()
         if symbol is None:
-            return ret_set
+            return
         elif symbol.is_terminal() is True:
             # Note that the empty symbol is also
             # included
-            return ret_set
+            return None
 
         # Then add every production into the set and return
         for p in symbol.lhs_set:
             item = LRItem(p, 0)
-            ret_set.add(item)
+            item_set.add(item)
 
-        return ret_set
+        return
 
     def __setattr__(self, key, value):
         """
@@ -1286,6 +1284,36 @@ class LR1Item(LRItem):
         # compute, so we just use the hash of the underlying
         # LR(0) item
         return LRItem.__hash__(self)
+
+    def compute_closure(self, item_set):
+        """
+        This function computes the LR(0) closure with LR(1)
+        lookahead. If we derive a new LR1Item using the following
+        production rule:
+            A -> B [dot] C D
+        then the item is all productions with C as LHS, and the
+        lookahead is FIRST(D). If FIRST(D) contains empty symbol
+        we also add the lookahead of the current item into the
+        lookahead set
+
+        :return: set(LR1Item) or None
+        """
+        # This is the set we will add items into and return
+        ret_set = set()
+        symbol = self.get_dotted_symbol()
+        if symbol is None:
+            return None
+        elif symbol.is_terminal() is True:
+            # Note that the empty symbol is also
+            # included
+            return None
+
+        # Then add every production into the set and return
+        for p in symbol.lhs_set:
+            item = LRItem(p, 0)
+            ret_set.add(item)
+
+        return ret_set
 
 #####################################################################
 # class ItemSet
@@ -1413,8 +1441,8 @@ class ItemSet:
     def compute_closure(self):
         """
         Computes the closure for this set. This function modifies
-        self.item_set and therefore must be called this is added
-        to any set
+        self.item_set and therefore must be called before this is
+        added to any set
 
         :return: None
         """
@@ -1430,11 +1458,11 @@ class ItemSet:
 
             # Iterator on the item list
             for item in item_list:
-                item_closure = item.compute_closure()
-                # Union the closure for an item into the
-                # item set
-                self.item_set = \
-                    self.item_set.union(item_closure)
+                # Pass the item set into the closure function
+                # for adding new items without creating new
+                # data structure
+                item_closure = \
+                    item.compute_closure(self.item_set)
 
             # If the size of the set does not change
             # then we have reached a stable state
