@@ -2178,7 +2178,15 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
-        dbg_printf("Generating parsing table...")
+        dbg_printf("Generating LR parsing table...")
+        if self.lr_type == self.LR_TYPE_SLR:
+            dbg_printf("    Type SLR")
+        elif self.lr_type == self.LR_TYPE_LR1:
+            dbg_printf("    Type LR1")
+        elif self.lr_type == self.LR_TYPE_LALR:
+            dbg_printf("    Type LALR")
+        else:
+            assert False
 
         # Iterate over all items
         for item_set in self.item_set_identity_dict:
@@ -2223,9 +2231,18 @@ class ParserGeneratorLR(ParserGenerator):
                     # Do not compute using fake root's FOLLOW set
                     continue
 
+                if self.lr_type == self.LR_TYPE_SLR:
+                    lookahead_set = lhs.follow_set
+                elif self.lr_type == self.LR_TYPE_LR1:
+                    lookahead_set = item.lookahead_set
+                elif self.lr_type == self.LR_TYPE_LALR:
+                    pass
+                else:
+                    assert False
+
                 # The look-ahead symbol is the follow set of the
                 # LHS symbol of the item
-                for symbol in lhs.follow_set:
+                for symbol in lookahead_set:
                     assert(symbol.is_terminal() is True)
 
                     k = (item_set.index, symbol)
