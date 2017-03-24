@@ -1545,6 +1545,32 @@ class ItemSet:
             # are newly created
             new_item_set.compute_closure()
 
+            core_item_dict = {}
+            merged = False
+            for item in new_item_set.item_set:
+                # Do not do the following computation
+                # for LR(0) items
+                if isinstance(item, LR1Item) is False:
+                    break
+
+                key = LRItem(item.p, item.index)
+                if key not in core_item_dict:
+                    core_item_dict[key] = item
+                else:
+                    merged = True
+                    value = core_item_dict[key]
+                    # We never modify it in-place, so just fork a
+                    # new instance
+                    value.lookahead_set = \
+                        value.lookahead_set.union(
+                            item.lookahead_set)
+
+            # If we did merged items them we need to change
+            # the item set
+            if merged is True:
+                new_item_set.item_set = \
+                    set(core_item_dict.values())
+
             # And then put this into the goto table
             # such that we could know how many possible
             # states this state could transit to
