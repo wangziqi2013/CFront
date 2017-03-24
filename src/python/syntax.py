@@ -1418,6 +1418,22 @@ class LR1Item(LRItem):
         # LR(0) item
         return LRItem.__hash__(self)
 
+    def __repr__(self):
+        """
+        Represents the item as a string
+
+        :return: str
+        """
+        return "[%s, %d, %s]" % (self.p, self.index, self.lookahead_set)
+
+    def __str__(self):
+        """
+        Returns a string representation
+
+        :return: str
+        """
+        return self.__repr__()
+
 #####################################################################
 # class ItemSet
 #####################################################################
