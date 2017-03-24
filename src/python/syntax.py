@@ -1098,6 +1098,8 @@ class LRItem:
         empty production: S -> T_ where even if index == 0 for this
         case we still return True
 
+        Empty production always could reduce
+
         :return: bool
         """
         # Empty production could always reduce
@@ -1191,7 +1193,7 @@ class LRItem:
 
         :return: hash code
         """
-        return id(self.p) ^ id(self.index)
+        return id(self.p) ^ self.index
 
     def __eq__(self, other):
         """
@@ -1227,6 +1229,36 @@ class LRItem:
         :return: str
         """
         return self.__repr__()
+
+#####################################################################
+# class LR1Item
+#####################################################################
+
+class LR1Item(LRItem):
+    """
+    This class represents an LR(1) item, which is an extension based
+    on LR(0) item, plus a lookahead set
+    """
+
+    def __init__(self, p, index, lookahead_set):
+        """
+        Initializes the LR(1) item
+
+        In addition to initializing the underlying LR(0) item,
+        we also compute the FOLLOW set which exists in LR(1) but
+        not LR(0)
+
+        Note that the underlying LR(0) item should be immutable
+        after initialization. We should enforce this in LR(1) item
+        and do not modify either index or p
+        """
+        LRItem.__init__(self, p, index)
+
+        self.lookahead_set = lookahead_set
+
+        return
+
+    
 
 #####################################################################
 # class ItemSet
@@ -1402,7 +1434,7 @@ class ItemSet:
 
     def __eq__(self, other):
         """
-        Checks whether two items are equal
+        Checks whether two item sets are equal
 
         This is very simple - we just check whether the two sets
         are equal. Since python already defines equality checking
