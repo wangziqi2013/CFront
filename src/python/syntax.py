@@ -6,6 +6,7 @@
 #
 
 from common import *
+import sys
 
 #####################################################################
 # class Symbol
@@ -877,7 +878,34 @@ class Production:
 
         return ret
 
-    def _compute_substring_first(self, index=0):
+    def compute_substring_first(self, index=0):
+        """
+        Fast retrieves the substring FIRST set from the production
+
+        :param index: The beginning index
+        :return: None
+        """
+        assert(index < len(self.rhs_list))
+
+        return self.substring_first_set_list[index]
+
+    def add_substring_first(self, index, s):
+        """
+        Add substring FIRST set into a given set
+
+        :param index: The index of the starting point
+        :param s: The set we add symbols to
+        :return: None
+        """
+        assert (index < len(self.rhs_list))
+
+        # Add all symbols
+        for symbol in self.substring_first_set_list[index]:
+            s.add(symbol)
+
+        return
+
+    def _compute_substring_first(self, index):
         """
         This function computes the FIRST set for a substring. An optional
         index field is also provided to allow the user to start
@@ -888,6 +916,10 @@ class Production:
         there is very similar to the one used here. Nevertheless, the
         result of passing index = 0 and the result computed by the
         non-terminal should be the same
+
+        This function should not be called directly, but rather it is
+        used by the initialization routine to populate the internal
+        FIRST set table
 
         :return: set(Terminal)
         """
@@ -1303,7 +1335,9 @@ class LR1Item(LRItem):
         """
         assert(self.get_dotted_symbol() is not None)
 
-        return LR1Item(self.p, self.index + 1, self.lookahead_set)
+        return LR1Item(self.p,
+                       self.index + 1,
+                       self.lookahead_set)
 
     def compute_closure(self, item_set):
         """
@@ -1341,7 +1375,7 @@ class LR1Item(LRItem):
                 # Get the FIRST set of the substring after the
                 # dot symbol
                 lookahead_set = \
-                    self.p.compute_substring_first(self.index + 1)
+                    self.p.compute_substring_first(self.index + 1).copy()
                 if Symbol.get_empty_symbol() in lookahead_set:
                     lookahead_set.remove(Symbol.get_empty_symbol())
                     lookahead_set = \
@@ -1712,6 +1746,13 @@ class ParserGenerator:
                 break
 
             count_list = t
+
+        # After computing the FIRST set for symbols now
+        # we prepare the substring FIRST set for all
+        # productions
+        dbg_printf("Compute suffix FIRST set for productions")
+        for p in self.production_set:
+            p.prepare_substring_first()
 
         dbg_printf("Compute FOLLOW set")
 
@@ -2264,6 +2305,7 @@ class ParserGeneratorLR(ParserGenerator):
             # will be changed
             item_set_list = list(self.item_set_identity_dict.keys())
 
+            t = 0
             # For each item set computes its GOTO table
             # if it does not have one
             for item_set in item_set_list:
@@ -2277,6 +2319,12 @@ class ParserGeneratorLR(ParserGenerator):
                 # against the current item set set) then just
                 # replace it with the current one
                 item_set.compute_goto(self.item_set_identity_dict)
+
+                t += 1
+                sys.stdout.write("Finish %d GOTO set\r" % (t, ))
+                sys.stdout.flush()
+
+            sys.stdout.write("\n")
 
             # If the set does not change, i.e. all newly computed
             # GOTO sets are already in the set then we know we
