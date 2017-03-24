@@ -1540,10 +1540,10 @@ class ItemSet:
                     # Add this into the new item set
                     new_item_set.item_set.add(new_item)
 
-                # This will add other items into the set
-                # until no more could be added - add items
-                # are newly created
-                new_item_set.compute_closure()
+            # This will add other items into the set
+            # until no more could be added - add items
+            # are newly created
+            new_item_set.compute_closure()
 
             # And then put this into the goto table
             # such that we could know how many possible

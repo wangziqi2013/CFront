@@ -47,8 +47,8 @@ TokenType = T_INT_CONST             ; Int const = 2080374784
 TokenType = T_SEMICOLON             ; Other token type
 TokenType = T_STAR                  ; Other token type
 TokenType = T_IDENT                 ; Identifier = a
-TokenType = T_PLUS                  ; The following two tests assignment expression
-TokenType = T_IDENT                 ;
+#TokenType = T_PLUS                  ; The following two tests assignment expression
+#TokenType = T_IDENT                 ;
 TokenType = T_ASSIGN                ; Other token type
 TokenType = T_STAR                  ; Other token type
 TokenType = T_IDENT                 ; Identifier = b
