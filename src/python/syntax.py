@@ -1278,7 +1278,7 @@ class ItemSet:
         """
         return self.has_goto_flag
 
-    def compute_goto(self):
+    def compute_goto(self, identity_dict):
         """
         Computes the GOTO sets of the current item set
 
@@ -1336,10 +1336,15 @@ class ItemSet:
                 # are newly created
                 new_item_set.compute_closure()
 
-                # And then put this into the goto table
-                # such that we could know how many possible
-                # states this state could transit to
+            # And then put this into the goto table
+            # such that we could know how many possible
+            # states this state could transit to
+            if new_item_set in identity_dict:
+                self.goto_table[symbol] = \
+                    identity_dict[new_item_set]
+            else:
                 self.goto_table[symbol] = new_item_set
+                identity_dict[new_item_set] = new_item_set
 
         # Make this instance as having the goto table
         self.has_goto_flag = True
@@ -1828,9 +1833,6 @@ class ParserGeneratorLR(ParserGenerator):
         # read file is called inside the constructor
         ParserGenerator.__init__(self, file_name)
 
-        # This is a set of the ItemSet object
-        self.item_set_set = set()
-
         # After computing the item set set we use it to
         # fix the order of items and use the index to refer to
         # the i-th element in this set
@@ -1969,7 +1971,7 @@ class ParserGeneratorLR(ParserGenerator):
         dbg_printf("Generating parsing table...")
 
         # Iterate over all items
-        for item_set in self.item_set_set:
+        for item_set in self.item_set_identity_dict:
             for symbol, goto_item_set in \
                     item_set.goto_table.items():
                 # Current state, symbol
@@ -2076,8 +2078,6 @@ class ParserGeneratorLR(ParserGenerator):
         # Set it here such that we could find it later
         self.starting_item_set = new_item_set
 
-        # Register this into the generator
-        self.item_set_set.add(new_item_set)
         # Map identity to contents
         self.item_set_identity_dict[new_item_set] = \
             new_item_set
@@ -2088,7 +2088,7 @@ class ParserGeneratorLR(ParserGenerator):
         while True:
             iteration += 1
 
-            prev_count = len(self.item_set_set)
+            prev_count = len(self.item_set_identity_dict)
 
             dbg_printf("    Iteration %d; states %d",
                        iteration,
@@ -2096,7 +2096,7 @@ class ParserGeneratorLR(ParserGenerator):
 
             # We must iterate on the list because the item set
             # will be changed
-            item_set_list = list(self.item_set_set)
+            item_set_list = list(self.item_set_identity_dict.keys())
 
             # For each item set computes its GOTO table
             # if it does not have one
@@ -2106,54 +2106,20 @@ class ParserGeneratorLR(ParserGenerator):
                 if item_set.has_goto_table() is True:
                     continue
 
-                item_set.compute_goto()
-
-                # For every new item set included in its goto
-                # map, find those that could be added as new item
-                # sets
-                for symbol, goto_item_set in item_set.goto_table.items():
-                    # Already exists, skip for now, and we will
-                    # update it later
-                    if goto_item_set in self.item_set_set:
-                        continue
-
-                    # Treat it as the content provider for the identity
-                    # it has
-                    self.item_set_set.add(goto_item_set)
-                    self.item_set_identity_dict[goto_item_set] = \
-                        goto_item_set
+                # Compute GOTO item set. If the computed GOTO
+                # is an existing one (we do this by testing it
+                # against the current item set set) then just
+                # replace it with the current one
+                item_set.compute_goto(self.item_set_identity_dict)
 
             # If the set does not change, i.e. all newly computed
             # GOTO sets are already in the set then we know we
             # have done
-            if prev_count == len(self.item_set_set):
+            if prev_count == len(self.item_set_identity_dict):
                 break
 
-            # Make sure they are always consistent
-            assert(len(self.item_set_set) ==
-                   len(self.item_set_identity_dict))
-
-        # Then update the goto table to always use item sets that
-        # have a GOTO table because they may refer to other sets
-        for item_set in self.item_set_set:
-            # Check whether there is any bug
-            assert(item_set.has_goto_table() is True)
-
-            # Check whether the goto table always use
-            # item sets that have GOTO table; if not then
-            # update it using the identity map
-            goto_table_item_list = list(item_set.goto_table.items())
-            for symbol, goto_item_set in goto_table_item_list:
-                # Replace it
-                if goto_item_set.has_goto_table() is False:
-                    # Use identity to query contents
-                    replacement = self.item_set_identity_dict[goto_item_set]
-
-                    # And then replace the previous one
-                    item_set.goto_table[symbol] = replacement
-
         # From now on we use the item set list
-        self.item_set_list = list(self.item_set_set)
+        self.item_set_list = list(self.item_set_identity_dict.keys())
         for i in range(0, len(self.item_set_list)):
             # We start parsing on starting state
             if self.item_set_list[i] == self.starting_item_set:
@@ -2179,7 +2145,7 @@ class ParserGeneratorLR(ParserGenerator):
         dbg_printf("Computed the canonical set in %d steps",
                    iteration)
         dbg_printf("    There are %d elements in the canonical set",
-                   len(self.item_set_set))
+                   len(self.item_set_identity_dict))
 
         return
 
