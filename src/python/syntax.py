@@ -1129,6 +1129,9 @@ class LRItem:
         # production it is always reduce-able
         self.is_empty_production = False
 
+        # This will be set to True once the closure is computed
+        self.closure_computed = False
+
         # If it is after any symbol then index == len..
         assert(index <= len(p.rhs_list))
         assert(len(p.rhs_list) > 0)
@@ -1217,6 +1220,10 @@ class LRItem:
 
         :return: None
         """
+        # We must guarantee that this is only called once
+        assert(self.closure_computed is False)
+        self.closure_computed = True
+
         symbol = self.get_dotted_symbol()
         if symbol is None:
             return
@@ -1352,6 +1359,10 @@ class LR1Item(LRItem):
 
         :return: None
         """
+        # To avoid doing this again and again
+        assert (self.closure_computed is False)
+        self.closure_computed = True
+
         symbol = self.get_dotted_symbol()
         if symbol is None:
             return
@@ -1553,11 +1564,15 @@ class ItemSet:
 
             # Iterator on the item list
             for item in item_list:
+                if item.closure_computed is True:
+                    continue
+
                 # Pass the item set into the closure function
                 # for adding new items without creating new
                 # data structure
                 item.compute_closure(self.item_set)
 
+            #print(len(self.item_set))
             # If the size of the set does not change
             # then we have reached a stable state
             if len(self.item_set) == prev_count:
