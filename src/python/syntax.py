@@ -2115,7 +2115,7 @@ class ParserGeneratorLR(ParserGenerator):
         # We build different items based on this
         self.lr_type = lr_type
         if self.lr_type != self.LR_TYPE_LALR and \
-           self.lr_type != self.LR_TYPE_LR1 and \
+           self.lr_type != self.LR_TYPE_SLR and \
            self.lr_type != self.LR_TYPE_LR1:
             raise TypeError("Unknown LR Parser type: %d" % (self.lr_type, ))
 
