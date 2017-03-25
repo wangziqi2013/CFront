@@ -2085,6 +2085,10 @@ class ParserGeneratorLR(ParserGenerator):
 
         # We build different items based on this
         self.lr_type = lr_type
+        if self.lr_type != self.LR_TYPE_LALR and \
+           self.lr_type != self.LR_TYPE_LR1 and \
+           self.lr_type != self.LR_TYPE_LR1:
+            raise TypeError("Unknown LR Parser type: %d" % (self.lr_type, ))
 
         # After computing the item set set we use it to
         # fix the order of items and use the index to refer to
@@ -2143,12 +2147,35 @@ class ParserGeneratorLR(ParserGenerator):
         # This function generates the canonical LR set
         self.process_item_set()
 
+        # If the LR type is LALR then we merge LR states using
+        # core items (i.e. items without the lookahead symbol)
+        if self.lr_type == self.LR_TYPE_LALR:
+            self.merge_item_set()
+
         # Finally...
         # This function will throw conflict exception as KeyError
         # if there is any conflict
         self.generate_parsing_table()
 
         return
+
+    def merge_item_set(self):
+        """
+        This function merges LR(1) item sets into LALR item sets
+        by using core items to identify states.
+
+        Transforming LR(1) item sets into LALR item sets do not
+        introduce extra SHIFT-REDUCE errors because if there is
+        any they would also be in LR(1) item sets. However, merging
+        LR(0) items may introduce (though very rare) REDUCE-REDUCE
+        erorrs because now the lookahead symbols are merged into one
+        state
+
+        Item identity dictionary, starting state will be changed
+        by this function
+
+        :return: None
+        """
 
     def dump_parsing_table(self, file_name):
         """
@@ -2335,14 +2362,14 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
-        dbg_printf("Compute canonical LR set")
-
         new_item_set = ItemSet()
 
         # Fake item is the starting point
         if self.lr_type == ParserGeneratorLR.LR_TYPE_SLR:
+            dbg_printf("Compute LR(0) set with lookahead")
             new_item = LRItem(self.fake_production, 0)
         elif self.lr_type == ParserGeneratorLR.LR_TYPE_LR1:
+            dbg_printf("Compute canonical LR set")
             new_item = LR1Item(self.fake_production,
                                0,
                                set([Symbol.get_end_symbol()]))
