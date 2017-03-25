@@ -2205,6 +2205,8 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
+        dbg_printf("Merging item sets for LALR...")
+
         # This maps from LR(0) item set to LR(1) item set
         new_item_set_dict = {}
         new_item_set_list = []
@@ -2266,9 +2268,12 @@ class ParserGeneratorLR(ParserGenerator):
 
         # Change identify dict
         d = {}
-        for item_set in new_item_set_dict:
+        for item_set in new_item_set_list:
             d[item_set] = item_set
         self.item_set_identity_dict = d
+
+        dbg_printf("Merge complete. There are now %d states",
+                   len(self.item_set_list))
 
         return
 
@@ -2396,10 +2401,9 @@ class ParserGeneratorLR(ParserGenerator):
 
                 if self.lr_type == self.LR_TYPE_SLR:
                     lookahead_set = lhs.follow_set
-                elif self.lr_type == self.LR_TYPE_LR1:
+                elif self.lr_type == self.LR_TYPE_LR1 or \
+                     self.lr_type == self.LR_TYPE_LALR:
                     lookahead_set = item.lookahead_set
-                elif self.lr_type == self.LR_TYPE_LALR:
-                    pass
                 else:
                     assert False
 
@@ -2462,7 +2466,8 @@ class ParserGeneratorLR(ParserGenerator):
         if self.lr_type == ParserGeneratorLR.LR_TYPE_SLR:
             dbg_printf("Compute LR(0) set with lookahead")
             new_item = LRItem(self.fake_production, 0)
-        elif self.lr_type == ParserGeneratorLR.LR_TYPE_LR1:
+        elif self.lr_type == ParserGeneratorLR.LR_TYPE_LR1 or \
+             self.lr_type == ParserGeneratorLR.LR_TYPE_LALR:
             dbg_printf("Compute canonical LR set")
             new_item = LR1Item(self.fake_production,
                                0,
@@ -3055,8 +3060,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :return: None
         """
         print_test_name()
-        if argv.has_keys("slr", "lr1") is False:
-            dbg_printf("Please use --slr or --lr1 to" +
+        if argv.has_keys("slr", "lr1", "lalr") is False:
+            dbg_printf("Please use --slr or --lr1 or --lalr to" +
                        " test LR parser generator")
             return
 
@@ -3260,8 +3265,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         """
         print_test_name()
 
-        if argv.has_keys("slr", "lr1") is False:
-            dbg_printf("Please use --lr1 or --slr to" +
+        if argv.has_keys("slr", "lr1", "lalr") is False:
+            dbg_printf("Please use --lr1 or --slr or --lalr to" +
                        " test LR parser generator")
             return
 
@@ -3277,6 +3282,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         elif argv.has_keys("lr1"):
             self.pg = ParserGeneratorLR(file_name,
                                         ParserGeneratorLR.LR_TYPE_LR1)
+        elif argv.has_keys("lalr"):
+            self.pg = ParserGeneratorLR(file_name,
+                                        ParserGeneratorLR.LR_TYPE_LALR)
 
         pg = self.pg
 
