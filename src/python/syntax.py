@@ -2222,7 +2222,7 @@ class ParserGeneratorLR(ParserGenerator):
         for item_set in self.item_set_list:
             # Build LR(0) Item
             lr0_item_set = ItemSet()
-            for item in item_set:
+            for item in item_set.item_set:
                 # Construct LR(0) item
                 lr0_item_set.item_set.add(LRItem(item.p, item.index))
 
