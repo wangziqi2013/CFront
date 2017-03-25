@@ -1488,9 +1488,13 @@ class ItemSet:
         :return: None
         """
         for i in self.item_set:
+            # This is the LR(0) equivalence of the destination
+            # item
             dest_item = LRItem(i.p, i.index)
             for j in other.item_set:
                 src_item = LRItem(j.p, j.index)
+                # If they have the same production and the same
+                # position then just merge them into the dest_item
                 if src_item == dest_item:
                     i.lookahead_set = \
                         i.lookahead_set.union(j.lookahead_set)
@@ -2201,13 +2205,19 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
-        new_item_set_list = []
-
         # This maps from LR(0) item set to LR(1) item set
         new_item_set_dict = {}
+        new_item_set_list = []
 
+        # The index of this list is the old index, and the value
+        # is the new index
+        index_mapping = {}
+
+        new_index = 0
         # These item sets are LR(1) item sets
-        for item_set in self.item_set_identity_dict:
+        # Note that we must iterate on the list because the dict
+        # will be invalidated, since we change item sets in-place
+        for item_set in self.item_set_list:
             # Build LR(0) Item
             lr0_item_set = ItemSet()
             for item in item_set:
@@ -2216,14 +2226,51 @@ class ParserGeneratorLR(ParserGenerator):
 
             # If we have not seen the LR item set yet, just add it
             if lr0_item_set not in new_item_set_dict:
+                # Then map the old index to newly allocated index which
+                # starts at 0
+                index_mapping[item_set.index] = new_index
+                new_index += 1
+
                 new_item_set_dict[lr0_item_set] = item_set
                 new_item_set_list.append(item_set)
             else:
                 # This is the item set we merge into
                 merge_dest = new_item_set_dict[lr0_item_set]
+                merge_dest.merge_with(item_set)
 
+                # Both source and dest should have the same index
+                # in the new item set system
+                index_mapping[item_set.index] = \
+                    index_mapping[merge_dest.index]
 
+        # Fix the GOTO table relation
+        for new_item_set in new_item_set_list:
+            key_list = list(new_item_set.goto_table.keys())
+            for symbol in key_list:
+                goto_item_set = new_item_set.goto_table[symbol]
+                new_index = index_mapping[goto_item_set.index]
+                new_item_set.goto_table[symbol] = \
+                    new_item_set_list[new_index]
 
+        # At last fix the index
+        for new_item_set in new_item_set_list:
+            new_item_set.index = \
+                index_mapping[new_item_set.index]
+
+        # Also change starting state
+        self.starting_state = \
+            index_mapping[self.starting_state]
+
+        # Change item set list
+        self.item_set_list = new_item_set_list
+
+        # Change identify dict
+        d = {}
+        for item_set in new_item_set_dict:
+            d[item_set] = item_set
+        self.item_set_identity_dict = d
+
+        return
 
     def dump_parsing_table(self, file_name):
         """
