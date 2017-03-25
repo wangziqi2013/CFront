@@ -1473,6 +1473,31 @@ class ItemSet:
 
         return
 
+    def merge_with(self, other):
+        """
+        Merges items with items in other.
+
+        This function should only be called if the current
+        item set holds LR(1) items, otherwise lookahead is not
+        in the items.
+
+        This function changes the object in-place. The assumptions
+        that both self and other must have the same LR(1) items
+
+        :param other: Another ItemSet object
+        :return: None
+        """
+        for i in self.item_set:
+            dest_item = LRItem(i.p, i.index)
+            for j in other.item_set:
+                src_item = LRItem(j.p, j.index)
+                if src_item == dest_item:
+                    i.lookahead_set = \
+                        i.lookahead_set.union(j.lookahead_set)
+                    break
+
+        return
+
     def has_goto_table(self):
         """
         Whether the root table has already been computed
@@ -2176,6 +2201,29 @@ class ParserGeneratorLR(ParserGenerator):
 
         :return: None
         """
+        new_item_set_list = []
+
+        # This maps from LR(0) item set to LR(1) item set
+        new_item_set_dict = {}
+
+        # These item sets are LR(1) item sets
+        for item_set in self.item_set_identity_dict:
+            # Build LR(0) Item
+            lr0_item_set = ItemSet()
+            for item in item_set:
+                # Construct LR(0) item
+                lr0_item_set.item_set.add(LRItem(item.p, item.index))
+
+            # If we have not seen the LR item set yet, just add it
+            if lr0_item_set not in new_item_set_dict:
+                new_item_set_dict[lr0_item_set] = item_set
+                new_item_set_list.append(item_set)
+            else:
+                # This is the item set we merge into
+                merge_dest = new_item_set_dict[lr0_item_set]
+
+
+
 
     def dump_parsing_table(self, file_name):
         """
@@ -2263,11 +2311,10 @@ class ParserGeneratorLR(ParserGenerator):
                     item_set.goto_table.items():
                 # Current state, symbol
                 k = (item_set.index, symbol)
-                if k in self.parsing_table:
-                    conflict_action = self.parsing_table[k][0]
-                    # Could only be REDUCE
-                    assert(conflict_action == self.ACTION_REDUCE)
-                    raise KeyError("SHIFT-REDUCE conflict")
+
+                # We have not added REDUCE entry so there
+                # would not be any SHIFT-REDUCE conflict
+                assert(k not in self.parsing_table)
 
                 # If it is terminal then we do SHIFT
                 if symbol.is_terminal() is True:
