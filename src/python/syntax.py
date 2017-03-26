@@ -2532,8 +2532,10 @@ class ParserGeneratorLR(ParserGenerator):
                 item_set.compute_goto(self.item_set_identity_dict)
 
                 t += 1
-                sys.stdout.write("Finish %d GOTO set\r" % (t, ))
-                sys.stdout.flush()
+                dbg_printf("Finished computing %d GOTO set\r",
+                           t,
+                           no_newline=True,
+                           flush=True)
 
             sys.stdout.write("\n")
 

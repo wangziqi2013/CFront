@@ -38,9 +38,20 @@ def print_test_name():
 
     return
 
-def dbg_printf(format, *args):
+def dbg_printf(format, *args, **kwargs):
     """
     C-Style function that writes debugging output to the terminal
+
+    The keyword argument are specified as follows:
+       "no_newline": if set to True then do not print new line
+       By default a new line will be printed
+
+       "flush": if set to True then sys.stderr will be flushed
+       before this function returns. If '\r' is used instead
+       of '\n' then we need to flush it every time because
+       the carriage return will not cause a flush
+
+       "no_header": If set then the header will not be printed
 
     :param format: The format string
     :param args: Arguments
@@ -68,8 +79,15 @@ def dbg_printf(format, *args):
     format = format % tuple(args)
     sys.stderr.write(format)
 
-    # So we do not need to worry about new lines
-    sys.stderr.write('\n')
+    # If we did not specify no_newline then print a
+    # new line. Otherwise do not use new line
+    if not (kwargs.get("no_newline", None) is True):
+        # So we do not need to worry about new lines
+        sys.stderr.write('\n')
+
+    # If flush is required then just flush
+    if kwargs.get("flush", None) is True:
+        sys.stderr.flush()
 
     return
 
