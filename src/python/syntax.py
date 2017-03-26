@@ -2103,15 +2103,19 @@ class ParserGenerator:
         :return: None
         """
         fp = open(file_name, "w")
-        fp.write("enum {\n")
-        for symbol in self.terminal_set:
-            fp.write("  %s,\n" % (symbol.name, ))
+        fp.write("enum class TerminalToken {\n")
+        symbol_list = [symbol.name for symbol in self.terminal_set]
+        symbol_list.sort()
+
+        for name in symbol_list:
+            fp.write("  %s,\n" % (name, ))
 
         fp.write("};\n")
 
         fp.close()
 
         return
+
 #####################################################################
 # class ParserGeneratorLR
 #####################################################################
@@ -3327,6 +3331,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         if argv.has_keys("dump-file"):
             dump_file_name = argv.get_all_values("dump-file")[0]
             pg.dump_parsing_table(dump_file_name)
+
+        pg.dump_terminal_enum("symbols.h")
 
         return
 
