@@ -2094,6 +2094,24 @@ class ParserGenerator:
 
         return
 
+    def dump_terminal_enum(self, file_name):
+        """
+        This file dumps the terminal enum C file
+
+        :param file_name: The file name that we dump the
+          enum definition into
+        :return: None
+        """
+        fp = open(file_name, "w")
+        fp.write("enum {\n")
+        for symbol in self.terminal_set:
+            fp.write("  %s,\n" % (symbol.name, ))
+
+        fp.write("};\n")
+
+        fp.close()
+
+        return
 #####################################################################
 # class ParserGeneratorLR
 #####################################################################
