@@ -13,6 +13,17 @@ import sys
 #####################################################################
 
 class Symbol:
+    """
+    This class represents a grammar symbol that is either a terminal
+    or non-terminal
+
+    Each symbol has a name, which is the syntax notation we use in the
+    grammar definition. For terminal symbols we always assume that the
+    name is a macro defined in another CPP file, which is also used
+    by the lex to produce the token stream; For terminals their names
+    are only used internally by this generator and parser code
+    """
+
     # This is the name of the "eps" symbol
     EMPTY_SYMBOL_NAME = "T_"
     # This is the symbol name indicating the end of input stream
@@ -29,16 +40,21 @@ class Symbol:
     END_SYMBOL = None
     ROOT_SYMBOL = None
 
-    """
-    This class represents a grammar symbol that is either a terminal
-    or non-terminal
+    @staticmethod
+    def init_builtin_symbols():
+        """
+        This function initializes special built-in symbols after the
+        class definition has been compiled. This should be called
+        after the class definition and before any routine is called
 
-    Each symbol has a name, which is the syntax notation we use in the
-    grammar definition. For terminal symbols we always assume that the
-    name is a macro defined in another CPP file, which is also used
-    by the lex to produce the token stream; For terminals their names
-    are only used internally by this generator and parser code
-    """
+        :return: None
+        """
+        Symbol.EMPTY_SYMBOL = Terminal(Symbol.EMPTY_SYMBOL_NAME)
+        Symbol.END_SYMBOL = Terminal(Symbol.END_SYMBOL_NAME)
+        Symbol.ROOT_SYMBOL = NonTerminal(Symbol.ROOT_SYMBOL_NAME)
+
+        return
+
     def __init__(self, name):
         """
         Initialize the symbol and its name
@@ -145,10 +161,6 @@ class Symbol:
 
         :return: Terminal
         """
-        if Symbol.EMPTY_SYMBOL is None:
-            Symbol.EMPTY_SYMBOL = \
-                Terminal(Symbol.EMPTY_SYMBOL_NAME)
-
         return Symbol.EMPTY_SYMBOL
 
     @staticmethod
@@ -159,10 +171,6 @@ class Symbol:
 
         :return: Terminal
         """
-        if Symbol.END_SYMBOL is None:
-            Symbol.END_SYMBOL = \
-                Terminal(Symbol.END_SYMBOL_NAME)
-
         return Symbol.END_SYMBOL
 
     @staticmethod
@@ -173,10 +181,6 @@ class Symbol:
 
         :return: NonTerminal
         """
-        if Symbol.ROOT_SYMBOL is None:
-            Symbol.ROOT_SYMBOL = \
-                NonTerminal(Symbol.ROOT_SYMBOL_NAME)
-
         return Symbol.ROOT_SYMBOL
 
 #####################################################################
@@ -769,6 +773,14 @@ class NonTerminal(Symbol):
         :return: str
         """
         return self.__repr__()
+
+#####################################################################
+# Static Initialization
+#####################################################################
+
+# This function initializes built-in symbols inside the static
+# member
+Symbol.init_builtin_symbols()
 
 #####################################################################
 # class Production
@@ -2197,7 +2209,7 @@ class ParserGeneratorLR(ParserGenerator):
         introduce extra SHIFT-REDUCE errors because if there is
         any they would also be in LR(1) item sets. However, merging
         LR(0) items may introduce (though very rare) REDUCE-REDUCE
-        erorrs because now the lookahead symbols are merged into one
+        errors because now the lookahead symbols are merged into one
         state
 
         Item identity dictionary, starting state will be changed
