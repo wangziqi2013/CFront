@@ -2537,7 +2537,7 @@ class ParserGeneratorLR(ParserGenerator):
                            no_newline=True,
                            flush=True)
 
-            sys.stdout.write("\n")
+            dbg_printf("", no_header=True)
 
             # If the set does not change, i.e. all newly computed
             # GOTO sets are already in the set then we know we

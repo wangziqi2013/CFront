@@ -61,20 +61,22 @@ def dbg_printf(format, *args, **kwargs):
     if debug_flag is False:
         return
 
-    frame = inspect.currentframe()
-    prev_frame = frame.f_back
-    code = prev_frame.f_code
-    prev_name = code.co_name
+    # If the header is required then print the header
+    if not (kwargs.get("no_header", None) is True):
+        frame = inspect.currentframe()
+        prev_frame = frame.f_back
+        code = prev_frame.f_code
+        prev_name = code.co_name
 
-    # Make it more human readable by replacing the name with
-    # an easy to understand one
-    if prev_name == "<module>":
-        prev_name = "[Top Level Module]"
-    else:
-        prev_name += "()"
+        # Make it more human readable by replacing the name with
+        # an easy to understand one
+        if prev_name == "<module>":
+            prev_name = "[Top Level Module]"
+        else:
+            prev_name += "()"
 
-    # Write the prologue of debugging information
-    sys.stderr.write("%-28s: " % (prev_name,))
+        # Write the prologue of debugging information
+        sys.stderr.write("%-28s: " % (prev_name,))
 
     format = format % tuple(args)
     sys.stderr.write(format)
