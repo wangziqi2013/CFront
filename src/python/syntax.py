@@ -3210,6 +3210,40 @@ class SyntaxNode:
         """
         return self.child_list[item]
 
+
+####################################################################
+# class ParserLR
+####################################################################
+
+class ParserLR(ParserGeneratorLR):
+    """
+    This class is a simple demo of how LR shift-reduce
+    parser works
+    """
+    def __init__(self, file_name):
+        """
+        Initialize the LR parsing table
+
+        :param file_name: The file of the dumped parsing table or
+         the syntax file depending on the second argument
+        """
+        # This is to avoid PyCharm warning
+        if False:
+            ParserGeneratorLR.__init__(self, None)
+
+        self.load_parsing_table(file_name)
+
+        return
+
+    def parse(self, file_name):
+        """
+        Start parsing using an external token list file
+
+        :param file_name: The file name of the token list file
+        :return: None
+        """
+
+
 #####################################################################
 #####################################################################
 #####################################################################
