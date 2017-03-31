@@ -2325,13 +2325,14 @@ class ParserGeneratorLR(ParserGenerator):
         self.item_set_identity_dict = {}
 
         # It maps a tuple (current state, symbol) to
-        #                 (action, data1, data2, i.e. pop_length)
+        #                 (action, data1, data2, i.e. pop_length, data3, i.e. AST rule)
         #    1. If symbol is a terminal then action could be SHIFT or REDUCE
         #       1.1 If action is SHIFT then data 1 is the next state and
         #           there is no data2
         #       1.2 If action is REDUCE then data 1 is the symbol that it
         #           reduces to, and data2 is the length of the production
-        #           we use to reduce (pop_length)
+        #           we use to reduce (pop_length), and data3 is the AST rule
+        #           for building the AST
         #    2. If symbol is a non-terminal then action is always GOTO
         #       and next state is the state we enter
         self.parsing_table = {}
@@ -2490,6 +2491,8 @@ class ParserGeneratorLR(ParserGenerator):
         ACTION_REDUCE ... is the non-terminal to reduce to followed by the length
         of the production which is an integer. For ACTION_ACCEPT ... is empty
 
+        TODO: DUMP AST RULE INTO THE TABLE ALSO
+
         :param file_name: The file to dump the parsing table into
         :return: None
         """
@@ -2575,7 +2578,10 @@ class ParserGeneratorLR(ParserGenerator):
                     self.parsing_table[k] = \
                         (self.ACTION_GOTO, goto_item_set.index)
 
+            #
             # Then add reduce
+            #
+
             for item in item_set.item_set:
                 # We only process those that can reduce
                 if item.could_reduce() is False:
@@ -2612,7 +2618,12 @@ class ParserGeneratorLR(ParserGenerator):
 
                     # Key and value in the mapping table
                     k = (item_set.index, symbol)
-                    v = (self.ACTION_REDUCE, lhs, len(item.p.rhs_list))
+                    # Note that the AST rule is also contained in the reduce
+                    # action descriptor
+                    v = (self.ACTION_REDUCE,
+                         lhs,
+                         len(item.p.rhs_list),
+                         item.p.ast_rule)
 
                     # If the entry exists and the value is different
                     # then we know there is a conflict
@@ -3120,6 +3131,8 @@ class SyntaxNode:
 
         :param symbol: The symbol of this syntax node
         """
+        # Must be a string type
+        assert(isinstance(symbol, str))
         self.symbol = symbol
         # These are child nodes that appear as derived nodes
         # in the syntax specification
@@ -3299,19 +3312,48 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             elif action == ParserGeneratorLR.ACTION_REDUCE:
                 assert(t[1].is_non_terminal() is True)
 
-                sn = SyntaxNode(t[1])
-                # The third component is the pop length
-                sn.child_list = symbol_stack[-t[2]:]
+                reduce_to = t[1]
+                reduce_length = t[2]
+                ast_rule = t[3]
+
+                if ast_rule is None:
+                    sn = SyntaxNode(reduce_to.name)
+                    # The third component is the pop length
+                    sn.child_list = symbol_stack[-reduce_length:]
+                else:
+                    # Whether the root node is a new string or
+                    # an existing node
+                    rename_flag = ast_rule[0]
+                    # This is the name of the root node
+                    root_name = ast_rule[1]
+                    # This is a list of children
+                    if len(ast_rule) > 2:
+                        child_list = ast_rule[2]
+                    else:
+                        child_list = None
+
+                    if rename_flag is False:
+                        assert(isinstance(root_name, int))
+                        sn = symbol_stack[-reduce_length + root_name]
+                    else:
+                        sn = SyntaxNode(root_name)
+
+                    if child_list is not None:
+                        for child in child_list:
+                            if isinstance(child, int) is True:
+                                sn.append(symbol_stack[-reduce_length + child])
+                            else:
+                                sn.append(SyntaxNode(child))
 
                 # Remove the same number of elements
-                for i in range(0, t[2]):
+                for _ in range(0, reduce_length):
                     symbol_stack.pop()
                     state_stack.pop()
 
                 # This is the state we use to compute GOTO
                 top_state = state_stack[-1]
 
-                goto_tuple = pg.parsing_table[(top_state, t[1])]
+                goto_tuple = pg.parsing_table[(top_state, reduce_to)]
                 assert(goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
 
                 # Push new non-terminal into the list
