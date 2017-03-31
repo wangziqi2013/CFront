@@ -1,19 +1,19 @@
 primary-expression:
-    T_IDENT
-    T_INT_CONST
-    T_STRING_CONST
-    T_CHAR_CONST
-    T_LPAREN expression T_RPAREN
+    T_IDENT                          # T_IDENT
+    T_INT_CONST                      # T_INT_CONST
+    T_STRING_CONST                   # T_STRING_CONST
+    T_CHAR_CONST                     # T_CHAR_CONST
+    T_LPAREN expression T_RPAREN     # $2
  
 postfix-expression:
-    primary-expression
-    postfix-expression T_LSPAREN expression T_RSPAREN
-    postfix-expression T_LPAREN T_RPAREN
-    postfix-expression T_LPAREN argument-expression-list T_RPAREN
-    postfix-expression T_DOT T_IDENT
-    postfix-expression T_ARROW T_IDENT
-    postfix-expression T_INC
-    postfix-expression T_DEC
+    primary-expression                                                 # $1
+    postfix-expression T_LSPAREN expression T_RSPAREN                  # T_ARRAY_SUB, $1 $3
+    postfix-expression T_LPAREN T_RPAREN                               # T_FUNC_CALL, $1
+    postfix-expression T_LPAREN argument-expression-list T_RPAREN      # T_FUNC_CALL, $1 $3
+    postfix-expression T_DOT T_IDENT                                   # T_DOT, $1 $3
+    postfix-expression T_ARROW T_IDENT                                 # T_ARROW, $1 $3
+    postfix-expression T_INC                                           # T_POST_INC, $1
+    postfix-expression T_DEC                                           # T_POST_DEC, $1
  
 argument-expression-list:
     assignment-expression
