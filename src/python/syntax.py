@@ -3182,6 +3182,7 @@ class SyntaxNode:
 
         :param symbol: The symbol of this syntax node
         """
+        print type(symbol)
         # Must be a string type
         assert(isinstance(symbol, str))
         self.symbol = symbol
@@ -3230,6 +3231,15 @@ class ParserLR(ParserGeneratorLR):
         # This is to avoid PyCharm warning
         if False:
             ParserGeneratorLR.__init__(self, None)
+
+        self.terminal_set = set()
+        self.non_terminal_set = set()
+        self.symbol_dict = {}
+        self.production_set = set()
+
+        # These two are really used
+        self.starting_state = -1
+        self.parsing_table = {}
 
         self.load_parsing_table(file_name)
 
@@ -3294,6 +3304,93 @@ class ParserLR(ParserGeneratorLR):
         :param file_name: The file name of the token list file
         :return: None
         """
+        #
+        terminal_list = ParserLR.load_token_list(file_name)
+        terminal_index = 0
+
+        state_stack = [self.starting_state]
+        symbol_stack = []
+
+        while True:
+            top_state = state_stack[-1]
+            terminal = terminal_list[terminal_index]
+
+            k = (top_state, terminal.name)
+            t = self.parsing_table[k]
+            action = t[0]
+
+            # If we shift then consume a terminal and
+            # goto the next state
+            if action == ParserGeneratorLR.ACTION_SHIFT:
+                assert (isinstance(t[1], int))
+                state_stack.append(t[1])
+                symbol_stack.append(terminal)
+
+                terminal_index += 1
+            elif action == ParserGeneratorLR.ACTION_REDUCE:
+                # This is a string denoting the name of the
+                # non-terminal; it is not the non-terminal object
+                reduce_to = t[1]
+                reduce_length = t[2]
+                ast_rule = t[3]
+
+                if ast_rule is None:
+                    sn = SyntaxNode(reduce_to)
+                    # The third component is the pop length
+                    sn.child_list = symbol_stack[-reduce_length:]
+                else:
+                    # Whether the root node is a new string or
+                    # an existing node
+                    rename_flag = ast_rule[0]
+                    # This is the name of the root node
+                    root_name = ast_rule[1]
+                    # This is a list of children
+                    if len(ast_rule) > 2:
+                        child_list = ast_rule[2]
+                    else:
+                        child_list = None
+
+                    # This fixes the root node
+                    if rename_flag is False:
+                        assert (isinstance(root_name, int))
+                        sn = symbol_stack[-reduce_length + root_name]
+                    else:
+                        sn = SyntaxNode(root_name)
+
+                    # Then add its children nodes
+                    if child_list is not None:
+                        for child in child_list:
+                            if isinstance(child, int) is True:
+                                sn.append(symbol_stack[-reduce_length + child])
+                            else:
+                                sn.append(SyntaxNode(child))
+
+                # Remove the same number of elements
+                for _ in range(0, reduce_length):
+                    symbol_stack.pop()
+                    state_stack.pop()
+
+                # This is the state we use to compute GOTO
+                top_state = state_stack[-1]
+
+                goto_tuple = self.parsing_table[(top_state, reduce_to)]
+                assert (goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
+
+                # Push new non-terminal into the list
+                symbol_stack.append(sn)
+                # Push the new symbol after reduction into the list
+                state_stack.append(goto_tuple[1])
+            elif action == ParserGeneratorLR.ACTION_ACCEPT:
+                break
+            else:
+                raise ValueError("Unknown parser state: %s" %
+                                 (t[0],))
+
+        # Symbol stack and state stack should all have one element
+        dbg_printf("Symbol stack: %s", symbol_stack)
+        dbg_printf("State stack: %s", state_stack)
+
+        return
 
 
 #####################################################################
@@ -3357,9 +3454,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :return: None
         """
         print_test_name()
-        if argv.has_keys("slr", "lr1", "lalr") is False:
-            dbg_printf("Please use --slr or --lr1 or --lalr to" +
-                       " test LR parser generator")
+        if argv.has_keys("slr", "lr1", "lalr", "lr") is False:
+            dbg_printf("Please use --lr1 or --slr or --lalr to" +
+                       " test LR parser generator; or --lr to test" +
+                       " parsing")
             return
 
         if argv.has_keys("token-file") is False:
@@ -3370,91 +3468,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         assert(pg is not None)
 
         token_file_name = argv.get_all_values("token-file")[0]
-        terminal_list = \
-            ParserGeneratorTestCase.load_token_list(token_file_name)
-        terminal_index = 0
 
-        state_stack = [pg.starting_state]
-        symbol_stack = []
-
-        while True:
-            top_state = state_stack[-1]
-            terminal = terminal_list[terminal_index]
-
-            k = (top_state, terminal.name)
-            t = pg.parsing_table[k]
-            action = t[0]
-
-            # If we shift then consume a terminal and
-            # goto the next state
-            if action == ParserGeneratorLR.ACTION_SHIFT:
-                assert(isinstance(t[1], int))
-                state_stack.append(t[1])
-                symbol_stack.append(terminal)
-
-                terminal_index += 1
-            elif action == ParserGeneratorLR.ACTION_REDUCE:
-                # This is a string denoting the name of the
-                # non-terminal; it is not the non-terminal object
-                reduce_to = t[1]
-                reduce_length = t[2]
-                ast_rule = t[3]
-
-                if ast_rule is None:
-                    sn = SyntaxNode(reduce_to)
-                    # The third component is the pop length
-                    sn.child_list = symbol_stack[-reduce_length:]
-                else:
-                    # Whether the root node is a new string or
-                    # an existing node
-                    rename_flag = ast_rule[0]
-                    # This is the name of the root node
-                    root_name = ast_rule[1]
-                    # This is a list of children
-                    if len(ast_rule) > 2:
-                        child_list = ast_rule[2]
-                    else:
-                        child_list = None
-
-                    # This fixes the root node
-                    if rename_flag is False:
-                        assert(isinstance(root_name, int))
-                        sn = symbol_stack[-reduce_length + root_name]
-                    else:
-                        sn = SyntaxNode(root_name)
-
-                    # Then add its children nodes
-                    if child_list is not None:
-                        for child in child_list:
-                            if isinstance(child, int) is True:
-                                sn.append(symbol_stack[-reduce_length + child])
-                            else:
-                                sn.append(SyntaxNode(child))
-
-                # Remove the same number of elements
-                for _ in range(0, reduce_length):
-                    symbol_stack.pop()
-                    state_stack.pop()
-
-                # This is the state we use to compute GOTO
-                top_state = state_stack[-1]
-
-                goto_tuple = pg.parsing_table[(top_state, reduce_to)]
-                assert(goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
-
-                # Push new non-terminal into the list
-                symbol_stack.append(sn)
-                # Push the new symbol after reduction into the list
-                state_stack.append(goto_tuple[1])
-            elif action == ParserGeneratorLR.ACTION_ACCEPT:
-                break
-            else:
-                raise ValueError("Unknown parser state: %s" %
-                                 (t[0], ))
-
-        # Symbol stack and state stack should all have one element
-        dbg_printf("Symbol stack: %s", symbol_stack)
-        dbg_printf("State stack: %s", state_stack)
+        # Then load the token file and parse
+        pg.parse(token_file_name)
 
         # Print the tree
         ParserGeneratorTestCase.print_parse_tree(symbol_stack[0])
@@ -3593,9 +3609,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         """
         print_test_name()
 
-        if argv.has_keys("slr", "lr1", "lalr") is False:
+        if argv.has_keys("slr", "lr1", "lalr", "lr") is False:
             dbg_printf("Please use --lr1 or --slr or --lalr to" +
-                       " test LR parser generator")
+                       " test LR parser generator; or --lr to test" +
+                       " parsing")
             return
 
         # The first argument is the file name
@@ -3604,6 +3621,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # Initialize the object - it will read the file
         # and parse its contents
+        # If no parser type is specified then we just think
+        # the file given is the parsing table
         if argv.has_keys("slr"):
             self.pg = ParserGeneratorLR(file_name,
                                         ParserGeneratorLR.LR_TYPE_SLR)
@@ -3613,10 +3632,13 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         elif argv.has_keys("lalr"):
             self.pg = ParserGeneratorLR(file_name,
                                         ParserGeneratorLR.LR_TYPE_LALR)
+        elif argv.has_keys("lr"):
+            # If no parser type is specified just load the parsing
+            # table
+            self.pg = ParserLR(file_name)
 
         pg = self.pg
 
-        dbg_printf("Real root symbol: %s", pg.root_symbol)
         dbg_printf("Starting state: %d", pg.starting_state)
 
         # If there is request to dump the parsing table
