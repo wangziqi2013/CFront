@@ -120,44 +120,46 @@ constant-expression:
 #
  
 declaration:
-    declaration-specifiers T_SEMICOLON
-    declaration-specifiers init-declarator-list T_SEMICOLON
+    # declaration specifier is the base type part, and
+    # the init-declarator-list is the declarator + initialization part
+    declaration-specifiers T_SEMICOLON                        # T_DECL, $1
+    declaration-specifiers init-declarator-list T_SEMICOLON   # T_DECL, $1 $2
  
 declaration-specifiers:
-    storage-class-specifier
-    type-specifier
-    type-qualifier
-    storage-class-specifier declaration-specifiers
-    type-specifier          declaration-specifiers
-    type-qualifier          declaration-specifiers
+    storage-class-specifier                                   # $1
+    type-specifier                                            # $1
+    type-qualifier                                            # $1
+    storage-class-specifier declaration-specifiers            # $2, $1
+    type-specifier          declaration-specifiers            # $2, $1
+    type-qualifier          declaration-specifiers            # $2, $1
  
 init-declarator-list:
-    init-declarator
-    init-declarator-list T_COMMA init-declarator
+    init-declarator                                           # T_INIT_DECL_LIST, $1
+    init-declarator-list T_COMMA init-declarator              # $1, $3
  
 init-declarator:
-    declarator
-    declarator T_ASSIGN initializer
+    declarator                                                # T_INIT_DECL, $1
+    declarator T_ASSIGN initializer                           # T_INIT_DECL, $1 $3
  
 storage-class-specifier:
-    T_TYPEDEF
-    T_EXTERN
-    T_STATIC
-    T_AUTO
-    T_REGISTER
+    T_TYPEDEF                # T_TYPEDEF
+    T_EXTERN                 # T_EXTERN
+    T_STATIC                 # T_STATIC
+    T_AUTO                   # T_AUTO
+    T_REGISTER               # T_REGISTER
  
 type-specifier:
-    T_VOID
-    T_CHAR
-    T_SHORT
-    T_INT
-    T_LONG
-    T_FLOAT
-    T_DOUBLE
-    T_SIGNED
-    T_UNSIGNED
-    struct-or-union-specifier
-    enum-specifier
+    T_VOID                     # T_VOID
+    T_CHAR                     # T_CHAR
+    T_SHORT                    # T_SHORT
+    T_INT                      # T_INT
+    T_LONG                     # T_LONG
+    T_FLOAT                    # T_FLOAT
+    T_DOUBLE                   # T_DOUBLE
+    T_SIGNED                   # T_SIGNED
+    T_UNSIGNED                 # T_UNSIGNED
+    struct-or-union-specifier  # $1
+    enum-specifier             # $1
     # TODO: Please see typedef-name definition (commented out)
     #typedef-name
  
@@ -167,8 +169,8 @@ struct-or-union-specifier:
     struct-or-union T_IDENT
  
 struct-or-union:
-    T_STRUCT
-    T_UNION
+    T_STRUCT         # T_STRUCT
+    T_UNION          # T_UNION
  
 struct-declaration-list:
     struct-declaration
@@ -206,11 +208,11 @@ enumerator:
     enumeration-constant T_ASSIGN constant-expression
  
 enumeration-constant:
-    T_IDENT
+    T_IDENT                            # T_IDENT
  
 type-qualifier:
-    T_CONST
-    T_VOLATILE
+    T_CONST                            # T_CONST
+    T_VOLATILE                         # T_VOLATILE
  
 declarator:
     direct-declarator
