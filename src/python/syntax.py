@@ -1960,11 +1960,14 @@ class ParserGenerator:
         the production body (i.e. after the # symbol)
 
         The AST rule is a tuple:
-           (rename_flag, root_data, child data 1, child data 2, .. , child data N)
+           (rename_flag, root_data, [child data 1, child data 2, .. , child data N])
         If rename_flag is True then root_data is the new name we assign to the
         returned syntax node. Otherwise it is the index in the RHS side
         After the root data is the indices of the child nodes. The index corresponds
         to the index in the RHS list
+
+        If child data is not integer then we create syntax nodes using the name
+        stored there
 
         :param p: The production
         :param ast_rule: The AST rule string
@@ -1982,6 +1985,8 @@ class ParserGenerator:
             root = ast_rule[:index].strip()
             body = ast_rule[index + 1:].strip()
         else:
+            # If there is no command then we just rename and
+            # return a new node
             root = ast_rule
             body = None
 
@@ -1992,6 +1997,57 @@ class ParserGenerator:
             raise ValueError("Invalid AST rule: \"%s\"" %
                              (ast_rule, ))
 
+        # If the root is a RHS node then rename is False
+        # Otherwise we rename the root and assign new name
+        # to root_data
+        if root[0] == "$":
+            rename_flag = False
+
+            # If the conversion throws exception then the
+            # index is wrongly specified
+            try:
+                root_data = int(root[1:]) - 1
+                # Check that the index is valid
+                if root_data <= 0 or root_data >= len(p.rhs_list):
+                    raise ValueError()
+            except ValueError:
+                raise ValueError("Invalid root node: %s" %
+                                 (root, ))
+        else:
+            rename_flag = True
+            root_data = root
+
+        # If there is no body then that's it
+        if body is None:
+            p.ast_rule = (rename_flag, root_data)
+            return
+
+        # Break it into tokens
+        body_list = body.split()
+        body_ret_list = []
+        for body_token in body_list:
+            # If the body is an index then we just store the
+            # integer index
+            if body_token[0] == '$':
+                # If error happens in converting the index
+                # to integer then we know the body is wrong
+                try:
+                    body_data = int(body_token[1:]) - 1
+                    # Check the index, and if it is invalid the
+                    # exception will be caught by the outer ValueError
+                    if body_data <= 0 or body_data >= len(p.rhs_list):
+                        raise ValueError()
+                except ValueError:
+                    raise ValueError("Invalid body: %s" %
+                                     (body, ))
+                body_ret_list.append(body_data)
+            else:
+                body_ret_list.append(body_token)
+
+        # The third component is the child list template
+        p.ast_rule = (rename_flag, root_data, body_list)
+
+        return
 
     def process_production(self, line_list):
         """
