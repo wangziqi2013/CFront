@@ -17,105 +17,103 @@ postfix-expression:
  
 argument-expression-list:
     assignment-expression                                              # T_ARG_LIST, $1
-    argument-expression-list T_COMMA assignment-expression             # $1, $2
+    argument-expression-list T_COMMA assignment-expression             # $1, $3
  
 unary-expression:
-    postfix-expression
-    T_INC unary-expression
-    T_DEC unary-expression
-    unary-operator cast-expression
-    T_SIZEOF unary-expression
-    T_SIZEOF T_LPAREN type-name T_RPAREN
+    postfix-expression                             # $1
+    T_INC unary-expression                         # T_PRE_INC, $1
+    T_DEC unary-expression                         # T_PRE_DEC, $1
+    unary-operator cast-expression                 # $1, $2
+    T_SIZEOF unary-expression                      # T_SIZEOF_EXP, $2
+    T_SIZEOF T_LPAREN type-name T_RPAREN           # T_SIZEOF_TYPE, $3
  
 unary-operator:
-    T_AMPERSAND
-    T_STAR
-    T_PLUS
-    T_MINUS
-    T_BITNOT
-    T_NOT
+    T_AMPERSAND      # T_ADDR
+    T_STAR           # T_DEREF
+    T_PLUS           # T_POSITIVE
+    T_MINUS          # T_NEGATE
+    T_BITNOT         # T_BITNOT
+    T_NOT            # T_NOT
  
 cast-expression:
-    unary-expression
-    T_LPAREN type-name T_RPAREN cast-expression
+    unary-expression                                    # $1
+    T_LPAREN type-name T_RPAREN cast-expression         # T_CAST, $2 $4
 
 logical-OR-expression:
-    logical-AND-expression
-    logical-OR-expression T_OR logical-AND-expression
+    logical-AND-expression                              # $1
+    logical-OR-expression T_OR logical-AND-expression   # T_OR, $1 $3
 
 logical-AND-expression:
-    inclusive-OR-expression
-    logical-AND-expression T_AND inclusive-OR-expression
+    inclusive-OR-expression                               # $1
+    logical-AND-expression T_AND inclusive-OR-expression  # T_AND, $1 $3
 
 inclusive-OR-expression:
-    exclusive-OR-expression
-    inclusive-OR-expression T_BIT_OR exclusive-OR-expression
+    exclusive-OR-expression                                   # $1
+    inclusive-OR-expression T_BIT_OR exclusive-OR-expression  # T_BIT_OR, $1 $3
 
 exclusive-OR-expression:
-    AND-expression
-    exclusive-OR-expression T_BIT_XOR AND-expression
+    AND-expression                                       # $1
+    exclusive-OR-expression T_BIT_XOR AND-expression     # T_BIT_XOR, $1 $3
 
 AND-expression:
-    equality-expression
-    AND-expression T_BIT_AND equality-expression
+    equality-expression                              # $1
+    AND-expression T_BIT_AND equality-expression     # T_BIT_AND, $1 $3
 
 equality-expression:
-    relational-expression
-    equality-expression T_EQ relational-expression
-    equality-expression T_NOTEQ relational-expression
+    relational-expression                                 # $1
+    equality-expression T_EQ relational-expression        # T_EQ, $1 $3
+    equality-expression T_NOTEQ relational-expression     # T_NOTEQ, $1 $3
 
 relational-expression:
-    shift-expression
-    relational-expression T_LESS shift-expression
-    relational-expression T_LESSEQ shift-expression
-    relational-expression T_GREATER shift-expression
-    relational-expression T_GREATEREQ shift-expression
+    shift-expression                                      # $1
+    relational-expression T_LESS shift-expression         # T_LESS, $1 $3
+    relational-expression T_LESSEQ shift-expression       # T_LESSEQ, $1 $3
+    relational-expression T_GREATER shift-expression      # T_GREATER, $1 $3
+    relational-expression T_GREATEREQ shift-expression    # T_GREATEREQ, $1 $3
 
 shift-expression:
-    additive-expression
-    shift-expression T_LSHIFT additive-expression
-    shift-expression T_RSHIFT additive-expression
+    additive-expression                                   # $1
+    shift-expression T_LSHIFT additive-expression         # T_LSHIFT, $1 $3
+    shift-expression T_RSHIFT additive-expression         # T_RSHIFT, $1 $3
 
 additive-expression:
-    multiplicative-expression
-    additive-expression T_PLUS multiplicative-expression
-    additive-expression T_MINUS multiplicative-expression
+    multiplicative-expression                                # $1
+    additive-expression T_PLUS multiplicative-expression     # T_PLUS, $1 $3
+    additive-expression T_MINUS multiplicative-expression    # T_MINUS, $1 $3
 
 multiplicative-expression:
-    cast-expression
-    multiplicative-expression T_STAR cast-expression
-    multiplicative-expression T_DIV cast-expression
-    multiplicative-expression T_MOD cast-expression
+    cast-expression                                       # $1
+    multiplicative-expression T_STAR cast-expression      # T_NULTIPLY, $1 $3
+    multiplicative-expression T_DIV cast-expression       # T_DIV, $1 $3
+    multiplicative-expression T_MOD cast-expression       # T_MOD, $1 $3
  
 conditional-expression:
-    logical-OR-expression
-    logical-OR-expression T_QMARK expression T_COLON conditional-expression
+    logical-OR-expression                                                       # $1
+    logical-OR-expression T_QMARK expression T_COLON conditional-expression     # T_COND, $1 $3 $5
  
 assignment-expression:
-    conditional-expression
-    #conditional-expression assignment-operator assignment-expression
-    # TODO: This will cause SHIFT-REDUCE conflict
-    unary-expression assignment-operator assignment-expression
+    conditional-expression                                                # $1
+    unary-expression assignment-operator assignment-expression            # $2, $1 $3
  
 assignment-operator:
-    T_ASSIGN
-    T_PLUS_ASSIGN
-    T_MINUS_ASSIGN
-    T_STAR_ASSIGN
-    T_DIV_ASSIGN
-    T_MOD_ASSIGN
-    T_LSHIFT_ASSIGN
-    T_RSHIFT_ASSIGN
-    T_AMPERSAND_ASSIGN
-    T_BITXOR_ASSIGN
-    T_BITOR_ASSIGN
+    T_ASSIGN                 # T_ASSIGN
+    T_PLUS_ASSIGN            # T_PLUS_ASSIGN
+    T_MINUS_ASSIGN           # T_MINUS_ASSIGN
+    T_STAR_ASSIGN            # T_STAR_ASSIGN
+    T_DIV_ASSIGN             # T_DIV_ASSIGN
+    T_MOD_ASSIGN             # T_MOD_ASSIGN
+    T_LSHIFT_ASSIGN          # T_LSHIFT_ASSIGN
+    T_RSHIFT_ASSIGN          # T_RSHIFT_ASSIGN
+    T_AMPERSAND_ASSIGN       # T_AMPERSAND_ASSIGN
+    T_BITXOR_ASSIGN          # T_BITXOR_ASSIGN
+    T_BITOR_ASSIGN           # T_BITOR_ASSIGN
  
 expression:
-    assignment-expression
-    expression T_COMMA assignment-expression
+    assignment-expression                             # $1
+    expression T_COMMA assignment-expression          # T_COMMA, $1 $3
  
 constant-expression:
-    conditional-expression
+    conditional-expression      # $1
  
 #
 # C declaration rules
