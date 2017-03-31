@@ -7,6 +7,7 @@
 
 from common import *
 import sys
+import json
 
 #####################################################################
 # class Symbol
@@ -2138,8 +2139,6 @@ class ParserGenerator:
             # Then add ast rule into the production
             # Note that this is a static function
             ParserGenerator.add_ast_rule(p, ast_rule)
-            if p.ast_rule is not None:
-                print p.ast_rule
 
         return
 
@@ -2483,16 +2482,18 @@ class ParserGeneratorLR(ParserGenerator):
 
         The file is dumped as a set of lines, and each line represents an entry in
         the parsing table. The format of the line is like the following:
-            starting_state                            <- First line
-            current_state symbol action ...           <- Repeat
-        The above three columns are common to all action types. For ACTION_SHIFT
-        the ... is the next state and symbol must be a terminal; for ACTION_GOTO,
-        the ... is the next state and symbol must be a non-terminal; for
-        ACTION_REDUCE ... is the non-terminal to reduce to followed by the length
-        of the production which is an integer. For ACTION_ACCEPT ... is empty
+            start_state               # This must be the first line of the file
+                                      # And it is an integer
+            key -> value              # Both key and value are JSON representation
+                                      # of the parsing table key and value
 
-        TODO: DUMP AST RULE INTO THE TABLE ALSO
+        It is worth to mention that since JSON does not support tuples, all
+        tuple objects will be dumped as a list. Therefore, when we loads the
+        parsing table back to the parser, we need to convert the list
+        object back to tuple to be used as dict keys.
 
+          e.g. tuple([1, 2, 3, 4, 5]) returns (1, 2, 3, 4, 5)
+               list((1, 2, 3, 4, 5)) returns [1, 2, 3, 4, 5]
         :param file_name: The file to dump the parsing table into
         :return: None
         """
@@ -2503,19 +2504,9 @@ class ParserGeneratorLR(ParserGenerator):
         # Write the starting state first
         fp.write("%d\n" % (self.starting_state, ))
 
+        # For each key value pair dump them into the file
         for key, value in self.parsing_table.items():
-            fp.write("%d %s " % (key[0], key[1].name))
-            action = value[0]
-            if action == self.ACTION_SHIFT:
-                fp.write("SHIFT %d\n" % (value[1], ))
-            elif action == self.ACTION_GOTO:
-                fp.write("GOTO %d\n" % (value[1], ))
-            elif action == self.ACTION_ACCEPT:
-                fp.write("ACCEPT\n")
-            elif action == self.ACTION_REDUCE:
-                fp.write("REDUCE %s %d\n" % (value[1].name, value[2]))
-            else:
-                raise ValueError("Unknown action: %d" % (action, ))
+            fp.write("%s -> %s\n" % (json.dumps(key), json.dumps(value)))
 
         fp.close()
 
