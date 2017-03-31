@@ -2469,11 +2469,60 @@ class ParserGeneratorLR(ParserGenerator):
     def load_parsing_table(self, file_name):
         """
         This function loads the parsing table in the format we dump it
+        (i.e. Two python strings separated by arrow "->")
+
+        Note that since JSON will convert all tuples into strings, we
+        should convert it back to tuples for them to be used as dict
+        keys.
 
         :param file_name: The file name of the dumped parsing table
         :return: None
         """
+        fp = open(file_name, "r")
 
+        first_line = True
+        entry_count = 0
+        # For each line just decompose it into a key and a value field
+        for line in fp:
+            # If it is the first line, then this is the
+            # starting state and we just recover it
+            if first_line is True:
+                first_line = False
+                self.starting_state = int(line)
+
+                dbg_printf("    Recovered starting state: %d",
+                           self.starting_state)
+                continue
+            else:
+                # This is how many entries we read from the file
+                entry_count += 1
+
+            # Strip off the trailing '\n' character
+            line = line.strip()
+            # Then locate the arrow symbol. If there is not one then
+            # we know the format is invalid
+            index = line.find("->")
+            if index == -1:
+                raise ValueError("Invalid parsing table file: \"%s\"" %
+                                 (line, ))
+
+            key_value = line.split("->")
+            if len(key_value) != 2:
+                raise ValueError("Invalid parsing table file: \"%s\"" %
+                                 (line,))
+
+            # Convert it into tuple key and tuple value
+            key = tuple(json.loads(key_value[0]))
+            value = tuple(json.loads(key_value[1]))
+
+            # Finally store them inside the parsing table
+            self.parsing_table[key] = value
+
+        fp.close()
+
+        dbg_printf("Successfully recovered %d entries", entry_count)
+
+        return
 
     def dump_parsing_table(self, file_name):
         """
@@ -2491,6 +2540,12 @@ class ParserGeneratorLR(ParserGenerator):
         tuple objects will be dumped as a list. Therefore, when we loads the
         parsing table back to the parser, we need to convert the list
         object back to tuple to be used as dict keys.
+
+        Note that since we use -> to separate key and value in the parsing
+        table, the terminals and non-terminals could not contain the arrow
+        symbol "->". It is recommended that both terminals and non-terminals
+        should have T_ prefix and should not use special characters to avoid
+        misinterpretation
 
           e.g. tuple([1, 2, 3, 4, 5]) returns (1, 2, 3, 4, 5)
                list((1, 2, 3, 4, 5)) returns [1, 2, 3, 4, 5]
