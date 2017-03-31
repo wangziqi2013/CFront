@@ -16,8 +16,8 @@ postfix-expression:
     postfix-expression T_DEC                                           # T_POST_DEC, $1
  
 argument-expression-list:
-    assignment-expression
-    argument-expression-list T_COMMA assignment-expression
+    assignment-expression                                              # T_ARG_LIST, $1
+    argument-expression-list T_COMMA assignment-expression             # $1, $2
  
 unary-expression:
     postfix-expression

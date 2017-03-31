@@ -850,6 +850,10 @@ class Production:
         # items heavily rely on it
         self.substring_first_set_list = []
 
+        # This will be set to a tuple if AST rule is given
+        # in the syntax definition
+        self.ast_rule = None
+
         return
 
     def prepare_substring_first(self):
