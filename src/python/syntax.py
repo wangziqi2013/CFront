@@ -3235,6 +3235,58 @@ class ParserLR(ParserGeneratorLR):
 
         return
 
+    @staticmethod
+    def load_token_list(file_name):
+        """
+        This function loads a token list and build a list of
+        terminals for the parser to consume
+
+        The token list should be a file with lines:
+            TokenType = [Here goes terminal name]    ; ...
+        Since we only care about the terminal name but not
+        their contents, everything after the semicolon will be ignored
+
+        :param file_name: The file name of the token list file
+        :return: list(Terminal)
+        """
+        fp = open(file_name, "r")
+        s = fp.read()
+        fp.close()
+
+        # A list of terminals
+        ret_list = []
+
+        # A list of non-empty lines
+        line_list = [line.strip() for
+                     line in
+                     s.splitlines() if
+                     len(line.strip()) != 0]
+        for line in line_list:
+            # Skip commented lines
+            if line[0] == '#':
+                continue
+
+            if line.startswith("TokenType = ") is False:
+                raise ValueError("Illegal line: %s" %
+                                 (line,))
+
+            index = line.find(";")
+            if index == -1:
+                raise ValueError("Illegal line: %s" %
+                                 (line,))
+
+            # Cut the token
+            token = \
+                line[line.find("=") + 1:line.find(";")].strip()
+
+            ret_list.append(Terminal(token))
+
+        dbg_printf("Read %d tokens from %s",
+                   len(ret_list),
+                   file_name)
+
+        return ret_list
+
     def parse(self, file_name):
         """
         Start parsing using an external token list file
@@ -3295,59 +3347,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                                                          ident + 1)
 
         return
-
-    @staticmethod
-    def load_token_list(file_name):
-        """
-        This function loads a token list and build a list of
-        terminals for the parser to consume
-
-        The token list should be a file with lines:
-            TokenType = [Here goes terminal name]    ; ...
-        Since we only care about the terminal name but not
-        their contents, everything after the semicolon will be ignored
-
-        :param file_name: The file name of the token list file
-        :return: list(Terminal)
-        """
-        fp = open(file_name, "r")
-        s = fp.read()
-        fp.close()
-
-        # A list of terminals
-        ret_list = []
-
-        # A list of non-empty lines
-        line_list = [line.strip() for
-                     line in
-                     s.splitlines() if
-                     len(line.strip()) != 0]
-        for line in line_list:
-            # Skip commented lines
-            if line[0] == '#':
-                continue
-
-            if line.startswith("TokenType = ") is False:
-                raise ValueError("Illegal line: %s" %
-                                 (line, ))
-
-            index = line.find(";")
-            if index == -1:
-                raise ValueError("Illegal line: %s" %
-                                 (line,))
-
-            # Cut the token
-            token = \
-                line[line.find("=") + 1:line.find(";")].strip()
-
-            ret_list.append(Terminal(token))
-
-        dbg_printf("Read %d tokens from %s",
-                   len(ret_list),
-                   file_name)
-
-        return ret_list
-
 
     @TestNode("test_lr")
     def test_lr_parse(self, argv):
