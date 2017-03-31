@@ -3182,9 +3182,9 @@ class SyntaxNode:
 
         :param symbol: The symbol of this syntax node
         """
-        print type(symbol)
-        # Must be a string type
-        assert(isinstance(symbol, str))
+        # Must be a string or unicode type
+        # Unicode type is the result of using Json
+        assert(isinstance(symbol, str) or isinstance(symbol, unicode))
         self.symbol = symbol
         # These are child nodes that appear as derived nodes
         # in the syntax specification
@@ -3302,7 +3302,8 @@ class ParserLR(ParserGeneratorLR):
         Start parsing using an external token list file
 
         :param file_name: The file name of the token list file
-        :return: None
+        :return: The final root symbol (i.e. the top symbol after
+         acceptance)
         """
         #
         terminal_list = ParserLR.load_token_list(file_name)
@@ -3390,7 +3391,7 @@ class ParserLR(ParserGeneratorLR):
         dbg_printf("Symbol stack: %s", symbol_stack)
         dbg_printf("State stack: %s", state_stack)
 
-        return
+        return symbol_stack[0]
 
 
 #####################################################################
@@ -3470,10 +3471,10 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         token_file_name = argv.get_all_values("token-file")[0]
 
         # Then load the token file and parse
-        pg.parse(token_file_name)
+        root_symbol = pg.parse(token_file_name)
 
         # Print the tree
-        ParserGeneratorTestCase.print_parse_tree(symbol_stack[0])
+        ParserGeneratorTestCase.print_parse_tree(root_symbol)
 
         return
 
