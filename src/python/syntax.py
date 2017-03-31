@@ -2008,7 +2008,7 @@ class ParserGenerator:
             try:
                 root_data = int(root[1:]) - 1
                 # Check that the index is valid
-                if root_data <= 0 or root_data >= len(p.rhs_list):
+                if root_data < 0 or root_data >= len(p.rhs_list):
                     raise ValueError()
             except ValueError:
                 raise ValueError("Invalid root node: %s" %
@@ -2035,7 +2035,7 @@ class ParserGenerator:
                     body_data = int(body_token[1:]) - 1
                     # Check the index, and if it is invalid the
                     # exception will be caught by the outer ValueError
-                    if body_data <= 0 or body_data >= len(p.rhs_list):
+                    if body_data < 0 or body_data >= len(p.rhs_list):
                         raise ValueError()
                 except ValueError:
                     raise ValueError("Invalid body: %s" %
@@ -2045,7 +2045,7 @@ class ParserGenerator:
                 body_ret_list.append(body_token)
 
         # The third component is the child list template
-        p.ast_rule = (rename_flag, root_data, body_list)
+        p.ast_rule = (rename_flag, root_data, body_ret_list)
 
         return
 
@@ -2068,8 +2068,8 @@ class ParserGenerator:
             # following first
             index = line.find("#")
             if index != -1:
-                line = line[:index]
                 ast_rule = line[index + 1:].strip()
+                line = line[:index]
                 # If after stripping the rule is empty string
                 # then still we know there is nothing interesting
                 if len(ast_rule) == 0:
@@ -2134,6 +2134,8 @@ class ParserGenerator:
             # Then add ast rule into the production
             # Note that this is a static function
             ParserGenerator.add_ast_rule(p, ast_rule)
+            if p.ast_rule is not None:
+                print p.ast_rule
 
         return
 
