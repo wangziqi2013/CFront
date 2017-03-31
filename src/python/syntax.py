@@ -1953,6 +1953,46 @@ class ParserGenerator:
 
         return
 
+    @staticmethod
+    def add_ast_rule(p, ast_rule):
+        """
+        This function parses and adds the AST rule defined after
+        the production body (i.e. after the # symbol)
+
+        The AST rule is a tuple:
+           (rename_flag, root_data, child data 1, child data 2, .. , child data N)
+        If rename_flag is True then root_data is the new name we assign to the
+        returned syntax node. Otherwise it is the index in the RHS side
+        After the root data is the indices of the child nodes. The index corresponds
+        to the index in the RHS list
+
+        :param p: The production
+        :param ast_rule: The AST rule string
+        :return: None
+        """
+        # If there is no AST rule then we just set it to None in
+        # the production
+        if ast_rule is None:
+            p.ast_rule = None
+            return
+
+        # Then try to separate root and body
+        index = ast_rule.find(",")
+        if index != -1:
+            root = ast_rule[:index].strip()
+            body = ast_rule[index + 1:].strip()
+        else:
+            root = ast_rule
+            body = None
+
+        # If the root is empty or body is empty
+        # then the rule is invalid
+        if len(root) == 0 or \
+           (body is not None and len(body) == 0):
+            raise ValueError("Invalid AST rule: \"%s\"" %
+                             (ast_rule, ))
+
+
     def process_production(self, line_list):
         """
         This function constructs productions and place them into
@@ -1967,6 +2007,22 @@ class ParserGenerator:
         current_nt = None
         has_body = True
         for line in line_list:
+            # If there are ast rules, we save it for later
+            # processing and just process productions in the
+            # following first
+            index = line.find("#")
+            if index != -1:
+                line = line[:index]
+                ast_rule = line[index + 1:].strip()
+                # If after stripping the rule is empty string
+                # then still we know there is nothing interesting
+                if len(ast_rule) == 0:
+                    ast_rule = None
+            else:
+                # If there is no semantic rule defined just
+                # make it as None
+                ast_rule = None
+
             if line[-1] == ':':
                 # When we see the start of a production, must make
                 # sure that the previous production has been finished
@@ -2017,7 +2073,11 @@ class ParserGenerator:
             # constructed
             # This also adds the production into the production
             # set of the generator
-            Production(self, current_nt, rhs_list)
+            p = Production(self, current_nt, rhs_list)
+
+            # Then add ast rule into the production
+            # Note that this is a static function
+            ParserGenerator.add_ast_rule(p, ast_rule)
 
         return
 
@@ -2034,6 +2094,11 @@ class ParserGenerator:
         in_doubt_set = set()
 
         for line in line_list:
+            # If there are semantic rules just disregard it here
+            index = line.find("#")
+            if index != -1:
+                line = line[:index]
+
             # We have seen a new LHS of the production rule
             # Also non-terminal is very easy to identify because
             # it must be on the LHS side at least once
