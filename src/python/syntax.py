@@ -2554,7 +2554,7 @@ class ParserGeneratorLR(ParserGenerator):
             for symbol, goto_item_set in \
                     item_set.goto_table.items():
                 # Current state, symbol
-                k = (item_set.index, symbol)
+                k = (item_set.index, symbol.name)
 
                 # We have not added REDUCE entry so there
                 # would not be any SHIFT-REDUCE conflict
@@ -2586,7 +2586,9 @@ class ParserGeneratorLR(ParserGenerator):
                 # then parsing may continue
                 if lhs == self.fake_production.lhs:
                     dbg_printf("Setting finish state for fake root symbol")
-                    k = (item_set.index, Symbol.get_end_symbol())
+
+                    # Note that we use the name of T_EOF as the key here
+                    k = (item_set.index, Symbol.get_end_symbol().name)
                     assert(k not in self.parsing_table)
 
                     self.parsing_table[k] = (self.ACTION_ACCEPT, )
@@ -2608,11 +2610,14 @@ class ParserGeneratorLR(ParserGenerator):
                     assert(symbol.is_terminal() is True)
 
                     # Key and value in the mapping table
-                    k = (item_set.index, symbol)
-                    # Note that the AST rule is also contained in the reduce
+                    k = (item_set.index, symbol.name)
+
+                    # Note 1: the AST rule is also contained in the reduce
                     # action descriptor
+                    # Note 2: We use the non-terminal's name instead of the object
+                    # as the table entry
                     v = (self.ACTION_REDUCE,
-                         lhs,
+                         lhs.name,
                          len(item.p.rhs_list),
                          item.p.ast_rule)
 
@@ -3288,7 +3293,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             top_state = state_stack[-1]
             terminal = terminal_list[terminal_index]
 
-            k = (top_state, terminal)
+            k = (top_state, terminal.name)
             t = pg.parsing_table[k]
             action = t[0]
 
@@ -3301,14 +3306,14 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
                 terminal_index += 1
             elif action == ParserGeneratorLR.ACTION_REDUCE:
-                assert(t[1].is_non_terminal() is True)
-
+                # This is a string denoting the name of the
+                # non-terminal; it is not the non-terminal object
                 reduce_to = t[1]
                 reduce_length = t[2]
                 ast_rule = t[3]
 
                 if ast_rule is None:
-                    sn = SyntaxNode(reduce_to.name)
+                    sn = SyntaxNode(reduce_to)
                     # The third component is the pop length
                     sn.child_list = symbol_stack[-reduce_length:]
                 else:
