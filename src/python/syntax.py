@@ -1766,6 +1766,34 @@ class ParserGenerator:
         The empty symbol "eps" is also a non-terminal, with the special
         name T_ (T + underline)
 
+        There could also be semantic rules associated with each production.
+        The semantic rule is defined in the parenthesis pair "()" if there
+        is one.
+
+        On example of the semantics rule is given as follows:
+          S -> A B C D # $2, $1 $3 $4 T_MARKER
+        All contents after the # symbol is treated as the semantic rule
+        (Note that if # appears as the first character in a line then it
+        it a comment line; However in this case it is after a production
+        rule, so it represents the start of semantic rules)
+
+        After the "#" symbol there could be names like $ + number,
+        denoting the number-th token in the right hand side. "$2," means
+        the second RHS symbol is the root of the returned value, and
+        $1 $3 $4 after the comma means the child list contains $1 $3 and $4
+        If before the comma we do not use the $ notation, then the symbol
+        will be treated as a label and a syntax node with that symbol
+        will be created as the returned root. If there is no comma
+        then we merely return the syntax node with no children.
+        All valid usages are summarized in the following:
+
+          A -> T_MINUS # T_PREFIX_INC
+          (Renaming: Create a new node and return as root)
+          A -> B C D # T_SOMETHING, $2 $3
+          (Create a new node and use C and D as its child and return)
+          A -> B C D # $2, $1 $3
+          (Use C as root and push B, D as it child and return)
+
         :param file_name: The name of the file to read the syntax
         :return: None
         """
@@ -2310,6 +2338,15 @@ class ParserGeneratorLR(ParserGenerator):
                    len(self.item_set_list))
 
         return
+
+    def load_parsing_table(self, file_name):
+        """
+        This function loads the parsing table in the format we dump it
+
+        :param file_name: The file name of the dumped parsing table
+        :return: None
+        """
+
 
     def dump_parsing_table(self, file_name):
         """
