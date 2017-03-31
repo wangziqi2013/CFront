@@ -3332,12 +3332,14 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
                     else:
                         child_list = None
 
+                    # This fixes the root node
                     if rename_flag is False:
                         assert(isinstance(root_name, int))
                         sn = symbol_stack[-reduce_length + root_name]
                     else:
                         sn = SyntaxNode(root_name)
 
+                    # Then add its children nodes
                     if child_list is not None:
                         for child in child_list:
                             if isinstance(child, int) is True:
