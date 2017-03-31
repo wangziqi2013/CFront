@@ -176,23 +176,23 @@ struct-declaration-list:
     struct-declaration                               # T_STRUCT_DECL_LIST, $1
     struct-declaration-list struct-declaration       # $1, $2
  
-struct-declaration:                                                
+struct-declaration:
     specifier-qualifier-list struct-declarator-list T_SEMICOLON    # T_STRUCT_DECL, $1 $2
  
 specifier-qualifier-list:
-    type-specifier
-    type-qualifier
-    type-specifier specifier-qualifier-list 
-    type-qualifier specifier-qualifier-list 
+    type-specifier                               # T_SPEC_QUAL_LIST, $1
+    type-qualifier                               # T_SPEC_QUAL_LIST, $1
+    type-specifier specifier-qualifier-list      # $2, $1
+    type-qualifier specifier-qualifier-list      # $2, $1
  
 struct-declarator-list:
-    struct-declarator
-    struct-declarator-list T_COMMA struct-declarator
+    struct-declarator                                   # T_STRUCT_DECL_LIST, $1
+    struct-declarator-list T_COMMA struct-declarator    # $1, $3
  
 struct-declarator:
-    declarator
-    T_COLON constant-expression
-    declarator T_COLON constant-expression
+    declarator                                          # T_STRUCT_DECL, $1
+    T_COLON constant-expression                         # T_BIT_FIELD, $2
+    declarator T_COLON constant-expression              # T_BIT_FIELD, $1 $3
  
 enum-specifier:
     T_ENUM T_LCPAREN enumerator-list T_RCPAREN
