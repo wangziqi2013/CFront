@@ -3455,10 +3455,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :return: None
         """
         print_test_name()
-        if argv.has_keys("slr", "lr1", "lalr", "lr") is False:
-            dbg_printf("Please use --lr1 or --slr or --lalr to" +
-                       " test LR parser generator; or --lr to test" +
-                       " parsing")
+        if argv.has_keys("lr") is False:
+            dbg_printf("Please use --lr to test parsing")
             return
 
         if argv.has_keys("token-file") is False:
@@ -3471,6 +3469,8 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         token_file_name = argv.get_all_values("token-file")[0]
 
         # Then load the token file and parse
+        # If accepted the return value is the top symbol
+        # on the stack which is also the root of the syntax tree
         root_symbol = pg.parse(token_file_name)
 
         # Print the tree
