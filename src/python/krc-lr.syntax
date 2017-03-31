@@ -195,17 +195,17 @@ struct-declarator:
     declarator T_COLON constant-expression              # T_BIT_FIELD, $1 $3
  
 enum-specifier:
-    T_ENUM T_LCPAREN enumerator-list T_RCPAREN
-    T_ENUM T_IDENT T_LCPAREN enumerator-list T_RCPAREN
-    T_ENUM T_IDENT
+    T_ENUM T_LCPAREN enumerator-list T_RCPAREN          # T_ENUM, $3
+    T_ENUM T_IDENT T_LCPAREN enumerator-list T_RCPAREN  # T_ENUM, $2 $4
+    T_ENUM T_IDENT                                      # T_ENUM, $2
  
 enumerator-list:
-    enumerator
-    enumerator-list T_COMMA enumerator
+    enumerator                            # T_ENUM_LIST, $1
+    enumerator-list T_COMMA enumerator    # $1, $3
  
 enumerator:
-    enumeration-constant
-    enumeration-constant T_ASSIGN constant-expression
+    enumeration-constant                               # T_ENUMERATOR, $1
+    enumeration-constant T_ASSIGN constant-expression  # T_ENUMERATOR, $1 $3
  
 enumeration-constant:
     T_IDENT                            # T_IDENT
@@ -238,24 +238,24 @@ type-qualifier-list:
     type-qualifier-list type-qualifier
  
 parameter-type-list:
-    parameter-list
-    parameter-list T_COMMA T_ELLIPSIS
+    parameter-list                                # $1
+    parameter-list T_COMMA T_ELLIPSIS             # $1, $3
  
 parameter-list:
-    parameter-declaration
-    parameter-list T_COMMA parameter-declaration
+    parameter-declaration                         # T_PARAM_LIST, $1
+    parameter-list T_COMMA parameter-declaration  # $1, $3
  
-parameter-declaration:
-    declaration-specifiers declarator
-    declaration-specifiers
-    declaration-specifiers abstract-declarator
+parameter-declaration:                            
+    declaration-specifiers declarator             # T_PARAM_DECL, $1 $2
+    declaration-specifiers                        # T_PARAM_DECL, $1
+    declaration-specifiers abstract-declarator    # T_PARAM_DECL, $1 $2
  
 identifier-list:
-    T_IDENT
-    identifier-list T_COMMA T_IDENT
+    T_IDENT                              # T_IDENT_LIST, $1
+    identifier-list T_COMMA T_IDENT      # $1, $3
  
 type-name:
-    specifier-qualifier-list
+    specifier-qualifier-list                        
     specifier-qualifier-list abstract-declarator
  
 abstract-declarator:
@@ -315,8 +315,8 @@ declaration-list:
     declaration-list declaration
  
 statement-list:
-    statement
-    statement-list statement
+    statement                     # T_STMT_LIST, $1
+    statement-list statement      # $1, $2
  
 expression-statement:
     T_SEMICOLON
