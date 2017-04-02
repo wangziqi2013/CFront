@@ -29,6 +29,20 @@ TokenType = T_IDENT                 ; Identifier = p
 TokenType = T_ASSIGN                ; Other token type
 TokenType = T_INT_CONST             ; Int const = 5
 TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_STRUCT                ; Other token type
+TokenType = T_LCPAREN               ; Other token type
+TokenType = T_INT                   ; Other token type
+TokenType = T_IDENT                 ; Identifier = a
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_LONG                  ; Other token type
+TokenType = T_IDENT                 ; Identifier = b
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_SHORT                 ; Other token type
+TokenType = T_IDENT                 ; Identifier = c
+TokenType = T_SEMICOLON             ; Other token type
+TokenType = T_RCPAREN               ; Other token type
+TokenType = T_IDENT                 ; Identifier = stat
+TokenType = T_SEMICOLON             ; Other token type
 TokenType = T_IDENT                 ; Identifier = p
 TokenType = T_ASSIGN                ; Other token type
 TokenType = T_IDENT                 ; Identifier = a
