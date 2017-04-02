@@ -10,8 +10,8 @@ postfix-expression:
     postfix-expression T_LSPAREN expression T_RSPAREN                  # T_ARRAY_SUB, $1 $3
     postfix-expression T_LPAREN T_RPAREN                               # T_FUNC_CALL, $1
     postfix-expression T_LPAREN argument-expression-list T_RPAREN      # T_FUNC_CALL, $1 $3
-    postfix-expression T_DOT T_IDENT                                   # T_DOT, $1 $3
-    postfix-expression T_ARROW T_IDENT                                 # T_ARROW, $1 $3
+    postfix-expression T_DOT T_IDENT                                   # T_DOT, $1 T_IDENT
+    postfix-expression T_ARROW T_IDENT                                 # T_ARROW, $1 T_IDENT
     postfix-expression T_INC                                           # T_POST_INC, $1
     postfix-expression T_DEC                                           # T_POST_DEC, $1
  
@@ -165,8 +165,8 @@ type-specifier:
  
 struct-or-union-specifier:
     struct-or-union T_LCPAREN struct-declaration-list T_RCPAREN            # $1, $3
-    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN    # $1, $2 $4
-    struct-or-union T_IDENT                                                # $1, $2
+    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN    # $1, T_IDENT $4
+    struct-or-union T_IDENT                                                # $1, T_IDENT
  
 struct-or-union:
     T_STRUCT         # T_STRUCT
@@ -196,8 +196,8 @@ struct-declarator:
  
 enum-specifier:
     T_ENUM T_LCPAREN enumerator-list T_RCPAREN          # T_ENUM, $3
-    T_ENUM T_IDENT T_LCPAREN enumerator-list T_RCPAREN  # T_ENUM, $2 $4
-    T_ENUM T_IDENT                                      # T_ENUM, $2
+    T_ENUM T_IDENT T_LCPAREN enumerator-list T_RCPAREN  # T_ENUM, T_IDENT $4
+    T_ENUM T_IDENT                                      # T_ENUM, T_IDENT
  
 enumerator-list:
     enumerator                            # T_ENUM_LIST, $1
@@ -256,8 +256,8 @@ parameter-declaration:
     declaration-specifiers abstract-declarator    # T_PARAM_DECL, $1 $2
  
 identifier-list:
-    T_IDENT                              # T_IDENT_LIST, $1
-    identifier-list T_COMMA T_IDENT      # $1, $3
+    T_IDENT                              # T_IDENT_LIST, T_IDENT
+    identifier-list T_COMMA T_IDENT      # $1, T_IDENT
  
 type-name:
     specifier-qualifier-list                        # T_TYPE_NAME, $1
@@ -305,7 +305,7 @@ statement:
     jump-statement         # $1
  
 labeled-statement:
-    T_IDENT T_COLON statement                       # T_LABELED_STMT, $1 $3
+    T_IDENT T_COLON statement                       # T_LABELED_STMT, T_IDENT $3
     T_CASE constant-expression T_COLON statement    # T_CASE_STMT, $2 $4
     T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
  
@@ -345,7 +345,7 @@ iteration-statement:
     T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, $3 $5 $7 $9
  
 jump-statement:
-    T_GOTO T_IDENT T_SEMICOLON            # T_GOTO_STMT, $2
+    T_GOTO T_IDENT T_SEMICOLON            # T_GOTO_STMT, T_IDENT
     T_CONTINUE T_SEMICOLON                # T_CONTINUE_STMT
     T_BREAK T_SEMICOLON                   # T_BREAK_STMT
     T_RETURN T_SEMICOLON                  # T_RET_STMT

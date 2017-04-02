@@ -6,7 +6,7 @@ enum {
   C = 3
 };
 
-static const volatile register fkyou = 0x012345678ABCDEFL;
+static const volatile register aaa = 0x012345678ABCDEFL;
 
 void f();
 
