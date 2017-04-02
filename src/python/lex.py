@@ -58,8 +58,8 @@ class Tokenizer:
         self.index = 0
 
         # This will be updated while we scan the file
-        self.row = 0
-        self.col = 0
+        self.row = 1
+        self.col = 1
 
         return
 
@@ -147,6 +147,8 @@ class Tokenizer:
                 self.col = 1
             else:
                 self.col += 1
+
+            i += 1
 
         return
 
@@ -351,10 +353,16 @@ class CTokenizer(Tokenizer):
         Skips line comments. Line comments end with new line
         character or EOF
 
-        This function does not throw any exception
+        This function does not throw any exception. This function
+        also skips the preceding "//" automatically
 
         :return: None
         """
+        assert(self.peek_char(0) == '/' and self.peek_char(1) == '/')
+
+        # Because we need to skip "//"
+        self.advance(2)
+
         # This must always succeed because we always append "\n" to
         # the end of the input
         ret = self.scan_until_pattern("\n", True)
@@ -367,8 +375,13 @@ class CTokenizer(Tokenizer):
         This function skips a block comment. If the input ends
         prematurely then an exception will be thrown
 
+        This function also skips the leading /*
+
         :return: None
         """
+        assert (self.peek_char(0) == '/' and self.peek_char(1) == '*')
+        self.advance(2)
+
         # Also eat the comment end mark
         ret = self.scan_until_pattern("*/", True)
         # It is possible for block comments to pass the
@@ -426,12 +439,12 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         tk = Tokenizer("/*       /* **\     **/ This is a comment")
         ret = tk.scan_until(end_of_comment_cb)
         assert(ret is True)
-        assert(tk.s[tk.index:] == "*/ This is a comment")
+        assert(tk.s[tk.index:] == "*/ This is a comment\n")
 
         tk.index = 0
         ret = tk.scan_until_pattern("*/", True)
         assert (ret is True)
-        assert (tk.s[tk.index:] == " This is a comment")
+        assert (tk.s[tk.index:] == " This is a comment\n")
 
         tk = Tokenizer("/*       /* **\     ** This is a comment")
         ret = tk.scan_until(end_of_comment_cb)
@@ -442,6 +455,32 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         ret = tk.scan_until_pattern("*/", True)
         assert (ret is False)
         assert (tk.index == len(tk.s))
+
+        return
+
+    @staticmethod
+    @TestNode("test_scan")
+    def test_skip(_):
+        """
+        This function tests whether various skip function works
+
+        :param _: Unused argv
+        :return: None
+        """
+        s = "\n    \n\r\n\v\r\n     EOF "
+        tk = CTokenizer(s)
+        tk.skip_space()
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+
+        s = "// This is a line comment\n "
+        tk = CTokenizer(s)
+        tk.skip_line_comment()
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+
+        s = "/* This is a block comment \n\n With two new lines */ "
+        tk = CTokenizer(s)
+        tk.skip_block_comment()
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
 
         return
 
