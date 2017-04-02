@@ -370,6 +370,43 @@ class CTokenizer(Tokenizer):
     This class is the C language tokenizer that recognizes the input
     into different tokens
     """
+
+    # This function maps keywords to their corresponding token types
+    KEYWORD_MAP = {
+        "auto": "T_AUTO",
+        "break": "T_BREAK",
+        "case": "T_CASE",
+        "char": "T_CHAR",
+        "const": "T_CONST",
+        "continue": "T_CONTINUE",
+        "default": "T_DEFAULT",
+        "do": "T_DO",
+        "while": "T_DOUBLE",
+        "else": "T_ELSE",
+        "enum": "T_ENUM",
+        "extern": "T_EXTERN",
+        "float": "T_FLOAT",
+        "for": "T_FOR",
+        "goto": "T_GOTO",
+        "if": "T_IF",
+        "int": "T_INT",
+        "long": "T_LONG",
+        "register": "T_REGISTER",
+        "return": "T_RETURN",
+        "short": "T_SHORT",
+        "signed": "T_SIGNED",
+        "sizeof": "T_SIZEOF",
+        "static": "T_STATIC",
+        "struct": "T_STRUCT",
+        "switch": "T_SWITCH",
+        "typedef": "T_TYPEDEF",
+        "union": "T_UNION",
+        "unsigned": "T_UNSIGNED",
+        "void": "T_VOID",
+        "volatile": "T_VOLATILE",
+        "while": "T_WHILE",
+    }
+
     def __init__(self, s):
         """
         Initialize the base class
@@ -487,6 +524,10 @@ class CTokenizer(Tokenizer):
         Also note that trailing U, u, L, l are also included
         in the literal
 
+        Use Tokenizer.is_dec_digit to clip decimal integer
+        Use Tokenizer.is_hex_digit to clip hex integer
+        Use Tokenizer.is_oct_digit to clip oct integer
+
         :return: Token with type T_INT_CONST
         """
         prev_index = self.index
@@ -503,6 +544,15 @@ class CTokenizer(Tokenizer):
             self.advance()
 
         return Token("T_INT_CONST", self.s[prev_index:self.index])
+
+    def clip_ident(self):
+        """
+        This function clips an identifier. If the identifier is
+        a keyword then we convert it to a keyword
+
+        :return: Token object. Type is either T_IDENT or a keyword
+                 type
+        """
 
 
 #####################################################################
