@@ -1,8 +1,8 @@
 #
 # This file generates the C++ parser for a given grammar
 #
-# For simplicity purposes our parser is a top-down, predictive one
-# that handles LL(1) grammar
+# We provide four types of parser generators: LL(1), LR(1)
+# SLR(1) and LALR(1)
 #
 
 from common import *
