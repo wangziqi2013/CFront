@@ -3332,7 +3332,6 @@ class ParserLR(ParserGeneratorLR):
 
                 token = tk.get_next_token()
                 terminal = Terminal(token.name)
-                print token
             elif action == ParserGeneratorLR.ACTION_REDUCE:
                 # This is a string denoting the name of the
                 # non-terminal; it is not the non-terminal object
