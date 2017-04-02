@@ -3454,7 +3454,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :param argv: Argument vector
         :return: None
         """
-        print_test_name()
         if argv.has_keys("lr") is False:
             dbg_printf("Please use --lr to test parsing")
             return
@@ -3486,8 +3485,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :param argv: Argument vector
         :return: None
         """
-        print_test_name()
-
         if argv.has_keys("ll") is False:
             dbg_printf("Please use --ll to test LL(1) parser generator")
             return
@@ -3562,8 +3559,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         :return: None
         """
-        print_test_name()
-
         if argv.has_keys("ll") is False:
             dbg_printf("Please use --ll to test LL(1) parser generator")
             return
@@ -3608,8 +3603,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         :param argv: Argument vector
         :return: None
         """
-        print_test_name()
-
         if argv.has_keys("slr", "lr1", "lalr", "lr") is False:
             dbg_printf("Please use --lr1 or --slr or --lalr to" +
                        " test LR parser generator; or --lr to test" +
