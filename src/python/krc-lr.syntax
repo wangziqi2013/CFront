@@ -165,8 +165,8 @@ type-specifier:
  
 struct-or-union-specifier:
     struct-or-union T_LCPAREN struct-declaration-list T_RCPAREN            # $1, $3
-    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN    # $1, T_IDENT $4
-    struct-or-union T_IDENT                                                # $1, T_IDENT
+    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN    # $1, T_IDENT@2 $4
+    struct-or-union T_IDENT                                                # $1, T_IDENT@2
  
 struct-or-union:
     T_STRUCT         # T_STRUCT

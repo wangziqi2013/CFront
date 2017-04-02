@@ -2467,6 +2467,27 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
+    @staticmethod
+    def json_unicode_to_str(obj):
+        """
+        This function converts all unicode objects to strings
+        in a structure returned by JSON
+
+        :param obj: The object
+        :return: None
+        """
+        if isinstance(obj, list) is False:
+            return
+
+        for i in xrange(0, len(obj)):
+            if isinstance(obj[i], unicode):
+                obj[i] = str(obj[i])
+            else:
+                ParserGeneratorLR.json_unicode_to_str(obj[i])
+
+        return obj
+
+
     def load_parsing_table(self, file_name):
         """
         This function loads the parsing table in the format we dump it
@@ -2513,8 +2534,12 @@ class ParserGeneratorLR(ParserGenerator):
                                  (line,))
 
             # Convert it into tuple key and tuple value
-            key = tuple(json.loads(key_value[0]))
-            value = tuple(json.loads(key_value[1]))
+            key = tuple(
+                ParserGeneratorLR.json_unicode_to_str(
+                    json.loads(key_value[0])))
+            value = tuple(
+                ParserGeneratorLR.json_unicode_to_str(
+                    json.loads(key_value[1])))
 
             # Finally store them inside the parsing table
             self.parsing_table[key] = value
@@ -3365,10 +3390,20 @@ class ParserLR(ParserGeneratorLR):
                     # Then add its children nodes
                     if child_list is not None:
                         for child in child_list:
+                            # If this is a symbol from the stack then
+                            # add it as the child node
                             if isinstance(child, int) is True:
                                 sn.append(symbol_stack[-reduce_length + child])
-                            else:
+                            elif isinstance(child, str) is True:
+                                # If it is a new name then add it also
                                 sn.append(SyntaxNode(child))
+                            else:
+                                # Otherwise it is a new symbol but we need the
+                                # token data also
+                                new_node = SyntaxNode(child[0])
+                                # Get the data on the corresponding location
+                                new_node.data = \
+                                    symbol_stack[-reduce_length + child[1]].data
 
                 # Remove the same number of elements
                 for _ in range(0, reduce_length):
