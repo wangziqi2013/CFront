@@ -8,6 +8,7 @@
 from common import *
 import sys
 import json
+from lex import CTokenizer
 
 #####################################################################
 # class Symbol
@@ -3299,22 +3300,25 @@ class ParserLR(ParserGeneratorLR):
 
     def parse(self, file_name):
         """
-        Start parsing using an external token list file
+        Start parsing a file
 
-        :param file_name: The file name of the token list file
+        :param file_name: The file name
         :return: The final root symbol (i.e. the top symbol after
          acceptance)
         """
-        #
-        terminal_list = ParserLR.load_token_list(file_name)
-        terminal_index = 0
+        #terminal_list = ParserLR.load_token_list(file_name)
+        #terminal_index = 0
+        tk = CTokenizer.read_file(file_name)
 
         state_stack = [self.starting_state]
         symbol_stack = []
 
+        token = tk.get_next_token()
+        terminal = Terminal(token.name)
+        print token
+
         while True:
             top_state = state_stack[-1]
-            terminal = terminal_list[terminal_index]
 
             k = (top_state, terminal.name)
             t = self.parsing_table[k]
@@ -3327,7 +3331,9 @@ class ParserLR(ParserGeneratorLR):
                 state_stack.append(t[1])
                 symbol_stack.append(terminal)
 
-                terminal_index += 1
+                token = tk.get_next_token()
+                terminal = Terminal(token.name)
+                print token
             elif action == ParserGeneratorLR.ACTION_REDUCE:
                 # This is a string denoting the name of the
                 # non-terminal; it is not the non-terminal object
