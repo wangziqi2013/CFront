@@ -54,11 +54,15 @@ class Tokenizer:
 
         return
 
-    @staticmethod
-    def read_file(file_name):
+    @classmethod
+    def read_file(cls, file_name):
         """
         This function opens a file and returns an instance of the
         tokenizer initialized using the string read from the file
+
+        Note that this is made a class method such that the child
+        class instance will be returned if called through the
+        child class
 
         :return: Tokenizer
         """
@@ -67,7 +71,7 @@ class Tokenizer:
         s = fp.read()
         fp.close()
 
-        return Tokenizer(s)
+        return cls(s)
 
     @staticmethod
     def is_ident_char(ch, first_char):
@@ -174,6 +178,25 @@ class Tokenizer:
             self.index += 1
 
         return False
+
+#####################################################################
+# class CTokenizer
+#####################################################################
+
+class CTokenizer(Tokenizer):
+    """
+    This class is the C language tokenizer that recognizes the input
+    into different tokens
+    """
+    def __init__(self, s):
+        """
+        Initialize the base class
+
+        :param s: The string to tokenize
+        """
+        Tokenizer.__init__(self, s)
+
+        return
 
 #####################################################################
 #####################################################################
