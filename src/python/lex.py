@@ -490,7 +490,7 @@ class CTokenizer(Tokenizer):
             # not reach the end
             self.advance()
 
-        return Token("T_INT_CONST", self.s[prev_index:self.index - 1])
+        return Token("T_INT_CONST", self.s[prev_index:self.index])
 
 
 #####################################################################
@@ -608,6 +608,27 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         dbg_printf("%s", token)
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
         assert (tk.row == 1 and tk.col == 7)
+
+        s = "123456789ABCDEFULLUUL"
+        tk = CTokenizer(s)
+        token = tk.clip_int_literal(Tokenizer.is_dec_digit)
+        dbg_printf("%s", token)
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 1 and tk.col == 10)
+
+        # Clip OCT
+        tk.index = 0
+        token = tk.clip_int_literal(Tokenizer.is_oct_digit)
+        dbg_printf("%s", token)
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 1 and tk.col == 8)
+
+        # Clip HEX
+        tk.index = 0
+        token = tk.clip_int_literal(Tokenizer.is_hex_digit)
+        dbg_printf("%s", token)
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 1 and tk.col == 22)
 
         return
 
