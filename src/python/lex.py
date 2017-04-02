@@ -553,7 +553,23 @@ class CTokenizer(Tokenizer):
         :return: Token object. Type is either T_IDENT or a keyword
                  type
         """
+        # The first must be alpha or underline
+        assert(Tokenizer.is_ident_char(self.peek_char(0), True))
 
+        prev_index = self.index
+        # Scan until we see non-digit, non-alpha and non-unerline
+        ret = self.scan_until(lambda tk: not Tokenizer.is_ident_char(tk.peek_char(0),
+                                                                     False))
+
+        # This is the string we clip which might be a keyword
+        data = self.s[prev_index:self.index]
+        # If the data is not keyword then type is ident
+        t = CTokenizer.KEYWORD_MAP.get(data, None)
+
+        if t is None:
+            return Token("T_IDENT", data)
+
+        return Token(t, None)
 
 #####################################################################
 #####################################################################
