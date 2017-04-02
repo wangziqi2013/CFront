@@ -1973,7 +1973,11 @@ class ParserGenerator:
         to the index in the RHS list
 
         If child data is not integer then we create syntax nodes using the name
-        stored there
+        stored there; If the name is suffixed by @ and then an integer then we
+        in addition add the lexical value of the token to the syntax node. In
+        the latter case, the child data is a tuple, and the first element is the
+        new syntax node name, and the second element is the index in the production
+        rule's RHS list on where the token value is from
 
         :param p: The production
         :param ast_rule: The AST rule string
