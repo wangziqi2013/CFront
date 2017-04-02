@@ -324,46 +324,47 @@ statement-list:
     statement-list statement      # $1, $2
  
 expression-statement:
-    T_SEMICOLON                   # 
-    expression T_SEMICOLON
+    T_SEMICOLON                   # T_EXP_STMT
+    expression T_SEMICOLON        # T_EXP_STMT, $1
  
 selection-statement:
-    T_IF T_LPAREN expression T_RPAREN statement
-    T_IF T_LPAREN expression T_RPAREN statement T_ELSE statement
-    T_SWITCH T_LPAREN expression T_RPAREN statement
+    T_IF T_LPAREN expression T_RPAREN statement                     # T_IF_STMT, $3 $5
+    T_IF T_LPAREN expression T_RPAREN statement T_ELSE statement    # T_IF_STMT, $3 $5 $7
+    T_SWITCH T_LPAREN expression T_RPAREN statement                 # T_SWITCH_STMT, $3 $5
  
 iteration-statement:
-    T_WHILE T_LPAREN expression T_RPAREN statement
-    T_DO statement T_WHILE T_LPAREN expression T_RPAREN T_SEMICOLON
-    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON            T_RPAREN statement
-    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement
-    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement
-    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement
-    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON            T_RPAREN statement
-    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement
-    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement
-    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement
+    T_WHILE T_LPAREN expression T_RPAREN statement                                               # T_WHILE_STMT, $3 $5
+    T_DO statement T_WHILE T_LPAREN expression T_RPAREN T_SEMICOLON                              # T_DO_STMT, $2 $5
+    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, T_ T_ T_ $6
+    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, T_ T_ $5 $7
+    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, T_ $4 T_ $7
+    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, T_ $4 $6 $8
+    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, $3 T_ T_ $7
+    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, $3 T_ $6 $8
+    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, $3 $5 T_ $8
+    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, $3 $5 $7 $9
  
 jump-statement:
-    T_GOTO T_IDENT T_SEMICOLON
-    T_CONTINUE T_SEMICOLON
-    T_BREAK T_SEMICOLON
-    T_RETURN T_SEMICOLON
-    T_RETURN expression T_SEMICOLON
+    T_GOTO T_IDENT T_SEMICOLON            # T_GOTO_STMT, $2
+    T_CONTINUE T_SEMICOLON                # T_CONTINUE_STMT
+    T_BREAK T_SEMICOLON                   # T_BREAK_STMT
+    T_RETURN T_SEMICOLON                  # T_RET_STMT
+    T_RETURN expression T_SEMICOLON       # T_RET_STMT, $2
 
 root:
-    translation-unit
+    translation-unit                      # $1
 
 translation-unit:
-    external-declaration
-    translation-unit external-declaration
+    external-declaration                  # T_UNIT, $1
+    translation-unit external-declaration # $1, $2
  
 external-declaration:
-    function-definition
-    declaration
+    function-definition                   # T_FUNC_DEF, $1
+    declaration                           # T_EXT_DECL, $1
  
 function-definition:
-                           declarator                  compound-statement
-    declaration-specifiers declarator                  compound-statement
-                           declarator declaration-list compound-statement
-    declaration-specifiers declarator declaration-list compound-statement
+# Do not allow functions without return type specification
+#                           declarator                  compound-statement 
+    declaration-specifiers declarator                  compound-statement    # T_FUNC_DEF, $1 $2 $3
+#                           declarator declaration-list compound-statement
+#   declaration-specifiers declarator declaration-list compound-statement    # T_FUNC_DEF, $1 $2 $3 $4
