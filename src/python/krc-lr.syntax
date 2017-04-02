@@ -297,23 +297,23 @@ initializer-list:
 #
  
 statement:
-    labeled-statement
-    compound-statement
-    expression-statement
-    selection-statement
-    iteration-statement
-    jump-statement
+    labeled-statement      # $1
+    compound-statement     # $1
+    expression-statement   # $1
+    selection-statement    # $1
+    iteration-statement    # $1
+    jump-statement         # $1
  
 labeled-statement:
-    T_IDENT T_COLON statement
-    T_CASE constant-expression T_COLON statement
-    T_DEFAULT T_COLON statement
+    T_IDENT T_COLON statement                       # T_LABELED_STMT, $1 $3
+    T_CASE constant-expression T_COLON statement    # T_CASE_STMT, $2 $4
+    T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
  
 compound-statement:
-    T_LCPAREN T_RCPAREN
-    T_LCPAREN declaration-list T_RCPAREN
-    T_LCPAREN statement-list T_RCPAREN
-    T_LCPAREN declaration-list statement-list T_RCPAREN
+    T_LCPAREN T_RCPAREN                                 # T_COMPOUND_STMT
+    T_LCPAREN declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2
+    T_LCPAREN statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2
+    T_LCPAREN declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3
  
 declaration-list:
     declaration                   # T_DECL_LIST, $1
@@ -324,7 +324,7 @@ statement-list:
     statement-list statement      # $1, $2
  
 expression-statement:
-    T_SEMICOLON
+    T_SEMICOLON                   # 
     expression T_SEMICOLON
  
 selection-statement:
