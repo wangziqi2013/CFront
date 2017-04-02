@@ -251,6 +251,17 @@ class Tokenizer:
 
         return self.s[peek_index]
 
+    def peek_substr(self, length):
+        """
+        This function returns a substring from current position
+        of a certain length. If the input is exhausted before
+        the length is reached the returned string may be less
+
+        :param length: The maximum length
+        :return: str
+        """
+        return self.s[self.index:self.index + length]
+
     def starts_with(self, pattern):
         """
         Check whether the current read position starts with
@@ -830,10 +841,11 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         :param _: Unused argv
         :return: None
         """
-        s = "++-->>=...+&&&=|^=%!=!=="
+        s = "++-->>=...+&&&=|^=%!=!== "
         tk = CTokenizer(s)
         while tk.peek_char(0) != Tokenizer.EOF_CHAR:
             token = tk.clip_op()
+            tk.skip_space()
             dbg_printf("%s", token)
 
         return
