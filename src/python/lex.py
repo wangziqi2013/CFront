@@ -693,7 +693,7 @@ class CTokenizer(Tokenizer):
                 # If the first is 0 then it is OCT literal
                 if ch == "0":
                     # We have seen "0x" which is HEX integer
-                    if ch2 == "x"
+                    if ch2 == "x":
                         # Skip the leading 0x
                         self.advance(2)
                         token = \
@@ -903,6 +903,31 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         while tk.peek_char(0) != Tokenizer.EOF_CHAR:
             token = tk.clip_op()
             tk.skip_space()
+            dbg_printf("%s", token)
+
+        return
+
+    @staticmethod
+    @TestNode("test_clip_op")
+    def test_get_next_token(argv):
+        """
+        This function tests get_next_token()
+
+        :param argv: Argument vector
+        :return: None
+        """
+        if len(argv.arg_list) == 0:
+            dbg_printf("Please specify the file to tokenize" +
+                       " in command line argument")
+            return
+
+        # Get the file name and create an instance using
+        # that file name
+        file_name = argv.arg_list[0]
+        tk = CTokenizer.read_file(file_name)
+
+        while tk.is_eof() is False:
+            token = tk.get_next_token()
             dbg_printf("%s", token)
 
         return
