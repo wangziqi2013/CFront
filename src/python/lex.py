@@ -33,6 +33,11 @@ class Token:
 #####################################################################
 
 class Tokenizer:
+    # This represents the EOF character, and it is returned
+    # from the peek function. We use 0x00 such that it would fail
+    # all comparisons to printable characters
+    EOF_CHAR = chr(0x00)
+
     """
     This class represents the tokenizer that decomposes a C source
     program into a series of tokens
@@ -109,3 +114,30 @@ class Tokenizer:
         :return: bool
         """
         return '0' <= ch <= '7'
+
+    def get_next_char(self):
+        """
+        Returns the next unread character, and advance the index by 1.
+        If the index is already on the end an exception will be thrown
+
+        :return: str
+        """
+        # Index could not pass even the end of the string
+        assert(index <= len(self.s))
+        if index == len(self.s):
+            raise ValueError("Alreay reached the end of the input")
+
+        # Get the character and advance the index
+        ch = self.s[index]
+        index += 1
+
+        return ch
+
+    def peek_char(self, offset):
+        """
+        Peek character from the current position given an offset
+
+        :param offset: The offset
+        :return: Character in the input, or EOF
+        """
+        assert(index <= len(self.s))
