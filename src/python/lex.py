@@ -28,6 +28,26 @@ class Token:
 
         return
 
+    def __repr__(self):
+        """
+        Returns the string representation of the object
+
+        :return: str
+        """
+        if self.data is None:
+            return "[Token %s]" % (self.name, )
+        else:
+            return "[Token %s %s]" % (self.name, self.data)
+
+    def __str__(self):
+        """
+        Return string representation of this object
+
+        :return: str
+        """
+        return self.__repr__()
+
+
 #####################################################################
 # class Tokenizer
 #####################################################################
@@ -414,7 +434,7 @@ class CTokenizer(Tokenizer):
             # Skip the closing "\""
             self.advance(1)
 
-        return Token("T_STRING_CONST", self.s[prev_index:self.index])
+        return Token("T_STRING_CONST", self.s[prev_index:self.index - 1])
 
 #####################################################################
 #####################################################################
