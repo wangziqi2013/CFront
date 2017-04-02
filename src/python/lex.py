@@ -125,7 +125,7 @@ class Tokenizer:
         # Index could not pass even the end of the string
         assert(index <= len(self.s))
         if index == len(self.s):
-            raise ValueError("Alreay reached the end of the input")
+            raise ValueError("Already reached the end of the input")
 
         # Get the character and advance the index
         ch = self.s[index]
@@ -141,3 +141,9 @@ class Tokenizer:
         :return: Character in the input, or EOF
         """
         assert(index <= len(self.s))
+        # This is the index we peek into
+        peek_index = index + offset
+        if peek_index >= len(self.s) or peek_index < 0:
+            return Tokenizer.EOF
+
+        return self.s[peek_index]
