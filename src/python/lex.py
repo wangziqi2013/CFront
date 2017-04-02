@@ -215,6 +215,14 @@ class Tokenizer:
 
         return
 
+    def is_eof(self):
+        """
+        Whether we have reached EOF
+
+        :return: bool
+        """
+        return self.index == len(self.s)
+
     def get_next_char(self):
         """
         Returns the next unread character, and advance the index by 1.
