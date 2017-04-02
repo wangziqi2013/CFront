@@ -462,6 +462,37 @@ class CTokenizer(Tokenizer):
 
         return Token("T_CHAR_CONST", self.s[prev_index:self.index - 1])
 
+    def clip_int_literal(self, callback):
+        """
+        This function clips integer literal, either dec, hex or oct
+        depending on the call back function passed as argument.
+
+        Note that if the literal is 0xhhhh or 0ooo then the 0x
+        and 0 should be already consumed by the caller because
+        this function does not try to strip off the 0x or 0
+        prefix.
+
+        Also note that trailing U, u, L, l are also included
+        in the literal
+
+        :return: Token with type T_INT_CONST
+        """
+        prev_index = self.index
+
+        # Scan the input until we see non-digit
+        ret = self.scan_until(lambda tk: not callback(tk.peek_char(0)))
+        assert(ret is True)
+
+        # Also skip UL modifier for integers
+        while self.peek_char(0).lower() == 'u' or \
+              self.peek_char(0).lower() == 'l':
+            # Move index forward; we are guaranteed to
+            # not reach the end
+            self.advance()
+
+        return Token("T_INT_CONST", self.s[prev_index:self.index - 1])
+
+
 #####################################################################
 #####################################################################
 #####################################################################
