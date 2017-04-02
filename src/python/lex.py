@@ -247,7 +247,7 @@ class Tokenizer:
         # This is the index we peek into
         peek_index = self.index + offset
         if peek_index >= len(self.s) or peek_index < 0:
-            return Tokenizer.EOF
+            return Tokenizer.EOF_CHAR
 
         return self.s[peek_index]
 
@@ -384,7 +384,7 @@ class CTokenizer(Tokenizer):
         "continue": "T_CONTINUE",
         "default": "T_DEFAULT",
         "do": "T_DO",
-        "while": "T_DOUBLE",
+        "double": "T_DOUBLE",
         "else": "T_ELSE",
         "enum": "T_ENUM",
         "extern": "T_EXTERN",
@@ -573,6 +573,13 @@ class CTokenizer(Tokenizer):
             return Token("T_IDENT", data)
 
         return Token(t, None)
+
+    def clip_op(self):
+        """
+        This function clips operators
+
+        :return: Token with operator types
+        """
 
 #####################################################################
 #####################################################################
