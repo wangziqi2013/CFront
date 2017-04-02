@@ -3315,7 +3315,6 @@ class ParserLR(ParserGeneratorLR):
 
         token = tk.get_next_token()
         terminal = Terminal(token.name)
-        print token
 
         while True:
             top_state = state_stack[-1]
