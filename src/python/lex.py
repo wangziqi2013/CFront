@@ -147,3 +147,59 @@ class Tokenizer:
             return Tokenizer.EOF
 
         return self.s[peek_index]
+
+    def scan_until(self, callback):
+        """
+        This function scans the input till the given call back
+        evaluates to True, or end of input is reached
+
+        The call back receives "self" as its argument. If it
+        returns True then we terminate scanning the input and
+        return. The call back could also modify "self".
+
+        If the end of file is reached before call back returns
+        True, we also return.
+
+        If call back causes an exception to be thrown, we do
+        not catch it and let it propagate to the upper level
+
+        :return: False if end of input is reached; True if the
+                 pattern is matched
+        """
+        assert(index <= len(self.s))
+        while index < len(self.s):
+            if callback(self) is True:
+                return True
+
+        return False
+
+#####################################################################
+#####################################################################
+#####################################################################
+# class TokenizerTestCase - Test cases
+#####################################################################
+#####################################################################
+#####################################################################
+
+class TokenizerTestCase(DebugRunTestCaseBase):
+    """
+    This is the test case class
+    """
+    def __init__(self):
+        """
+        Initialize the testing environment and start testing
+        """
+        # Note that we did not adopt the new style class definition
+        # and therefore must directly refer to the base class
+        DebugRunTestCaseBase.__init__(self)
+
+        # Processing command lines
+        argv = Argv()
+
+        # Start running test cases
+        self.run_tests(argv)
+
+        return
+
+if __name__ == "__main__":
+    ParserGeneratorTestCase()
