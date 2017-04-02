@@ -197,6 +197,9 @@ class Tokenizer:
         ch = self.s[self.index]
         index += 1
 
+        # Since we just consumed one character
+        self.update_row_col(index - 1)
+
         return ch
 
     def peek_char(self, offset):
@@ -250,16 +253,28 @@ class Tokenizer:
         If call back causes an exception to be thrown, we do
         not catch it and let it propagate to the upper level
 
+        This function also updates row and col if the pattern is
+        matched successfully. Otherwise the row and col is
+        not updated
+
         :return: False if end of input is reached; True if the
                  pattern is matched
         """
         assert(self.index <= len(self.s))
+
+        # Save this for updating row and col
+        prev_index = self.index
+
         while self.index < len(self.s):
             if callback(self) is True:
+                self.update_row_col(prev_index)
+
                 return True
 
             self.index += 1
 
+        # Note that we do not update row and col if
+        # this happens
         return False
 
     def scan_until_pattern(self, pattern, inclusive=False):
@@ -270,6 +285,8 @@ class Tokenizer:
         is set to True, then after the pattern is matched we also
         jump the pattern (if the pattern is not matched we just
         return because the file has been exhausted)
+
+        Row and col is not updated if pattern is not matched
 
         :param pattern: The string pattern we need to match
         :param inclusive: Whether the pattern should be skipped
@@ -292,6 +309,24 @@ class Tokenizer:
 
         return True
 
+    def skip_space(self):
+        """
+        This function skips space characters in the input. It
+        is guaranteed for this function to return without throwing
+        an exception because we know the end character must be
+        a new line character
+
+        :return: None
+        """
+        # This stops at the first non-space character
+        # which might be EOF
+        ret = \
+            self.scan_until(lambda tk: not tk.s[tk.index].isspace())
+        assert(ret is True)
+
+        return
+
+
 #####################################################################
 # class CTokenizer
 #####################################################################
@@ -309,10 +344,6 @@ class CTokenizer(Tokenizer):
         """
         Tokenizer.__init__(self, s)
 
-        # Current row and column number
-        self.row = 1
-        self.col = 1
-
         return
 
     def skip_line_comment(self):
@@ -326,8 +357,7 @@ class CTokenizer(Tokenizer):
         """
         # This must always succeed because we always append "\n" to
         # the end of the input
-        # Do not skip the new line because we need to as error report
-        ret = self.scan_until_pattern("\n", False)
+        ret = self.scan_until_pattern("\n", True)
         assert(ret is True)
 
         return
@@ -349,12 +379,6 @@ class CTokenizer(Tokenizer):
 
         return
 
-    def skip_space(self):
-        """
-        This function skips space
-
-        :return:
-        """
 
 
 #####################################################################
