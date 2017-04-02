@@ -644,17 +644,20 @@ class CTokenizer(Tokenizer):
         if t is None:
             raise ValueError("Unknown character: %s" % (op, ))
 
-        while i < 3:
+        while i < 4:
             # Try to expand the operator by adding
             # a character from the stream
-            op2 = op + self.peek_char(i)
-            t = CTokenizer.OP_MAP.get(op2, None)
-            if t is None:
+            op += self.peek_char(i)
+            t2 = CTokenizer.OP_MAP.get(op, None)
+            if t2 is None:
                 # Consume i characters
                 self.advance(i)
 
                 return Token(t, None)
-
+            else:
+                # Update the type and if next one fails
+                # this is the next one
+                t = t2
             # Otherwise try length + 1
             i += 1
 
@@ -827,9 +830,9 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         :param _: Unused argv
         :return: None
         """
-        s = "++--+&&&&=|^=%!=!=="
+        s = "++-->>=...+&&&=|^=%!=!=="
         tk = CTokenizer(s)
-        while tk.peek_char(0) is not Tokenizer.EOF_CHAR:
+        while tk.peek_char(0) != Tokenizer.EOF_CHAR:
             token = tk.clip_op()
             dbg_printf("%s", token)
 
