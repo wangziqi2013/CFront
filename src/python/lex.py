@@ -57,6 +57,10 @@ class Tokenizer:
 
         self.index = 0
 
+        # This will be updated while we scan the file
+        self.row = 0
+        self.col = 0
+
         return
 
     @classmethod
@@ -124,6 +128,28 @@ class Tokenizer:
         """
         return '0' <= ch <= '7'
 
+    def update_row_col(self, prev_index):
+        """
+        This function counts the number of new line characters
+        between the prev_index and current index. Note that current
+        index is not considered
+
+        :param prev_index: Starting point
+        :return: int
+        """
+        assert(0 <= prev_index < len(self.s))
+
+        i = prev_index
+        while i < self.index:
+            ch = self.s[i]
+            if ch == '\n':
+                self.row += 1
+                self.col = 1
+            else:
+                self.col += 1
+
+        return
+
     def advance(self, offset=1):
         """
         Advance the index by offset. If the resulting index is
@@ -144,8 +170,14 @@ class Tokenizer:
             raise ValueError("Could not move the pointer beyond" +
                              " the input stream")
 
-        # Move the pointer otherwise
+        # Save it to update row and col later
+        prev_index = self.index
+        # Move the pointer
         self.index = new_index
+
+        # Update row and column based on how many new lines
+        # and how many characters we have jumped over
+        self.update_row_col(prev_index)
 
         return
 
@@ -277,6 +309,10 @@ class CTokenizer(Tokenizer):
         """
         Tokenizer.__init__(self, s)
 
+        # Current row and column number
+        self.row = 1
+        self.col = 1
+
         return
 
     def skip_line_comment(self):
@@ -290,12 +326,35 @@ class CTokenizer(Tokenizer):
         """
         # This must always succeed because we always append "\n" to
         # the end of the input
-        ret = self.scan_until_pattern("\n", True)
+        # Do not skip the new line because we need to as error report
+        ret = self.scan_until_pattern("\n", False)
         assert(ret is True)
 
         return
 
     def skip_block_comment(self):
+        """
+        This function skips a block comment. If the input ends
+        prematurely then an exception will be thrown
+
+        :return: None
+        """
+        # Also eat the comment end mark
+        ret = self.scan_until_pattern("*/", True)
+        # It is possible for block comments to pass the
+        # end of the input, so check return value here
+        if ret is False:
+            raise ValueError("Block comment passes" +
+                             " the end of the input")
+
+        return
+
+    def skip_space(self):
+        """
+        This function skips space
+
+        :return:
+        """
 
 
 #####################################################################
