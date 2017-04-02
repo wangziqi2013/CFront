@@ -49,7 +49,12 @@ class Tokenizer:
 
         :param s: The C program
         """
-        self.s = s
+        # Add a new line to the end of the input always
+        if s[-1] != '\n':
+            self.s = s + '\n'
+        else:
+            self.s = s
+
         self.index = 0
 
         return
@@ -273,6 +278,18 @@ class CTokenizer(Tokenizer):
         Tokenizer.__init__(self, s)
 
         return
+
+    def skip_line_comment(self):
+        """
+        Skips line comments. Line comments end with new line
+        character or EOF
+
+        This function does not throw any exception
+
+        :return: None
+        """
+        self.scan_until_pattern("\n", True)
+
 
 #####################################################################
 #####################################################################
