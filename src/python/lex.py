@@ -414,7 +414,7 @@ class CTokenizer(Tokenizer):
             # Skip the closing "\""
             self.advance(1)
 
-        return Token("T_STRING_CONST", self.s[prev_index, self.index])
+        return Token("T_STRING_CONST", self.s[prev_index:self.index])
 
 #####################################################################
 #####################################################################
@@ -493,16 +493,37 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         tk = CTokenizer(s)
         tk.skip_space()
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert(tk.row == 5 and tk.col == 6)
 
         s = "// This is a line comment\n "
         tk = CTokenizer(s)
         tk.skip_line_comment()
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 2 and tk.col == 1)
 
         s = "/* This is a block comment \n\n With two new lines */ "
         tk = CTokenizer(s)
         tk.skip_block_comment()
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 3 and tk.col == 23)
+
+        return
+
+    @staticmethod
+    @TestNode("test_skip")
+    def test_clip_literal(_):
+        """
+        This function tests whether we could clip literals
+
+        :param _: Unused argv
+        :return: None
+        """
+        s = "\"This is a string \\n literal \\\" literal \\\" \"\n  "
+        tk = CTokenizer(s)
+        token = tk.clip_string_literal()
+        dbg_printf("%s", token)
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 1 and tk.col == 45)
 
         return
 
