@@ -818,7 +818,22 @@ class TokenizerTestCase(DebugRunTestCaseBase):
 
         return
 
-    
+    @staticmethod
+    @TestNode("test_clip_ident")
+    def test_clip_op(_):
+        """
+        This function tests whether operator clip works
+
+        :param _: Unused argv
+        :return: None
+        """
+        s = "++--+&&&&=|^=%!=!=="
+        tk = CTokenizer(s)
+        while tk.peek_char(0) is not Tokenizer.EOF_CHAR:
+            token = tk.clip_op()
+            dbg_printf("%s", token)
+
+        return
 
 if __name__ == "__main__":
     TokenizerTestCase()
