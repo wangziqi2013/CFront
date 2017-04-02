@@ -148,6 +148,18 @@ class Tokenizer:
         """
         return '0' <= ch <= '7'
 
+    def reset(self):
+        """
+        Resets index to 0 and row, col to 1, 1
+
+        :return: None
+        """
+        self.index = 0
+        self.row = 1
+        self.col = 1
+
+        return
+
     def update_row_col(self, prev_index):
         """
         This function counts the number of new line characters
@@ -540,7 +552,7 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         assert(ret is True)
         assert(tk.s[tk.index:] == "*/ This is a comment\n")
 
-        tk.index = 0
+        tk.reset()
         ret = tk.scan_until_pattern("*/", True)
         assert (ret is True)
         assert (tk.s[tk.index:] == " This is a comment\n")
@@ -550,7 +562,7 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         assert(ret is False)
         assert(tk.index == len(tk.s))
 
-        tk.index = 0
+        tk.reset()
         ret = tk.scan_until_pattern("*/", True)
         assert (ret is False)
         assert (tk.index == len(tk.s))
@@ -617,14 +629,14 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         assert (tk.row == 1 and tk.col == 10)
 
         # Clip OCT
-        tk.index = 0
+        tk.reset()
         token = tk.clip_int_literal(Tokenizer.is_oct_digit)
         dbg_printf("%s", token)
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
         assert (tk.row == 1 and tk.col == 8)
 
         # Clip HEX
-        tk.index = 0
+        tk.reset()
         token = tk.clip_int_literal(Tokenizer.is_hex_digit)
         dbg_printf("%s", token)
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
