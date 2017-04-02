@@ -571,6 +571,13 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
         assert (tk.row == 1 and tk.col == 45)
 
+        s = "'ch\\''"
+        tk = CTokenizer(s)
+        token = tk.clip_char_literal()
+        dbg_printf("%s", token)
+        dbg_printf("Tokenizer now @ row %d col %d", tk.row, tk.col)
+        assert (tk.row == 1 and tk.col == 7)
+
         return
 
 if __name__ == "__main__":
