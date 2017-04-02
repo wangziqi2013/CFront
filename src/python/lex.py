@@ -194,6 +194,7 @@ class Tokenizer:
         for ch in pattern:
             if ch != self.peek_char(offset):
                 return False
+            offset += 1
 
         return True
 
@@ -320,10 +321,20 @@ class TokenizerTestCase(DebugRunTestCaseBase):
         assert(ret is True)
         assert(tk.s[tk.index:] == "*/ This is a comment")
 
+        tk.index = 0
+        ret = tk.scan_until_pattern("*/", True)
+        assert (ret is True)
+        assert (tk.s[tk.index:] == " This is a comment")
+
         tk = Tokenizer("/*       /* **\     ** This is a comment")
         ret = tk.scan_until(end_of_comment_cb)
         assert(ret is False)
         assert(tk.index == len(tk.s))
+
+        tk.index = 0
+        ret = tk.scan_until_pattern("*/", True)
+        assert (ret is False)
+        assert (tk.index == len(tk.s))
 
         return
 
