@@ -628,10 +628,38 @@ class CTokenizer(Tokenizer):
 
     def clip_op(self):
         """
-        This function clips operators
+        This function clips operators. Note that all operators are
+        with in three characters, which means that we could check
+        only the first three characters in the input stream
 
         :return: Token with operator types
         """
+        # This is the length of the operator we clip
+        # from the input stream
+        i = 1
+
+        # Get the initial operator and its type
+        op = self.peek_char(0)
+        t = CTokenizer.OP_MAP.get(op, None)
+        if t is None:
+            raise ValueError("Unknown character: %s" % (op, ))
+
+        while i < 3:
+            # Try to expand the operator by adding
+            # a character from the stream
+            op2 = op + self.peek_char(i)
+            t = CTokenizer.OP_MAP.get(op2, None)
+            if t is None:
+                # Consume i characters
+                self.advance(i)
+
+                return Token(t, None)
+
+            # Otherwise try length + 1
+            i += 1
+
+        # Should never reach here
+        assert False
 
 #####################################################################
 #####################################################################
@@ -789,6 +817,8 @@ class TokenizerTestCase(DebugRunTestCaseBase):
             tk.skip_space()
 
         return
+
+    
 
 if __name__ == "__main__":
     TokenizerTestCase()
