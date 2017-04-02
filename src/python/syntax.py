@@ -2052,7 +2052,28 @@ class ParserGenerator:
                                      (body, ))
                 body_ret_list.append(body_data)
             else:
-                body_ret_list.append(body_token)
+                # Try to find things like T_IDENT@2 which means
+                # we create a new node called T_IDENT and its token
+                # value is from the 2nd symbol in the production rule
+                index = body_token.find("@")
+                if index == -1:
+                    body_ret_list.append(body_token)
+                else:
+                    body_token_name = body_token[:index]
+                    body_token_index = body_token[index + 1:]
+                    try:
+                        body_token_index = int(body_token_index) - 1
+                        if body_token_index < 0 or \
+                           body_token_index >= len(p.rhs_list):
+                           raise ValueError()
+                    except ValueError:
+                        raise ValueError("Invalid body: %s" %
+                                         (body,))
+
+                    # In this case we append a tuple to demonstrate both
+                    # the name and the index
+                    body_ret_list.append((body_token_name,
+                                          body_token_index))
 
         # The third component is the child list template
         p.ast_rule = (rename_flag, root_data, body_ret_list)
@@ -3343,7 +3364,7 @@ class ParserLR(ParserGeneratorLR):
         symbol_stack = []
 
         token = tk.get_next_token()
-        terminal = Terminal(token.name)
+        terminal = token
 
         while True:
             top_state = state_stack[-1]
@@ -3360,7 +3381,7 @@ class ParserLR(ParserGeneratorLR):
                 symbol_stack.append(terminal)
 
                 token = tk.get_next_token()
-                terminal = Terminal(token.name)
+                terminal = token
             elif action == ParserGeneratorLR.ACTION_REDUCE:
                 # This is a string denoting the name of the
                 # non-terminal; it is not the non-terminal object
