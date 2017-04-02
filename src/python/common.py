@@ -496,9 +496,9 @@ class DebugRunTestCaseBase:
             dep_set = getattr(func, DEP_SET_NAME, None)
             assert(dep_set is not None)
             if len(dep_set) != 0:
-                raise RuntimeError("Dependency set for function %s" + \
-                                   " is not empty!" %
-                                   (func_name, ))
+                raise RuntimeError(("Dependency set for function %s" +
+                                    " is not empty!") %
+                                    (func_name, ))
 
         return
 
@@ -604,6 +604,49 @@ class DebugRunTestCaseBase:
 
         return
 
+    @staticmethod
+    def check_options(func, argv):
+        """
+        This function checks whether the given method should be run
+        based on the command line argument requirement recorded as
+        its attributes
+
+        If the requirements are satisfied then return True and the
+        given function object will be called. Otherwise this function
+        prints the reason to inform the user and then return False
+
+        Note that even a test case is not run for this reason
+        we still mark it as having been scheduled because this
+        should not prevent later test cases from running
+
+        :param func: The function object to be run
+        :param argv: The argument vector
+        :return: True if it could be run, False otherwise
+        """
+        # This is either None or a list of options
+        options_list = getattr(func, OPTIONS_LIST_NAME)
+        # If it is None then there is no options required for
+        # running this test case
+        if options_list is None:
+            return True
+
+        ret = True
+        for opt in options_list:
+            if argv.has_keys(opt) is False:
+                if len(opt) == 1:
+                    text = "-" + opt
+                else:
+                    text = "--" + opt
+
+                dbg_printf("Please specify %s to run this test case",
+                           text)
+
+                # Do not break or return here because we need to
+                # check and print them all
+                ret = False
+
+        return ret
+
     def run_tests(self, argv):
         """
         Run all tests with prefix "test_"
@@ -613,10 +656,27 @@ class DebugRunTestCaseBase:
         # First backup the dep sets
         self.backup_settings()
 
+        # This is a counter to record how many test cases
+        # we have run
+        test_count = 0
+
         func_name, func = self.choose_next_test()
         while func is not None:
-            # Run the test case
-            func(argv)
+            test_count += 1
+            # Print out test name before the test case runs
+            dbg_printf("==============================")
+            dbg_printf("#%d %s", test_count, func_name)
+            dbg_printf("==============================")
+
+            # Check command line arguments
+            options_satisfied = \
+                DebugRunTestCaseBase.check_options(func, argv)
+
+            if options_satisfied is True:
+                # Run the test case
+                func(argv)
+
+            # Have to do this whether or not the test case runs
             self.finish_test(func_name)
 
             func_name, func = self.choose_next_test()
