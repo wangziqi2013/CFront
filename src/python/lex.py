@@ -660,6 +660,66 @@ class CTokenizer(Tokenizer):
         raise ValueError("Unrecognized character: %s" %
                          (op, ))
 
+    def get_next_token(self):
+        """
+        This is the driver of the entire program. It calls corresponding
+        routines based on the first one or two characters of the input
+
+        :return: Token
+        """
+        # Need to loop to skip comment, space, etc.
+        while True:
+            ch = self.peek_char(0)
+            if ch != Tokenizer.EOF_CHAR:
+                if Tokenizer.is_ident_char(ch, True):
+                    return self.clip_ident()
+                elif Tokenizer.is_dec_digit(ch):
+                    # Need to check whether it is 'x'
+                    ch2 = self.peek_char(1)
+                    # If the first is 0 then it is OCT literal
+                    if ch == "0":
+                        # We have seen "0x" which is HEX integer
+                        if ch2 == "x"
+                            # Skip the leading 0x
+                            self.advance(2)
+                            token = \
+                                self.clip_int_literal(
+                                    Tokenizer.is_hex_digit)
+                            token.data = "0x" + token.data
+                        else:
+                            # Skip the leading 0
+                            self.advance(1)
+                            token = \
+                                self.clip_int_literal(
+                                    Tokenizer.is_oct_digit)
+                            token.data = "0" + token.data
+
+                        return token
+                    else:
+                        return self.clip_int_literal(
+                            Tokenizer.is_dec_digit)
+                elif ch == "\"":
+                    return self.clip_string_literal()
+                elif ch == "\'":
+                    return self.clip_char_literal()
+                elif ch.isspace():
+                    self.skip_space()
+                    continue
+
+                ch2 = self.peek_char(1)
+                if ch == "/":
+                    if ch2 == "*":
+                        self.skip_block_comment()
+                    elif ch2 == "/":
+                        self.skip_line_comment()
+
+                # This is the fall back
+                return self.clip_op()
+            else:
+                # Special token denoting the end of the input
+                # stream
+                return Token("T_EOF", None)
+
 #####################################################################
 #####################################################################
 #####################################################################
