@@ -219,6 +219,9 @@ class Argv:
 
 # This is the name of the dependency set
 DEP_SET_NAME = "dep_set"
+# This is the list of command line options that is required
+# to start the test case
+OPTIONS_LIST_NAME = "options_list"
 DEP_SET_COPY_NAME = "dep_set_copy"
 # If this is set to True then the function has already
 # been tested. If it is False then we know the function
@@ -254,20 +257,49 @@ class TestNode:
             ...
             return
 
+        This instance also allows the test to have required command
+        line arguments using keyword argument "options" which is
+        a list:
+
+        @TestNode("dep", options=["option1", "option2"])
+        @def test_options(*args):
+            ...
+            return
+
+        This will make --option1 and --option2 become the mandatory
+        argument for the test case, and a message will be printed
+        if any of them are not present.
+
+        The "options" keyword only provides very basic and
+        convenient handling of command line arguments. If you
+        want more comprehensive processing please implement your own
+
     Note that the name of the function being decorated must begin
     with "test_" to distinguish it from others
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Initialize the instance with a callable object and a
         list of dependencies
 
-        :param dep_set: A set of dependencies
-         (i.e. function name)
+        :param args: A list of function names that this test node
+                     depends on
+                     Note hat the function itself must also
+                     identify a test name
+        :param kwargs: Keyword arguments that specifies other
+                       attributes of the test node
         """
         # Note that we do not unpack args since set() requires
         # a list as the argument
         self.dep_set = set(args)
+
+        # If options is in the kwarg then get its value
+        # Otherwise set it to None
+        self.options_list = kwargs.get("options", None)
+        if self.options_list is not None:
+            if isinstance(self.options_list, list) is False:
+                raise TypeError("keyword argument \"options\" " +
+                                "must be a list")
 
         return
 
@@ -305,9 +337,12 @@ class TestNode:
         #   (2) The function is ready to be run
         setattr(func, TEST_FINISH_FLAG_NAME, False)
 
+        # Set the options list to be also an attribute of the function
+        setattr(func, OPTIONS_LIST_NAME, self.options_list)
+
         # We do not return a wrapper as normally most decorators
-        # do. Instead we return the original function with a little
-        # bit more
+        # do. Instead we return the original function because all
+        # information has been set as its attributes
         return func
 
 class DebugRunTestCaseBase:
