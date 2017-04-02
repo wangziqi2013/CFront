@@ -710,5 +710,23 @@ class TokenizerTestCase(DebugRunTestCaseBase):
 
         return
 
+    @staticmethod
+    @TestNode("test_clip_literal")
+    def test_clip_ident(_):
+        """
+        This function tests whether ident clip works
+
+        :param _: Unused argv
+        :return: None
+        """
+        s = "void main printf int long short break continue case "
+        tk = CTokenizer(s)
+        while tk.peek_char(0) is not Tokenizer.EOF_CHAR:
+            token = tk.clip_ident()
+            dbg_printf("%s", token)
+            tk.skip_space()
+
+        return
+
 if __name__ == "__main__":
     TokenizerTestCase()
