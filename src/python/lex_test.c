@@ -6,11 +6,15 @@ enum {
   C = 3
 };
 
+static const volatile register fkyou = 0x012345678ABCDEFL;
+
+void f();
 
 /*
  * main() - The entry point of the program
  */
-int main(int argc, char **argv, ...) {
+// Note that declaration list followed by function header is not supported
+int main(int argc, char **argv, ...) /* int x, y, z; */ {
   static const static volatile register int *(*xyz)(int(*)(), long *) = C;
   long x = 1 & xyz;
   void *c;
