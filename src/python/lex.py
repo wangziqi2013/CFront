@@ -288,7 +288,14 @@ class CTokenizer(Tokenizer):
 
         :return: None
         """
-        self.scan_until_pattern("\n", True)
+        # This must always succeed because we always append "\n" to
+        # the end of the input
+        ret = self.scan_until_pattern("\n", True)
+        assert(ret is True)
+
+        return
+
+    def skip_block_comment(self):
 
 
 #####################################################################
