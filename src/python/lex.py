@@ -645,35 +645,20 @@ class CTokenizer(Tokenizer):
 
         :return: Token with operator types
         """
-        # This is the length of the operator we clip
-        # from the input stream
-        i = 1
-
-        # Get the initial operator and its type
-        op = self.peek_char(0)
-        t = CTokenizer.OP_MAP.get(op, None)
-        if t is None:
-            raise ValueError("Unknown character: %s" % (op, ))
-
-        while i < 4:
-            # Try to expand the operator by adding
-            # a character from the stream
-            op += self.peek_char(i)
-            t2 = CTokenizer.OP_MAP.get(op, None)
-            if t2 is None:
-                # Consume i characters
-                self.advance(i)
-
+        i = 3
+        while i > 0:
+            op = self.peek_substr(i)
+            t = CTokenizer.OP_MAP.get(op, None)
+            if t is not None:
+                # Since len(ss) may not be the exact number as we
+                # requested we use its length
+                self.advance(len(op))
                 return Token(t, None)
-            else:
-                # Update the type and if next one fails
-                # this is the next one
-                t = t2
-            # Otherwise try length + 1
-            i += 1
 
-        # Should never reach here
-        assert False
+            i -= 1
+
+        raise ValueError("Unrecognized character: %s" %
+                         (op, ))
 
 #####################################################################
 #####################################################################
