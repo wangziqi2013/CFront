@@ -119,10 +119,13 @@ class Tokenizer:
         """
         return '0' <= ch <= '7'
 
-    def advance(self, offset):
+    def advance(self, offset=1):
         """
         Advance the index by offset. If the resulting index is
-        invalid an exceotion is thrown
+        invalid an exception is thrown
+
+        If the offset is not given then by default we move the
+        pointer by 1
 
         :param offset: The offset we need to move the pointer
         :return: None
@@ -130,10 +133,12 @@ class Tokenizer:
         new_index = self.index + offset
         # If it is before the input or after the end of input
         # then we raise an exception
+        # Valid range is [0, len - 1] however len itself should
+        # also be a valid position
         if new_index < 0 or new_index > len(self.s):
             raise ValueError("Could not move the pointer beyond" +
                              " the input stream")
-        
+
         # Move the pointer otherwise
         self.index = new_index
 
@@ -228,10 +233,26 @@ class Tokenizer:
         jump the pattern (if the pattern is not matched we just
         return because the file has been exhausted)
 
-        :param pattern:
-        :param inclusive:
-        :return:
+        :param pattern: The string pattern we need to match
+        :param inclusive: Whether the pattern should be skipped
+                          if it is matched
+        :return: The same as scan_until()
         """
+        # Note that pattern is in the closure of the lambda
+        # so we could use it directly
+        ret = self.scan_until(lambda tk: tk.starts_with(pattern))
+
+        # If the pattern is not matched just return False
+        if ret is False:
+            return False
+
+        # If the pattern is matched then we check the flag
+        # and skip the pattern itself. This is safe since we know
+        # the pattern has been matched
+        if inclusive is True:
+            self.advance(len(pattern))
+
+        return True
 
 #####################################################################
 # class CTokenizer
