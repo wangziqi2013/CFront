@@ -123,12 +123,12 @@ class Tokenizer:
         :return: str
         """
         # Index could not pass even the end of the string
-        assert(index <= len(self.s))
-        if index == len(self.s):
+        assert(self.index <= len(self.s))
+        if self.index == len(self.s):
             raise ValueError("Already reached the end of the input")
 
         # Get the character and advance the index
-        ch = self.s[index]
+        ch = self.s[self.index]
         index += 1
 
         return ch
@@ -140,9 +140,9 @@ class Tokenizer:
         :param offset: The offset
         :return: Character in the input, or EOF
         """
-        assert(index <= len(self.s))
+        assert(self.index <= len(self.s))
         # This is the index we peek into
-        peek_index = index + offset
+        peek_index = self.index + offset
         if peek_index >= len(self.s) or peek_index < 0:
             return Tokenizer.EOF
 
@@ -166,10 +166,12 @@ class Tokenizer:
         :return: False if end of input is reached; True if the
                  pattern is matched
         """
-        assert(index <= len(self.s))
-        while index < len(self.s):
+        assert(self.index <= len(self.s))
+        while self.index < len(self.s):
             if callback(self) is True:
                 return True
+
+            self.index += 1
 
         return False
 
@@ -201,5 +203,31 @@ class TokenizerTestCase(DebugRunTestCaseBase):
 
         return
 
+    @staticmethod
+    @TestNode()
+    def test_scan(_):
+        """
+        This function tests scan
+
+        :param _: Unused argv
+        :return: None
+        """
+        # This is a call back that judges whether we have seen
+        # an end of comment
+        end_of_comment_cb = lambda t: t.peek_char(0) == '*' and \
+                                      t.peek_char(1) == '/'
+
+        tk = Tokenizer("/*       /* **\     **/ This is a comment")
+        ret = tk.scan_until(end_of_comment_cb)
+        assert(ret is True)
+        assert(tk.s[tk.index:] == "*/ This is a comment")
+
+        tk = Tokenizer("/*       /* **\     ** This is a comment")
+        ret = tk.scan_until(end_of_comment_cb)
+        assert(ret is False)
+        assert(tk.index == len(tk.s))
+
+        return
+
 if __name__ == "__main__":
-    ParserGeneratorTestCase()
+    TokenizerTestCase()
