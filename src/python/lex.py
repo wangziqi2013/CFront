@@ -119,6 +119,26 @@ class Tokenizer:
         """
         return '0' <= ch <= '7'
 
+    def advance(self, offset):
+        """
+        Advance the index by offset. If the resulting index is
+        invalid an exceotion is thrown
+
+        :param offset: The offset we need to move the pointer
+        :return: None
+        """
+        new_index = self.index + offset
+        # If it is before the input or after the end of input
+        # then we raise an exception
+        if new_index < 0 or new_index > len(self.s):
+            raise ValueError("Could not move the pointer beyond" +
+                             " the input stream")
+        
+        # Move the pointer otherwise
+        self.index = new_index
+
+        return
+
     def get_next_char(self):
         """
         Returns the next unread character, and advance the index by 1.
@@ -152,6 +172,26 @@ class Tokenizer:
 
         return self.s[peek_index]
 
+    def starts_with(self, pattern):
+        """
+        Check whether the current read position starts with
+        the given pattern
+
+        Even if the pattern is longer than the input string
+        we still perform the check and returns False
+
+        :param pattern: A string
+        :return: bool
+        """
+        offset = 0
+        # If one character in pattern is not matched we just
+        # return False
+        for ch in pattern:
+            if ch != self.peek_char(offset):
+                return False
+
+        return True
+
     def scan_until(self, callback):
         """
         This function scans the input till the given call back
@@ -178,6 +218,20 @@ class Tokenizer:
             self.index += 1
 
         return False
+
+    def scan_until_pattern(self, pattern, inclusive=False):
+        """
+        Scans the input until the pattern is met.
+
+        The return value is the same as scan_until(). If inclusive
+        is set to True, then after the pattern is matched we also
+        jump the pattern (if the pattern is not matched we just
+        return because the file has been exhausted)
+
+        :param pattern:
+        :param inclusive:
+        :return:
+        """
 
 #####################################################################
 # class CTokenizer
