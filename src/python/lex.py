@@ -356,7 +356,10 @@ class Tokenizer:
         # which might be EOF
         ret = \
             self.scan_until(lambda tk: not tk.s[tk.index].isspace())
-        assert(ret is True)
+        # Even if we append \n after the string ret could also be False
+        # In this case we know the end has been reached and do not do
+        # anything
+        #assert(ret is True)
 
         return
 
