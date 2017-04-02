@@ -436,6 +436,32 @@ class CTokenizer(Tokenizer):
 
         return Token("T_STRING_CONST", self.s[prev_index:self.index - 1])
 
+    def clip_char_literal(self):
+        """
+        This function clips a char literal from the input.
+        If the char is not closed we throw an exception.
+
+        This function is just copied from clip_string_literal()
+        with minor modification
+
+        :return: Token with the char's literal as data and type
+                 being T_CHAR_CONST
+        """
+        assert (self.peek_char(0) == "\'")
+        self.advance(1)
+        prev_index = self.index
+
+        # Scan the input until we see an unescaped "\'"
+        ret = self.scan_until(lambda tk: tk.peek_char(0) == "\'" and \
+                                         tk.peek_char(-1) != "\\")
+        if ret is False:
+            raise ValueError("Unclosed char literal")
+        else:
+            # Skip the closing "\'"
+            self.advance(1)
+
+        return Token("T_CHAR_CONST", self.s[prev_index:self.index - 1])
+
 #####################################################################
 #####################################################################
 #####################################################################
