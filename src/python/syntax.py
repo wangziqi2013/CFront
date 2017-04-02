@@ -1979,6 +1979,8 @@ class ParserGenerator:
         new syntax node name, and the second element is the index in the production
         rule's RHS list on where the token value is from
 
+        The same applies for root_data is the root data needs a token value
+
         :param p: The production
         :param ast_rule: The AST rule string
         :return: None
@@ -2027,6 +2029,22 @@ class ParserGenerator:
             rename_flag = True
             root_data = root
 
+            index = root_data.find("@")
+            if index == -1:
+                root_data = root
+            else:
+                root_name = root[:index]
+                root_index = root[index + 1:]
+                try:
+                    root_index = int(root_index) - 1
+                    if root_index < 0 or root_index >= len(p.rhs_list):
+                        raise ValueError()
+                except ValueError:
+                    raise ValueError("Invalid root: %s" %
+                                     (root, ))
+
+                root_data = (root_name, root_index)
+
         # If there is no body then that's it
         if body is None:
             p.ast_rule = (rename_flag, root_data)
@@ -2056,6 +2074,8 @@ class ParserGenerator:
                 # we create a new node called T_IDENT and its token
                 # value is from the 2nd symbol in the production rule
                 index = body_token.find("@")
+                print body_token
+                print index
                 if index == -1:
                     body_ret_list.append(body_token)
                 else:
