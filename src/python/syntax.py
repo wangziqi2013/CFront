@@ -2074,8 +2074,6 @@ class ParserGenerator:
                 # we create a new node called T_IDENT and its token
                 # value is from the 2nd symbol in the production rule
                 index = body_token.find("@")
-                print body_token
-                print index
                 if index == -1:
                     body_ret_list.append(body_token)
                 else:
@@ -3430,7 +3428,16 @@ class ParserLR(ParserGeneratorLR):
                         assert (isinstance(root_name, int))
                         sn = symbol_stack[-reduce_length + root_name]
                     else:
-                        sn = SyntaxNode(root_name)
+                        # If it is just a name without token value index
+                        # then we just create syntax node for it
+                        if isinstance(root_name, str):
+                            sn = SyntaxNode(root_name)
+                        else:
+                            # Otherwise need to get token value also
+                            sn = SyntaxNode(root_name[0])
+                            sn.data = \
+                                symbol_stack[-reduce_length +
+                                             root_name[1]].data
 
                     # Then add its children nodes
                     if child_list is not None:
