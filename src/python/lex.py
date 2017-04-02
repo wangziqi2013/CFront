@@ -379,7 +379,7 @@ class CTokenizer(Tokenizer):
 
         :return: None
         """
-        assert (self.peek_char(0) == '/' and self.peek_char(1) == '*')
+        assert(self.peek_char(0) == '/' and self.peek_char(1) == '*')
         self.advance(2)
 
         # Also eat the comment end mark
@@ -392,7 +392,29 @@ class CTokenizer(Tokenizer):
 
         return
 
+    def clip_string_literal(self):
+        """
+        This function clips a string literal from the input
 
+        If the string is not closed we throw an exception
+
+        :return: Token with the string literal's literal as data
+                 and type being T_STRING_CONST
+        """
+        assert(self.peek_char(0) == "\"")
+        self.advance(1)
+        prev_index = self.index
+
+        # Scan the input until we see an unescaped "\""
+        ret = self.scan_until(lambda tk: tk.peek_char(0) == "\"" and \
+                                         tk.peek_char(-1) != "\\")
+        if ret is False:
+            raise ValueError("Unclosed string literal")
+        else:
+            # Skip the closing "\""
+            self.advance(1)
+
+        return Token("T_STRING_CONST", self.s[prev_index, self.index])
 
 #####################################################################
 #####################################################################
