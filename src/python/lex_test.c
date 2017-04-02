@@ -11,7 +11,7 @@ enum {
  * main() - The entry point of the program
  */
 int main(int argc, char **argv, ...) {
-  int xyz = C;
+  static const static volatile register int *(*xyz)(int, long *) = C;
   long x = 1 & xyz;
   // This struct is used to store data
   struct struct_type {
