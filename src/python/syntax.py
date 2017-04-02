@@ -3252,12 +3252,17 @@ class SyntaxNode:
         :param symbol: The symbol of this syntax node
         """
         # Must be a string or unicode type
-        # Unicode type is the result of using Json
-        assert(isinstance(symbol, str) or isinstance(symbol, unicode))
+        assert(isinstance(symbol, str))
+
         self.symbol = symbol
         # These are child nodes that appear as derived nodes
         # in the syntax specification
         self.child_list = []
+
+        # This holds the token value and will be set
+        # during parsing. If there is no token value just keep
+        # it as None
+        self.data = None
 
         return
 
@@ -3279,6 +3284,21 @@ class SyntaxNode:
         :return: Symbol
         """
         return self.child_list[item]
+
+    def __str__(self):
+        """
+        Returns a string representation of the syntax node
+
+        If the node has data we also append the data; Otherwise
+        just print its name
+
+        :return:
+        """
+        if self.data is None:
+            return self.symbol
+        else:
+            return "%s [%s]" % (self.symbol,
+                                self.data)
 
 
 ####################################################################
@@ -3530,7 +3550,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         if not isinstance(t, SyntaxNode):
             print prefix + str(t)
         else:
-            print prefix + str(t.symbol)
+            print prefix + str(t)
             for symbol in t.child_list:
                 ParserGeneratorTestCase.print_parse_tree(symbol,
                                                          ident + 1)
