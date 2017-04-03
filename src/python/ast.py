@@ -3,6 +3,15 @@
 # syntax tree
 #
 
+def transform_type_decl(root):
+    """
+    This function transforms the ABS
+
+    :param root: The T_DECL node
+    :return: SyntaxNode, bool
+    """
+    return root, False
+
 # This is the dict for transforming the AST
 # The key is the type of the syntax node, and the value
 # is the routine for transforming it.
@@ -11,10 +20,10 @@
 # syntax node object, and it will be used to replace
 # the node we passed to the function
 TRANSFORM_DICT = {
-    "T_DECL": transform_t_decl,
+    "T_DECL": transform_type_decl,
 }
 
-def transform_driver(root):
+def transform_ast(root):
     """
     This function traverses the AST using pre-order traversal
     and then invoke routines to transform nodes based on its
@@ -41,19 +50,49 @@ def transform_driver(root):
 
     current_child_list = root_child_list
     current_index = 0
+    current_level = 0
 
-    # While there is still a node to transform in the child list
-    while current_index < len(current_child_list):
-        current_node = current_child_list[current_index]
-        # If the current node has something to transform
-        if current_node.symbol in TRANSFORM_DICT:
+    while True:
+        # While there is still a node to transform in the child list
+        while current_index < len(current_child_list):
+            current_node = current_child_list[current_index]
+            func = TRANSFORM_DICT.get(current_node.symbol, None)
 
+            # Enable this to check we are doing it correctly
+            #print " " * current_level + current_node.symbol
 
+            # If the current node has something to transform
+            if func is not None:
+                new_node, transform_child = func(current_node)
+                # Update the node into the child list
+                # Note that the child list is just a reference
+                # so we could update it directly and the change will be
+                # reflected into the syntax node
+                current_child_list[current_index] = new_node
+            else:
+                # Otherwise we must continue transforming the children
+                # of the current node
+                transform_child = True
 
-def transfrom_type_decl(root):
-    """
-    This function transforms the ABS
+            # If transform child is True then just append the current
+            # index into the stack and start a new instance
+            if transform_child is True:
+                stack.append((current_child_list, current_index + 1))
+                current_child_list = current_node.child_list
+                current_index = 0
+                current_level += 1
+                continue
+            else:
+                current_index += 1
 
-    :param root:
-    :return:
-    """
+        # If the stack is empty which means we have finished transforming all
+        # nodes, then just return the new root node
+        if len(stack) == 0:
+            break
+        else:
+            # Just finished the current node's children, need to
+            # go up one level and continue
+            current_child_list, current_index = stack.pop()
+            current_level -= 1
+
+    return root_child_list[0]
