@@ -26,6 +26,8 @@ class TypeNode:
     TYPE_LONG = 103
     TYPE_VOID = 104
     TYPE_ENUM = 105
+    # This is the special type for vararg
+    TYPE_VARARG = 106
 
     def __init__(self, op, data=None):
         """
@@ -72,8 +74,8 @@ class Type:
         This function returns the struct type TypeNode
         which constitutes
 
-        :param syntax_node:
-        :return:
+        :param syntax_node: The T_STRUCT node
+        :return: None
         """
 
     @staticmethod
@@ -97,15 +99,9 @@ class Type:
         elif syntax_node.symbol == "T_ENUM":
             t = TypeNode.TYPE_ENUM
         elif syntax_node.symbol == "T_STRUCT":
-            t = TYPE_STRUCT
-
-            #TODO: Parse struct type here
-            self.type_list.append(
-                TypeNode(TypeNode.OP_STRUCT, type_spec))
+            push_struct_type(syntax_node, type_spec)
 
             return
-        else:
-            assert False
 
         # In all other cases just use the type and return
         self.type_list.append(TypeNode(t, type_spec))
@@ -126,7 +122,8 @@ class Type:
         # a list there
         for modifier_node in pointer.child_list:
             if modifier_node.symbol != "T_":
-                mask = get_type_modifier(modifier_node.child_list)
+                mask, base_type = get_type_modifier(modifier_node.child_list)
+                assert(base_type is None)
             else:
                 mask = 0x0
 
@@ -167,26 +164,90 @@ class Type:
                 index += 1
                 continue
             elif node.symbol == "T_ARRAY_SUB":
+                # Store the expression as AST inside the type node
                 self.type_list.append(TypeNode(TypeNode.OP_ARRAY_SUB),
                                       cl[index + 1])
                 index += 2
             elif node.symbol == "T_FUNC_CALL":
-                # TODO: PARSE THIS
+                # Use the argument list to derive argument type
                 self.type_list.append(TypeNode(TypeNode.OP_FUNC_CALL),
-                                      None)
+                                      ArgumentType().derive_arg_type(
+                                          cl[index + 1]))
                 index += 2
 
         return ident_node
 
-
 #####################################################################
-# class ArgumentType
+# class NamedType
 #####################################################################
 
-class ArgumentType:
+class NamedType(Type):
     """
-    This class represents function arguments as a single type
+    This class represents a list of name-type pairs
     """
+    def __init__(self):
+        """
+        Initialize the argument type in addition to the ordinary
+        type. An argument type is a type plus argument names and
+        vararg flags.
+        """
+        # Call parent node constructor to initialize index and
+        # type node list
+        Type.__init__(self)
+
+        self.name_list = []
+
+        return
+
+    def is_vararg(self):
+        """
+        Whether the named type list is VARARG type. We check the last
+        type in the type list. Note that this only makes sense with
+        function arguments
+
+        :return: bool
+        """
+        # If the last type is VARARG then it is vararg
+        return self.type_list[-1] == TypeNode.TYPE_VARARG
+
+    def derive_arg_type(self, param_list):
+        """
+        This function derives argument types using a given parameter
+        list. If there is no name then the name list has a None
+        in the entry; If the argument is vararg then the last
+        type is TYPE_VARARG
+
+        :param param_list: The T_PARAM_LIST syntax node
+        :return: None
+        """
+        # For every element of the parameter declaration in the
+        # list we recover both name and type
+        for param_decl in param_list.child_list:
+            # It must be the last element
+            if param_decl.symbol == "T_ELLIPSIS":
+                self.type_list.append(TypeNode.TYPE_VARARG)
+                self.name_list.append(None)
+
+                break
+
+            assert(param_decl.symbol == 'T_PARAM_DECL')
+            # This is the specifier
+            mask, base_type = get_type_modifier(param_decl.child_list[0])
+
+            # If there is an abstract or concrete type declarator
+            # then build the type also
+            if len(param_decl.child_list) == 2:
+                # If there is no ID then just store None
+                ident_node = self.derive_type(param_decl.child_list[1])
+                self.name_list.append(ident_node)
+
+        # At last add base type and specifier
+        self.push_base_type(base_type, mask)
+
+        return
+
+
+
 
 #####################################################################
 # class SyntaxNode
