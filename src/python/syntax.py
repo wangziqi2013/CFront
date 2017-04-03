@@ -3411,6 +3411,7 @@ class ParserLR(ParserGeneratorLR):
                                 # Get the data on the corresponding location
                                 new_node.data = \
                                     symbol_stack[-reduce_length + child[1]].data
+                                sn.append(new_node)
 
                 # Remove the same number of elements
                 for _ in range(0, reduce_length):
