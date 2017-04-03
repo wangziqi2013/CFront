@@ -3,6 +3,84 @@
 # syntax tree
 #
 
+class TypeNode:
+    """
+    This class represents the type node that represents type
+
+    Note that types form a singly linked list that are represented
+    as derived from a less complicated type (i.e. the type node in
+    next_node)
+    """
+
+    # Here we define all possible type operations
+    OP_BASE_TYPE = 0
+    OP_FUNC_CALL = 1
+    OP_ARRAY_SUB = 2
+    OP_DEREF = 3
+    # Composite types
+    OP_STRUCT = 4
+
+    # This is a list of primitive types
+    # Note that enum type is always translated as INT
+    TYPE_CHAR = 0
+    TYPE_SHORT = 1
+    TYPE_INT = 2
+    TYPE_LONG = 3
+    TYPE_VOID = 4
+
+    def __init__(self, op, next_node=None, data=None):
+        """
+        Initialize the type node with a next pointer (which means
+        the type that it derives from) and optional data
+        which is either array range, function argument (they are types,
+        too), pointer dereference spec
+        """
+        # This is the operation that this node
+        # performs over its sub-type
+        self.op = op
+        # If this is a base type this points to the integer type
+        self.next_node = next_node
+        # For base type this is type spec; For DEREF operation
+        # this is also type spec
+        self.data = data
+
+        return
+
+    @staticmethod
+    def get_base_type(syntax_node, type_spec):
+        """
+        This function returns a base type given the syntax node that
+        could construct a base type (i.e. struct, enum which is always INT
+        and primitive types)
+
+        :param syntax_node: The syntax node that defines the base type
+        :return: TypeNode object
+        """
+        if syntax_node.symbol == "T_CHAR":
+            t = TypeNode.TYPE_CHAR
+        elif syntax_node.symbol == "T_INT":
+            t = TypeNode.TYPE_INT
+        elif syntax_node.symbol == "T_SHORT":
+            t = TypeNode.TYPE_SHORT
+        elif syntax_node.symbol == "T_LONG":
+            t = TypeNode.TYPE_LONG
+        elif syntax_node.symbol == "T_ENUM":
+            t = TypeNode.TYPE_INT
+        elif syntax_node.symbol == "T_STRUCT":
+            t = TYPE_STRUCT
+
+            #TODO: Parse struct type here
+            return TypeNode
+
+        # In all other cases just use the type and return
+        return TypeNode(TypeNode.OP_BASE_TYPE,
+                        t,
+                        type_spec)
+
+    @staticmethod
+    def derive(self, op):
+        pass
+
 #####################################################################
 # class SyntaxNode
 #####################################################################
@@ -122,7 +200,8 @@ def get_type_modifier(child_list):
         if spec_mask is None:
             if base_type_node is not None:
                 raise TypeError("Could not specify" +
-                                " more than one type in a declaration (%s and %s)!" %
+                                " more than one type in a" +
+                                " declaration (%s and %s)!" %
                                 (spec.symbol, base_type_node.symbol))
 
             base_type_node = spec
@@ -142,6 +221,13 @@ def transform_type_decl(decl_root):
     """
     This function transforms the AST declaration into a form
     that is easier for the parser to process
+
+    If the declaration does not have a body we return T_DECL
+    with data being set to (base type, mask)
+
+    If the declaration has a body we return T_DECL with
+    a list of (name, type, init) triples, with init be an
+    optionally None object
 
     :param decl_root: The T_DECL node
     :return: SyntaxNode, bool
@@ -172,9 +258,13 @@ def transform_type_decl(decl_root):
 
         # Build a new node and return it as a replacement
         new_node = SyntaxNode(decl_root.symbol)
-        new_node.child_list = [base_type_node, type_modifier_mask]
+        new_node.data = (base_type_node, type_modifier_mask)
 
         return new_node, False
+
+    # For each declarator + init in the list we do the same processing
+    for init_decl in init_decl_list:
+        pass
 
     return decl_root, True
 
