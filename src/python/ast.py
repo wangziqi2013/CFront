@@ -3,14 +3,81 @@
 # syntax tree
 #
 
-def transform_type_decl(root):
-    """
-    This function transforms the ABS
+# This is a set of type modifiers that maps from the syntax node
+# name to the mask value
+TYPE_MODIFIER_DICT = {
+    "T_CONST": 0x00000001,
+    "T_VOLATILE": 0x00000002,
+    "T_STATIC": 0x00000004,
+    "T_REGISTER": 0x00000008,
+    "T_EXTERN": 0x00000010,
+    "T_UNSIGNED": 0x00000020,
+    "T_AUTO": 0x00000040,
+    "T_SIGNED": 0x00000080,
+    "T_TYPEDEF": 0x00000100,
+}
 
-    :param root: The T_DECL node
+# These are constant values we use to check whether a flag is set or not
+TYPE_MODIFIER_CONST = TYPE_MODIFIER_DICT["T_CONST"]
+TYPE_MODIFIER_VOLATILE = TYPE_MODIFIER_DICT["T_VOLATILE"]
+TYPE_MODIFIER_STATIC = TYPE_MODIFIER_DICT["T_STATIC"]
+TYPE_MODIFIER_REGISTER = TYPE_MODIFIER_DICT["T_REGISTER"]
+TYPE_MODIFIER_EXTERN = TYPE_MODIFIER_DICT["T_EXTERN"]
+TYPE_MODIFIER_UNSIGNED = TYPE_MODIFIER_DICT["T_UNSIGNED"]
+TYPE_MODIFIER_AUTO = TYPE_MODIFIER_DICT["T_AUTO"]
+TYPE_MODIFIER_SIGNED = TYPE_MODIFIER_DICT["T_SIGNED"]
+TYPE_MODIFIER_TYPEDEF = TYPE_MODIFIER_DICT["T_TYPEDEF"]
+
+def transform_type_decl(decl_root):
+    """
+    This function transforms the AST declaration into a form
+    that is easier for the parser to process
+
+    :param decl_root: The T_DECL node
     :return: SyntaxNode, bool
     """
-    return root, False
+    decl_spec = decl_root.child_list[0]
+    if len(decl_root.child_list) == 2:
+        init_decl_list = decl_root.child_list[1]
+    else:
+        init_decl_list = None
+
+    # This will be filled when we scan specs. If this is still
+    # None after processing then we know there is no type
+    base_type_node = None
+    type_modifier_mask = 0x00000000
+
+    # First process type spec
+    for spec in decl_spec.child_list:
+        # It must exist otherwise the parsing is wrong
+        spec_mask = TYPE_MODIFIER_DICT.get(spec.symbol, None)
+        # Then it is a type name because it does not belong to
+        # any of the specifiers we have seen
+        if spec_mask is None:
+            if base_type_node is not None:
+                raise TypeError("Could not specify" +
+                                " more than one type in a declaration (%s and %s)!" %
+                                (spec.symbol, base_type_node.symbol))
+            base_type_node = spec
+        else:
+            # If the modifier has already been seen then this is
+            # an error also
+            if (type_modifier_mask & spec_mask) != 0x00000000:
+                raise TypeError("Could not specify %s twice!" %
+                                (spec.symbol, ))
+
+            # Then add the spec onto the mask
+            type_modifier_mask |= spec_mask
+
+    # If we did not find the base type then throw error
+    if base_type_node is None:
+        raise TypeError("Need to specify a base type for declaration!")
+
+    return decl_root, False
+
+#####################################################################
+# The following is the driver for transformation
+#####################################################################
 
 # This is the dict for transforming the AST
 # The key is the type of the syntax node, and the value
@@ -58,7 +125,8 @@ def transform_ast(root):
             current_node = current_child_list[current_index]
             func = TRANSFORM_DICT.get(current_node.symbol, None)
 
-            # Enable this to check we are doing it correctly
+            # Enable this to check we are traversing in the
+            # correct order (i.e. pre-order)
             #print " " * current_level + current_node.symbol
 
             # If the current node has something to transform
