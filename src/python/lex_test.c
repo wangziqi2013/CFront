@@ -1,7 +1,7 @@
 
 // Typedef must specify a name
 //typedef 
-const static register enum {
+const static register enum enum_struct {
   A = 1,
   B = 2,
   C = 3
@@ -19,7 +19,7 @@ int main(int argc, char **argv, ...) /* int x, y, z; */ {
   // This is the declaration without an identifier (WTF do we allow this?)
   //static const register long; 
   
-  static const volatile register int * const * (*xyz)(int(*)(), long *) = C;
+  static const volatile register int * const * (*xyz)(int(*)(), long *, char()) = C;
   long x = 1 & xyz;
   void *c;
   // This struct is used to store data

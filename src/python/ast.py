@@ -7,13 +7,11 @@ class TypeNode:
     """
     This class represents the type node that represents type
 
-    Note that types form a singly linked list that are represented
-    as derived from a less complicated type (i.e. the type node in
-    next_node)
+    Note that types form an array that are represented as derived
+    from a less complicated type (i.e. the type node in the next node)
     """
 
     # Here we define all possible type operations
-    OP_BASE_TYPE = 0
     OP_FUNC_CALL = 1
     OP_ARRAY_SUB = 2
     OP_DEREF = 3
@@ -21,33 +19,65 @@ class TypeNode:
     OP_STRUCT = 4
 
     # This is a list of primitive types
-    # Note that enum type is always translated as INT
-    TYPE_CHAR = 0
-    TYPE_SHORT = 1
-    TYPE_INT = 2
-    TYPE_LONG = 3
-    TYPE_VOID = 4
+    # Note that enum type has its own type ID
+    TYPE_CHAR = 100
+    TYPE_SHORT = 101
+    TYPE_INT = 102
+    TYPE_LONG = 103
+    TYPE_VOID = 104
+    TYPE_ENUM = 105
 
-    def __init__(self, op, next_node=None, data=None):
+    def __init__(self, op, data=None):
         """
-        Initialize the type node with a next pointer (which means
-        the type that it derives from) and optional data
-        which is either array range, function argument (they are types,
-        too), pointer dereference spec
+        Initialize the type node with a next pointer and data
+
+        Data node is used for:
+          (1) For base types it denotes the type spec
+          (2) For array types it denotes the array length if
+              there is one (it is a syntax tree of constant
+              expression)
+          (3) For DEREF types it also denotes type spec
+              with the current level of indirection (the
+              specs to the right of the star symbol)
+          (4) For FUNC_CALL it is argument type where argument name
+              and vararg is also recorded
         """
         # This is the operation that this node
         # performs over its sub-type
         self.op = op
-        # If this is a base type this points to the integer type
-        self.next_node = next_node
         # For base type this is type spec; For DEREF operation
         # this is also type spec
         self.data = data
 
         return
 
+class Type:
+    """
+    This class represents type object which is an array of type nodes
+    from the highest precedence to the lowest precedence
+    """
+    def __init__(self):
+        """
+        Initialize a type node with an empty array and
+        index being 0
+        """
+        self.type_list = []
+        self.index = 0
+
+        return
+
     @staticmethod
-    def get_base_type(syntax_node, type_spec):
+    def push_struct_type(syntax_node):
+        """
+        This function returns the struct type TypeNode
+        which constitutes
+
+        :param syntax_node:
+        :return:
+        """
+
+    @staticmethod
+    def push_base_type(syntax_node, type_spec):
         """
         This function returns a base type given the syntax node that
         could construct a base type (i.e. struct, enum which is always INT
@@ -65,21 +95,98 @@ class TypeNode:
         elif syntax_node.symbol == "T_LONG":
             t = TypeNode.TYPE_LONG
         elif syntax_node.symbol == "T_ENUM":
-            t = TypeNode.TYPE_INT
+            t = TypeNode.TYPE_ENUM
         elif syntax_node.symbol == "T_STRUCT":
             t = TYPE_STRUCT
 
             #TODO: Parse struct type here
-            return TypeNode
+            self.type_list.append(
+                TypeNode(TypeNode.OP_STRUCT, type_spec))
+
+            return
+        else:
+            assert False
 
         # In all other cases just use the type and return
-        return TypeNode(TypeNode.OP_BASE_TYPE,
-                        t,
-                        type_spec)
+        self.type_list.append(TypeNode(t, type_spec))
 
-    @staticmethod
-    def derive(self, op):
-        pass
+        return
+
+    def derive_pointer_type(self, pointer):
+        """
+        This function derives pointer types and push them
+        into the type list
+
+        :param pointer: The pointer syntax node
+        :return: None
+        """
+        assert(pointer.symbol == "T_PTR")
+
+        # For STAR we just push T_; for qualifier list we have
+        # a list there
+        for modifier_node in pointer.child_list:
+            if modifier_node.symbol != "T_":
+                mask = get_type_modifier(modifier_node.child_list)
+            else:
+                mask = 0x0
+
+            self.type_list.append(TypeNode(TypeNode.OP_DEREF, mask))
+
+        return
+
+    def derive_type(self, decl_body):
+        """
+        This function derives a type given the body of a declaration
+
+        :param decl_body: The SyntaxNode that includes the body of
+                          declaration
+                          Could be either abstract declarator or
+                          concrete declarator
+        :return: If there is an identifier then return it; Otherwise
+                 return None
+        """
+        # If there is an identifier defined in the type we set it to
+        # this variable and return it
+        ident_node = None
+
+        # Type declaration is flattened
+        cl = decl_body.child_list
+        index = 0
+        while index < len(cl):
+            node = cl[index]
+            if node.symbol == "T_PTR":
+                # If it is pointer then derive pointer
+                # structure first
+                self.derive_pointer_type(node)
+                index += 1
+                continue
+            elif node.symbol == "T_IDENT":
+                # If it is identifier we just advance index and
+                # return it later
+                ident_node = node
+                index += 1
+                continue
+            elif node.symbol == "T_ARRAY_SUB":
+                self.type_list.append(TypeNode(TypeNode.OP_ARRAY_SUB),
+                                      cl[index + 1])
+                index += 2
+            elif node.symbol == "T_FUNC_CALL":
+                # TODO: PARSE THIS
+                self.type_list.append(TypeNode(TypeNode.OP_FUNC_CALL),
+                                      None)
+                index += 2
+
+        return ident_node
+
+
+#####################################################################
+# class ArgumentType
+#####################################################################
+
+class ArgumentType:
+    """
+    This class represents function arguments as a single type
+    """
 
 #####################################################################
 # class SyntaxNode
@@ -232,6 +339,7 @@ def transform_type_decl(decl_root):
     :param decl_root: The T_DECL node
     :return: SyntaxNode, bool
     """
+    return decl_root, True
     decl_spec = decl_root.child_list[0]
     if len(decl_root.child_list) == 2:
         init_decl_list = decl_root.child_list[1]
