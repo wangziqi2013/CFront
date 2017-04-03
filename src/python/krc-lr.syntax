@@ -145,6 +145,9 @@ storage-class-specifier:
     T_TYPEDEF                # T_TYPEDEF
     T_EXTERN                 # T_EXTERN
     T_STATIC                 # T_STATIC
+    # This is ignored by the AST 
+    # because it does not
+    # constitute anything useful
     T_AUTO                   # T_AUTO
     T_REGISTER               # T_REGISTER
  

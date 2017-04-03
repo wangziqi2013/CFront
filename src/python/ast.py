@@ -28,6 +28,47 @@ TYPE_MODIFIER_AUTO = TYPE_MODIFIER_DICT["T_AUTO"]
 TYPE_MODIFIER_SIGNED = TYPE_MODIFIER_DICT["T_SIGNED"]
 TYPE_MODIFIER_TYPEDEF = TYPE_MODIFIER_DICT["T_TYPEDEF"]
 
+def get_type_modifier(child_list):
+    """
+    This function returns a bit set that identifies the type
+    modifier
+
+    If multiple modifiers are defined we throw an exception
+
+    :param child_list: A list where syntax node of modifiers
+                       are stored
+    :return: (int (the bit set), node for type)
+             If there is a type then it is returned in the second
+             component of the tuple
+             If no type is found then return None
+    """
+    base_type_node = None
+    type_modifier_mask = 0x00000000
+
+    for spec in child_list:
+        # It must exist otherwise the parsing is wrong
+        spec_mask = TYPE_MODIFIER_DICT.get(spec.symbol, None)
+        # Then it is a type name because it does not belong to
+        # any of the specifiers we have seen
+        if spec_mask is None:
+            if base_type_node is not None:
+                raise TypeError("Could not specify" +
+                                " more than one type in a declaration (%s and %s)!" %
+                                (spec.symbol, base_type_node.symbol))
+
+            base_type_node = spec
+        else:
+            # If the modifier has already been seen then this is
+            # an error also
+            if (type_modifier_mask & spec_mask) != 0x00000000:
+                raise TypeError("Could not specify %s twice!" %
+                                (spec.symbol,))
+
+            # Then add the spec onto the mask
+            type_modifier_mask |= spec_mask
+
+    return type_modifier_mask, base_type_node
+
 def transform_type_decl(decl_root):
     """
     This function transforms the AST declaration into a form
@@ -42,36 +83,17 @@ def transform_type_decl(decl_root):
     else:
         init_decl_list = None
 
-    # This will be filled when we scan specs. If this is still
-    # None after processing then we know there is no type
-    base_type_node = None
-    type_modifier_mask = 0x00000000
-
-    # First process type spec
-    for spec in decl_spec.child_list:
-        # It must exist otherwise the parsing is wrong
-        spec_mask = TYPE_MODIFIER_DICT.get(spec.symbol, None)
-        # Then it is a type name because it does not belong to
-        # any of the specifiers we have seen
-        if spec_mask is None:
-            if base_type_node is not None:
-                raise TypeError("Could not specify" +
-                                " more than one type in a declaration (%s and %s)!" %
-                                (spec.symbol, base_type_node.symbol))
-            base_type_node = spec
-        else:
-            # If the modifier has already been seen then this is
-            # an error also
-            if (type_modifier_mask & spec_mask) != 0x00000000:
-                raise TypeError("Could not specify %s twice!" %
-                                (spec.symbol, ))
-
-            # Then add the spec onto the mask
-            type_modifier_mask |= spec_mask
+    # This function returns the base type
+    # as well as the bit set on type specifiers
+    type_modifier_mask, base_type_node = \
+        get_type_modifier(decl_spec.child_list)
 
     # If we did not find the base type then throw error
     if base_type_node is None:
         raise TypeError("Need to specify a base type for declaration!")
+
+    #if init_decl_list is None:
+
 
     return decl_root, False
 

@@ -6,7 +6,7 @@ enum {
   C = 3
 };
 
-static const volatile register aaa = 0x012345678ABCDEFL;
+static const volatile register int aaa = 0x012345678ABCDEFL;
 
 void f();
 
@@ -15,7 +15,10 @@ void f();
  */
 // Note that declaration list followed by function header is not supported
 int main(int argc, char **argv, ...) /* int x, y, z; */ {
-  static const static volatile register int *(*xyz)(int(*)(), long *) = C;
+  // This is the declaration without an identifier (WTF do we allow this?)
+  static const register long; 
+  
+  static const volatile register int *(*xyz)(int(*)(), long *) = C;
   long x = 1 & xyz;
   void *c;
   // This struct is used to store data

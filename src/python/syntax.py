@@ -3589,6 +3589,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # This one tests AST transformation
         root_symbol = transform_ast(root_symbol)
+        assert(root_symbol is not None)
 
         return
 
