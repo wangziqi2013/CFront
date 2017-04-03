@@ -3,6 +3,75 @@
 # syntax tree
 #
 
+#####################################################################
+# class SyntaxNode
+#####################################################################
+
+class SyntaxNode:
+    """
+    This is the syntax node we use for demonstrating the parser's
+    parsing process
+    """
+    def __init__(self, symbol):
+        """
+        Initialize the node with a symbol. The symbol could be
+        either terminal or non-terminal
+
+        :param symbol: The symbol of this syntax node
+        """
+        # Must be a string or unicode type
+        assert(isinstance(symbol, str))
+
+        self.symbol = symbol
+        # These are child nodes that appear as derived nodes
+        # in the syntax specification
+        self.child_list = []
+
+        # This holds the token value and will be set
+        # during parsing. If there is no token value just keep
+        # it as None
+        self.data = None
+
+        return
+
+    def append(self, symbol):
+        """
+        Append a new symbol into the child list
+
+        :param symbol: Terminal or NonTerminal
+        :return: None
+        """
+        self.child_list.append(symbol)
+        return
+
+    def __getitem__(self, item):
+        """
+        Returns the i-th item in the child node
+
+        :param item: integer
+        :return: Symbol
+        """
+        return self.child_list[item]
+
+    def __str__(self):
+        """
+        Returns a string representation of the syntax node
+
+        If the node has data we also append the data; Otherwise
+        just print its name
+
+        :return:
+        """
+        if self.data is None:
+            return self.symbol
+        else:
+            return "%s [%s]" % (self.symbol,
+                                self.data)
+
+#####################################################################
+# Type Rules for AST
+#####################################################################
+
 # This is a set of type modifiers that maps from the syntax node
 # name to the mask value
 TYPE_MODIFIER_DICT = {
@@ -87,15 +156,27 @@ def transform_type_decl(decl_root):
     # as well as the bit set on type specifiers
     type_modifier_mask, base_type_node = \
         get_type_modifier(decl_spec.child_list)
+    print base_type_node.symbol
 
     # If we did not find the base type then throw error
     if base_type_node is None:
         raise TypeError("Need to specify a base type for declaration!")
 
-    #if init_decl_list is None:
+    # If there is no decl list (i.e. name + expression to
+    # derive the type)
+    if init_decl_list is None:
+        # If we specify typedef then there must be a name to
+        # be defined
+        if type_modifier_mask & TYPE_MODIFIER_TYPEDEF != 0x0:
+            raise TypeError("typedef must define a name!")
 
+        # Build a new node and return it as a replacement
+        new_node = SyntaxNode(decl_root.symbol)
+        new_node.child_list = [base_type_node, type_modifier_mask]
 
-    return decl_root, False
+        return new_node, False
+
+    return decl_root, True
 
 #####################################################################
 # The following is the driver for transformation

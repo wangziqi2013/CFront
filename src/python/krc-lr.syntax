@@ -118,10 +118,10 @@ constant-expression:
 #
 # C declaration rules
 #
- 
+
+# This is only used as external declaration or local declaration
 declaration:
-    # declaration specifier is the base type part, and
-    # the init-declarator-list is the declarator + initialization part
+    # Anonymous struct and enum declaration
     declaration-specifiers T_SEMICOLON                        # T_DECL, $1
     declaration-specifiers init-declarator-list T_SEMICOLON   # T_DECL, $1 $2
  

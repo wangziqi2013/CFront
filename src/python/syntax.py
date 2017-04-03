@@ -9,7 +9,7 @@ from common import *
 import sys
 import json
 from lex import CTokenizer
-from ast import transform_ast
+from ast import transform_ast, SyntaxNode
 
 #####################################################################
 # class Symbol
@@ -3236,72 +3236,6 @@ class ParserGeneratorLL1(ParserGenerator):
 
         return
 
-#####################################################################
-# class SyntaxNode
-#####################################################################
-
-class SyntaxNode:
-    """
-    This is the syntax node we use for demonstrating the parser's
-    parsing process
-    """
-    def __init__(self, symbol):
-        """
-        Initialize the node with a symbol. The symbol could be
-        either terminal or non-terminal
-
-        :param symbol: The symbol of this syntax node
-        """
-        # Must be a string or unicode type
-        assert(isinstance(symbol, str))
-
-        self.symbol = symbol
-        # These are child nodes that appear as derived nodes
-        # in the syntax specification
-        self.child_list = []
-
-        # This holds the token value and will be set
-        # during parsing. If there is no token value just keep
-        # it as None
-        self.data = None
-
-        return
-
-    def append(self, symbol):
-        """
-        Append a new symbol into the child list
-
-        :param symbol: Terminal or NonTerminal
-        :return: None
-        """
-        self.child_list.append(symbol)
-        return
-
-    def __getitem__(self, item):
-        """
-        Returns the i-th item in the child node
-
-        :param item: integer
-        :return: Symbol
-        """
-        return self.child_list[item]
-
-    def __str__(self):
-        """
-        Returns a string representation of the syntax node
-
-        If the node has data we also append the data; Otherwise
-        just print its name
-
-        :return:
-        """
-        if self.data is None:
-            return self.symbol
-        else:
-            return "%s [%s]" % (self.symbol,
-                                self.data)
-
-
 ####################################################################
 # class ParserLR
 ####################################################################
@@ -3584,12 +3518,12 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         # on the stack which is also the root of the syntax tree
         root_symbol = pg.parse(token_file_name)
 
-        # Print the tree
-        ParserGeneratorTestCase.print_parse_tree(root_symbol)
-
         # This one tests AST transformation
         root_symbol = transform_ast(root_symbol)
-        assert(root_symbol is not None)
+        assert (root_symbol is not None)
+
+        # Print the tree after transformation
+        ParserGeneratorTestCase.print_parse_tree(root_symbol)
 
         return
 
