@@ -230,13 +230,12 @@ direct-declarator:
     direct-declarator T_LPAREN parameter-type-list T_RPAREN        # T_FUNC_CALL, $1 $3
     direct-declarator T_LPAREN identifier-list T_RPAREN            # T_FUNC_CALL, $1 $3
  
+# Note that in this AST the order should be reversed
 pointer:
      T_STAR                                       # T_PTR
-     T_STAR pointer                               # T_PTR, $2
      T_STAR type-qualifier-list                   # T_PTR, $2
-     # Note that the qualifier list modifies the 
-     # pointer after it
-     T_STAR type-qualifier-list pointer           # $3, $2 $1
+     T_STAR pointer                               # T_PTR, $2
+     T_STAR type-qualifier-list pointer           # T_PTR, $2 $3
  
 type-qualifier-list:
     type-qualifier                                # T_TYPE_QUAL_LIST, $1
