@@ -9,6 +9,7 @@ from common import *
 import sys
 import json
 from lex import CTokenizer
+from ast import transform_ast
 
 #####################################################################
 # class Symbol
@@ -3585,6 +3586,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         # Print the tree
         ParserGeneratorTestCase.print_parse_tree(root_symbol)
+
+        # This one tests AST transformation
+        root_symbol = transform_ast(root_symbol)
 
         return
 
