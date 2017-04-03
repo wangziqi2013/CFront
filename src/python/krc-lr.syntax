@@ -225,7 +225,7 @@ declarator:
     pointer direct-declarator          # $2, $1
  
 direct-declarator:
-    T_IDENT                                                        # T_DECL_BODY, T_IDENT@1 T_
+    T_IDENT                                                        # T_DECL_BODY, T_IDENT@1
     T_LPAREN declarator T_RPAREN                                   # $2
     direct-declarator T_LSPAREN T_RSPAREN                          # $1, T_ARRAY_SUB T_
     direct-declarator T_LSPAREN constant-expression T_RSPAREN      # $1, T_ARRAY_SUB $3
@@ -235,10 +235,10 @@ direct-declarator:
  
 # Note that in this AST the order should be reversed
 pointer:
-     T_STAR                                       # T_PTR, T_STAR T_
-     T_STAR type-qualifier-list                   # T_PTR, T_STAR $2
-     T_STAR pointer                               # $2, T_STAR T_
-     T_STAR type-qualifier-list pointer           # $3, T_STAR $2
+     T_STAR                                       # T_PTR, T_
+     T_STAR type-qualifier-list                   # T_PTR, $2
+     T_STAR pointer                               # $2, T_
+     T_STAR type-qualifier-list pointer           # $3, $2
  
 type-qualifier-list:
     type-qualifier                                # T_TYPE_QUAL_LIST, $1
@@ -267,19 +267,19 @@ type-name:
  
 abstract-declarator:
     pointer                                   # T_ABS_DECL_BODY, $1
-    direct-abstract-declarator                # T_ABS_DECL_BODY, $1
-    pointer direct-abstract-declarator        # T_ABS_DECL_BODY, $1 $2
+    direct-abstract-declarator                # $1
+    pointer direct-abstract-declarator        # $2, $1
  
 direct-abstract-declarator:
     T_LPAREN abstract-declarator T_RPAREN                                 # $2
-    T_LSPAREN T_RSPAREN                                                   # T_ARRAY_SUB
-    T_LSPAREN constant-expression T_RSPAREN                               # T_ARRAY_SUB, $2
-    T_LPAREN T_RPAREN                                                     # T_FUNC_CALL
-    T_LPAREN parameter-type-list T_RPAREN                                 # T_FUNC_CALL, $2
-    direct-abstract-declarator T_LSPAREN T_RSPAREN                        # T_ARRAY_SUB, $1
-    direct-abstract-declarator T_LSPAREN constant-expression T_RSPAREN    # T_ARRAY_SUB, $1 $3
-    direct-abstract-declarator T_LPAREN T_RPAREN                          # T_FUNC_CALL, $1
-    direct-abstract-declarator T_LPAREN parameter-type-list T_RPAREN      # T_FUNC_CALL, $1 $3
+    T_LSPAREN T_RSPAREN                                                   # T_ABS_DECL_BODY, T_ARRAY_SUB T_
+    T_LSPAREN constant-expression T_RSPAREN                               # T_ABS_DECL_BODY, T_ARRAY_SUB $2
+    T_LPAREN T_RPAREN                                                     # T_ABS_DECL_BODY, T_FUNC_CALL T_
+    T_LPAREN parameter-type-list T_RPAREN                                 # T_ABS_DECL_BODY, T_FUNC_CALL $2
+    direct-abstract-declarator T_LSPAREN T_RSPAREN                        # $1, T_ARRAY_SUB T_
+    direct-abstract-declarator T_LSPAREN constant-expression T_RSPAREN    # $1, T_ARRAY_SUB $3
+    direct-abstract-declarator T_LPAREN T_RPAREN                          # $1, T_FUNC_CALL T_
+    direct-abstract-declarator T_LPAREN parameter-type-list T_RPAREN      # $1, T_FUNC_CALL $3
 
 # TODO: This does not work without symbol table hack
 #typedef-name:
