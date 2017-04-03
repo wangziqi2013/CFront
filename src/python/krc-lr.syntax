@@ -218,27 +218,27 @@ type-qualifier:
     T_VOLATILE                         # T_VOLATILE
  
 declarator:
-    direct-declarator                  # T_DECL_BODY, $1
+    direct-declarator                  # $1
     # We need to further transform the
     # order to append direct-declarator
     # before
-    pointer direct-declarator          # T_DECL_BODY, $1 $2
+    pointer direct-declarator          # $2, $1
  
 direct-declarator:
-    T_IDENT                                                        # T_IDENT@1
+    T_IDENT                                                        # T_DECL_BODY, T_IDENT@1 T_
     T_LPAREN declarator T_RPAREN                                   # $2
-    direct-declarator T_LSPAREN T_RSPAREN                          # T_ARRAY_SUB
-    direct-declarator T_LSPAREN constant-expression T_RSPAREN      # T_ARRAY_SUB, $1 $3
-    direct-declarator T_LPAREN T_RPAREN                            # T_FUNC_CALL, $1
-    direct-declarator T_LPAREN parameter-type-list T_RPAREN        # T_FUNC_CALL, $1 $3
-    direct-declarator T_LPAREN identifier-list T_RPAREN            # T_FUNC_CALL, $1 $3
+    direct-declarator T_LSPAREN T_RSPAREN                          # $1, T_ARRAY_SUB T_
+    direct-declarator T_LSPAREN constant-expression T_RSPAREN      # $1, T_ARRAY_SUB $3
+    direct-declarator T_LPAREN T_RPAREN                            # $1, T_FUNC_CALL T_
+    direct-declarator T_LPAREN parameter-type-list T_RPAREN        # $1, T_FUNC_CALL $3
+    direct-declarator T_LPAREN identifier-list T_RPAREN            # $1, T_FUNC_CALL $3
  
 # Note that in this AST the order should be reversed
 pointer:
-     T_STAR                                       # T_PTR
-     T_STAR type-qualifier-list                   # T_PTR, $2
-     T_STAR pointer                               # T_PTR, $2
-     T_STAR type-qualifier-list pointer           # T_PTR, $2 $3
+     T_STAR                                       # T_PTR, T_STAR T_
+     T_STAR type-qualifier-list                   # T_PTR, T_STAR $2
+     T_STAR pointer                               # $2, T_STAR T_
+     T_STAR type-qualifier-list pointer           # $3, T_STAR $2
  
 type-qualifier-list:
     type-qualifier                                # T_TYPE_QUAL_LIST, $1
