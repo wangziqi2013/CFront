@@ -18,6 +18,8 @@ class TypeNode:
     # Composite types
     OP_STRUCT = 4
 
+    TYPE_START = 100
+
     # This is a list of primitive types
     # Note that enum type has its own type ID
     TYPE_CHAR = 100
@@ -26,8 +28,13 @@ class TypeNode:
     TYPE_LONG = 103
     TYPE_VOID = 104
     TYPE_ENUM = 105
+
     # This is the special type for vararg
     TYPE_VARARG = 106
+
+    # This is even more special, because we store
+    # the custom bit length of the int in higher 16 bits
+    TYPE_CUSTOM_INT = 107
 
     def __init__(self, op, data=None):
         """
@@ -52,6 +59,43 @@ class TypeNode:
         self.data = data
 
         return
+
+    def is_custom_int(self):
+        """
+        Whether the type represents a customized integer
+
+        :return: bool
+        """
+        return (self.op & 0xFFFF0000) != 0
+
+    def is_primitive_type(self):
+        """
+        Whether the node represents a primitive type
+
+        :return: bool
+        """
+        return (self.op & 0x0000FFFF) >= TYPE_START
+
+    @staticmethod
+    def get_custom_int_type(width, data):
+        """
+        This function returns a custom int type with a given
+        bit field width
+
+        :return: TypeNode
+        """
+        # Check whether the width is too large
+        if width > ((1 << 16) - 1):
+            raise ValueError("Bit field width too large: %d (max = 65535)" %
+                             (width, ))
+
+        # Left shift the int by 16 bits and OR to the type code
+        return TypeNode(TypeNode.TYPE_CUSTOM_INT | (width << 16),
+                        data)
+
+#####################################################################
+# class Type
+#####################################################################
 
 class Type:
     """
@@ -131,7 +175,7 @@ class Type:
 
         return
 
-    def derive_type(self, decl_body):
+    def derive_derived_type(self, decl_body):
         """
         This function derives a type given the body of a declaration
 
@@ -178,10 +222,10 @@ class Type:
         return ident_node
 
 #####################################################################
-# class NamedType
+# class NamedTypeList
 #####################################################################
 
-class NamedType(Type):
+class NamedTypeList:
     """
     This class represents a list of name-type pairs
     """
@@ -190,12 +234,17 @@ class NamedType(Type):
         Initialize the argument type in addition to the ordinary
         type. An argument type is a type plus argument names and
         vararg flags.
-        """
-        # Call parent node constructor to initialize index and
-        # type node list
-        Type.__init__(self)
 
+        If type is None then this is an anonymous bit field
+        and the bit width must be set
+        """
+        # This is a list of class Type
+        # Note that it is not a list of TypeNode
+        self.type_list = []
         self.name_list = []
+        # This is a list of bit widths. Use -1 to indicate
+        # default width of the type
+        self.bit_width_list = []
 
         return
 
@@ -227,6 +276,7 @@ class NamedType(Type):
             if param_decl.symbol == "T_ELLIPSIS":
                 self.type_list.append(TypeNode.TYPE_VARARG)
                 self.name_list.append(None)
+                self.bit_width_list.append(-1)
 
                 break
 
@@ -237,15 +287,57 @@ class NamedType(Type):
             # If there is an abstract or concrete type declarator
             # then build the type also
             if len(param_decl.child_list) == 2:
-                # If there is no ID then just store None
-                ident_node = self.derive_type(param_decl.child_list[1])
-                self.name_list.append(ident_node)
+                t = Type()
 
-        # At last add base type and specifier
-        self.push_base_type(base_type, mask)
+                # If there is no ID then just store None
+                ident_node = \
+                    t.derive_derived_type(param_decl.child_list[1])
+                self.type_list.append(t)
+                self.name_list.append(ident_node.data)
+                self.bit_width_list.append(-1)
+
+            # At last add base type and specifier
+            self.push_base_type(base_type, mask)
 
         return
 
+    def derive_struct_type(self, struct_node):
+        """
+        Derives the struct type using a struct declaration
+        syntax node
+
+        If the struct has an identifier we return the identifier
+        syntax node as return value. If not return None
+
+        :return: None or SyntaxNode
+        """
+        assert(struct_node.symbol == "T_STRUCT")
+        if len(struct_node.child_list) == 2:
+            struct_ident = struct_node.child_list[0]
+            struct_body = struct_node.child_list[1]
+        else:
+            struct_ident = None
+            struct_body = struct_node.child_list[0]
+
+        # For each entry in the struct declaration
+        for struct_decl in struct_body.child_list:
+            mask, base_type_node = \
+                get_type_modifier(struct_decl.child_node[0])
+
+            for declarator in struct_decl.child_node[1]:
+                if declarator.symbol == "T_STRUCT_DECL":
+                    t = Type()
+                    field_ident = \
+                        t.derive_derived_type(declarator.child_list[0])
+                    assert(field_ident is not None)
+                    self.name_list.append(field_ident.data)
+                    self.type_list.append(t)
+                    self.bit_width_list.append(-1)
+                elif declarator.symbol == "T_BIT_FIELD":
+                    if len(declarator.child_list) == 1:
+
+
+        return struct_ident
 
 
 
