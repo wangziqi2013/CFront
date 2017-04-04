@@ -36,37 +36,36 @@ class TypeNode:
     # the custom bit length of the int in higher 16 bits
     TYPE_CUSTOM_INT = 107
 
-    def __init__(self, op, data=None):
+    def __init__(self, op, type_spec, data):
         """
         Initialize the type node with a next pointer and data
 
-        Data node is used for:
-          (1) For base types it denotes the type spec
-          (2) For array types it denotes the array length if
+        Data field is used for:
+          (1) For array types it denotes the array length if
               there is one (it is a syntax tree of constant
               expression)
-          (3) For DEREF types it also denotes type spec
-              with the current level of indirection (the
-              specs to the right of the star symbol)
-          (4) For FUNC_CALL it is argument type where argument name
+          (2) For FUNC_CALL it is argument type where argument name
               and vararg is also recorded
+          (3) For custom int, the data is AST of width
+          (4) For struct op the data is Named Type List
+
+        Type spec field is used for:
+          (1) Pointer type
+          (2) Primitive type
+          (3) Customized integer type
+          (4) struct type
+
+        If not specified then fields should be None
         """
         # This is the operation that this node
         # performs over its sub-type
         self.op = op
+        self.type_spec = type_spec
         # For base type this is type spec; For DEREF operation
         # this is also type spec
         self.data = data
 
         return
-
-    def is_custom_int(self):
-        """
-        Whether the type represents a customized integer
-
-        :return: bool
-        """
-        return (self.op & 0xFFFF0000) != 0
 
     def is_primitive_type(self):
         """
@@ -74,24 +73,7 @@ class TypeNode:
 
         :return: bool
         """
-        return (self.op & 0x0000FFFF) >= TYPE_START
-
-    @staticmethod
-    def get_custom_int_type(width, data):
-        """
-        This function returns a custom int type with a given
-        bit field width
-
-        :return: TypeNode
-        """
-        # Check whether the width is too large
-        if width > ((1 << 16) - 1):
-            raise ValueError("Bit field width too large: %d (max = 65535)" %
-                             (width, ))
-
-        # Left shift the int by 16 bits and OR to the type code
-        return TypeNode(TypeNode.TYPE_CUSTOM_INT | (width << 16),
-                        data)
+        return self.op >= TYPE_START
 
 #####################################################################
 # class Type
@@ -112,25 +94,14 @@ class Type:
 
         return
 
-    @staticmethod
-    def push_struct_type(syntax_node):
-        """
-        This function returns the struct type TypeNode
-        which constitutes
-
-        :param syntax_node: The T_STRUCT node
-        :return: None
-        """
-
-    @staticmethod
-    def push_base_type(syntax_node, type_spec):
+    def push_base_type(self, syntax_node, type_spec):
         """
         This function returns a base type given the syntax node that
         could construct a base type (i.e. struct, enum which is always INT
         and primitive types)
 
         :param syntax_node: The syntax node that defines the base type
-        :return: TypeNode object
+        :return: None
         """
         if syntax_node.symbol == "T_CHAR":
             t = TypeNode.TYPE_CHAR
@@ -143,12 +114,17 @@ class Type:
         elif syntax_node.symbol == "T_ENUM":
             t = TypeNode.TYPE_ENUM
         elif syntax_node.symbol == "T_STRUCT":
-            push_struct_type(syntax_node, type_spec)
-
+            # Create a named type list and then
+            # push it to the type list
+            struct_type_list = NamedTypeList()
+            struct_type_list.derive_struct_type(syntax_node)
+            self.type_list.append(TypeNode(TypeNode.OP_STRUCT,
+                                           type_spec,
+                                           struct_type_list))
             return
 
         # In all other cases just use the type and return
-        self.type_list.append(TypeNode(t, type_spec))
+        self.type_list.append(TypeNode(t, type_spec, None))
 
         return
 
@@ -171,7 +147,7 @@ class Type:
             else:
                 mask = 0x0
 
-            self.type_list.append(TypeNode(TypeNode.OP_DEREF, mask))
+            self.type_list.append(TypeNode(TypeNode.OP_DEREF, mask, None))
 
         return
 
@@ -207,16 +183,32 @@ class Type:
                 ident_node = node
                 index += 1
                 continue
-            elif node.symbol == "T_ARRAY_SUB":
+
+            # This is the node after T_FUNC_CALL or T_ARRAY_SUB
+            data_node = cl[index + 1]
+
+            if node.symbol == "T_ARRAY_SUB":
                 # Store the expression as AST inside the type node
-                self.type_list.append(TypeNode(TypeNode.OP_ARRAY_SUB),
-                                      cl[index + 1])
+                if data_node.symbol == "T_":
+                    self.type_list.append(TypeNode(TypeNode.OP_ARRAY_SUB,
+                                                   None,
+                                                   None))
+                else:
+                    self.type_list.append(TypeNode(TypeNode.OP_ARRAY_SUB,
+                                                   None,
+                                                   data_node))
                 index += 2
             elif node.symbol == "T_FUNC_CALL":
-                # Use the argument list to derive argument type
-                self.type_list.append(TypeNode(TypeNode.OP_FUNC_CALL),
-                                      ArgumentType().derive_arg_type(
-                                          cl[index + 1]))
+                if data_node.symbol == "T_":
+                    named_type_list = None
+                else:
+                    # Use the argument list to derive argument type
+                    named_type_list = NamedTypeList()
+                    named_type_list.derive_arg_type(data_node)
+
+                self.type_list.append(TypeNode(TypeNode.OP_FUNC_CALL,
+                                               None,
+                                               named_type_list))
                 index += 2
 
         return ident_node
@@ -234,17 +226,11 @@ class NamedTypeList:
         Initialize the argument type in addition to the ordinary
         type. An argument type is a type plus argument names and
         vararg flags.
-
-        If type is None then this is an anonymous bit field
-        and the bit width must be set
         """
         # This is a list of class Type
         # Note that it is not a list of TypeNode
         self.type_list = []
         self.name_list = []
-        # This is a list of bit widths. Use -1 to indicate
-        # default width of the type
-        self.bit_width_list = []
 
         return
 
@@ -276,7 +262,6 @@ class NamedTypeList:
             if param_decl.symbol == "T_ELLIPSIS":
                 self.type_list.append(TypeNode.TYPE_VARARG)
                 self.name_list.append(None)
-                self.bit_width_list.append(-1)
 
                 break
 
@@ -294,7 +279,6 @@ class NamedTypeList:
                     t.derive_derived_type(param_decl.child_list[1])
                 self.type_list.append(t)
                 self.name_list.append(ident_node.data)
-                self.bit_width_list.append(-1)
 
             # At last add base type and specifier
             self.push_base_type(base_type, mask)
@@ -315,6 +299,9 @@ class NamedTypeList:
         if len(struct_node.child_list) == 2:
             struct_ident = struct_node.child_list[0]
             struct_body = struct_node.child_list[1]
+        elif struct_node.child_list[0].symbol == "T_IDENT":
+            struct_ident = struct_node.child_list[0]
+            struct_body = None
         else:
             struct_ident = None
             struct_body = struct_node.child_list[0]
@@ -329,17 +316,38 @@ class NamedTypeList:
                     t = Type()
                     field_ident = \
                         t.derive_derived_type(declarator.child_list[0])
-                    assert(field_ident is not None)
+                    assert (field_ident is not None)
+
+                    # Also add base node type to the derived type
+                    t.push_base_type(base_type_node, mask)
+
                     self.name_list.append(field_ident.data)
                     self.type_list.append(t)
-                    self.bit_width_list.append(-1)
                 elif declarator.symbol == "T_BIT_FIELD":
                     if len(declarator.child_list) == 1:
+                        # Create a customized integer type and attach
+                        # the width of the type with the type node
+                        self.name_list.append(None)
+                        self.type_list.append(
+                            TypeNode(
+                                TypeNode.TYPE_CUSTOM_INT,
+                                (mask, declarator.child_list[0])))
+                    else:
+                        # This object is not used
+                        t = Type()
+                        field_ident = \
+                            t.derive_derived_type(declarator.child_list[0])
+                        assert (field_ident is not None)
 
+                        self.name_list.append(field_ident.data)
+                        # It must be customized integer type no matter
+                        # what the fk the declarator says
+                        self.type_list.append(
+                            TypeNode(
+                                TypeNode.TYPE_CUSTOM_INT,
+                                (mask, declarator.child_list[1])))
 
         return struct_ident
-
-
 
 #####################################################################
 # class SyntaxNode
