@@ -37,3 +37,4 @@ build
 
 ## Ignore python byte code
 *.pyc
+*.table
