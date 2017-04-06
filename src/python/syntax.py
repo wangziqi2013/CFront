@@ -3246,25 +3246,6 @@ class ParserLR(ParserGeneratorLR):
     parser works
     """
 
-    def process_T_COMPOUND_STMT_BEGIN(self, ast_root):
-        """
-        This function process the beginning of a compound statement
-        :param ast_root: The root of the AST
-        :return: Same root
-        """
-        self.enter_scope()
-        return ast_root
-
-    def process_T_COMPOUND_STMT(self, ast_root):
-        """
-        This function processes the end of the compound statement
-
-        :param ast_root: The root of the AST
-        :return: Same root
-        """
-        self.leave_scope()
-        return ast_root
-
     def process_T_DECL(self, ast_root):
         """
         This function processes typedef and adds name defined by
@@ -3312,8 +3293,6 @@ class ParserLR(ParserGeneratorLR):
     # The return value of the call back function will be
     # passed to the parent as the parsed AST
     REDUCE_ACTION_DICT = {
-        "T_COMPOUND_STMT_BEGIN": process_T_COMPOUND_STMT_BEGIN,
-        "T_COMPOUND_STMT": process_T_COMPOUND_STMT,
         "T_DECL": process_T_DECL,
     }
 
