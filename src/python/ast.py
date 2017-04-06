@@ -399,6 +399,38 @@ class SyntaxNode:
         """
         return self.child_list[item]
 
+    def size(self):
+        """
+        Returns the number of children
+
+        :return: int
+        """
+        return len(child_list)
+
+    def __contains__(self, item):
+        """
+        Whether a given symbol type appears on a given index
+
+        The item is a tuple with two elements: the first element
+        is the string name, and the second element is the index
+
+        If the index is larger than the child list then we just
+        return False
+
+        :param item: (name, index)
+        :return: bool
+        """
+        index = item[1]
+        name = item[0]
+        assert(index >= 0)
+
+        if index >= self.size():
+            return False
+        elif self.child_list[index].symbol == name:
+                return True
+
+        return False
+
     def __str__(self):
         """
         Returns a string representation of the syntax node
