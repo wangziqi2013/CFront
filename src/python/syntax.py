@@ -3298,6 +3298,33 @@ class ParserLR(ParserGeneratorLR):
 
         return
 
+    def is_typedefed(self, name):
+        """
+        Whether a symbol (i.e. string representation of the identifier)
+        has been defined in the current scope. If it is not then we
+        search up the scope stack until the first one
+
+        :return: bool
+        """
+        # Iterate from the back of the list
+        i = len(self.scope_stack) - 1
+        while i >= 0:
+            symbol_set = self.scope_stack[i]
+            # If the name exists in any of the symbol set then
+            # just return True otherwise it does not exist
+            if name in symbol_set:
+                return True
+
+            i -= 1
+
+        return False
+
+    def add_typedefed_name(self):
+        """
+
+        :return:
+        """
+
     @staticmethod
     def load_token_list(file_name):
         """
