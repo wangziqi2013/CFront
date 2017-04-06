@@ -3267,6 +3267,35 @@ class ParserLR(ParserGeneratorLR):
 
         self.load_parsing_table(file_name)
 
+        # This is the stack of symbol tables in order to
+        # parse typedef'ed name - we use a set object
+        # to represent names that has been typedef'ed
+        self.scope_stack = [set()]
+
+        return
+
+    def enter_scope(self):
+        """
+        Enters a new scope. This is implemented as pushing a new
+        set into the scope_stack
+
+        :return: None
+        """
+        self.scope_stack.append(set())
+        return
+
+    def leave_scope(self):
+        """
+        Leaves the current scope. Note that it is impossible for the
+        program to underflow the scope stack because our grammar
+        rule makes sure that each scope must be terminated properly
+        if parsing is successful
+
+        :return: None
+        """
+        assert(len(self.scope_stack) != 0)
+        self.scope_stack.pop()
+
         return
 
     @staticmethod
