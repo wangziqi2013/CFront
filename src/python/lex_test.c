@@ -22,15 +22,23 @@ int main(int argc, char **argv, ...) /* int x, y, z; */ {
   static const volatile register int * const * (*xyz)(int(*)(), long *, char()) = C;
   long x = 1 & xyz;
   void *c;
-  typedef int aa;
+  
   // This struct is used to store data
   static typedef struct struct_type {
     int a;
     char b : 20;   // 20 bit field
     long c;
-  } aa, bb, cc;
+  } bb, cc;
   
   int long register typedef ;
+  
+  // The following three tests whether we could resolve amiguity
+  // between expression and declaration
+  aa * x;
+  {
+    typedef int aa;
+    aa * x;
+  }
     
   printf("Hello, world!\n");
   

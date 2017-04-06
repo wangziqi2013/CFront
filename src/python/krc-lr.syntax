@@ -163,8 +163,8 @@ type-specifier:
     T_UNSIGNED                 # T_UNSIGNED
     struct-or-union-specifier  # $1
     enum-specifier             # $1
-    # TODO: Please see typedef-name definition (commented out)
-    #typedef-name
+    # This carries data as identifier
+    T_TYPEDEF_NAME             # T_TYPEDEF_NAME@1
  
 struct-or-union-specifier:
     struct-or-union T_LCPAREN struct-declaration-list T_RCPAREN            # $1, $3
