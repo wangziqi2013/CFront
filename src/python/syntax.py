@@ -3245,6 +3245,38 @@ class ParserLR(ParserGeneratorLR):
     This class is a simple demo of how LR shift-reduce
     parser works
     """
+
+    def process_T_COMPOUND_STMT_BEGIN(self, ast_root):
+        """
+        This function process the beginning of a compound statement
+        :param ast_root: The root of the AST
+        :return: Same root
+        """
+        self.enter_scope()
+        return ast_root
+
+    def process_T_COMPOUND_STMT(self, ast_root):
+        """
+        This function processes the end of the compound statement
+
+        :param ast_root: The root of the AST
+        :return: Same root
+        """
+        self.leave_scope()
+        return ast_root
+
+    # This is a dictionary recording actions when we
+    # have constructed the AST when a reduce is performed
+    # The key is the name of the head node and value is
+    # a function object accepting this instance and the
+    # root of the sub-AST
+    # The return value of the call back function will be
+    # passed to the parent as the parsed AST
+    REDUCE_ACTION_DICT = {
+        "T_COMPOUND_STMT_BEGIN": process_T_COMPOUND_STMT_BEGIN,
+        "T_COMPOUND_STMT": process_T_COMPOUND_STMT,
+    }
+
     def __init__(self, file_name):
         """
         Initialize the LR parsing table
@@ -3497,6 +3529,14 @@ class ParserLR(ParserGeneratorLR):
                 goto_tuple = self.parsing_table[(top_state, reduce_to)]
                 assert (goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
 
+                # Process the transformed AST using call backs
+                # defined above
+                callback = ParserLR.REDUCE_ACTION_DICT.get(sn.symbol, None)
+                # If the call back is defined then we call it with the instance
+                # and also with the AST root
+                if callback is not None:
+                    sn = callback(self, sn)
+
                 # Push new non-terminal into the list
                 symbol_stack.append(sn)
                 # Push the new symbol after reduction into the list
@@ -3510,6 +3550,9 @@ class ParserLR(ParserGeneratorLR):
         # Symbol stack and state stack should all have one element
         dbg_printf("Symbol stack: %s", symbol_stack)
         dbg_printf("State stack: %s", state_stack)
+        dbg_printf("Scope stack: %s", self.scope_stack)
+
+        assert(len(self.scope_stack) == 1)
 
         return symbol_stack[0]
 
