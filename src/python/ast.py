@@ -431,6 +431,18 @@ class SyntaxNode:
 
         return False
 
+    def __eq__(self, other):
+        """
+        Compares this syntax node with a string object. If
+        the name of the syntax node equals the given str object
+        then we return True
+
+        :param other: A string object
+        :return: bool
+        """
+        assert(isinstance(other, str) is True)
+        return self.symbol == other
+
     def __str__(self):
         """
         Returns a string representation of the syntax node
