@@ -26,6 +26,14 @@ class Token:
         self.name = name
         self.data = data
 
+        # This is the index of the token we have seen in the token
+        # stream
+        # The first token has index == 0
+        # The parse might rely on the index to determine symbol's
+        # scope because for LR parser the only time we know a
+        # compound statement has been parsed is when it reduces
+        self.index = -1
+
         return
 
     def __repr__(self):
@@ -75,7 +83,12 @@ class Tokenizer:
         else:
             self.s = s
 
+        # This is the index on the token stream
         self.index = 0
+
+        # This is the number of tokens we have produced
+        # Also used as the token index
+        self.token_index = 0
 
         # This will be updated while we scan the file
         self.row = 1
@@ -155,6 +168,7 @@ class Tokenizer:
         :return: None
         """
         self.index = 0
+        self.token_index = 0
         self.row = 1
         self.col = 1
 
@@ -237,7 +251,7 @@ class Tokenizer:
 
         # Get the character and advance the index
         ch = self.s[self.index]
-        index += 1
+        self.index += 1
 
         # Since we just consumed one character
         self.update_row_col(index - 1)
@@ -675,6 +689,11 @@ class CTokenizer(Tokenizer):
 
         :return: Token
         """
+        # This is the token we return
+        # Since we need to assign indices to tokens before
+        # they are returned, we return only at the very end of
+        # this function
+        ret = None
         # Need to loop to skip comment, space, etc.
         while True:
             ch = self.peek_char(0)
@@ -683,10 +702,12 @@ class CTokenizer(Tokenizer):
             if ch == Tokenizer.EOF_CHAR:
                 # Special token denoting the end of the input
                 # stream
-                return Token("T_EOF", None)
+                ret = Token("T_EOF", None)
+                break
 
             if Tokenizer.is_ident_char(ch, True):
-                return self.clip_ident()
+                ret = self.clip_ident()
+                break
             elif Tokenizer.is_dec_digit(ch):
                 # Need to check whether it is 'x'
                 ch2 = self.peek_char(1)
@@ -708,10 +729,12 @@ class CTokenizer(Tokenizer):
                                 Tokenizer.is_oct_digit)
                         token.data = "0" + token.data
 
-                    return token
+                    ret = token
+                    break
                 else:
-                    return self.clip_int_literal(
+                    ret = self.clip_int_literal(
                         Tokenizer.is_dec_digit)
+                    break
             elif ch == "\"":
                 return self.clip_string_literal()
             elif ch == "\'":
@@ -729,8 +752,16 @@ class CTokenizer(Tokenizer):
                     self.skip_line_comment()
                     continue
 
-            # This is the fall back
-            return self.clip_op()
+            # This is the fall back which is an operator
+            ret = self.clip_op()
+            break
+
+        # At last assign the token with an index and increment
+        # the token index in the tokenizer also
+        ret.index = self.token_index
+        self.token_index += 1
+
+        return ret
 
 #####################################################################
 #####################################################################

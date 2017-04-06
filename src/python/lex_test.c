@@ -23,7 +23,7 @@ int main(int argc, char **argv, ...) /* int x, y, z; */ {
   long x = 1 & xyz;
   void *c;
   // This struct is used to store data
-  typedef struct struct_type {
+  static typedef struct struct_type {
     int a;
     char b : 20;   // 20 bit field
     long c;
