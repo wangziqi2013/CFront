@@ -8,7 +8,7 @@
 from common import *
 import sys
 import json
-from lex import CTokenizer
+from lex import CTokenizer, Token
 from ast import transform_ast, SyntaxNode
 
 #####################################################################
@@ -3304,7 +3304,6 @@ class ParserLR(ParserGeneratorLR):
 
         return ast_root
 
-
     # This is a dictionary recording actions when we
     # have constructed the AST when a reduce is performed
     # The key is the name of the head node and value is
@@ -3416,6 +3415,26 @@ class ParserLR(ParserGeneratorLR):
 
         return True
 
+    def preprocess_token(self, token):
+        """
+        Does not pre-processing of the token before it is used
+        for parsing
+
+        :param token: The token object
+        :return: Same or modified token object
+        """
+        assert(isinstance(token, Token))
+        if token.name != "T_IDENT":
+            return token
+        elif self.is_typedefed(token.data) is False:
+            return token
+
+        # Change it to T_TYPEDEF_NAME
+        ret_token = Token("T_TYPEDEF_NAME", token.data)
+        ret_token.index = token.index
+
+        return ret_token
+
     @staticmethod
     def load_token_list(file_name):
         """
@@ -3483,13 +3502,12 @@ class ParserLR(ParserGeneratorLR):
         state_stack = [self.starting_state]
         symbol_stack = []
 
-        token = tk.get_next_token()
-        terminal = token
+        token = self.preprocess_token(tk.get_next_token())
 
         while True:
             top_state = state_stack[-1]
 
-            k = (top_state, terminal.name)
+            k = (top_state, token.name)
             t = self.parsing_table[k]
             action = t[0]
 
@@ -3498,10 +3516,9 @@ class ParserLR(ParserGeneratorLR):
             if action == ParserGeneratorLR.ACTION_SHIFT:
                 assert (isinstance(t[1], int))
                 state_stack.append(t[1])
-                symbol_stack.append(terminal)
+                symbol_stack.append(token)
 
-                token = tk.get_next_token()
-                terminal = token
+                token = self.preprocess_token(tk.get_next_token())
             elif action == ParserGeneratorLR.ACTION_REDUCE:
                 # This is a string denoting the name of the
                 # non-terminal; it is not the non-terminal object
