@@ -405,7 +405,7 @@ class SyntaxNode:
 
         :return: int
         """
-        return len(child_list)
+        return len(self.child_list)
 
     def __contains__(self, item):
         """

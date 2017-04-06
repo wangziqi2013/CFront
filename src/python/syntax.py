@@ -3265,6 +3265,46 @@ class ParserLR(ParserGeneratorLR):
         self.leave_scope()
         return ast_root
 
+    def process_T_DECL(self, ast_root):
+        """
+        This function processes typedef and adds name defined by
+        typedef into the current scope. If the name is already
+        defined then just throw an error
+
+        :param ast_root: The root of the AST
+        :return: Same root
+        """
+        # If there is no concrete declaration just return
+        if ast_root.size() == 1:
+            return ast_root
+
+        # First check whether typedef in indeed
+        # part of the declaration
+        specifier_list = ast_root[0]
+        for specifier in specifier_list:
+            if specifier == "T_TYPEDEF":
+                break
+        else:
+            # If we did not break from the loop
+            # then it must be because there is no typedef
+            return ast_root
+
+        init_decl_list = ast_root[1]
+        for init_decl in init_decl_list:
+            decl_body = init_decl[0]
+            assert(decl_body == "T_DECL_BODY")
+            assert(decl_body[0] == "T_IDENT")
+
+            # Obtain the name which must be the first element
+            # of the declaration
+            name = decl_body[0].data
+            if self.add_typedefed_name(name) is False:
+                raise ValueError("Name %s has already been typedef'ed" %
+                                 (name, ))
+
+        return ast_root
+
+
     # This is a dictionary recording actions when we
     # have constructed the AST when a reduce is performed
     # The key is the name of the head node and value is
@@ -3275,6 +3315,7 @@ class ParserLR(ParserGeneratorLR):
     REDUCE_ACTION_DICT = {
         "T_COMPOUND_STMT_BEGIN": process_T_COMPOUND_STMT_BEGIN,
         "T_COMPOUND_STMT": process_T_COMPOUND_STMT,
+        "T_DECL": process_T_DECL,
     }
 
     def __init__(self, file_name):
@@ -3351,7 +3392,7 @@ class ParserLR(ParserGeneratorLR):
 
         return False
 
-    def add_typedefed_name(self):
+    def add_typedefed_name(self, name):
         """
         This function adds a typedefed name into the current scope
         i.e. the top level scope
@@ -3360,6 +3401,7 @@ class ParserLR(ParserGeneratorLR):
         know we have seen a name conflict that could not be resolved
         and this function returns False to signal the caller
 
+        :param name: The name we need to add
         :return: bool. False if the name already exists
         """
         assert(len(self.scope_stack) != 0)

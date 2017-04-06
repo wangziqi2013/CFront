@@ -22,13 +22,16 @@ int main(int argc, char **argv, ...) /* int x, y, z; */ {
   static const volatile register int * const * (*xyz)(int(*)(), long *, char()) = C;
   long x = 1 & xyz;
   void *c;
+  typedef int aa;
   // This struct is used to store data
   static typedef struct struct_type {
     int a;
     char b : 20;   // 20 bit field
     long c;
-  } a, b, c;
+  } aa, bb, cc;
   
+  int long register typedef ;
+    
   printf("Hello, world!\n");
   
   a.a = 20UL;
