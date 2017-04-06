@@ -311,11 +311,14 @@ labeled-statement:
     T_CASE constant-expression T_COLON statement    # T_CASE_STMT, $2 $4
     T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
  
+compound-statement-begin:
+    T_LCPAREN                                           # T_COMPOUND_STMT_BEGIN
+
 compound-statement:
-    T_LCPAREN T_RCPAREN                                 # T_COMPOUND_STMT
-    T_LCPAREN declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2
-    T_LCPAREN statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2
-    T_LCPAREN declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3
+    compound-statement-begin T_RCPAREN                                 # T_COMPOUND_STMT
+    compound-statement-begin declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2
+    compound-statement-begin statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2
+    compound-statement-begin declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3
  
 declaration-list:
     declaration                   # T_DECL_LIST, $1
