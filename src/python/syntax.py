@@ -3321,9 +3321,26 @@ class ParserLR(ParserGeneratorLR):
 
     def add_typedefed_name(self):
         """
+        This function adds a typedefed name into the current scope
+        i.e. the top level scope
 
-        :return:
+        If the name already exists in the top level scope then we
+        know we have seen a name conflict that could not be resolved
+        and this function returns False to signal the caller
+
+        :return: bool. False if the name already exists
         """
+        assert(len(self.scope_stack) != 0)
+        top_level = self.scope_stack[-1]
+        # If the name exists in the top level scope
+        # then we have redefined it and this is an error
+        if name in top_level:
+            return False
+
+        # Otherwise just add it into the symbol set
+        top_level.add(name)
+
+        return True
 
     @staticmethod
     def load_token_list(file_name):
