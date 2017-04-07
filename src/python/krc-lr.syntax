@@ -145,9 +145,6 @@ storage-class-specifier:
     T_TYPEDEF                # T_TYPEDEF
     T_EXTERN                 # T_EXTERN
     T_STATIC                 # T_STATIC
-    # This is ignored by the AST 
-    # because it does not
-    # constitute anything useful
     T_AUTO                   # T_AUTO
     T_REGISTER               # T_REGISTER
  
@@ -312,10 +309,13 @@ labeled-statement:
     T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
 
 compound-statement:
-    T_LCPAREN T_RCPAREN                                 # T_COMPOUND_STMT
-    T_LCPAREN declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2
-    T_LCPAREN statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2
-    T_LCPAREN declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3
+    compound-statement-begin T_RCPAREN                                 # T_COMPOUND_STMT
+    compound-statement-begin declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2
+    compound-statement-begin statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2
+    compound-statement-begin declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3
+
+compound-statement-begin:
+    T_LCPAREN                                                          # T_COMPOUND_STMT_BEGIN
  
 declaration-list:
     declaration                   # T_DECL_LIST, $1
@@ -369,4 +369,4 @@ function-definition:
 #                           declarator                  compound-statement 
     declaration-specifiers declarator                  compound-statement    # T_FUNC_DEF, $1 $2 $3
 #                           declarator declaration-list compound-statement
-#   declaration-specifiers declarator declaration-list compound-statement    # T_FUNC_DEF, $1 $2 $3 $4
+#   declaration-specifiers declarator declaration-list compound-statement
