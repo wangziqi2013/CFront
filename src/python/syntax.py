@@ -1967,7 +1967,10 @@ class ParserGenerator:
         the production body (i.e. after the # symbol)
 
         The AST rule is a tuple:
-           (rename_flag, root_data, [child data 1, child data 2, .. , child data N])
+           (rename_flag,
+            root_data,        -> Either index or name
+            [child data 1, child data 2, .. , child data N], -> Either index or name or (name, index)
+            action name)      -> Name of the action
         If rename_flag is True then root_data is the new name we assign to the
         returned syntax node. Otherwise it is the index in the RHS side
         After the root data is the indices of the child nodes. The index corresponds
@@ -1992,23 +1995,45 @@ class ParserGenerator:
             p.ast_rule = None
             return
 
-        # Then try to separate root and body
-        index = ast_rule.find(",")
-        if index != -1:
-            root = ast_rule[:index].strip()
-            body = ast_rule[index + 1:].strip()
-        else:
-            # If there is no command then we just rename and
-            # return a new node
-            root = ast_rule
+        # First split the AST rule using comma
+        # The first component is root rule
+        # The second component is child rule
+        # The third component is action
+        # The first and second could optionally specify
+        #   data that the node needs to carry with
+        rule_comma_list = ast_rule.split(",")
+        if len(rule_comma_list) == 1:
+            root = rule_comma_list[0].strip()
             body = None
+            action = None
+        elif len(rule_comma_list) == 2:
+            root = rule_comma_list[0].strip()
+            body = rule_comma_list[1].strip()
+            action = None
+        elif len(rule_comma_list) == 3:
+            root = rule_comma_list[0].strip()
+            body = rule_comma_list[1].strip()
+            action = rule_comma_list[2].strip()
+        else:
+            # We have seen more commas which is an error
+            raise ValueError("Invalid AST rule: \"%s\"" %
+                             (ast_rule,))
 
         # If the root is empty or body is empty
         # then the rule is invalid
-        if len(root) == 0 or \
-           (body is not None and len(body) == 0):
+        if len(root) == 0:
             raise ValueError("Invalid AST rule: \"%s\"" %
                              (ast_rule, ))
+
+        # We allow the optional body and action to be empty string
+        # because this allows us to specify the action without
+        # specifying
+        # a child rule
+        if body is not None and len(body) == 0:
+            body = None
+
+        if action is not None and len(action) == 0:
+            action = None
 
         # If the root is a RHS node then rename is False
         # Otherwise we rename the root and assign new name
@@ -2030,6 +2055,9 @@ class ParserGenerator:
             rename_flag = True
             root_data = root
 
+            # If the root also carries data
+            # the source of the data is from the index
+            # specified after "@" character
             index = root_data.find("@")
             if index == -1:
                 root_data = root
@@ -2094,8 +2122,15 @@ class ParserGenerator:
                     body_ret_list.append((body_token_name,
                                           body_token_index))
 
-        # The third component is the child list template
-        p.ast_rule = (rename_flag, root_data, body_ret_list)
+        # If there is no action then we return
+        if action is None:
+            # The third component is the child list template
+            p.ast_rule = (rename_flag, root_data, body_ret_list)
+            return
+
+        # Otherwise also append the optional action into the tuple
+        # and set it as the AST rule of production p
+        p.ast_rule = (rename_flag, root_data, body_ret_list, action)
 
         return
 
@@ -3455,12 +3490,12 @@ class ParserLR(ParserGeneratorLR):
 
             if line.startswith("TokenType = ") is False:
                 raise ValueError("Illegal line: %s" %
-                                 (line,))
+                                 (line, ))
 
             index = line.find(";")
             if index == -1:
                 raise ValueError("Illegal line: %s" %
-                                 (line,))
+                                 (line, ))
 
             # Cut the token
             token = \
@@ -3489,9 +3524,6 @@ class ParserLR(ParserGeneratorLR):
 
         token = tk.get_next_token()
 
-        temp = set(["T_TYPEDEF", "T_EXP_STMT", "T_DECL_BODY", "T_DECL", "T_COMPOUND_STMT_BEGIN",
-                    "T_COMPOUND_STMT"])
-
         while True:
             top_state = state_stack[-1]
 
@@ -3506,15 +3538,6 @@ class ParserLR(ParserGeneratorLR):
                 assert(isinstance(t[1], int))
                 state_stack.append(t[1])
                 symbol_stack.append(token)
-
-                """
-                if token.name == 'T_LCPAREN':
-                    print "Enter scope"
-                elif token.name == "T_RCPAREN":
-                    print "leave scope"
-                elif token.name == "T_IDENT":
-                    print "Shift IDENT", token.data
-                """
 
                 token = tk.get_next_token()
             elif action == ParserGeneratorLR.ACTION_REDUCE:

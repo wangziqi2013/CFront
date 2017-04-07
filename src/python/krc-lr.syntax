@@ -309,10 +309,10 @@ labeled-statement:
     T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
 
 compound-statement:
-    compound-statement-begin T_RCPAREN                                 # T_COMPOUND_STMT
-    compound-statement-begin declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2
-    compound-statement-begin statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2
-    compound-statement-begin declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3
+    compound-statement-begin T_RCPAREN                                 # T_COMPOUND_STMT          , enter_scope
+    compound-statement-begin declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2      , enter_scope
+    compound-statement-begin statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2      , enter_scope
+    compound-statement-begin declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3   , enter_scope
 
 compound-statement-begin:
     T_LCPAREN                                                          # T_COMPOUND_STMT_BEGIN
