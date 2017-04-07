@@ -2075,11 +2075,16 @@ class ParserGenerator:
                 root_data = (root_name, root_index)
 
         # If there is no body then that's it
-        if body is None:
+        if body is None and action is None:
             p.ast_rule = (rename_flag, root_data)
             return
 
         # Break it into tokens
+        # Note that if nody is empty string then we could skip this
+        # and use an empty list
+        if body is None:
+            body = ""
+
         body_list = body.split()
         body_ret_list = []
         for body_token in body_list:
@@ -3347,15 +3352,34 @@ class ParserLR(ParserGeneratorLR):
 
         return ret_token
 
+    def process_enter_scope(self, ast_root):
+        """
+        This function process enter_scope action in the AST rule
+
+        :param ast_root: The root of the AST subtree
+        :return: Same AST node
+        """
+        self.enter_scope()
+        return ast_root
+
+    def process_leave_scope(self, ast_root):
+        """
+        This function process enter_scope action in the AST rule
+
+        :param ast_root: The root of the AST subtree
+        :return: Same AST node
+        """
+        self.leave_scope()
+        return ast_root
+
     # This is a dictionary recording actions when we
     # have constructed the AST when a reduce is performed
-    # The key is the name of the head node and value is
-    # a function object accepting this instance and the
-    # root of the sub-AST
+    # The key is the action string specified in the AST rule
     # The return value of the call back function will be
     # passed to the parent as the parsed AST
     REDUCE_ACTION_DICT = {
-        "T_DECL": process_T_DECL,
+        "enter_scope": process_enter_scope,
+        "leave_scope": process_leave_scope,
     }
 
     def __init__(self, file_name):
@@ -3394,6 +3418,7 @@ class ParserLR(ParserGeneratorLR):
 
         :return: None
         """
+        print "enter scope"
         self.scope_stack.append(set())
         return
 
@@ -3406,6 +3431,7 @@ class ParserLR(ParserGeneratorLR):
 
         :return: None
         """
+        print "leave scope"
         assert(len(self.scope_stack) != 0)
         self.scope_stack.pop()
 
@@ -3524,6 +3550,8 @@ class ParserLR(ParserGeneratorLR):
 
         token = tk.get_next_token()
 
+        temp = set(["T_DECL", "T_TYPEDEF", "T_DECL_BODY", "T_COMPOUND_STMT_BEGIN"])
+
         while True:
             top_state = state_stack[-1]
 
@@ -3538,6 +3566,8 @@ class ParserLR(ParserGeneratorLR):
                 assert(isinstance(t[1], int))
                 state_stack.append(t[1])
                 symbol_stack.append(token)
+                if token.name == "T_IDENT":
+                    print "Shift", token.data
 
                 token = tk.get_next_token()
             elif action == ParserGeneratorLR.ACTION_REDUCE:
@@ -3557,11 +3587,17 @@ class ParserLR(ParserGeneratorLR):
                     rename_flag = ast_rule[0]
                     # This is the name of the root node
                     root_name = ast_rule[1]
+
                     # This is a list of children
-                    if len(ast_rule) > 2:
-                        child_list = ast_rule[2]
-                    else:
+                    if len(ast_rule) == 2:
                         child_list = None
+                        ast_action = None
+                    elif len(ast_rule) == 3:
+                        child_list = ast_rule[2]
+                        ast_action = None
+                    elif len(ast_rule) == 4:
+                        child_list = ast_rule[2]
+                        ast_action = ast_rule[3]
 
                     # This fixes the root node
                     if rename_flag is False:
@@ -3622,7 +3658,7 @@ class ParserLR(ParserGeneratorLR):
 
                 # Process the transformed AST using call backs
                 # defined above
-                callback = ParserLR.REDUCE_ACTION_DICT.get(sn.symbol, None)
+                callback = ParserLR.REDUCE_ACTION_DICT.get(ast_action, None)
                 # If the call back is defined then we call it with the instance
                 # and also with the AST root
                 if callback is not None:
