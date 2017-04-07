@@ -3285,6 +3285,33 @@ class ParserLR(ParserGeneratorLR):
 
         return ast_root
 
+    def preprocess_token(self, token):
+        """
+        Does not pre-processing of the token before it is used
+        for parsing
+
+        :param token: The token object
+        :return: Same or modified token object
+        """
+        assert(isinstance(token, Token))
+        # Change this to change the return value
+        ret_token = token
+        if token.name == "T_IDENT":
+            if self.is_typedefed(token.data) is False:
+                return token
+
+            # Change it to T_TYPEDEF_NAME
+            ret_token = Token("T_TYPEDEF_NAME", token.data)
+            ret_token.index = token.index
+        elif token.name == "T_LCPAREN":
+            print "Enter scope"
+            self.enter_scope()
+        elif token.name == "T_RCPAREN":
+            print "Leave scope"
+            self.leave_scope()
+
+        return ret_token
+
     # This is a dictionary recording actions when we
     # have constructed the AST when a reduce is performed
     # The key is the name of the head node and value is
@@ -3391,28 +3418,9 @@ class ParserLR(ParserGeneratorLR):
 
         # Otherwise just add it into the symbol set
         top_level.add(name)
+        print "added typedef name", name
 
         return True
-
-    def preprocess_token(self, token):
-        """
-        Does not pre-processing of the token before it is used
-        for parsing
-
-        :param token: The token object
-        :return: Same or modified token object
-        """
-        assert(isinstance(token, Token))
-        if token.name != "T_IDENT":
-            return token
-        elif self.is_typedefed(token.data) is False:
-            return token
-
-        # Change it to T_TYPEDEF_NAME
-        ret_token = Token("T_TYPEDEF_NAME", token.data)
-        ret_token.index = token.index
-
-        return ret_token
 
     @staticmethod
     def load_token_list(file_name):
@@ -3474,18 +3482,20 @@ class ParserLR(ParserGeneratorLR):
         :return: The final root symbol (i.e. the top symbol after
          acceptance)
         """
-        #terminal_list = ParserLR.load_token_list(file_name)
-        #terminal_index = 0
         tk = CTokenizer.read_file(file_name)
 
         state_stack = [self.starting_state]
         symbol_stack = []
 
-        token = self.preprocess_token(tk.get_next_token())
+        token = tk.get_next_token()
+
+        temp = set(["T_TYPEDEF", "T_EXP_STMT", "T_DECL_BODY", "T_DECL", "T_COMPOUND_STMT_BEGIN",
+                    "T_COMPOUND_STMT"])
 
         while True:
             top_state = state_stack[-1]
 
+            #token = self.preprocess_token(token)
             k = (top_state, token.name)
             t = self.parsing_table[k]
             action = t[0]
@@ -3493,11 +3503,20 @@ class ParserLR(ParserGeneratorLR):
             # If we shift then consume a terminal and
             # goto the next state
             if action == ParserGeneratorLR.ACTION_SHIFT:
-                assert (isinstance(t[1], int))
+                assert(isinstance(t[1], int))
                 state_stack.append(t[1])
                 symbol_stack.append(token)
 
-                token = self.preprocess_token(tk.get_next_token())
+                """
+                if token.name == 'T_LCPAREN':
+                    print "Enter scope"
+                elif token.name == "T_RCPAREN":
+                    print "leave scope"
+                elif token.name == "T_IDENT":
+                    print "Shift IDENT", token.data
+                """
+
+                token = tk.get_next_token()
             elif action == ParserGeneratorLR.ACTION_REDUCE:
                 # This is a string denoting the name of the
                 # non-terminal; it is not the non-terminal object
@@ -3543,10 +3562,19 @@ class ParserLR(ParserGeneratorLR):
                             # If this is a symbol from the stack then
                             # add it as the child node
                             if isinstance(child, int) is True:
-                                sn.append(symbol_stack[-reduce_length + child])
+                                node = symbol_stack[-reduce_length + child]
+
+                                # Make sure it has no parent and we assign
+                                # a parent to it
+                                assert(node.parent is None)
+                                node.parent = sn
+
+                                sn.append(node)
                             elif isinstance(child, str) is True:
+                                new_node = SyntaxNode(child)
+                                new_node.parent = sn
                                 # If it is a new name then add it also
-                                sn.append(SyntaxNode(child))
+                                sn.append(new_node)
                             else:
                                 # Otherwise it is a new symbol but we need the
                                 # token data also
@@ -3554,6 +3582,8 @@ class ParserLR(ParserGeneratorLR):
                                 # Get the data on the corresponding location
                                 new_node.data = \
                                     symbol_stack[-reduce_length + child[1]].data
+                                # Assign the parent node
+                                new_node.parent = sn
                                 sn.append(new_node)
 
                 # Remove the same number of elements
@@ -3574,6 +3604,9 @@ class ParserLR(ParserGeneratorLR):
                 # and also with the AST root
                 if callback is not None:
                     sn = callback(self, sn)
+
+                if sn.symbol in temp:
+                    print sn.symbol
 
                 # Push new non-terminal into the list
                 symbol_stack.append(sn)

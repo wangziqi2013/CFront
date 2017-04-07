@@ -378,6 +378,10 @@ class SyntaxNode:
         # it as None
         self.data = None
 
+        # This is a pointer to the parent node. If this is root
+        # then the parent is always set to None
+        self.parent = None
+
         return
 
     def append(self, symbol):
