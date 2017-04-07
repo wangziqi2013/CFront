@@ -134,8 +134,8 @@ declaration-specifiers:
     type-qualifier          declaration-specifiers            # $2, $1
  
 init-declarator-list:
-    init-declarator                                           # T_INIT_DECL_LIST, $1
-    init-declarator-list T_COMMA init-declarator              # $1, $3
+    init-declarator                                           # T_INIT_DECL_LIST, $1, add_decl_body
+    init-declarator-list T_COMMA init-declarator              # $1,               $3, add_decl_body
  
 init-declarator:
     declarator                                                # T_INIT_DECL, $1
@@ -309,13 +309,13 @@ labeled-statement:
     T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
 
 compound-statement:
-    compound-statement-begin T_RCPAREN                                 # T_COMPOUND_STMT          , enter_scope
-    compound-statement-begin declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2      , enter_scope
-    compound-statement-begin statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2      , enter_scope
-    compound-statement-begin declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3   , enter_scope
+    compound-statement-begin T_RCPAREN                                 # T_COMPOUND_STMT,         , leave_scope
+    compound-statement-begin declaration-list T_RCPAREN                # T_COMPOUND_STMT, $2      , leave_scope
+    compound-statement-begin statement-list T_RCPAREN                  # T_COMPOUND_STMT, $2      , leave_scope
+    compound-statement-begin declaration-list statement-list T_RCPAREN # T_COMPOUND_STMT, $2 $3   , leave_scope
 
 compound-statement-begin:
-    T_LCPAREN                                                          # T_COMPOUND_STMT_BEGIN
+    T_LCPAREN                                                          # T_COMPOUND_STMT_BEGIN, , enter_scope
  
 declaration-list:
     declaration                   # T_DECL_LIST, $1

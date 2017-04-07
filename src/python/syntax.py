@@ -1985,6 +1985,9 @@ class ParserGenerator:
 
         The same applies for root_data is the root data needs a token value
 
+        The child node list could be empty as well if there is an action
+        defined but no child list definition
+
         :param p: The production
         :param ast_rule: The AST rule string
         :return: None
@@ -3286,7 +3289,7 @@ class ParserLR(ParserGeneratorLR):
     parser works
     """
 
-    def process_T_DECL(self, ast_root):
+    def process_decl_body(self, ast_root):
         """
         This function processes typedef and adds name defined by
         typedef into the current scope. If the name is already
@@ -3295,13 +3298,11 @@ class ParserLR(ParserGeneratorLR):
         :param ast_root: The root of the AST
         :return: Same root
         """
-        # If there is no concrete declaration just return
-        if ast_root.size() == 1:
-            return ast_root
+        symbol_stack = self.symbol_stack
 
         # First check whether typedef in indeed
         # part of the declaration
-        specifier_list = ast_root[0]
+        specifier_list = symbol_stack[-1]
         for specifier in specifier_list:
             if specifier == "T_TYPEDEF":
                 break
@@ -3310,18 +3311,23 @@ class ParserLR(ParserGeneratorLR):
             # then it must be because there is no typedef
             return ast_root
 
-        init_decl_list = ast_root[1]
-        for init_decl in init_decl_list:
-            decl_body = init_decl[0]
-            assert(decl_body == "T_DECL_BODY")
-            assert(decl_body[0] == "T_IDENT")
+        # We can never see an empty list
+        assert(ast_root.size() != 0)
+        # We only process the last one because this function
+        # has already been invoked for the previous ones
+        last_init_decl = ast_root[-1]
+        assert(last_init_decl == "T_INIT_DECL")
 
-            # Obtain the name which must be the first element
-            # of the declaration
-            name = decl_body[0].data
-            if self.add_typedefed_name(name) is False:
-                raise ValueError("Name %s has already been typedef'ed" %
-                                 (name, ))
+        decl_body = last_init_decl[0]
+        assert(decl_body == "T_DECL_BODY")
+        assert(decl_body[0] == "T_IDENT")
+
+        # Obtain the name which must be the first element
+        # of the declaration
+        name = decl_body[0].data
+        if self.add_typedefed_name(name) is False:
+            raise ValueError("Name %s has already been typedef'ed" %
+                             (name, ))
 
         return ast_root
 
@@ -3343,12 +3349,6 @@ class ParserLR(ParserGeneratorLR):
             # Change it to T_TYPEDEF_NAME
             ret_token = Token("T_TYPEDEF_NAME", token.data)
             ret_token.index = token.index
-        elif token.name == "T_LCPAREN":
-            print "Enter scope"
-            self.enter_scope()
-        elif token.name == "T_RCPAREN":
-            print "Leave scope"
-            self.leave_scope()
 
         return ret_token
 
@@ -3380,6 +3380,7 @@ class ParserLR(ParserGeneratorLR):
     REDUCE_ACTION_DICT = {
         "enter_scope": process_enter_scope,
         "leave_scope": process_leave_scope,
+        "add_decl_body": process_decl_body,
     }
 
     def __init__(self, file_name):
@@ -3408,6 +3409,10 @@ class ParserLR(ParserGeneratorLR):
         # parse typedef'ed name - we use a set object
         # to represent names that has been typedef'ed
         self.scope_stack = [set()]
+
+        # These two are used during parsing
+        self.state_stack = None
+        self.symbol_stack = None
 
         return
 
@@ -3545,8 +3550,13 @@ class ParserLR(ParserGeneratorLR):
         """
         tk = CTokenizer.read_file(file_name)
 
-        state_stack = [self.starting_state]
-        symbol_stack = []
+        # Save then into self to allow action call backs
+        # to also access the symbol stack
+        self.state_stack = [self.starting_state]
+        self.symbol_stack = []
+
+        state_stack = self.state_stack
+        symbol_stack = self.symbol_stack
 
         token = tk.get_next_token()
 
@@ -3656,19 +3666,26 @@ class ParserLR(ParserGeneratorLR):
                 goto_tuple = self.parsing_table[(top_state, reduce_to)]
                 assert (goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
 
-                # Process the transformed AST using call backs
-                # defined above
-                callback = ParserLR.REDUCE_ACTION_DICT.get(ast_action, None)
-                # If the call back is defined then we call it with the instance
-                # and also with the AST root
-                if callback is not None:
-                    sn = callback(self, sn)
+                # If the AST action is defined then we run the action
+                if ast_action is not None:
+                    # Process the transformed AST using call backs
+                    # defined above
+                    callback = ParserLR.REDUCE_ACTION_DICT.get(ast_action, None)
+                    # If the call back is defined then we call it with the instance
+                    # and also with the AST root
+                    # Otherwise throw an exception
+                    if callback is not None:
+                        sn = callback(self, sn)
+                    else:
+                        raise ValueError("Could not find action: %s" %
+                                         (ast_action, ))
 
                 if sn.symbol in temp:
                     print sn.symbol
 
                 # Push new non-terminal into the list
                 symbol_stack.append(sn)
+
                 # Push the new symbol after reduction into the list
                 state_stack.append(goto_tuple[1])
             elif action == ParserGeneratorLR.ACTION_ACCEPT:

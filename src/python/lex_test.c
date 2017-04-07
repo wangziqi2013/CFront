@@ -36,7 +36,7 @@ int main(int argc, char **argv, ...) /* int x, y, z; */ {
   // between expression and declaration
   //aa * x;
   {
-    typedef int aa;
+    typedef int *bbb, (*ccc)(void), aa;
     aa * x;
   }
   aa * x;
