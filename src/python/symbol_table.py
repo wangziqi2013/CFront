@@ -135,3 +135,74 @@ class SymbolTable:
         """
         self.scope_stack.pop()
         return
+
+    def get(self, key, ret):
+        """
+        Searches for a given name in the given type. If we could not
+        find the name in all scopes then return the alternative
+
+        :param key: Tuple(type, name)
+        :param ret: Alternative value if name not found
+        :return: Any object
+        """
+        i = len(self.scope_stack)
+        while i >= 0:
+            scope = self.scope_stack[i]
+            # If the key exists then return the value
+            # we do not need get() here since it is
+            # guaranteed to exist
+            if key in scope:
+                return scope[key]
+
+        # If we could not find the value in all scopes
+        # then just return the alternative value
+        return ret
+
+    def __contains__(self, item):
+        """
+        Checks whether a value exists in the symbol table
+
+        :param item: Tuple(type, name)
+        :return: bool
+        """
+        i = len(self.scope_stack)
+        while i >= 0:
+            scope = self.scope_stack[i]
+            if key in scope:
+                return True
+
+        return False
+
+    def __getitem__(self, item):
+        """
+        Returns an item in all scopes if there is one. Note that
+        for this function if the name is not defined for all
+        scopes we need to assert False, and the caller should
+        avoid that
+
+        :param item: Tuple(type, name)
+        :return: Any object
+        """
+        i = len(self.scope_stack)
+        while i >= 0:
+            scope = self.scope_stack[i]
+            if key in scope:
+                return scope[key]
+
+        assert False
+
+    def __setitem__(self, key, value):
+        """
+        This function sets the name in the topmost
+        scope because that is how scope works
+
+        :param key: Tuple(type, name)
+        :param value: Any object
+        :return: None
+        """
+        assert(len(self.scope_stack) != 0)
+        # Use index = -1 to address the topmost scope
+        self.scope_stack[-1][key] = value
+        return
+
+
