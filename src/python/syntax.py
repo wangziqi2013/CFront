@@ -859,6 +859,20 @@ class Production:
 
         return
 
+    def size(self):
+        """
+        Returns the length of the RHS of this production
+
+        The only exception is that if the production is an empty
+        production we return 0 instead of 1
+
+        :return: int
+        """
+        if self.rhs_list[0] == Symbol.get_empty_symbol():
+            return 0
+
+        return len(self.rhs_list)
+
     def prepare_substring_first(self):
         """
         This function prepares all possible substring FIRST
@@ -1162,6 +1176,7 @@ class LRItem:
         # states
         if p.rhs_list[0] == Symbol.get_empty_symbol():
             assert(index == 0)
+            assert(len(p.rhs_list) == 1)
             self.is_empty_production = True
 
         return
@@ -2027,16 +2042,14 @@ class ParserGenerator:
         if len(root) == 0:
             raise ValueError("Invalid AST rule: \"%s\"" %
                              (ast_rule, ))
+        elif action is not None and len(action) == 0:
+            raise ValueError("Must specify an action after the comma (%s)!" %
+                             (ast_rule, ))
 
-        # We allow the optional body and action to be empty string
-        # because this allows us to specify the action without
-        # specifying
-        # a child rule
+        # Since we could have empty body but non-empty action
+        # This is necessary
         if body is not None and len(body) == 0:
             body = None
-
-        if action is not None and len(action) == 0:
-            action = None
 
         # If the root is a RHS node then rename is False
         # Otherwise we rename the root and assign new name
@@ -2082,9 +2095,7 @@ class ParserGenerator:
             p.ast_rule = (rename_flag, root_data)
             return
 
-        # Break it into tokens
-        # Note that if nody is empty string then we could skip this
-        # and use an empty list
+        # This will fall through
         if body is None:
             body = ""
 
@@ -2786,7 +2797,9 @@ class ParserGeneratorLR(ParserGenerator):
                     # as the table entry
                     v = (self.ACTION_REDUCE,
                          lhs.name,
-                         len(item.p.rhs_list),
+                         # Note: If item.p is empty production this should
+                         # be 0 instead of 1
+                         item.p.size(),
                          item.p.ast_rule)
 
                     # If the entry exists and the value is different
@@ -3346,6 +3359,8 @@ class ParserLR(ParserGeneratorLR):
             if self.is_typedefed(token.data) is False:
                 return token
 
+            print "Rename %s to typedef name" % (token.data, )
+
             # Change it to T_TYPEDEF_NAME
             ret_token = Token("T_TYPEDEF_NAME", token.data)
             ret_token.index = token.index
@@ -3372,8 +3387,8 @@ class ParserLR(ParserGeneratorLR):
         self.leave_scope()
         return ast_root
 
-    # This is a dictionary recording actions when we
-    # have constructed the AST when a reduce is performed
+    # This is a dictionary recording actions when a
+    # reduce is performed
     # The key is the action string specified in the AST rule
     # The return value of the call back function will be
     # passed to the parent as the parsed AST
@@ -3439,6 +3454,7 @@ class ParserLR(ParserGeneratorLR):
         print "leave scope"
         assert(len(self.scope_stack) != 0)
         self.scope_stack.pop()
+        print "Scope stack after leaving:", self.scope_stack
 
         return
 
@@ -3560,12 +3576,18 @@ class ParserLR(ParserGeneratorLR):
 
         token = tk.get_next_token()
 
-        temp = set(["T_DECL", "T_TYPEDEF", "T_DECL_BODY", "T_COMPOUND_STMT_BEGIN"])
+        temp = set(["T_DECL", "T_TYPEDEF", "T_DECL_BODY",
+                    "T_COMPOUND_STMT_BEGIN",
+                    "T_COMPOUND_STMT_END",
+                    "T_STMT_LIST",
+                    "T_DECL_LIST"])
 
         while True:
             top_state = state_stack[-1]
 
-            #token = self.preprocess_token(token)
+            token = self.preprocess_token(token)
+            if token.name == "T_IDENT" or token.name == "T_TYPEDEF_NAME":
+                print "Probe using", token.data
             k = (top_state, token.name)
             t = self.parsing_table[k]
             action = t[0]
@@ -3576,7 +3598,7 @@ class ParserLR(ParserGeneratorLR):
                 assert(isinstance(t[1], int))
                 state_stack.append(t[1])
                 symbol_stack.append(token)
-                if token.name == "T_IDENT":
+                if token.name == "T_IDENT" or token.name == "T_TYPEDEF_NAME":
                     print "Shift", token.data
 
                 token = tk.get_next_token()
@@ -3586,6 +3608,9 @@ class ParserLR(ParserGeneratorLR):
                 reduce_to = t[1]
                 reduce_length = t[2]
                 ast_rule = t[3]
+
+                if reduce_to == "compound-statement":
+                    print t, top_state, token.name
 
                 if ast_rule is None:
                     sn = SyntaxNode(reduce_to)
@@ -3608,6 +3633,8 @@ class ParserLR(ParserGeneratorLR):
                     elif len(ast_rule) == 4:
                         child_list = ast_rule[2]
                         ast_action = ast_rule[3]
+                    else:
+                        raise ValueError("Invalid AST rule")
 
                     # This fixes the root node
                     if rename_flag is False:
@@ -3664,7 +3691,7 @@ class ParserLR(ParserGeneratorLR):
                 top_state = state_stack[-1]
 
                 goto_tuple = self.parsing_table[(top_state, reduce_to)]
-                assert (goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
+                assert(goto_tuple[0] == ParserGeneratorLR.ACTION_GOTO)
 
                 # If the AST action is defined then we run the action
                 if ast_action is not None:
@@ -3681,7 +3708,7 @@ class ParserLR(ParserGeneratorLR):
                                          (ast_action, ))
 
                 if sn.symbol in temp:
-                    print sn.symbol
+                    print sn.symbol, goto_tuple[1]
 
                 # Push new non-terminal into the list
                 symbol_stack.append(sn)
