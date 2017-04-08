@@ -72,7 +72,22 @@ class UnionType(BaseType):
         return
 
 class BitFieldType(BaseType):
-    
+    """
+    Bitfield type that has a bit length. The declaration of this
+    type is not included, and should be checked when building
+    the bit field type (e.g. whether the bit length exceeds
+    the declared base length). Sign bit of the bit field is not
+    defined and should not be relied on.
+    """
+    def __init__(self, bit_length):
+        """
+        Initialize the bitfield with a bit length
+
+        :param bit_length: The bit length of the type
+        """
+        BaseType.__init__(self)
+        self.bit_length = bit_length
+        return
 
 #####################################################################
 # class TypeNode
