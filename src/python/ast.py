@@ -1,6 +1,5 @@
 #
-# This file includes routines for transforming the abstract
-# syntax tree
+# ast.py - This file includes the definition of syntax node
 #
 
 class TypeNode:

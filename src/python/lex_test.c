@@ -15,7 +15,7 @@ void f();
  * main() - The entry point of the program
  */
 // Note that declaration list followed by function header is not supported
-int main(int argc, char **argv, ...) /* int x, y, z; */ {
+int main(int argc, char **argv, typedef int what, ...) /* int x, y, z; */ {
   // This is the declaration without an identifier (WTF do we allow this?)
   //static const register long; 
   
