@@ -30,16 +30,19 @@ int main(int argc, char **argv, ...) /* int x, y, z; */ {
     long c;
   } bb, cc;
   
-  //int long register typedef ;
+  int long register typedef ;
   
   // The following three tests whether we could resolve amiguity
   // between expression and declaration
-  //aa * x;
-  {
-    typedef int *bbb, (*ccc)(void), aa;
-    aa * x;
-  }
   aa * x;
+  {
+    typedef int *bbb, (*ccc)(void), aa, (*ddd)(aa);
+    aa * x;
+    (aa)x;
+  }
+  
+  aa3 * x;
+  (aa);
   printf("Hello, world!\n");
   
   a.a = 20UL;
