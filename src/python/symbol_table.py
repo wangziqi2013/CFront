@@ -113,4 +113,25 @@ class SymbolTable:
         Initialize the symbol table's stack
         """
         # This is the stack of scopes
-        self.scope_stack = []
+        # By default there is a global scope at initialization
+        self.scope_stack = [Scope()]
+        return
+
+    def enter_scope(self):
+        """
+        Enters a new scope by pushing a new scope object into the
+        stack of tables
+
+        :return: None
+        """
+        self.scope_stack.append(Scope())
+        return
+
+    def leave_scope(self):
+        """
+        Leave the current scope by popping from the end of the list
+
+        :return: None
+        """
+        self.scope_stack.pop()
+        return
