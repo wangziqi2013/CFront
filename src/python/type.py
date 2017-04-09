@@ -78,18 +78,9 @@ class BaseType:
 
         return
 
-    @staticmethod
-    def get_base_type(spec_node):
-        """
-        Return a base type with the syntax node that specifies the
-        base type and specifiers
-
-        :param spec_node: The T_SPEC_QUAL_LIST or T_DECL_SPEC
-        :return: One of the BaseType node
-        """
-        assert(spec_node.symbol == "T_SPEC_QUAL_LIST" or \
-               spec_node.symbol == "T_DECL_SPEC")
-        
+#####################################################################
+# class IntType, VoidType, StructType, UnionType, BitFieldType
+#####################################################################
 
 class IntType(BaseType):
     """
@@ -207,14 +198,14 @@ class FuncType(BaseType):
     is function parameter type list, which is a list of types, optionally
     with name bindings if names are specified for functions
     """
-    def __init__(self, param_list):
+    def __init__(self, param_type_list):
         """
         Initialize the function type using a parameter list
 
-        :param param_list: A list of parameter types
+        :param param_type_list: A list of parameter types
         """
         BaseType.__init__(self)
-        self.param_list = param_list
+        self.param_type_list = param_type_list
         return
 
 #####################################################################
@@ -276,3 +267,33 @@ class TypeNode:
         self.rule_list += t.rule_list[index:]
 
         return
+
+    def add_derivation(self, spec_body_node):
+        """
+        This function processes a given derivation body
+        and adds them to the rule list, from the highest
+        precedence to the lowest precedence
+
+        :param spec_body_node: T_DECL_BODY or T_ABS_DECL_BODY
+        :return: The identifier, if there is one, or None
+        """
+
+    def add_base_type_node(self, spec_node):
+        """
+        Return a base type TypeNode with the syntax node that
+        specifies the base type and specifiers
+
+        :param spec_node: The T_SPEC_QUAL_LIST or T_DECL_SPEC
+        :return: One of the BaseType node
+        """
+        assert (spec_node.symbol == "T_SPEC_QUAL_LIST" or
+                spec_node.symbol == "T_DECL_SPEC")
+
+        # Whether we have seen "int"
+        integer = False
+        # Whether we have seen "short", "char", "long"
+        length = None
+        for node in spec_node.child_list:
+            name = node.symbol
+            if name == "int":
+                integer = True
