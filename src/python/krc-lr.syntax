@@ -228,6 +228,8 @@ direct-declarator:
     direct-declarator T_LSPAREN constant-expression T_RSPAREN      # $1, T_ARRAY_SUB $3
     direct-declarator T_LPAREN T_RPAREN                            # $1, T_FUNC_CALL T_
     direct-declarator T_LPAREN parameter-type-list T_RPAREN        # $1, T_FUNC_CALL $3
+    # Old-style function declaration; not supported anymore
+    # because functions must have deterministic types
     direct-declarator T_LPAREN identifier-list T_RPAREN            # $1, T_FUNC_CALL $3
  
 # Note that in this AST the order should be reversed

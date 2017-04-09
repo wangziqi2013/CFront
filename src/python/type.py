@@ -335,6 +335,9 @@ class TypeNode:
             elif child_name == "T_FUNC_CALL":
                 sub = spec_body_node[i + 1]
                 if sub.symbol != "T_":
+                    if sub.symbol == "T_IDENT_LIST":
+                        raise TypeError("Old-style function declaration" +
+                                        " no longer supported")
                     raise NotImplementedError("Type for function arguments")
                 else:
                     # Empty list for arguments
