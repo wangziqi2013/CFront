@@ -51,12 +51,28 @@ class BaseType:
         self.type_spec = BaseType.TYPE_SPEC_NONE
         return
 
+    def add_spec_list(self, spec_list):
+        """
+        Add specs from a spec list
+
+        :param spec_list: T_DECL_SPEC OR T_SPEC_QUAL_LIST
+        :return: None
+        """
+        assert(spec_list.symbol == "T_DECL_SPEC" or
+               spec_list.symbol == "T_SPEC_QUAL_LIST")
+
+        # For each node in the spec list, add the specifier
+        for node in spec_list.child_list:
+            self.add_spec(node.symbol)
+
+        return
+
     def add_spec(self, spec_name):
         """
         Add a specifier to the base type.
 
-          (1) If the spec is not defined then assertion fails
-              because this should be regulated by the syntax
+          (1) If the spec is not defined then we ignore it
+              because there might be other information
           (2) If the spec has already been defined then an exception
               is thrown because the input program is wrong
 
@@ -65,8 +81,9 @@ class BaseType:
         :return: None
         """
         # It must be found, otherwise it is implementation error
+        # Mask could be None because there might be other
+        # information such as the base type
         mask = BaseType.TYPE_SPEC_DICT.get(spec_name, None)
-        assert(mask is not None)
 
         # If already defined then throw error
         if (self.type_spec & mask) != 0x0:
@@ -198,14 +215,16 @@ class FuncType(BaseType):
     is function parameter type list, which is a list of types, optionally
     with name bindings if names are specified for functions
     """
-    def __init__(self, param_type_list):
+    def __init__(self, param_type_list, is_vararg):
         """
         Initialize the function type using a parameter list
 
         :param param_type_list: A list of parameter types
+        :param is_vararg: Whether the function is vararg
         """
         BaseType.__init__(self)
         self.param_type_list = param_type_list
+        self.is_vararg = is_vararg
         return
 
 #####################################################################
@@ -275,8 +294,20 @@ class TypeNode:
         precedence to the lowest precedence
 
         :param spec_body_node: T_DECL_BODY or T_ABS_DECL_BODY
-        :return: The identifier, if there is one, or None
+        :return: None
         """
+        assert(spec_body_node.symbol == "T_DECL_BODY" or
+               spec_body_node.symbol == "T_ABS_DECL_BODY")
+
+        i = 0
+        # Make sure it always has
+        while i < len(spec_body_node):
+            child = spec_body_node[i]
+            if child.symbol == "T_PTR":
+                for ptr in child.child_list:
+                    if ptr.symbol == "T_":
+                        self.rule_list.append(PtrType())
+
 
     def add_base_type_node(self, spec_node):
         """
