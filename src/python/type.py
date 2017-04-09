@@ -243,6 +243,18 @@ class TypeNode:
     """
     This class represents base type and type derivation rules
     """
+
+    # This maps base type names to their class instance
+    # This does not include bit field type
+    # These are only types that we could determine
+    BASE_TYPE_DICT = {
+        "T_INT": IntType(BaseType.TYPE_LENGTH_INT),
+        "T_CHAR": IntType(BaseType.TYPE_LENGTH_CHAR),
+        "T_LONG": IntType(BaseType.TYPE_LENGTH_LONG),
+        "T_SHORT": IntType(BaseType.TYPE_LENGTH_SHORT),
+        "T_VOID": VoidType(),
+    }
+
     def __init__(self):
         """
         Initialize the type node with a base type
@@ -308,7 +320,6 @@ class TypeNode:
                spec_body_node.symbol == "T_ABS_DECL_BODY")
 
         i = 0
-        # Make sure it always has
         while i < len(spec_body_node):
             child = spec_body_node[i]
             child_name = child.symbol
@@ -356,62 +367,21 @@ class TypeNode:
         return
 
     @staticmethod
-    def report_conflict_base_type(integer, struct, union, typedef):
+    def report_type_conflict(t1, t2):
         """
-        Reports conflict types there must be 1 and only 1 setting to
-        True in the four arguments.
+        Report a type conflict because we see two different
+        types being specified in declaration
 
-        This function never returns
+        This function throws an exceotion and it never returns
 
-        :param integer: Whether base is integer
-        :param struct: Whether base is struct
-        :param union: Whether base is union
-        :param typedef: Whether base is typedef'ed name
+        :param t1: The first type
+        :param t2: The second type
         :return: None
         """
-        # Exactly two of these could be true
-        assert(int(integer) +
-               int(struct) +
-               int(union) +
-               int(typedef) == 2)
+        raise TypeError("Conflicting types: %s %s" %
+                        (t1.symbol, t2.symbol))
 
-        if integer and struct:
-            raise TypeError("Conflicting types: integer and struct")
-        elif integer and union:
-            raise TypeError("Conflicting types: integer and union")
-        elif integer and typedef:
-            raise TypeError("Conflicting types: integer and typedef'ed type")
-        elif struct and union:
-            raise TypeError("Conflicting types: struct and union")
-        elif struct and typedef:
-            raise TypeError("Conflicting types: struct and typedef'ed type")
-        elif union and typedef:
-            raise TypeError("Conflicting types: union and typedef'ed type")
-        else:
-            assert False
-
-    @staticmethod
-    def report_conflict_integer_length(char, short, long):
-        """
-        This function repoerts conflict integer length, and
-        it never returns
-
-        :param char: Whether char is specified
-        :param short: Whether short is specified
-        :param long: Whether long is specified
-        :return: None
-        """
-        assert(int(char) + int(short) + int(long) == 2)
-        if char and short:
-            raise ValueError("Conflicting integer types: char and short")
-        elif char and long:
-            raise ValueError("Conflicting integer types: char and long")
-        elif short and long:
-            raise ValueError("Conflicting integer types: short and long")
-        else:
-            assert False
-
-    def add_base_type_node(self, spec_node):
+    def add_base_type_node(self, symbol_table, spec_node):
         """
         Return a base type TypeNode with the syntax node that
         specifies the base type and specifiers
@@ -422,32 +392,44 @@ class TypeNode:
         assert (spec_node.symbol == "T_SPEC_QUAL_LIST" or
                 spec_node.symbol == "T_DECL_SPEC")
 
-        # The following should be
-        # Whether we have seen "int"
-        integer = False
-        # Whether we have seen struct, union, and typedef
-        struct = False
-        union = False
-        typedef = False
-
-        # This points to the base node data (i.e. for
-        # struct union and typedef this is the identifier)
-        data = None
-
-        # This is for changing integer type
-        long = False
-        short = False
-        char = False
+        # This points to the base type node
+        base_type_node = None
+        # Whether we have seen short or long
+        ignore_int = False
 
         for node in spec_node.child_list:
             name = node.symbol
             if name == "T_INT":
-                integer = True
-                if struct or union or typedef:
-                    TypeNode.report_conflict_base_type(integer,
-                                                       struct,
-                                                       union,
-                                                       typedef)
-            elif name == "T_LONG":
-                integer = True
-                long = True
+                # If already seen short or long then
+                # skip this because it is implied
+                if ignore_int is True:
+                    continue
+
+                if base_type_node is not None:
+                    self.report_type_conflict(node, base_type_node)
+                base_type_node = node
+            elif name == "T_CHAR" or \
+                 name == "T_VOID" or \
+                 name == "T_STRUCT" or \
+                 name == "T_UNION" or \
+                 name == "T_TYPEDEF_NAME":
+                if base_type_node is not None:
+                    self.report_type_conflict(node, base_type_node)
+                base_type_node = node
+            elif name == "T_LONG" or name == "T_SHORT":
+                ignore_int = True
+                # Also if we have seen INT just ignore it
+                # and update the base type to short or long
+                if base_type_node is not None and \
+                   base_type_node.symbol != "T_INT"
+                    self.report_type_conflict(node, base_type_node)
+                base_type_node = node
+
+        type_name = base_type_node.symbol
+        type_obj = self.BASE_TYPE_DICT.get(type_name, None)
+        if type_obj is None:
+            if type_name == "T_TYPEDEF_NAME":
+                # Expand the typedef name into the type
+                self.expand_typedef_name(symbol_table,
+                                         base_type_node.data)
+
