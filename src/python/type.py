@@ -202,6 +202,7 @@ class ArrayType(BaseType):
     def __init__(self, array_size):
         """
         Initialize the array type using array size
+
         :param array_size: The size of the array; Could be None
                            if size is not known
         """
@@ -303,11 +304,46 @@ class TypeNode:
         # Make sure it always has
         while i < len(spec_body_node):
             child = spec_body_node[i]
-            if child.symbol == "T_PTR":
+            child_name = child.symbol
+            if child_name == "T_PTR":
+                # There might be multiple levels of pointers
+                # We add specifier for each level
                 for ptr in child.child_list:
-                    if ptr.symbol == "T_":
-                        self.rule_list.append(PtrType())
+                    ptr_type = PtrType()
+                    # Then it must be a specifier list
+                    if ptr.symbol != "T_":
+                        ptr_type.add_spec_list(ptr)
 
+                    self.rule_list.append(ptr_type)
+
+                # It only takes one slot
+                i += 1
+            elif child_name == "T_IDENT":
+                # It also only takes one slot
+                i += 1
+            elif child_name == "T_ARRAY_SUB":
+                sub = spec_body_node[i + 1]
+
+                if sub.symbol != "T_":
+                    raise NotImplementedError("Static evaluation of array sizes")
+                else:
+                    array_type = ArrayType()
+
+                self.rule_list.append(array_type)
+                # It takes two slots
+                i += 2
+            elif child_name == "T_FUNC_CALL":
+                sub = spec_body_node[i + 1]
+                if sub.symbol != "T_":
+                    raise NotImplementedError("Type for function arguments")
+                else:
+                    # Empty list for arguments
+                    func_type = FuncType([], [])
+            else:
+                # Do not know what is the type
+                assert False
+
+        return
 
     def add_base_type_node(self, spec_node):
         """
