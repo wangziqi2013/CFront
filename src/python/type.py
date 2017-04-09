@@ -43,6 +43,13 @@ class BaseType:
         "T_SIGNED": TYPE_SPEC_SIGNED,
     }
 
+    # This defines the length of integers
+    # Note that the length of long is 8 rather than 4
+    TYPE_LENGTH_CHAR = 1
+    TYPE_LENGTH_SHORT = 2
+    TYPE_LENGTH_INT = 4
+    TYPE_LENGTH_LONG = 8
+
     def __init__(self):
         """
         Initialize the base type attributes which are shared between
@@ -348,6 +355,62 @@ class TypeNode:
 
         return
 
+    @staticmethod
+    def report_conflict_base_type(integer, struct, union, typedef):
+        """
+        Reports conflict types there must be 1 and only 1 setting to
+        True in the four arguments.
+
+        This function never returns
+
+        :param integer: Whether base is integer
+        :param struct: Whether base is struct
+        :param union: Whether base is union
+        :param typedef: Whether base is typedef'ed name
+        :return: None
+        """
+        # Exactly two of these could be true
+        assert(int(integer) +
+               int(struct) +
+               int(union) +
+               int(typedef) == 2)
+
+        if integer and struct:
+            raise TypeError("Conflicting types: integer and struct")
+        elif integer and union:
+            raise TypeError("Conflicting types: integer and union")
+        elif integer and typedef:
+            raise TypeError("Conflicting types: integer and typedef'ed type")
+        elif struct and union:
+            raise TypeError("Conflicting types: struct and union")
+        elif struct and typedef:
+            raise TypeError("Conflicting types: struct and typedef'ed type")
+        elif union and typedef:
+            raise TypeError("Conflicting types: union and typedef'ed type")
+        else:
+            assert False
+
+    @staticmethod
+    def report_conflict_integer_length(char, short, long):
+        """
+        This function repoerts conflict integer length, and
+        it never returns
+
+        :param char: Whether char is specified
+        :param short: Whether short is specified
+        :param long: Whether long is specified
+        :return: None
+        """
+        assert(int(char) + int(short) + int(long) == 2)
+        if char and short:
+            raise ValueError("Conflicting integer types: char and short")
+        elif char and long:
+            raise ValueError("Conflicting integer types: char and long")
+        elif short and long:
+            raise ValueError("Conflicting integer types: short and long")
+        else:
+            assert False
+
     def add_base_type_node(self, spec_node):
         """
         Return a base type TypeNode with the syntax node that
@@ -359,11 +422,32 @@ class TypeNode:
         assert (spec_node.symbol == "T_SPEC_QUAL_LIST" or
                 spec_node.symbol == "T_DECL_SPEC")
 
+        # The following should be
         # Whether we have seen "int"
         integer = False
-        # Whether we have seen "short", "char", "long"
-        length = None
+        # Whether we have seen struct, union, and typedef
+        struct = False
+        union = False
+        typedef = False
+
+        # This points to the base node data (i.e. for
+        # struct union and typedef this is the identifier)
+        data = None
+
+        # This is for changing integer type
+        long = False
+        short = False
+        char = False
+
         for node in spec_node.child_list:
             name = node.symbol
-            if name == "int":
+            if name == "T_INT":
                 integer = True
+                if struct or union or typedef:
+                    TypeNode.report_conflict_base_type(integer,
+                                                       struct,
+                                                       union,
+                                                       typedef)
+            elif name == "T_LONG":
+                integer = True
+                long = True
