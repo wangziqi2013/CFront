@@ -9,7 +9,7 @@ from common import *
 import sys
 import json
 from lex import CTokenizer, Token
-from ast import walk_ast, SyntaxNode
+from ast import SyntaxNode
 
 #####################################################################
 # class Symbol
@@ -3810,7 +3810,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         root_symbol = pg.parse(token_file_name)
 
         # This one tests AST transformation
-        root_symbol = walk_ast(root_symbol)
+        #root_symbol = walk_ast(root_symbol)
         assert(root_symbol is not None)
 
         # Print the tree after transformation
