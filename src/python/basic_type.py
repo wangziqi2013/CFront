@@ -42,16 +42,20 @@ class IntegerType(BaseType):
     type is an attribute of the class rather than a different class. This makes adding
     more integer types easier
     """
-    def __init__(self, length):
+    def __init__(self, length, signed):
         """
         Initialize the integer type
         
         :param length: The byte length of the integer type 
+        :param signed: Boolean flag to indicate whether the type if signed or not
         """
         # Calls the base class constructor first
         super(self.__class__, self).__init__()
         # This is the size of the integer type
         self.length = length
+        # Whether the integer type is signed or not
+        self.signed = signed
+
         return
 
     def sizeof(self):
@@ -60,6 +64,21 @@ class IntegerType(BaseType):
         :return: int
         """
         return length
+
+#####################################################################
+# class StaticExpression
+#####################################################################
+
+class StaticExpression:
+    """
+    This class is used to evaluate static expressions. For static expression we only allow
+    constant integer value and operators, or sizeof() operator with a type.
+    """
+    def __init__(self):
+        """
+        Prevents initializing this class
+        """
+        raise RuntimeError("Please do not instantiate class StaticExpression")
 
 
 
