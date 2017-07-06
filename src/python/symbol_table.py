@@ -28,27 +28,37 @@ class Scope:
     TABLE_TYPE_INDEX_END = 3
 
     # The following defines the type of the scope
-    SCOPE_TYPE_INDEX_BEGIN = 0
+    SCOPE_TYPE_INDEX_BEGIN = 100
     # This is the global scope (top level scope)
-    SCOPE_TYPE_GLOBAL = 0
+    SCOPE_TYPE_GLOBAL = 100
     # Functional level
-    SCOPE_TYPE_FUNCTION = 1
+    SCOPE_TYPE_FUNCTION = 101
     # Local scope inside a function
-    SCOPE_TYPE_LOCAL = 2
+    SCOPE_TYPE_LOCAL = 102
     # Inside a struct or union definition because name conflict
     # can still occur at this level
-    SCOPE_TYPE_STRUCT = 3
-    SCOPE_TYPE_INDEX_END = 3
+    SCOPE_TYPE_STRUCT = 103
+    SCOPE_TYPE_INDEX_END = 103
 
-    def __init__(self):
+    def __init__(self, scope_type):
         """
         Initialize all mapping structures
+        
+        :param scope_type: Enum constants defined above
         """
         # We put them in a list such that we could
         # use an index to access them rather
         # than implement different routines for accessing
         # different tables
         self.symbols = [{}, {}, {}, {}]
+
+        # The scope type must be a valid one
+        assert(self.SCOPE_TYPE_INDEX_BEGIN <=
+               scope_type <=
+               self.SCOPE_TYPE_INDEX_END)
+
+        # Save the type of the scope for later inspection
+        self.scope_type = scope_type
 
         return
 
