@@ -204,7 +204,7 @@ class SymbolTable:
         :param ret: Alternative value if name not found
         :return: Any object
         """
-        i = len(self.scope_stack)
+        i = len(self.scope_stack) - 1
         while i >= 0:
             scope = self.scope_stack[i]
             # If the key exists then return the value
@@ -212,6 +212,8 @@ class SymbolTable:
             # guaranteed to exist
             if key in scope:
                 return scope[key]
+            else:
+                i -= 1
 
         # If we could not find the value in all scopes
         # then just return the alternative value
@@ -330,6 +332,8 @@ class ScopeTestCase(DebugRunTestCaseBase):
         assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 789)
         assert((Scope.TABLE_TYPE_IDENT, "Global Ident") in st)
         assert((Scope.TABLE_TYPE_IDENT, "Global Ident 2") not in st)
+        assert(st.get((Scope.TABLE_TYPE_IDENT, "Global Ident"), None) == 123)
+        assert (st.get((Scope.TABLE_TYPE_IDENT, "Global Ident 2"), None) is None)
 
         st.leave_scope()
         st.leave_scope()
