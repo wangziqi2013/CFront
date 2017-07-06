@@ -3,6 +3,8 @@
 #                   for both types and identifiers
 #
 
+from debug import dbg_printf, Argv, DebugRunTestCaseBase
+
 #####################################################################
 # class Scope
 #####################################################################
@@ -250,5 +252,27 @@ class SymbolTable:
         # Use index = -1 to address the topmost scope
         self.scope_stack[-1][key] = value
         return
+
+#####################################################################
+# Unit test cases
+#####################################################################
+
+class ScopeTestCase(DebugRunTestCaseBase):
+    """
+    Unit tests for symbol table
+    """
+    def __init__(self):
+        """
+        This function calls the base class constructor
+        """
+        super(self.__class__, self).__init__()
+
+        # This is required for running the test case
+        argv = Argv()
+        # This calls the base class method and hence runs the test case
+        self.run_tests(argv)
+
+        return
+
 
 
