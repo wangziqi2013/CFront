@@ -27,11 +27,17 @@ class Scope:
     TABLE_TYPE_IDENT = 3
     TABLE_TYPE_INDEX_END = 3
 
+    # The following defines the type of the scope
     SCOPE_TYPE_INDEX_BEGIN = 0
+    # This is the global scope (top level scope)
     SCOPE_TYPE_GLOBAL = 0
-    SCOPE_TYPE_UNION = 1
-    SCOPE_TYPE_TYPEDEF = 2
-    SCOPE_TYPE_IDENT = 3
+    # Functional level
+    SCOPE_TYPE_FUNCTION = 1
+    # Local scope inside a function
+    SCOPE_TYPE_LOCAL = 2
+    # Inside a struct or union definition because name conflict
+    # can still occur at this level
+    SCOPE_TYPE_STRUCT = 3
     SCOPE_TYPE_INDEX_END = 3
 
     def __init__(self):
