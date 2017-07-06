@@ -1,0 +1,760 @@
+#
+# debug.py - This file contains debugging routines for conducting unit tests
+#            and functional tests
+#
+
+def dbg_printf(format, *args, **kwargs):
+    """
+    C-Style function that writes debugging output to the terminal
+
+    Keyword argument:
+      "header" - Specifies whether the header will be printed. Header
+                 will be omitted if this is set to False
+      "newline" - Whether to append a new line after each call
+
+    :param format: The format string
+    :param args: Arguments
+    :return: None
+    """
+    # Do not print anything annoying
+    if debug_flag is False:
+        return
+
+    frame = inspect.currentframe()
+    prev_frame = frame.f_back
+    code = prev_frame.f_code
+    prev_name = code.co_name
+
+    # Make it more human readable by replacing the name with
+    # an easy to understand one
+    if prev_name == "<module>":
+        prev_name = "[Top Level Module]"
+    else:
+        prev_name += "()"
+
+    # If the header is not specified as a keyword argument
+    # or it has value True then we print the header
+    if "header" not in kwargs or kwargs["header"] is True:
+        # This is the prologue of the printing
+        print_content = "%-28s: " % (prev_name,)
+    else:
+        # Header is specified and it is False
+        print_content = ""
+
+    # This is the body of printing
+    print_content += (format % tuple(args))
+    if dbg_printf_print_to_logger_flag is False:
+        # Write the body into stderr followed by a new line
+        sys.stderr.write(print_content)
+
+        if "newline" not in kwargs or \
+                        kwargs["newline"] is True:
+            sys.stderr.write("\n")
+    else:
+        debug_logger.debug(print_content)
+
+    return
+
+
+# Test whether it works
+if dbg_printf_print_to_logger_flag is True:
+    dbg_printf("This is a test")
+    dbg_printf("Finished initializing the debug printing module")
+
+
+#####################################################################
+# Argument Handling
+#####################################################################
+
+class Argv:
+    """
+    Helps with argument vector processing
+    """
+
+    def __init__(self, argv=sys.argv[1:]):
+        """
+        This function processes argv and decomposes into two parts:
+          (1) Key-value pairs, specified by -key=val or --key=val
+              For non value-carrying flags the value is None
+          (2) Argument lists, i.e. those that are not key value pairs
+              They appear in the same order as in the original command
+              line
+          (3) Everything after -- is considered as arguments
+        """
+        # This is the key value dict with value optionally being present
+        self.key_value_dict = {}
+        # This is the list of arguments which
+        self.arg_list = []
+
+        # If this is true then we do not distinguish between arguments and
+        # key value pairs and just push everything
+        push_all = False
+        for arg in argv:
+            # If we have seen '--' in the input stream then we push everything
+            # remains in the argv
+            if arg == '--':
+                push_all = True
+                continue
+
+            # If we have seen '--' then just push it back and loop
+            if push_all is True:
+                self.arg_list.append(arg)
+                continue
+
+            # Otherwise check whether it is a kv pair
+            is_kv_pair = False
+            if arg.startswith('--'):
+                is_kv_pair = True
+                arg = arg[2:]
+            elif arg.startswith('-'):
+                is_kv_pair = True
+                arg = arg[1:]
+
+            # if it is a kv pair then we process
+            if is_kv_pair is True:
+                # Only split the leftmost occurrence of '=' if there is one
+                kv_pair = arg.split('=', 1)
+
+                # We do allow duplicated flags, and prepares a list for it
+                if kv_pair[0] not in self.key_value_dict:
+                    self.key_value_dict[kv_pair[0]] = []
+
+                if len(kv_pair) == 1:
+                    # If there is no equality sign then we know there is no
+                    # value and only a single flag
+                    self.key_value_dict[kv_pair[0]].append(None)
+                else:
+                    # Otherwise make a key value mapping
+                    self.key_value_dict[kv_pair[0]].append(kv_pair[1])
+            else:
+                self.arg_list.append(arg)
+
+        return
+
+    def has_key(self, key):
+        """
+        Whether a flag exists
+
+        :param key: The flag name, without - or --
+        :return: bool
+        """
+        return key in self.key_value_dict
+
+    def has_keys(self, *args):
+        """
+        Whether any of the key in the args list exists
+
+        :param args: A list of keys
+        :return: bool
+        """
+        for key in args:
+            if self.has_key(key) is True:
+                return True
+
+        return False
+
+    def get_value(self, key):
+        """
+        This function returns the value list for key specified in the
+        argument
+
+        :param key: The flag name
+        :return: list of objects or None if not found
+        """
+        return self.key_value_dict.get(key)
+
+    def get_all_values(self, *args):
+        """
+        This function returns all values associated with all keys in the
+        variable length arguments. The result is a concatenated list
+        of all values with all keys.
+
+        If one or more of the keys do not exist we simply ignore them
+
+        :param args: A list of keys
+        :return: A list of value strings and possibly empty list
+        """
+        ret_list = []
+        for key in args:
+            ret = self.get_value(key)
+            if ret is not None:
+                ret_list += ret
+
+        return ret_list
+
+
+#####################################################################
+# Unit Test Framework (Dependency Testing)
+#####################################################################
+
+# This is the name of the dependency set
+DEP_SET_NAME = "dep_set"
+# This is the list of command line options that is required
+# to start the test case
+OPTIONS_LIST_NAME = "options_list"
+DEP_SET_COPY_NAME = "dep_set_copy"
+# If this is set to True then the function has already
+# been tested. If it is False then we know the function
+# is a testing function and is waiting to be run
+TEST_FINISH_FLAG_NAME = "test_finish_flag"
+
+
+class TestNode:
+    """
+    This class is used as a function decorator with parameters.
+
+    It adds attributes to function objects with a flag indicating
+    testing functions, and also with a dependency set which
+    represents tests that must be run prior to the decorated one
+
+    The usage of this class as function decorator is like this:
+
+        (1) Decorating instance functions
+
+        # Use string name of dependencies
+        @TestNode("dep1", "dep2", "dep3")
+        def test_some_feature(self, *args):
+            ...
+            return
+
+        (2) Decorating static functions
+
+        # Note that we must put @staticmethod on top of this
+        # decorator because static method will add another level
+        # of wrapper
+        @staticmethod
+        @TestNode("dep1, dep2", "dep3")
+        def test_static_function(*args):
+            ...
+            return
+
+        (3) Adding mandatory command line argument handling
+
+        This instance also allows the test to have required command
+        line arguments using keyword argument "options" which is
+        a list:
+
+        @TestNode("dep", options=["--option1", "-a"])
+        @def test_options(*args, **kwargs):
+            ...
+            return
+
+        This will make --option1 and --option2 become the mandatory
+        argument for the test case, and a message will be printed
+        if any of them are not present. If they are present then
+        the test case function will be called, and "option1" and
+        "option2" will be passed as keyword arguments in a dict
+        to the function. If the test case uses this feature then
+        it must have either **kwarg or separate keywords in its
+        argument declaration.
+
+        Note that the dash should NOT be included as part of the 
+        option specification. Double and single dash does not make
+        any difference in our framework
+
+        (4) Adding optional command line argument handling
+
+        Adding a question mark "?" before the argument text will
+        make it optional. This potentially disallows using any string
+        beginning with "?" as the argument handling.
+
+        @TestNode("dep", options=["option1", "?option2"])
+        @def test_options(*args, **kwargs):
+            ...
+            return
+
+        If option2 is not available in command line arguments then
+        the value in kwargs will be None, still the key will be there
+
+    The test case function must satisfy the following requirements:
+
+        (1) Its method name must begin with "test_" to make it more readable
+        (2) Its function argument should expect:
+            2.1 An argv instance for extracting command line arguments
+            2.2 If option list is used in the decorator then also expect
+                a **kwargs (either expanded or simply **kwargs)
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the instance with a callable object and a
+        list of dependencies
+
+        :param args: A list of function names that this test node
+                     depends on
+                     Note hat the function itself must also
+                     identify a test name
+        :param kwargs: Keyword arguments that specifies other
+                       attributes of the test node
+        """
+        # Note that we do not unpack args since set() requires
+        # a list as the argument
+        self.dep_set = set(args)
+
+        # If options is in the kwarg then get its value
+        # Otherwise set it to None
+        self.options_list = kwargs.get("options", None)
+        if self.options_list is not None:
+            if isinstance(self.options_list, list) is False:
+                raise TypeError("keyword argument \"options\" " +
+                                "must be a list")
+
+        return
+
+    # This is the error message when an attribute we would like
+    # to add already exist in the function's attribute entries
+    ATTRIBUTE_ALREADY_EXIST_ERROR = \
+        "Attribute %s is already present"
+    STATIC_METHOD_ERROR = "Please put this under @staticmethod decorator"
+
+    def __call__(self, func):
+        """
+        Call back function when the object is called like
+        a function
+
+        This makes the object a callable object
+
+        :param func: The function object being decorated
+        :return: What the function returns
+        """
+        # Special process for staticmethod because this is a common
+        # error (note that staticmethod's type will change after the function
+        # definition ends)
+        if type(func) is staticmethod:
+            raise TypeError(TestNode.STATIC_METHOD_ERROR)
+
+        # First check whether the dep_set has already been set
+        # if it is present then just raise an error
+        if hasattr(func, DEP_SET_NAME) is True:
+            raise AttributeError(self.ATTRIBUTE_ALREADY_EXIST_ERROR %
+                                 (DEP_SET_NAME,))
+
+        if hasattr(func, TEST_FINISH_FLAG_NAME) is True:
+            raise AttributeError(self.ATTRIBUTE_ALREADY_EXIST_ERROR %
+                                 (TEST_FINISH_FLAG_NAME,))
+
+        # Otherwise just associate the function with the dependency
+        # set we initialize this class instance with
+        setattr(func, DEP_SET_NAME, self.dep_set)
+
+        # Also set the testing finished flag to False to indicate:
+        #   (1) The function is a testing function
+        #   (2) The function is ready to be run
+        setattr(func, TEST_FINISH_FLAG_NAME, False)
+
+        # Set the options list to be also an attribute of the function
+        setattr(func, OPTIONS_LIST_NAME, self.options_list)
+
+        # We do not return a wrapper as normally most decorators
+        # do. Instead we return the original function because all
+        # information has been set as its attributes
+        return func
+
+
+class DebugRunTestCaseBase:
+    """
+    This class serves as the base class of all test cases that require
+    certain dependencies to run.
+
+    For example, if there are three cases, test_1, test_2 and test_3,
+    where test_2 should be run after test_1 and test_3, then in the normal
+    configuration, when we try to enumerate all functions beginning with
+    "test_", the order returned by the interpret is undefined. Therefore
+    we associate dependency information with test cases, and do a topological
+    sorting in the runtime. Those with zero dependencies are executed first,
+    and then removed from the dependency list of other test cases.
+
+    To use this class, please read the following instructions:
+
+      (1) All test cases should begin with "test_" in order to be recognized
+          as a testing function
+      (2) In order to establish dependencies please use the decorator
+          @TestNode(dep1, dep2, ...) where dep1, dep2, ... are string names
+          of testing functions that should be executed before it. The dependency
+          relation is transitive, so if dep2 depends on dep1 and dep3 depends
+          on dep2, we could just write @TestNode("dep2") on dep3 and
+          @TestNode("dep1") on dep2.
+      (3) If the testing function is also a static function, please put
+          @staticmethod decorator above @TestNode, because @staticmethod
+          will add another level of wrapper class which does not play
+          well with @TestNode()
+      (4) If there is a dependency loop, then none of those testing functions
+          in the loop will be executed. This will be detected by the
+          verification function at the end of an entire run, and an error
+          will be thrown if some testing functions do not get executed
+      (5) The same instance could be reused, i.e. the dependency list
+          and execution status will be restored after all test cases have
+          been run successfully. However in case of an error this is not
+          guaranteed to happen
+    """
+
+    COULD_NOT_FIND_ATTRIBUTE_ERROR = "Could not find attribute: %s"
+
+    def __init__(self):
+        """
+        Empty initializer. All initialization should be done in
+        the derived class
+        """
+        return
+
+    @staticmethod
+    def is_instance_method(func):
+        """
+        Check whether a callable object is an instance method by
+        checking its __self__ and __func__ attributes
+
+        Also this function always returns False for objects without
+        a __call__ method
+
+        :param func: Any object
+        :return: boolean
+        """
+        # Must check whether it is a callable object
+        if hasattr(func, "__call__") is False:
+            return False
+
+        return hasattr(func, "__func__") and \
+               hasattr(func, "__self__")
+
+    def backup_settings(self):
+        """
+        Backup all settings before running the test case because
+        the dependency set will be altered during the testing
+
+        :return: None
+        """
+        for func_name in dir(self):
+            if func_name.startswith("test_") is False:
+                continue
+
+            func = getattr(self, func_name, None)
+            assert (func is not None)
+
+            if DebugRunTestCaseBase.is_instance_method(func) is True:
+                func = getattr(func, "__func__", None)
+                assert (func is not None)
+
+            if hasattr(func, TEST_FINISH_FLAG_NAME) is False:
+                continue
+            elif hasattr(func, DEP_SET_NAME) is False:
+                continue
+
+            dep_set = getattr(func, DEP_SET_NAME, None)
+            assert (dep_set is not None)
+
+            # Make a shallow copy of the set. Since its members are strings
+            # shallow copy does not matter
+            dep_set_copy = dep_set.copy()
+
+            # And then make it an attribute of the underlying
+            # function no matter whether it is static or instance
+            setattr(func, DEP_SET_COPY_NAME, dep_set_copy)
+
+        return
+
+    def restore_settings(self):
+        """
+        This function restores all settings that are backup up
+        before the testing is being run. This prepares a testing
+        instance that could be run again
+
+        :return: None
+        """
+        for func_name in dir(self):
+            if func_name.startswith("test_") is False:
+                continue
+
+            func = getattr(self, func_name, None)
+            assert (func is not None)
+
+            if DebugRunTestCaseBase.is_instance_method(func) is True:
+                func = getattr(func, "__func__", None)
+                assert (func is not None)
+
+            if hasattr(func, TEST_FINISH_FLAG_NAME) is False:
+                continue
+            elif hasattr(func, DEP_SET_NAME) is False:
+                continue
+
+            # Retrieve the copied version. Since it is a duplication
+            # rather than reference to the existing dep set, we
+            # could directly set it as the current dep set and
+            # just discard the dep set. The next round of test case
+            # run will duplicate it agian
+            dep_set_copy = getattr(func, DEP_SET_COPY_NAME, None)
+            assert (dep_set_copy is not None)
+
+            # Set the attribute directly by replacing the previous one
+            setattr(func, DEP_SET_NAME, dep_set_copy)
+
+            # And then remove the copy to avoid further problem
+            delattr(func, DEP_SET_COPY_NAME)
+
+            # At last also need to reset the test finished flag to False
+            setattr(func, TEST_FINISH_FLAG_NAME, False)
+
+        return
+
+    def verify_test_run(self):
+        """
+        Verify that all tests have been run by checking whether
+        all flags are False and whether all dependency sets are
+        empty. If not raise error
+
+        :return: None
+        """
+        dbg_printf("Verifying that all tests complete properly...")
+
+        for func_name in dir(self):
+            # Do not process thoese that do not start with "test_"
+            if func_name.startswith("test_") is False:
+                continue
+
+            func = getattr(self, func_name, None)
+            assert (func is not None)
+
+            # For instance methods we need to get one more level
+            # into the object because the real function object is
+            # wrapped
+            if DebugRunTestCaseBase.is_instance_method(func) is True:
+                func = getattr(func, "__func__", None)
+                # We know this is true because we use __func__ to
+                # check whether it is an instance method
+                assert (func is not None)
+
+            # Skip those that do not have required attributes
+            if hasattr(func, TEST_FINISH_FLAG_NAME) is False:
+                continue
+            elif hasattr(func, DEP_SET_NAME) is False:
+                continue
+
+            flag = getattr(func, TEST_FINISH_FLAG_NAME, None)
+            assert (flag is not None)
+            if flag is False:
+                raise RuntimeError("Function %s is not run during testing" %
+                                   (func_name,))
+
+            dep_set = getattr(func, DEP_SET_NAME, None)
+            assert (dep_set is not None)
+            if len(dep_set) != 0:
+                raise RuntimeError(("Dependency set for function %s" +
+                                    " is not empty!") %
+                                   (func_name,))
+
+        return
+
+    def choose_next_test(self):
+        """
+        This function builds a dependency graph by performing topological
+        sort on nodes. It chooses the next test function to run by selecting
+        those functions that satisfy the following properties:
+
+        :return: A pair attr_name, func
+                 The second element is a function object, either bound or
+                 not bounded. The first element is the name of the function
+
+                 None if all tests are run
+        """
+        for attr_name in dir(self):
+            # Skip those that are not test_
+            if attr_name.startswith("test_") is not True:
+                continue
+
+            # This is the function object we are working on
+            func = getattr(self, attr_name, None)
+            assert (func is not None)
+
+            # Check whether the test has been finished, or whether
+            # this is a testing function. If not then skip them
+            test_finished_flag = getattr(func, TEST_FINISH_FLAG_NAME, None)
+            if test_finished_flag is None:
+                continue
+            elif test_finished_flag is True:
+                continue
+
+            # Then get its dependency set, and we need to choose the one
+            # with an empty dep set
+            dep_set = getattr(func, DEP_SET_NAME, None)
+            if dep_set is None:
+                raise AttributeError(self.COULD_NOT_FIND_ATTRIBUTE_ERROR %
+                                     (DEP_SET_NAME,))
+
+            # Choose the one that has no dependency
+            if len(dep_set) == 0:
+                return attr_name, func
+
+        return "[end of test]", None
+
+    def finish_test(self, func_name):
+        """
+        This function marks the function as finished, and also remove
+        it from all dependants
+
+        :param func_name: The name of the function
+        :return: None
+        """
+        # First check whether there is such function object
+        if hasattr(self, func_name) is False:
+            raise AttributeError(self.COULD_NOT_FIND_ATTRIBUTE_ERROR %
+                                 (func_name,))
+
+        # This might be an instance method since we use instance as
+        # argument to getattr(), so if this is an instance method
+        # we need to resolve its underlying function
+        func = getattr(self, func_name)
+        # For bound methods, __func__ is the unbounded function
+        # and __self__ is the reference to the instance object
+        if DebugRunTestCaseBase.is_instance_method(func) is True:
+            func = getattr(func, "__func__", None)
+            assert (func is not None)
+
+        # Then check whether the function has two attributes
+        if hasattr(func, TEST_FINISH_FLAG_NAME) is False:
+            raise AttributeError(self.COULD_NOT_FIND_ATTRIBUTE_ERROR %
+                                 (TEST_FINISH_FLAG_NAME,))
+        elif hasattr(func, DEP_SET_NAME) is False:
+            raise AttributeError(self.COULD_NOT_FIND_ATTRIBUTE_ERROR %
+                                 (DEP_SET_NAME,))
+
+        # Set the test finished flag to True
+        setattr(func, TEST_FINISH_FLAG_NAME, True)
+
+        # Next for all testing function that has not been completed
+        # remove the function just finished from its dependency set
+        for attr in dir(self):
+            if attr.startswith("test_") is False:
+                continue
+
+            func = getattr(self, attr)
+            if hasattr(func, TEST_FINISH_FLAG_NAME) is False:
+                continue
+            elif hasattr(func, DEP_SET_NAME) is False:
+                continue
+            elif getattr(func, TEST_FINISH_FLAG_NAME) is True:
+                # Also filter out those who has finished
+                continue
+
+            # Then get dependency set
+            dep_set = getattr(func, DEP_SET_NAME, None)
+            assert (dep_set is not None)
+
+            # Remove the function name as a dependency in
+            # the set
+            if func_name in dep_set:
+                dep_set.remove(func_name)
+
+        return
+
+    @staticmethod
+    def get_options(func, argv):
+        """
+        This function checks whether the given method should be run
+        based on the command line argument requirement recorded as
+        its attributes.
+
+        If the requirements are satisfied then return the kwarg argument
+        containing option keys and values (possibly be None if the argument
+        is declared optional) and the given function object will be called. 
+        Otherwise if any of the mandatory argument is not found we
+        prints the reason to inform the user and then return None
+
+        Note that even a test case is not run for this reason
+        we still mark it as having been scheduled because this
+        should not prevent later test cases from running (so later 
+        test cases should also declare the same argument if it depends on
+        the result of the current test case)
+
+        :param func: The function object to be run
+        :param argv: The argument vector
+        :return: dict object as **kwargs if validation succeeds. 
+                 None otherwise
+        """
+        # This is either None or a list of options
+        options_list = getattr(func, OPTIONS_LIST_NAME)
+        # If it is None then there is no options required for
+        # running this test case
+        if options_list is None:
+            return {}
+
+        # This is the return value if validation succeeds
+        # Otherwise we return None and this is not used
+        ret = {}
+
+        for opt in options_list:
+            # Check whether it is optional argument
+            if opt[0] == '?':
+                optional = True
+                opt = opt[1:]
+            else:
+                optional = False
+
+            if argv.has_keys(opt) is False:
+                if optional is False:
+                    if len(opt) == 1:
+                        text = "-" + opt
+                    else:
+                        text = "--" + opt
+
+                    dbg_printf("Please specify %s to run this test case",
+                               text)
+
+                    # Do not break or return here because we need to
+                    # check and print them all
+                    ret = None
+                    break
+                else:
+                    # Otherwise assign None to indicate that this optional
+                    # argument does not exist
+                    ret[opt] = None
+            else:
+                # If the argument exists we just make it into the
+                # returned value
+                # If there are multiple we just select the first one since
+                # this is the most common case for cmd line arguments
+                ret[opt] = argv.get_all_values(opt)[0]
+
+        return ret
+
+    def run_tests(self, argv):
+        """
+        Run all tests with prefix "test_"
+
+        :return: None
+        """
+        # First backup the dep sets
+        self.backup_settings()
+
+        # This is a counter to record how many test cases
+        # we have run
+        test_count = 0
+
+        func_name, func = self.choose_next_test()
+        while func is not None:
+            test_count += 1
+            # Print out test name before the test case runs
+            dbg_printf("==============================")
+            dbg_printf("#%d %s", test_count, func_name)
+            dbg_printf("==============================")
+
+            # Check command line arguments
+            kwargs = DebugRunTestCaseBase.get_options(func, argv)
+
+            if kwargs is not None:
+                # Run the test case
+                func(argv, **kwargs)
+
+            # Have to do this whether or not the test case runs
+            self.finish_test(func_name)
+
+            func_name, func = self.choose_next_test()
+
+        # This checks whether all testing functions that are
+        # decorated have been run properly
+        # Also note that this must happen before tests are run
+        self.verify_test_run()
+
+        # And then restore the dep set after all test cases
+        # have been run
+        self.restore_settings()
+
+        return
