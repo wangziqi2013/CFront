@@ -71,7 +71,9 @@ class Scope:
         :param t: The type constant defined above
         :return: the table instance
         """
-        assert(Scope.INDEX_BEGIN <= t <= Scope.INDEX_END)
+        assert(Scope.TABLE_TYPE_INDEX_BEGIN <=
+               t <=
+               Scope.TABLE_TYPE_INDEX_END)
 
         return self.symbols[t]
 
@@ -222,11 +224,13 @@ class SymbolTable:
         :param item: Tuple(type, name)
         :return: bool
         """
-        i = len(self.scope_stack)
+        i = len(self.scope_stack) - 1
         while i >= 0:
             scope = self.scope_stack[i]
-            if key in scope:
+            if item in scope:
                 return True
+            else:
+                i -= 1
 
         return False
 
@@ -240,11 +244,13 @@ class SymbolTable:
         :param item: Tuple(type, name)
         :return: Any object
         """
-        i = len(self.scope_stack)
+        i = len(self.scope_stack) - 1
         while i >= 0:
             scope = self.scope_stack[i]
-            if key in scope:
-                return scope[key]
+            if item in scope:
+                return scope[item]
+            else:
+                i -= 1
 
         assert False
 
@@ -314,16 +320,16 @@ class ScopeTestCase(DebugRunTestCaseBase):
         assert (st.get_current_scope_type() == Scope.SCOPE_TYPE_FUNCTION)
         assert(st[(Scope.TABLE_TYPE_IDENT, "Global Ident")] == 123)
         assert(st[(Scope.TABLE_TYPE_STRUCT, "Global Struct")] == 456)
-        assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 456)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 789)
 
         st.enter_scope(Scope.SCOPE_TYPE_LOCAL)
 
         assert(st.get_current_scope_type() == Scope.SCOPE_TYPE_LOCAL)
         assert(st[(Scope.TABLE_TYPE_IDENT, "Global Ident")] == 123)
         assert(st[(Scope.TABLE_TYPE_STRUCT, "Global Struct")] == 456)
-        assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 456)
-        assert((Scope.TABLE_TYPE_IDENT, "Global Ident") in st is True)
-        assert ((Scope.TABLE_TYPE_IDENT, "Global Ident 2") in st is False)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 789)
+        assert((Scope.TABLE_TYPE_IDENT, "Global Ident") in st)
+        assert((Scope.TABLE_TYPE_IDENT, "Global Ident 2") not in st)
 
         st.leave_scope()
         st.leave_scope()
