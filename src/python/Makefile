@@ -7,5 +7,8 @@ slr-gen:
 lr-gen:
 	python ./syntax.py --lr1 ./krc-lr.syntax --dump-file=./krc-lr.table
 
+lalr-gen:
+	python ./syntax.py --lalr ./krc-lr.syntax --dump-file=./krc-lr.table
+
 lr-parse:
 	python ./syntax.py --lr ./krc-lr.table --token-file=./lex_test.c
