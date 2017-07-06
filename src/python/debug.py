@@ -3,6 +3,8 @@
 #            and functional tests
 #
 
+import sys
+
 def dbg_printf(format, *args, **kwargs):
     """
     C-Style function that writes debugging output to the terminal
@@ -43,24 +45,15 @@ def dbg_printf(format, *args, **kwargs):
 
     # This is the body of printing
     print_content += (format % tuple(args))
-    if dbg_printf_print_to_logger_flag is False:
-        # Write the body into stderr followed by a new line
-        sys.stderr.write(print_content)
 
-        if "newline" not in kwargs or \
-                        kwargs["newline"] is True:
-            sys.stderr.write("\n")
-    else:
-        debug_logger.debug(print_content)
+    # Write the body into stderr followed by a new line
+    sys.stderr.write(print_content)
+
+    if "newline" not in kwargs or \
+                    kwargs["newline"] is True:
+        sys.stderr.write("\n")
 
     return
-
-
-# Test whether it works
-if dbg_printf_print_to_logger_flag is True:
-    dbg_printf("This is a test")
-    dbg_printf("Finished initializing the debug printing module")
-
 
 #####################################################################
 # Argument Handling
