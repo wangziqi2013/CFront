@@ -73,6 +73,13 @@ class Scope:
 
         return self.symbols[t]
 
+    def get_type(self):
+        """
+        This function returns the type of the current scope
+        :return: Scope type constant
+        """
+        return self.scope_type
+
     def __getitem__(self, item):
         """
         Fetches an item from the scope's symbol table. The item
@@ -137,17 +144,22 @@ class SymbolTable:
         """
         # This is the stack of scopes
         # By default there is a global scope at initialization
-        self.scope_stack = [Scope()]
+        # and the type is set as global scope type
+        self.scope_stack = [Scope(Scope.SCOPE_TYPE_GLOBAL)]
+
         return
 
-    def enter_scope(self):
+    def enter_scope(self, scope_type):
         """
         Enters a new scope by pushing a new scope object into the
         stack of tables
 
+        :param scope_type: The type of the scope defined in class Scope
         :return: None
         """
-        self.scope_stack.append(Scope())
+        # Use the given type to define a new scope
+        self.scope_stack.append(Scope(scope_type))
+
         return
 
     def leave_scope(self):
@@ -156,8 +168,19 @@ class SymbolTable:
 
         :return: None
         """
+        assert(len(self.scope_stack) != 0)
         self.scope_stack.pop()
         return
+
+    def get_current_scope_type(self):
+        """
+        This function returns the type of the current (i.e. topmost) scope
+        
+        :return: scope type constant
+        """
+        assert(len(self.scope_stack) != 0)
+
+        return self.scope_stack[-1].get_type()
 
     def get(self, key, ret):
         """
