@@ -372,7 +372,7 @@ class TypeNode:
         Report a type conflict because we see two different
         types being specified in declaration
 
-        This function throws an exceotion and it never returns
+        This function throws an exception and it never returns
 
         :param t1: The first type
         :param t2: The second type

@@ -20,12 +20,19 @@ class Scope:
     # corresponding tables. Searching routine uses these
     # indices to access different tables rather than
     # implementing a separate routine for each table
-    INDEX_BEGIN = 0
-    STRUCT = 0
-    UNION = 1
-    TYPEDEF = 2
-    IDENT = 3
-    INDEX_END = 3
+    TABLE_TYPE_INDEX_BEGIN = 0
+    TABLE_TYPE_STRUCT = 0
+    TABLE_TYPE_UNION = 1
+    TABLE_TYPE_TYPEDEF = 2
+    TABLE_TYPE_IDENT = 3
+    TABLE_TYPE_INDEX_END = 3
+
+    SCOPE_TYPE_INDEX_BEGIN = 0
+    SCOPE_TYPE_GLOBAL = 0
+    SCOPE_TYPE_UNION = 1
+    SCOPE_TYPE_TYPEDEF = 2
+    SCOPE_TYPE_IDENT = 3
+    SCOPE_TYPE_INDEX_END = 3
 
     def __init__(self):
         """
