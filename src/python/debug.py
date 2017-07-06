@@ -4,6 +4,7 @@
 #
 
 import sys
+import inspect
 
 def dbg_printf(format, *args, **kwargs):
     """
@@ -18,10 +19,6 @@ def dbg_printf(format, *args, **kwargs):
     :param args: Arguments
     :return: None
     """
-    # Do not print anything annoying
-    if debug_flag is False:
-        return
-
     frame = inspect.currentframe()
     prev_frame = frame.f_back
     code = prev_frame.f_code
@@ -190,7 +187,6 @@ DEP_SET_COPY_NAME = "dep_set_copy"
 # been tested. If it is False then we know the function
 # is a testing function and is waiting to be run
 TEST_FINISH_FLAG_NAME = "test_finish_flag"
-
 
 class TestNode:
     """

@@ -3,7 +3,7 @@
 #                   for both types and identifiers
 #
 
-from debug import dbg_printf, Argv, DebugRunTestCaseBase
+from debug import dbg_printf, Argv, DebugRunTestCaseBase, TestNode
 
 #####################################################################
 # class Scope
@@ -274,7 +274,7 @@ class ScopeTestCase(DebugRunTestCaseBase):
         """
         This function calls the base class constructor
         """
-        super(self.__class__, self).__init__()
+        DebugRunTestCaseBase.__init__(self)
 
         # This is required for running the test case
         argv = Argv()
@@ -339,6 +339,10 @@ class ScopeTestCase(DebugRunTestCaseBase):
         assert(caught is True)
 
         return
+
+# Finally, run the test case if this file is invoked
+if __name__ == "__main__":
+    ScopeTestCase()
 
 
 
