@@ -184,6 +184,15 @@ class SymbolTable:
 
         return self.scope_stack[-1].get_type()
 
+    def get_depth(self):
+        """
+        Get the current depth of the symbol table (i.e. the length of the list)
+        Note that depth starts from 1
+        
+        :return: int 
+        """
+        return len(self.scope_stack)
+
     def get(self, key, ret):
         """
         Searches for a given name in the given type. If we could not
@@ -273,6 +282,26 @@ class ScopeTestCase(DebugRunTestCaseBase):
         self.run_tests(argv)
 
         return
+
+    @staticmethod
+    @TestNode()
+    def test_basic(argv, **kwargs):
+        """
+        This function tests whether basic symbol table works
+        
+        :param argv: Unused argv
+        :param kwargs: Keyword arguments
+        :return: None 
+        """
+        del argv
+        del kwargs
+
+        # Build a symbol table, and the type must be global
+        st = SymbolTable()
+        assert(st.get_current_scope_type() == Scope.SCOPE_TYPE_GLOBAL)
+
+        return
+
 
 
 
