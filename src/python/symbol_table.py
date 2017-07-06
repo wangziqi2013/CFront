@@ -299,6 +299,44 @@ class ScopeTestCase(DebugRunTestCaseBase):
         # Build a symbol table, and the type must be global
         st = SymbolTable()
         assert(st.get_current_scope_type() == Scope.SCOPE_TYPE_GLOBAL)
+        assert(st.get_depth() == 1)
+
+        st[(Scope.TABLE_TYPE_IDENT, "Global Ident")] = 123
+        st[(Scope.TABLE_TYPE_STRUCT, "Global Struct")] = 456
+
+        # Get the value on the same level
+        assert(st[(Scope.TABLE_TYPE_IDENT, "Global Ident")] == 123)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Global Struct")] == 456)
+
+        st.enter_scope(Scope.SCOPE_TYPE_FUNCTION)
+        st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] = 789
+
+        assert (st.get_current_scope_type() == Scope.SCOPE_TYPE_FUNCTION)
+        assert(st[(Scope.TABLE_TYPE_IDENT, "Global Ident")] == 123)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Global Struct")] == 456)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 456)
+
+        st.enter_scope(Scope.SCOPE_TYPE_LOCAL)
+
+        assert(st.get_current_scope_type() == Scope.SCOPE_TYPE_LOCAL)
+        assert(st[(Scope.TABLE_TYPE_IDENT, "Global Ident")] == 123)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Global Struct")] == 456)
+        assert(st[(Scope.TABLE_TYPE_STRUCT, "Functional Struct")] == 456)
+        assert((Scope.TABLE_TYPE_IDENT, "Global Ident") in st is True)
+        assert ((Scope.TABLE_TYPE_IDENT, "Global Ident 2") in st is False)
+
+        st.leave_scope()
+        st.leave_scope()
+        st.leave_scope()
+        assert(st.get_depth() == 0)
+
+        try:
+            caught = False
+            st.leave_scope()
+        except AssertionError:
+            caught = True
+
+        assert(caught is True)
 
         return
 
