@@ -2971,7 +2971,7 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
-    def get_alternative_start_state(self, non_terminal_name):
+    def get_alternative_start_state(self, non_terminal_name, lr_1):
         """
         Given the name of a non-terminal symbol, this function tries to compute
         a starting state, which could be used as an alternative state just to 
@@ -2991,6 +2991,7 @@ class ParserGeneratorLR(ParserGenerator):
         :param non_terminal_name: The name of a non-terminal symbol within the syntax.
                                   Raise exception if the symbol does not exist as 
                                   a non-terminal
+        :param lr_1: Whether the item should be LR1 or LR0
         :return: The new starting state; -1 if not found
         """
         # This is used for both LR0 and LR1
@@ -3002,6 +3003,9 @@ class ParserGeneratorLR(ParserGenerator):
         else:
             raise ValueError("Non-terminal \"%s\" does not exist in the syntax" %
                              (non_terminal_name, ))
+
+        for p in non_terminal.lhs_set:
+            item_set.item_set.add(LR1Item())
 
         return -1
 
@@ -3631,18 +3635,18 @@ class ParserLR(ParserGeneratorLR):
 
         token = tk.get_next_token()
 
-        temp = set(["T_DECL", "T_TYPEDEF", "T_DECL_BODY",
-                    "T_COMPOUND_STMT_BEGIN",
-                    "T_COMPOUND_STMT_END",
-                    "T_STMT_LIST",
-                    "T_DECL_LIST"])
+        #temp = set(["T_DECL", "T_TYPEDEF", "T_DECL_BODY",
+        #            "T_COMPOUND_STMT_BEGIN",
+        #            "T_COMPOUND_STMT_END",
+        #            "T_STMT_LIST",
+        #            "T_DECL_LIST"])
 
         while True:
             top_state = state_stack[-1]
 
             token = self.preprocess_token(token)
-            if token.name == "T_IDENT" or token.name == "T_TYPEDEF_NAME":
-                print "Probe using", token.data
+            #if token.name == "T_IDENT" or token.name == "T_TYPEDEF_NAME":
+            #    print "Probe using", token.data
             k = (top_state, token.name)
             t = self.parsing_table[k]
             action = t[0]
@@ -3653,8 +3657,8 @@ class ParserLR(ParserGeneratorLR):
                 assert(isinstance(t[1], int))
                 state_stack.append(t[1])
                 symbol_stack.append(token)
-                if token.name == "T_IDENT" or token.name == "T_TYPEDEF_NAME":
-                    print "Shift", token.data
+                #if token.name == "T_IDENT" or token.name == "T_TYPEDEF_NAME":
+                #    print "Shift", token.data
 
                 token = tk.get_next_token()
             elif action == ParserGeneratorLR.ACTION_REDUCE:
@@ -3664,8 +3668,8 @@ class ParserLR(ParserGeneratorLR):
                 reduce_length = t[2]
                 ast_rule = t[3]
 
-                if reduce_to == "compound-statement":
-                    print t, top_state, token.name
+                #if reduce_to == "compound-statement":
+                #    print t, top_state, token.name
 
                 if ast_rule is None:
                     sn = SyntaxNode(reduce_to)
@@ -3762,8 +3766,8 @@ class ParserLR(ParserGeneratorLR):
                         raise ValueError("Could not find action: %s" %
                                          (ast_action, ))
 
-                if sn.symbol in temp:
-                    print sn.symbol, goto_tuple[1]
+                #if sn.symbol in temp:
+                #    print sn.symbol, goto_tuple[1]
 
                 # Push new non-terminal into the list
                 symbol_stack.append(sn)
@@ -4055,7 +4059,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             return
 
         pg = self.pg
-        
+
         # Try to parse a declaration sub-tree
         # Note that this is only valid for C syntax
         starting_state = pg.get_alternative_start_state("declaration")
