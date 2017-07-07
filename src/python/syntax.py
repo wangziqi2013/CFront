@@ -3774,6 +3774,54 @@ class ParserEarley(ParserGenerator):
 
         return
 
+    class EarleyState:
+        """
+        This class represents earley state which is a combination of a set and a list.
+        The set is used to maintain uniqueness of states, while the list is used to 
+        perform iteration since we do not iterate on items that has already been
+        processed
+        """
+        def __init__(self, index):
+            """
+            Initialize the Earley state object
+            
+            :param index: On which position does this state is in
+            """
+            self.index = index
+            # We iterate on this list while appending elements to it
+            self.item_list = []
+            self.item_set = set()
+            
+            # we start iteration on this index every time
+            self.iter_start_index = 0
+            # This is the index where the iteration should not go beyond
+            # (inclusive, meaning this index as well is an invalid one)
+            self.iter_end_index = 0
+
+            return
+
+    def parse(self, s, is_filename):
+        """
+        Start parsing the given file. We use a tokenizer to tokenize the given
+        file
+        
+        :param s: Either the file name or the string to be parsed, depending on
+                  the next argument
+        :param is_filename: Whether the previous argument is a file name or a 
+                            string to be parsed.
+        :return: AST root node if success; None if fail
+        """
+        # if the flag denotes a file name then read the file
+        if is_filename is True:
+            tokenizer = CTokenizer.read_file(s)
+        else:
+            # Otherwise just directly construct the tokenizer object
+            # using the given string
+            tokenizer = CTokenizer(s)
+
+        # This is a list of earley states
+        state_list = []
+
 #####################################################################
 #####################################################################
 #####################################################################
