@@ -3796,12 +3796,6 @@ class ParserEarley(ParserGenerator):
             self.item_list = []
             self.item_set = set()
 
-            # we start iteration on this index every time
-            self.iter_start_index = 0
-            # This is the index where the iteration should not go beyond
-            # (inclusive, meaning this index as well is an invalid one)
-            self.iter_end_index = 0
-
             return
 
         def append(self, item):
@@ -3814,12 +3808,25 @@ class ParserEarley(ParserGenerator):
             :param item: The EarleyItem object
             :return: None
             """
-            assert(isinstance(item, self.EarleyItem) is True)
+            assert(isinstance(item, ParserEarley.EarleyItem) is True)
             if item not in self.item_set:
                 self.item_set.add(item)
                 self.item_list.append(item)
+                # This must hold
+                assert(len(self.item_list) == len(self.item_set))
 
             return
+
+        def __len__(self):
+            """
+            Returns the number of items stored in this object. Since we maintained
+            a consistent item count across the set and the list, any of these two is
+            sufficient
+            
+            :return: int
+            """
+            assert (len(self.item_list) == len(self.item_set))
+            return len(self.item_list)
 
     #################################################################
     # class EarleyItem
@@ -3917,7 +3924,15 @@ class ParserEarley(ParserGenerator):
         # Add all production originating from this symbol into the first
         # state object as initialization
         for p in root_symbol.lhs_set:
-            state_list[0].state_list.append
+            # Append items with dot position at 0 and token index at 0
+            state_list[0].append(self.EarleyItem(p, 0, 0))
+
+        # This is the current token index we will scan
+        for current_token_index in range(0, token_count):
+            list_index = 0
+            # Note that we should check the length each time, as the
+            # length of the list will change during this iteration
+            while list_index < len()
 
         return None
 
