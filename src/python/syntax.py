@@ -3751,6 +3751,28 @@ class ParserLR(ParserGeneratorLR):
 
         return symbol_stack[0]
 
+#####################################################################
+# class ParserEarley - Earley parser implementation
+#####################################################################
+
+class ParserEarley(ParserGenerator):
+    """
+    This class implements the earley parser, which is used for parse a given
+    string online - which means that we could start from any non-terminal
+    as the root symbol and does not rely on the preset LR states
+    """
+    def __init__(self, syntax_file_name):
+        """
+        Read the syntax file by calling super class constructor
+        
+        :param syntax_file_name: The file name of the syntax file 
+        """
+        # This reads the syntax file and parses the AST rules
+        # We do not call compute first follow routine though, which
+        # is traditionally done by LL and LR parser generators
+        ParserGenerator.__init__(self, syntax_file_name)
+
+        return
 
 #####################################################################
 #####################################################################
