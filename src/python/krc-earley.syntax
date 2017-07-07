@@ -1,0 +1,371 @@
+primary-expression:
+    T_IDENT                          # T_IDENT@1
+    T_INT_CONST                      # T_INT_CONST@1
+    T_STRING_CONST                   # T_STRING_CONST@1
+    T_CHAR_CONST                     # T_CHAR_CONST@1
+    T_LPAREN expression T_RPAREN     # $2
+ 
+postfix-expression:
+    primary-expression                                                 # $1
+    postfix-expression T_LSPAREN expression T_RSPAREN                  # T_ARRAY_SUB, $1 $3
+    postfix-expression T_LPAREN T_RPAREN                               # T_FUNC_CALL, $1
+    postfix-expression T_LPAREN argument-expression-list T_RPAREN      # T_FUNC_CALL, $1 $3
+    postfix-expression T_DOT T_IDENT                                   # T_DOT, $1 T_IDENT@3
+    postfix-expression T_ARROW T_IDENT                                 # T_ARROW, $1 T_IDENT@3
+    postfix-expression T_INC                                           # T_POST_INC, $1
+    postfix-expression T_DEC                                           # T_POST_DEC, $1
+ 
+argument-expression-list:
+    assignment-expression                                              # T_ARG_LIST, $1
+    argument-expression-list T_COMMA assignment-expression             # $1, $3
+ 
+unary-expression:
+    postfix-expression                             # $1
+    T_INC unary-expression                         # T_PRE_INC, $1
+    T_DEC unary-expression                         # T_PRE_DEC, $1
+    unary-operator cast-expression                 # $1, $2
+    T_SIZEOF unary-expression                      # T_SIZEOF_EXP, $2
+    T_SIZEOF T_LPAREN type-name T_RPAREN           # T_SIZEOF_TYPE, $3
+ 
+unary-operator:
+    T_AMPERSAND      # T_ADDR
+    T_STAR           # T_DEREF
+    T_PLUS           # T_POSITIVE
+    T_MINUS          # T_NEGATE
+    T_BITNOT         # T_BITNOT
+    T_NOT            # T_NOT
+ 
+cast-expression:
+    unary-expression                                    # $1
+    T_LPAREN type-name T_RPAREN cast-expression         # T_CAST, $2 $4
+
+logical-OR-expression:
+    logical-AND-expression                              # $1
+    logical-OR-expression T_OR logical-AND-expression   # T_OR, $1 $3
+
+logical-AND-expression:
+    inclusive-OR-expression                               # $1
+    logical-AND-expression T_AND inclusive-OR-expression  # T_AND, $1 $3
+
+inclusive-OR-expression:
+    exclusive-OR-expression                                   # $1
+    inclusive-OR-expression T_BIT_OR exclusive-OR-expression  # T_BIT_OR, $1 $3
+
+exclusive-OR-expression:
+    AND-expression                                       # $1
+    exclusive-OR-expression T_BIT_XOR AND-expression     # T_BIT_XOR, $1 $3
+
+AND-expression:
+    equality-expression                              # $1
+    AND-expression T_AMPERSAND equality-expression   # T_BIT_AND, $1 $3
+
+equality-expression:
+    relational-expression                                 # $1
+    equality-expression T_EQ relational-expression        # T_EQ, $1 $3
+    equality-expression T_NOTEQ relational-expression     # T_NOTEQ, $1 $3
+
+relational-expression:
+    shift-expression                                      # $1
+    relational-expression T_LESS shift-expression         # T_LESS, $1 $3
+    relational-expression T_LESSEQ shift-expression       # T_LESSEQ, $1 $3
+    relational-expression T_GREATER shift-expression      # T_GREATER, $1 $3
+    relational-expression T_GREATEREQ shift-expression    # T_GREATEREQ, $1 $3
+
+shift-expression:
+    additive-expression                                   # $1
+    shift-expression T_LSHIFT additive-expression         # T_LSHIFT, $1 $3
+    shift-expression T_RSHIFT additive-expression         # T_RSHIFT, $1 $3
+
+additive-expression:
+    multiplicative-expression                                # $1
+    additive-expression T_PLUS multiplicative-expression     # T_PLUS, $1 $3
+    additive-expression T_MINUS multiplicative-expression    # T_MINUS, $1 $3
+
+multiplicative-expression:
+    cast-expression                                       # $1
+    multiplicative-expression T_STAR cast-expression      # T_NULTIPLY, $1 $3
+    multiplicative-expression T_DIV cast-expression       # T_DIV, $1 $3
+    multiplicative-expression T_MOD cast-expression       # T_MOD, $1 $3
+ 
+conditional-expression:
+    logical-OR-expression                                                       # $1
+    logical-OR-expression T_QMARK expression T_COLON conditional-expression     # T_COND, $1 $3 $5
+ 
+assignment-expression:
+    conditional-expression                                                # $1
+    unary-expression assignment-operator assignment-expression            # $2, $1 $3
+ 
+assignment-operator:
+    T_ASSIGN                 # T_ASSIGN
+    T_PLUS_ASSIGN            # T_PLUS_ASSIGN
+    T_MINUS_ASSIGN           # T_MINUS_ASSIGN
+    T_STAR_ASSIGN            # T_STAR_ASSIGN
+    T_DIV_ASSIGN             # T_DIV_ASSIGN
+    T_MOD_ASSIGN             # T_MOD_ASSIGN
+    T_LSHIFT_ASSIGN          # T_LSHIFT_ASSIGN
+    T_RSHIFT_ASSIGN          # T_RSHIFT_ASSIGN
+    T_AMPERSAND_ASSIGN       # T_AMPERSAND_ASSIGN
+    T_BITXOR_ASSIGN          # T_BITXOR_ASSIGN
+    T_BITOR_ASSIGN           # T_BITOR_ASSIGN
+ 
+expression:
+    assignment-expression                             # $1
+    expression T_COMMA assignment-expression          # T_COMMA, $1 $3
+ 
+constant-expression:
+    conditional-expression      # $1
+ 
+#
+# C declaration rules
+#
+
+# This is only used as external declaration or local declaration
+declaration:
+    # Anonymous struct and enum declaration
+    declaration-specifiers T_SEMICOLON                        # T_DECL, $1
+    declaration-specifiers init-declarator-list T_SEMICOLON   # T_DECL, $1 $2
+ 
+declaration-specifiers:
+    storage-class-specifier                                   # T_DECL_SPEC, $1
+    type-specifier                                            # T_DECL_SPEC, $1
+    type-qualifier                                            # T_DECL_SPEC, $1
+    storage-class-specifier declaration-specifiers            # $2, $1
+    type-specifier          declaration-specifiers            # $2, $1
+    type-qualifier          declaration-specifiers            # $2, $1
+ 
+init-declarator-list:
+    init-declarator                                           # T_INIT_DECL_LIST, $1, add_decl_body
+    init-declarator-list T_COMMA init-declarator              # $1,               $3, add_decl_body
+ 
+init-declarator:
+    declarator                                                # T_INIT_DECL, $1
+    declarator T_ASSIGN initializer                           # T_INIT_DECL, $1 $3
+ 
+storage-class-specifier:
+    T_TYPEDEF                # T_TYPEDEF
+    T_EXTERN                 # T_EXTERN
+    T_STATIC                 # T_STATIC
+    T_AUTO                   # T_AUTO
+    T_REGISTER               # T_REGISTER
+ 
+type-specifier:
+    T_VOID                     # T_VOID
+    T_CHAR                     # T_CHAR
+    T_SHORT                    # T_SHORT
+    T_INT                      # T_INT
+    T_LONG                     # T_LONG
+    T_FLOAT                    # T_FLOAT
+    T_DOUBLE                   # T_DOUBLE
+    T_SIGNED                   # T_SIGNED
+    T_UNSIGNED                 # T_UNSIGNED
+    struct-or-union-specifier  # $1
+    enum-specifier             # $1
+    # This carries data as identifier
+    T_TYPEDEF_NAME             # T_TYPEDEF_NAME@1
+ 
+struct-or-union-specifier:
+    struct-or-union T_LCPAREN struct-declaration-list T_RCPAREN            # $1, $3
+    struct-or-union T_IDENT T_LCPAREN struct-declaration-list T_RCPAREN    # $1, T_IDENT@2 $4
+    struct-or-union T_IDENT                                                # $1, T_IDENT@2
+ 
+struct-or-union:
+    T_STRUCT         # T_STRUCT
+    T_UNION          # T_UNION
+ 
+struct-declaration-list:
+    struct-declaration                               # T_STRUCT_DECL_LIST, $1
+    struct-declaration-list struct-declaration       # $1, $2
+ 
+struct-declaration:
+    specifier-qualifier-list struct-declarator-list T_SEMICOLON    # T_STRUCT_DECL, $1 $2
+ 
+specifier-qualifier-list:
+    type-specifier                               # T_SPEC_QUAL_LIST, $1
+    type-qualifier                               # T_SPEC_QUAL_LIST, $1
+    type-specifier specifier-qualifier-list      # $2, $1
+    type-qualifier specifier-qualifier-list      # $2, $1
+ 
+struct-declarator-list:
+    struct-declarator                                   # T_STRUCT_DECL_LIST, $1
+    struct-declarator-list T_COMMA struct-declarator    # $1, $3
+ 
+struct-declarator:
+    declarator                                          # T_STRUCT_DECL, $1
+    T_COLON constant-expression                         # T_BIT_FIELD, $2
+    declarator T_COLON constant-expression              # T_BIT_FIELD, $1 $3
+ 
+enum-specifier:
+    T_ENUM T_LCPAREN enumerator-list T_RCPAREN          # T_ENUM, $3
+    T_ENUM T_IDENT T_LCPAREN enumerator-list T_RCPAREN  # T_ENUM, T_IDENT@2 $4
+    T_ENUM T_IDENT                                      # T_ENUM, T_IDENT@2
+ 
+enumerator-list:
+    enumerator                            # T_ENUM_LIST, $1
+    enumerator-list T_COMMA enumerator    # $1, $3
+ 
+enumerator:
+    enumeration-constant                               # T_ENUMERATOR, $1
+    enumeration-constant T_ASSIGN constant-expression  # T_ENUMERATOR, $1 $3
+ 
+enumeration-constant:
+    T_IDENT                            # T_IDENT@1
+ 
+type-qualifier:
+    T_CONST                            # T_CONST
+    T_VOLATILE                         # T_VOLATILE
+ 
+declarator:
+    direct-declarator                  # $1
+    # We need to further transform the
+    # order to append direct-declarator
+    # before
+    pointer direct-declarator          # $2, $1
+ 
+direct-declarator:
+    T_IDENT                                                        # T_DECL_BODY, T_IDENT@1
+    T_LPAREN declarator T_RPAREN                                   # $2
+    direct-declarator T_LSPAREN T_RSPAREN                          # $1, T_ARRAY_SUB T_
+    direct-declarator T_LSPAREN constant-expression T_RSPAREN      # $1, T_ARRAY_SUB $3
+    direct-declarator T_LPAREN T_RPAREN                            # $1, T_FUNC_CALL T_
+    direct-declarator T_LPAREN parameter-type-list T_RPAREN        # $1, T_FUNC_CALL $3
+    # Old-style function declaration; not supported anymore
+    # because functions must have deterministic types
+    direct-declarator T_LPAREN identifier-list T_RPAREN            # $1, T_FUNC_CALL $3
+ 
+# Note that in this AST the order should be reversed
+pointer:
+     T_STAR                                       # T_PTR, T_
+     T_STAR type-qualifier-list                   # T_PTR, $2
+     T_STAR pointer                               # $2, T_
+     T_STAR type-qualifier-list pointer           # $3, $2
+ 
+type-qualifier-list:
+    type-qualifier                                # T_TYPE_QUAL_LIST, $1
+    type-qualifier-list type-qualifier            # $1, $2
+ 
+parameter-type-list:
+    parameter-list                                # $1
+    parameter-list T_COMMA T_ELLIPSIS             # $1, T_ELLIPSIS
+ 
+parameter-list:
+    parameter-declaration                         # T_PARAM_LIST, $1
+    parameter-list T_COMMA parameter-declaration  # $1, $3
+ 
+parameter-declaration:                            
+    declaration-specifiers declarator             # T_PARAM_DECL, $1 $2
+    declaration-specifiers                        # T_PARAM_DECL, $1
+    declaration-specifiers abstract-declarator    # T_PARAM_DECL, $1 $2
+ 
+identifier-list:
+    T_IDENT                              # T_IDENT_LIST, T_IDENT@1
+    identifier-list T_COMMA T_IDENT      # $1, T_IDENT@3
+ 
+type-name:
+    specifier-qualifier-list                        # T_TYPE_NAME, $1
+    specifier-qualifier-list abstract-declarator    # T_TYPE_NAME, $1 $2
+ 
+abstract-declarator:
+    pointer                                   # T_ABS_DECL_BODY, $1
+    direct-abstract-declarator                # $1
+    pointer direct-abstract-declarator        # $2, $1
+ 
+direct-abstract-declarator:
+    T_LPAREN abstract-declarator T_RPAREN                                 # $2
+    T_LSPAREN T_RSPAREN                                                   # T_ABS_DECL_BODY, T_ARRAY_SUB T_
+    T_LSPAREN constant-expression T_RSPAREN                               # T_ABS_DECL_BODY, T_ARRAY_SUB $2
+    T_LPAREN T_RPAREN                                                     # T_ABS_DECL_BODY, T_FUNC_CALL T_
+    T_LPAREN parameter-type-list T_RPAREN                                 # T_ABS_DECL_BODY, T_FUNC_CALL $2
+    direct-abstract-declarator T_LSPAREN T_RSPAREN                        # $1, T_ARRAY_SUB T_
+    direct-abstract-declarator T_LSPAREN constant-expression T_RSPAREN    # $1, T_ARRAY_SUB $3
+    direct-abstract-declarator T_LPAREN T_RPAREN                          # $1, T_FUNC_CALL T_
+    direct-abstract-declarator T_LPAREN parameter-type-list T_RPAREN      # $1, T_FUNC_CALL $3
+
+# This works for Earley parser
+typedef-name:
+    T_IDENT                                           # T_TYPEDEF_NAME, T_IDENT@1
+ 
+initializer:
+    assignment-expression                             # $1
+    T_LCPAREN initializer-list T_RCPAREN              # $2
+    T_LCPAREN initializer-list T_COMMA T_RCPAREN      # $2
+ 
+initializer-list:
+    initializer                                # INIT_LIST, $1
+    initializer-list T_COMMA initializer       # $1, $3
+ 
+#
+# C statement rules
+#
+ 
+statement:
+    labeled-statement      # $1
+    compound-statement     # $1
+    expression-statement   # $1
+    selection-statement    # $1
+    iteration-statement    # $1
+    jump-statement         # $1
+ 
+labeled-statement:
+    T_IDENT T_COLON statement                       # T_LABELED_STMT, T_IDENT@1 $3
+    T_CASE constant-expression T_COLON statement    # T_CASE_STMT, $2 $4
+    T_DEFAULT T_COLON statement                     # T_DEFAULT_STMT $3
+
+compound-statement:
+    T_LCPAREN compound-statement-mark T_RCPAREN                                 # T_COMPOUND_STMT
+    T_LCPAREN declaration-list compound-statement-mark T_RCPAREN                # T_COMPOUND_STMT, $2
+    T_LCPAREN statement-list compound-statement-mark T_RCPAREN                  # T_COMPOUND_STMT, $2
+    T_LCPAREN declaration-list statement-list T_RCPAREN                         # T_COMPOUND_STMT, $2 $3
+ 
+declaration-list:
+    declaration                   # T_DECL_LIST, $1
+    declaration-list declaration  # $1, $2
+ 
+statement-list:
+    statement                     # T_STMT_LIST, $1
+    statement-list statement      # $1, $2
+ 
+expression-statement:
+    T_SEMICOLON                   # T_EXP_STMT
+    expression T_SEMICOLON        # T_EXP_STMT, $1
+ 
+selection-statement:
+    T_IF T_LPAREN expression T_RPAREN statement                     # T_IF_STMT, $3 $5
+    T_IF T_LPAREN expression T_RPAREN statement T_ELSE statement    # T_IF_STMT, $3 $5 $7
+    T_SWITCH T_LPAREN expression T_RPAREN statement                 # T_SWITCH_STMT, $3 $5
+ 
+iteration-statement:
+    T_WHILE T_LPAREN expression T_RPAREN statement                                               # T_WHILE_STMT, $3 $5
+    T_DO statement T_WHILE T_LPAREN expression T_RPAREN T_SEMICOLON                              # T_DO_STMT, $2 $5
+    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, T_ T_ T_ $6
+    T_FOR T_LPAREN            T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, T_ T_ $5 $7
+    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, T_ $4 T_ $7
+    T_FOR T_LPAREN            T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, T_ $4 $6 $8
+    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, $3 T_ T_ $7
+    T_FOR T_LPAREN expression T_SEMICOLON            T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, $3 T_ $6 $8
+    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON            T_RPAREN statement   # T_FOR_SMTM, $3 $5 T_ $8
+    T_FOR T_LPAREN expression T_SEMICOLON expression T_SEMICOLON expression T_RPAREN statement   # T_FOR_SMTM, $3 $5 $7 $9
+ 
+jump-statement:
+    T_GOTO T_IDENT T_SEMICOLON            # T_GOTO_STMT, T_IDENT@2
+    T_CONTINUE T_SEMICOLON                # T_CONTINUE_STMT
+    T_BREAK T_SEMICOLON                   # T_BREAK_STMT
+    T_RETURN T_SEMICOLON                  # T_RET_STMT
+    T_RETURN expression T_SEMICOLON       # T_RET_STMT, $2
+
+root:
+    translation-unit                      # $1
+
+translation-unit:
+    external-declaration                  # T_UNIT, $1
+    translation-unit external-declaration # $1, $2
+ 
+external-declaration:
+    function-definition                   # T_FUNC_DEF, $1
+    declaration                           # T_EXT_DECL, $1
+ 
+function-definition:
+# Do not allow functions without return type specification
+#                           declarator                  compound-statement 
+    declaration-specifiers declarator                  compound-statement    # T_FUNC_DEF, $1 $2 $3
+#                           declarator declaration-list compound-statement
+#   declaration-specifiers declarator declaration-list compound-statement
