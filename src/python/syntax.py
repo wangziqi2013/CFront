@@ -4054,9 +4054,12 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             dbg_printf("Need to specify --sub-syntax flag to test sub-syntax")
             return
 
+        pg = self.pg
+        
         # Try to parse a declaration sub-tree
         # Note that this is only valid for C syntax
-        get_alternative_start_state("declaration")
+        starting_state = pg.get_alternative_start_state("declaration")
+        dbg_printf("Alternative starting state: %d", starting_state)
 
         return
 
