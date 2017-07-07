@@ -3774,6 +3774,10 @@ class ParserEarley(ParserGenerator):
 
         return
 
+    #################################################################
+    # class EarleyState
+    #################################################################
+
     class EarleyState:
         """
         This class represents earley state which is a combination of a set and a list.
@@ -3791,7 +3795,7 @@ class ParserEarley(ParserGenerator):
             # We iterate on this list while appending elements to it
             self.item_list = []
             self.item_set = set()
-            
+
             # we start iteration on this index every time
             self.iter_start_index = 0
             # This is the index where the iteration should not go beyond
@@ -3799,6 +3803,46 @@ class ParserEarley(ParserGenerator):
             self.iter_end_index = 0
 
             return
+
+    #################################################################
+    # class EarleyItem
+    #################################################################
+
+    class EarleyItem(LRItem):
+        """
+        This class represents an Earley item, which is essentially an LR(0)
+        item with an extra index recording its position in the input file
+        (index of the token). Note that not all LR item function is callable 
+        for this object, and we should only use the most basic ones
+        """
+        def __init__(self, p, index, token_index):
+            """
+            Initialize the base class with a production and index in the production
+            
+            :param p: The production object 
+            :param index: The index of the current position within the production
+            :param token_index: The index of the token
+            """
+            LRItem.__init__(p, index)
+            self.token_index = token_index
+
+            return
+
+        def __hash__(self):
+            """
+            Need also to hash the index
+            :return: int 
+            """
+            return LRItem.__hash__(self) ^ self.token_index
+
+        def __eq__(self, other):
+            """
+            Check equality of two objects
+            :param other: The other Earley item object
+            :return: bool
+            """
+            return LRItem.__eq__(self, other) and \
+                   (self.token_index == other.token_index)
 
     def parse(self, s, is_filename):
         """
