@@ -3863,6 +3863,17 @@ class ParserEarley(ParserGenerator):
 
             return
 
+        def advance(self):
+            """
+            Returns a new item object with the dot symbol advanced
+            :return: EarleyItem
+            """
+            # There must be something after the dot
+            assert (self.get_dotted_symbol() is not None)
+
+            # Just advance the index and leave other stuff intact
+            return EarleyItem(self.p, self.index + 1, self.token_index)
+
         def __hash__(self):
             """
             Need also to hash the index
@@ -3949,7 +3960,10 @@ class ParserEarley(ParserGenerator):
             # Note that we should check the length each time, as the
             # length of the list will change during this iteration
             while list_index < len(current_state):
-                item =
+                item = current_state[list_index]
+                if
+
+                list_index += 1
 
         return None
 
