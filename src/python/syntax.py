@@ -3828,6 +3828,17 @@ class ParserEarley(ParserGenerator):
             assert (len(self.item_list) == len(self.item_set))
             return len(self.item_list)
 
+        def __getitem__(self, index):
+            """
+            Returns the i-th item in the item list given the index i
+            Note that if index out of bound then assertion fails
+             
+            :param index: The integral index of the item in the item list 
+            :return: EarleyItem object
+            """
+            assert(index < len(self))
+            return self.item_list[index]
+
     #################################################################
     # class EarleyItem
     #################################################################
@@ -3929,10 +3940,16 @@ class ParserEarley(ParserGenerator):
 
         # This is the current token index we will scan
         for current_token_index in range(0, token_count):
+            # Token index is also state index
+            current_state = state_list[current_token_index]
+
+            # Could not use for loop to increment it since
+            # the length of the list will change
             list_index = 0
             # Note that we should check the length each time, as the
             # length of the list will change during this iteration
-            while list_index < len()
+            while list_index < len(current_state):
+                item =
 
         return None
 
