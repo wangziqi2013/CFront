@@ -2971,6 +2971,29 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
+    def get_alternative_start_state(self, non_terminal_name):
+        """
+        Given the name of a non-terminal symbol, this function tries to compute
+        a starting state, which could be used as an alternative state just to 
+        parse a sub-syntax with the given non-termianl as the root symbol.
+        
+        Note that the returned state may also accept malformed constructs, and
+        therefore is only used for testing, rather than implementing the parser
+        of a sub-syntax.
+        
+        The way we deal with it is to first of all add all productions with the
+        given non-terminal as LHS into an item set, and then compute the closure.
+        After getting the closure, we then check for a superset of the computed
+        item set, and use its state ID as the starting state. This way we can always
+        parse a super set of the language with the given non-terminal as the 
+        starting state.
+        
+        :param non_terminal_name: The name of a non-terminal symbol within the syntax.
+                                  Raise exception if the symbol does not exist as 
+                                  a non-terminal
+        :return: The new starting state; -1 if not found
+        """
+
 #####################################################################
 # class ParserGeneratorLL1
 #####################################################################
