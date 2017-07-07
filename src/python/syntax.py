@@ -30,7 +30,7 @@ class Symbol:
     # This is the name of the "eps" symbol
     EMPTY_SYMBOL_NAME = "T_"
     # This is the symbol name indicating the end of input stream
-    END_SYMBOL_NAME = "T_EOF"
+    END_SYMBOL_NAME = CTokenizer.EOF_TOKEN_NAME
 
     # This is the root of the artificial starting symbol
     # We need it for LR parsing; for LL it is not required, and the
@@ -3823,7 +3823,7 @@ class ParserEarley(ParserGenerator):
             :param index: The index of the current position within the production
             :param token_index: The index of the token
             """
-            LRItem.__init__(p, index)
+            LRItem.__init__(self, p, index)
             self.token_index = token_index
 
             return
@@ -3844,7 +3844,7 @@ class ParserEarley(ParserGenerator):
             return LRItem.__eq__(self, other) and \
                    (self.token_index == other.token_index)
 
-    def parse(self, s, is_filename):
+    def parse(self, starting_symbol, s, is_filename):
         """
         Start parsing the given file. We use a tokenizer to tokenize the given
         file
@@ -3863,8 +3863,26 @@ class ParserEarley(ParserGenerator):
             # using the given string
             tokenizer = CTokenizer(s)
 
-        # This is a list of earley states
-        state_list = []
+        # This list holds tokens we have processed
+        token_list = []
+
+        # First extract all tokens and make them a list
+        while True:
+            token = tokenizer.get_next_token()
+            if token.name == CTokenizer.EOF_TOKEN_NAME:
+                break
+            else:
+                token_list.append(token)
+
+        token_count = len(token_list)
+        dbg_printf("Extracted %d tokens from the input", token_count)
+
+        # This is a list of Earley states; the length of this list equals
+        # the length of the token list and we use list comprehension
+        # to build the list of states
+        state_list = [EarleyState(i) for i in range(0, token_count)]
+
+        return None
 
 #####################################################################
 #####################################################################

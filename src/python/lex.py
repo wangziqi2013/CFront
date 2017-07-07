@@ -682,6 +682,8 @@ class CTokenizer(Tokenizer):
         raise ValueError("Unrecognized character: %s" %
                          (op, ))
 
+    # This is used to denote the EOF token
+    EOF_TOKEN_NAME = "T_EOF"
     def get_next_token(self):
         """
         This is the driver of the entire program. It calls corresponding
