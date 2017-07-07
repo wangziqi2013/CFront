@@ -3872,7 +3872,7 @@ class ParserEarley(ParserGenerator):
             assert (self.get_dotted_symbol() is not None)
 
             # Just advance the index and leave other stuff intact
-            return EarleyItem(self.p, self.index + 1, self.token_index)
+            return self.__class__(self.p, self.index + 1, self.token_index)
 
         def __hash__(self):
             """
@@ -3969,13 +3969,13 @@ class ParserEarley(ParserGenerator):
                 #   1. Terminal - scan (SHIFT)
                 #   2. Non-terminal - predict (GOTO)
                 #   3. None object - complete (REDUCE)
-                dotted_symbol = item.get_dotted_symbol
+                dotted_symbol = item.get_dotted_symbol()
                 if isinstance(dotted_symbol, NonTerminal) is True:
                     # Predict all productions and add them into the current state
                     for p in dotted_symbol.lhs_set:
                         current_state.append(
                             self.EarleyItem(p, 0, current_token_index))
-                elif isinstance(dotted_symbol, NonTerminal) is True:
+                elif isinstance(dotted_symbol, Terminal) is True:
                     # Advance the dot and add it into the next state
                     next_state.append(item.advance())
                 elif dotted_symbol is None:
@@ -3995,9 +3995,12 @@ class ParserEarley(ParserGenerator):
 
                     # Could directly iterate here since we do not modify it
                     for from_item in from_state.item_list:
+                        # This is the dotted symbol where the reduced from is from
                         from_item_dotted_symbol = from_item.get_dotted_symbol()
-                        if isinstance(reduce_symbol, NonTerminal) is True and \
-                           reduce_symbol.name == from_item_dotted_symbol
+                        # GOTO using the reduced symbol
+                        if isinstance(from_item_dotted_symbol, NonTerminal) is True and \
+                           reduce_symbol.name == from_item_dotted_symbol.name:
+                            current_state.append(from_item.advance())
                 else:
                     # This is impossible
                     assert False
