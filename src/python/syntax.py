@@ -3893,7 +3893,13 @@ class ParserEarley(ParserGenerator):
             assert (self.get_dotted_symbol() is not None)
 
             # Just advance the index and leave other stuff intact
-            return self.__class__(self.p, self.index + 1, self.token_index)
+            ret = self.__class__(self.p, self.index + 1, self.token_index)
+            # Also duplicate the child list list
+            for i in range(0, len(self.child_list_list)):
+                for j in ret.child_list_list[i]:
+                    ret.child_list_list[i].append(j)
+
+            return ret
 
         def __hash__(self):
             """
@@ -3996,7 +4002,8 @@ class ParserEarley(ParserGenerator):
                     for p in dotted_symbol.lhs_set:
                         current_state.append(
                             self.EarleyItem(p, 0, current_token_index))
-                elif isinstance(dotted_symbol, Terminal) is True:
+                elif isinstance(dotted_symbol, Terminal) is True \
+                     and token_list[current_token_index].name == dotted_symbol.name:
                     # Advance the dot and add it into the next state
                     next_state.append(item.advance())
                 elif dotted_symbol is None:
@@ -4021,13 +4028,12 @@ class ParserEarley(ParserGenerator):
                         # GOTO using the reduced symbol
                         if isinstance(from_item_dotted_symbol, NonTerminal) is True and \
                            reduce_symbol.name == from_item_dotted_symbol.name:
-                            current_state.append(from_item.advance())
-
                             # This is a possible subtree of the symbol we just reduced
                             from_item.child_list_list[from_item.index].append(item)
-                else:
-                    # This is impossible
-                    assert False
+
+                            # This must be done after we added the subtree. Also the new
+                            # item inherits the subtree we just added
+                            current_state.append(from_item.advance())
 
                 list_index += 1
 
@@ -4036,22 +4042,67 @@ class ParserEarley(ParserGenerator):
 
         # Recover the parse tree from the state list, token list and the
         # root name and return the tree or None
-        tree = self.recover_parse_tree(state_list, token_list, root_name)
+        tree = self.build_unique_tree(state_list, token_list, root_name)
 
         return tree
 
-    @staticmethod
-    def recover_parse_tree(state_list, token_list, root_name):
+    @classmethod
+    def build_unique_tree(cls, state_list, token_list, root_name):
         """
         This function recovers the parse tree from given states and tokens
         
         :param state_list: The state list as Early states
         :param token_list: The token list from the source
         :param root_name: The string name of the root symbol
-        :return: None or the AST
+        :return: None or SyntaxNode
         """
+        last_state = state_list[-1]
 
-        return None
+        # If there are more than one parses in the last state
+        if len(last_state.item_list) != 1:
+            dbg_printf("More than one final items")
+
+            return None
+
+        final_item = last_state.item_list[0]
+        if  final_item.could_reduce() is False or \
+            final_item.get_reduce_symbol().name != root_name or \
+            final_item.token_index != 0:
+            dbg_printf("Final item not a complete item")
+
+            return None
+
+        return cls._build_unique_tree(last_state.item_list[0])
+
+    @classmethod
+    def _build_unique_tree(cls, item):
+        """
+        Given an item object, build a list of subtrees using this object. This
+        function is called recursively
+        
+        :param item: The EarleyItem object
+        :return: SyntaxTree object, or None if tree not unique
+        """
+        # Add a syntax node and use the LHS of the production as the
+        # label of the symbol
+        sn = SyntaxNode(item.get_reduce_symbol().name)
+
+        for child_list in item.child_list_list:
+            if len(child_list) != 1:
+                dbg_printf("More than one possible parse tree for LHS %s",
+                           str(item.p.lhs))
+
+                return None
+
+            # Recursively build subtree
+            child_node = cls._build_unique_tree(child_list[0])
+            # If no unique subtree then return None
+            if child_node is None:
+                return None
+
+            sn.append(child_node)
+
+        return sn
 
 #####################################################################
 #####################################################################
