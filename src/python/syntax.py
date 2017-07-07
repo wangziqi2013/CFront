@@ -3876,6 +3876,12 @@ class ParserEarley(ParserGenerator):
             LRItem.__init__(self, p, index)
             self.token_index = token_index
 
+            # One of the child it predicts that reduced successfully
+            # We also prepare a list of list of possible parse trees
+            # for each symbol in the RHS. We will search this forest for
+            # possible parsing states
+            self.child_list_list = [[]] * len(self.p)
+
             return
 
         def advance(self):
@@ -3981,8 +3987,8 @@ class ParserEarley(ParserGenerator):
                 item = current_state[list_index]
 
                 # Three possible outcome:
-                #   1. Terminal - scan (SHIFT)
-                #   2. Non-terminal - predict (GOTO)
+                #   1. Non-terminal - predict (GOTO)
+                #   2. Terminal - scan (SHIFT)
                 #   3. None object - complete (REDUCE)
                 dotted_symbol = item.get_dotted_symbol()
                 if isinstance(dotted_symbol, NonTerminal) is True:
@@ -4016,6 +4022,9 @@ class ParserEarley(ParserGenerator):
                         if isinstance(from_item_dotted_symbol, NonTerminal) is True and \
                            reduce_symbol.name == from_item_dotted_symbol.name:
                             current_state.append(from_item.advance())
+
+                            # This is a possible subtree of the symbol we just reduced
+                            from_item.child_list_list[from_item.index].append(item)
                 else:
                     # This is impossible
                     assert False
@@ -4024,6 +4033,23 @@ class ParserEarley(ParserGenerator):
 
         # This contains the finished parsing
         dbg_printf("Last state: %s", str(state_list[-1]))
+
+        # Recover the parse tree from the state list, token list and the
+        # root name and return the tree or None
+        tree = self.recover_parse_tree(state_list, token_list, root_name)
+
+        return tree
+
+    @staticmethod
+    def recover_parse_tree(state_list, token_list, root_name):
+        """
+        This function recovers the parse tree from given states and tokens
+        
+        :param state_list: The state list as Early states
+        :param token_list: The token list from the source
+        :param root_name: The string name of the root symbol
+        :return: None or the AST
+        """
 
         return None
 
