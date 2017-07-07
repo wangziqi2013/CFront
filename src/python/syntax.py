@@ -3839,6 +3839,21 @@ class ParserEarley(ParserGenerator):
             assert(index < len(self))
             return self.item_list[index]
 
+        def __str__(self):
+            """
+            Returns a string form of this object
+            :return: str
+            """
+            ret = "[EarleyState[%d]%s]"
+            item_str = ""
+            for item in self.item_list:
+                if item.token_index == 0 and item.could_reduce() is True:
+                    item_str += (" " + str(item))
+
+            return ret % (len(self.item_list), item_str)
+
+        __repr__ = __str__
+
     #################################################################
     # class EarleyItem
     #################################################################
@@ -4006,6 +4021,9 @@ class ParserEarley(ParserGenerator):
                     assert False
 
                 list_index += 1
+
+        # This contains the finished parsing
+        dbg_printf("Last state: %s", str(state_list[-1]))
 
         return None
 
