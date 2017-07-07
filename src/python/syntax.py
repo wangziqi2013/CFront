@@ -3880,7 +3880,7 @@ class ParserEarley(ParserGenerator):
         # This is a list of Earley states; the length of this list equals
         # the length of the token list and we use list comprehension
         # to build the list of states
-        state_list = [EarleyState(i) for i in range(0, token_count)]
+        state_list = [self.EarleyState(i) for i in range(0, token_count)]
 
         return None
 
@@ -4135,6 +4135,36 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             pg.dump_parsing_table(dump_file_name)
 
         pg.dump_terminal_enum("symbols.h")
+
+        return
+
+    @staticmethod
+    @TestNode()
+    def test_earley_parse(argv):
+        """
+        This function tests Earley parsing
+        
+        :param argv: Argument vector
+        :return: None
+        """
+        if argv.has_keys("earley") is False:
+            dbg_printf("Please use --earley to run Earley parser")
+            return
+        elif argv.has_keys("token-file") is False:
+            dbg_printf("Please use --token-file to specify the input source file")
+            return
+        elif len(argv.arg_list) < 1:
+            dbg_printf("Please specify the syntax file as the first argument")
+            return
+
+        # This is the syntax file name
+        syntax_file_name = argv.arg_list[0]
+        source_file_name = argv.get_all_values("token-file")[0]
+        dbg_printf("Syntax file: %s", syntax_file_name)
+        dbg_printf("Source file: %s", source_file_name)
+
+        pe = ParserEarley(syntax_file_name)
+        pe.parse("declaration", "int a, b = 0;", False)
 
         return
 
