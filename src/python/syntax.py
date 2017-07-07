@@ -1390,7 +1390,13 @@ class LR1Item(LRItem):
         lookahead is FIRST(D). If FIRST(D) contains empty symbol
         we also add the lookahead of the current item into the
         lookahead set
+        
+        Note that this is only one iteration in the computation of the 
+        closure. The caller of this method must repeat the process on
+        the item set for several rounds until no more items can be added
 
+        :param item_set: We add all computed items in this iteration into
+                         this set
         :return: None
         """
         # To avoid doing this again and again
@@ -1515,16 +1521,20 @@ class ItemSet:
         item set holds LR(1) items, otherwise lookahead is not
         in the items.
 
-        This function changes the object in-place. The assumptions
-        that both self and other must have the same LR(1) items
+        This function changes the current object in-place. We assume
+        that both self and other must have the same LR(0) items. We
+        simply do a loop to find the corresponding LR(0) item in the 
+        other item set for each item in the current item set.
 
         :param other: Another ItemSet object
         :return: None
         """
         for i in self.item_set:
             # This is the LR(0) equivalence of the destination
-            # item
+            # item (i.e. current item)
             dest_item = LRItem(i.p, i.index)
+            # Just use a loop to find a equivalence in LR(0)
+            # in the other item set
             for j in other.item_set:
                 src_item = LRItem(j.p, j.index)
                 # If they have the same production and the same
@@ -1559,8 +1569,14 @@ class ItemSet:
         For newly added ItemSet objects inside goto_table, we always
         compute closure for them such that they could be added
         into a higher level set after this function returns. However
-        we do not recursively compute its goto_table recursively since
-        there may be an infinite recursion computing that
+        we do not recursively compute its goto_table since
+        there may be an infinite recursion computation.
+        
+        Note that the GOTO table actually holds transitions for both
+        terminals (which is actually a "shift") and non-terminals (
+        which is a real "GOTO" in LR terminology). We distinguish between
+        them only in parsing table generation phase. Here they are treated
+        equally.
 
         :return: None
         """
@@ -1608,6 +1624,10 @@ class ItemSet:
             # are newly created
             new_item_set.compute_closure()
 
+            # When computing the closure there may be many items with different
+            # lookahead but the same core item (i.e. production + index) added. This
+            # way we need to merge these items in a sense that all items with the same
+            # core item should be merged into one
             core_item_dict = {}
             merged = False
             for item in new_item_set.item_set:
@@ -1629,7 +1649,7 @@ class ItemSet:
                             item.lookahead_set)
 
             # If we did merged items them we need to change
-            # the item set
+            # the item set because the hash value has changed
             if merged is True:
                 new_item_set.item_set = \
                     set(core_item_dict.values())
@@ -1669,6 +1689,7 @@ class ItemSet:
 
             # Iterator on the item list
             for item in item_list:
+                # That is the reason why item sets MUST NOT share item objects
                 if item.closure_computed is True:
                     continue
 

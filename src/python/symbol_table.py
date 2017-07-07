@@ -3,7 +3,7 @@
 #                   for both types and identifiers
 #
 
-from debug import dbg_printf, Argv, DebugRunTestCaseBase, TestNode
+from common import dbg_printf, DebugRunTestCaseBase, Argv, TestNode
 
 #####################################################################
 # class Scope
