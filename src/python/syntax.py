@@ -2971,44 +2971,6 @@ class ParserGeneratorLR(ParserGenerator):
 
         return
 
-    def get_alternative_start_state(self, non_terminal_name, lr_1):
-        """
-        Given the name of a non-terminal symbol, this function tries to compute
-        a starting state, which could be used as an alternative state just to 
-        parse a sub-syntax with the given non-termianl as the root symbol.
-        
-        Note that the returned state may also accept malformed constructs, and
-        therefore is only used for testing, rather than implementing the parser
-        of a sub-syntax.
-        
-        The way we deal with it is to first of all add all productions with the
-        given non-terminal as LHS into an item set, and then compute the closure.
-        After getting the closure, we then check for a superset of the computed
-        item set, and use its state ID as the starting state. This way we can always
-        parse a super set of the language with the given non-terminal as the 
-        starting state.
-        
-        :param non_terminal_name: The name of a non-terminal symbol within the syntax.
-                                  Raise exception if the symbol does not exist as 
-                                  a non-terminal
-        :param lr_1: Whether the item should be LR1 or LR0
-        :return: The new starting state; -1 if not found
-        """
-        # This is used for both LR0 and LR1
-        item_set = ItemSet()
-        for non_terminal in self.non_terminal_set:
-            # If the name matches we use the symbol
-            if non_terminal.name == non_terminal_name:
-                break
-        else:
-            raise ValueError("Non-terminal \"%s\" does not exist in the syntax" %
-                             (non_terminal_name, ))
-
-        for p in non_terminal.lhs_set:
-            item_set.item_set.add(LR1Item())
-
-        return -1
-
 #####################################################################
 # class ParserGeneratorLL1
 #####################################################################
@@ -4041,29 +4003,6 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             pg.dump_parsing_table(dump_file_name)
 
         pg.dump_terminal_enum("symbols.h")
-
-        return
-
-    @TestNode("test_lr")
-    def test_sub_syntax(self, argv):
-        """
-        This function tests whether sub-syntax works
-        
-        :return: None
-        """
-        if argv.has_keys("slr", "lr1", "lalr", "lr") is False:
-            dbg_printf("Only valid for LR(k) parsing")
-            return
-        elif argv.has_keys("sub-syntax") is False:
-            dbg_printf("Need to specify --sub-syntax flag to test sub-syntax")
-            return
-
-        pg = self.pg
-
-        # Try to parse a declaration sub-tree
-        # Note that this is only valid for C syntax
-        starting_state = pg.get_alternative_start_state("declaration")
-        dbg_printf("Alternative starting state: %d", starting_state)
 
         return
 
