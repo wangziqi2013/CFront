@@ -3930,9 +3930,9 @@ class ParserEarley(ParserGenerator):
             raise ValueError("Empty input")
 
         # This is a list of Earley states; the length of this list equals
-        # the length of the token list and we use list comprehension
+        # the length of the token list + 1, and we use list comprehension
         # to build the list of states
-        state_list = [self.EarleyState(i) for i in range(0, token_count)]
+        state_list = [self.EarleyState(i) for i in range(0, token_count + 1)]
 
         # Read the root symbol from the symbol dict and do basic checking
         root_symbol = self.symbol_dict.get(root_name, None)
@@ -3953,6 +3953,9 @@ class ParserEarley(ParserGenerator):
         for current_token_index in range(0, token_count):
             # Token index is also state index
             current_state = state_list[current_token_index]
+            # This is always available as the length of the state list
+            # is one greater than the token list
+            next_state = state_list[current_token_index + 1]
 
             # Could not use for loop to increment it since
             # the length of the list will change
@@ -3961,7 +3964,43 @@ class ParserEarley(ParserGenerator):
             # length of the list will change during this iteration
             while list_index < len(current_state):
                 item = current_state[list_index]
-                if
+
+                # Three possible outcome:
+                #   1. Terminal - scan (SHIFT)
+                #   2. Non-terminal - predict (GOTO)
+                #   3. None object - complete (REDUCE)
+                dotted_symbol = item.get_dotted_symbol
+                if isinstance(dotted_symbol, NonTerminal) is True:
+                    # Predict all productions and add them into the current state
+                    for p in dotted_symbol.lhs_set:
+                        current_state.append(
+                            self.EarleyItem(p, 0, current_token_index))
+                elif isinstance(dotted_symbol, NonTerminal) is True:
+                    # Advance the dot and add it into the next state
+                    next_state.append(item.advance())
+                elif dotted_symbol is None:
+                    # This disallows empty reduction as there must be
+                    # at least one symbol at the right hand side of the production
+                    # we will reduce
+                    if item.token_index == current_token_index:
+                        raise ValueError("Do not allow empty reduction (\"%s\")" %
+                                         (str(item.p), ))
+
+                    # This is the state where the reduced symbol is first predicted
+                    from_state = state_list[item.token_index]
+
+                    # This is the symbol that will be reduced
+                    reduce_symbol = item.get_reduce_symbol()
+                    assert(isinstance(reduce_symbol, NonTerminal) is True)
+
+                    # Could directly iterate here since we do not modify it
+                    for from_item in from_state.item_list:
+                        from_item_dotted_symbol = from_item.get_dotted_symbol()
+                        if isinstance(reduce_symbol, NonTerminal) is True and \
+                           reduce_symbol.name == from_item_dotted_symbol
+                else:
+                    # This is impossible
+                    assert False
 
                 list_index += 1
 
