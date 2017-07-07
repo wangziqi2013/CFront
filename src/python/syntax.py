@@ -3804,6 +3804,23 @@ class ParserEarley(ParserGenerator):
 
             return
 
+        def append(self, item):
+            """
+            This function appends an item if it is not already in the item set
+            The item is both added into the set and also appended to the end of the list.
+            If this is called all iterators on the item list object will become devoid
+            and therefore we should use index to iterate on the list
+            
+            :param item: The EarleyItem object
+            :return: None
+            """
+            assert(isinstance(item, self.EarleyItem) is True)
+            if item not in self.item_set:
+                self.item_set.add(item)
+                self.item_list.append(item)
+
+            return
+
     #################################################################
     # class EarleyItem
     #################################################################
@@ -3844,11 +3861,13 @@ class ParserEarley(ParserGenerator):
             return LRItem.__eq__(self, other) and \
                    (self.token_index == other.token_index)
 
-    def parse(self, starting_symbol, s, is_filename):
+    def parse(self, root_name, s, is_filename):
         """
         Start parsing the given file. We use a tokenizer to tokenize the given
         file
         
+        :param root_name: The symbolic name of the root symbol; we will later resolve
+                          it to the actual non-terminal object
         :param s: Either the file name or the string to be parsed, depending on
                   the next argument
         :param is_filename: Whether the previous argument is a file name or a 
@@ -3877,10 +3896,28 @@ class ParserEarley(ParserGenerator):
         token_count = len(token_list)
         dbg_printf("Extracted %d tokens from the input", token_count)
 
+        # Corner case should be avoided
+        if token_count == 0:
+            raise ValueError("Empty input")
+
         # This is a list of Earley states; the length of this list equals
         # the length of the token list and we use list comprehension
         # to build the list of states
         state_list = [self.EarleyState(i) for i in range(0, token_count)]
+
+        # Read the root symbol from the symbol dict and do basic checking
+        root_symbol = self.symbol_dict.get(root_name, None)
+        if root_symbol is None:
+            raise ValueError("Non-terminal \"%s\" does not exist" %
+                             (root_name, ))
+        elif isinstance(root_symbol, NonTerminal) is False:
+            raise ValueError("Symbol \"%s\" is not a non-terminal" %
+                             (root_name, ))
+
+        # Add all production originating from this symbol into the first
+        # state object as initialization
+        for p in root_symbol.lhs_set:
+            state_list[0].state_list.append
 
         return None
 
