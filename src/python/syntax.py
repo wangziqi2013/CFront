@@ -4075,18 +4075,20 @@ class ParserEarley(ParserGenerator):
         return cls._build_unique_tree(last_state.item_list[0], 0)
 
     @classmethod
-    def _build_unique_tree(cls, item, next_token_index):
+    def _build_unique_tree(cls, item, next_token_index, depth=0):
         """
         Given an item object, build a list of subtrees using this object. This
         function is called recursively
         
         :param item: The EarleyItem object
         :param next_token_index: The index of the next token. This is recursive variable
+        :param depth: For debugging purposes
         :return: SyntaxTree object, or None if tree not unique
         """
-        dbg_printf("Recovering tree for %s @ token index %d",
+        dbg_printf("Recovering tree for %s @ token index %d, depth %d",
                    str(item.p),
-                   next_token_index)
+                   next_token_index,
+                   depth)
         # Add a syntax node and use the LHS of the production as the
         # label of the symbol
         sn = SyntaxNode(item.get_reduce_symbol().name)
@@ -4101,9 +4103,10 @@ class ParserEarley(ParserGenerator):
             #               str(item.p.lhs),
             #               index)
             #    return None
+
             # If it is a terminal then just append it to the syntax node
             if isinstance(item.p[rhs_index], Terminal) is True:
-                sn.append(item.p[rhs_index])
+                sn.append(SyntaxNode(item.p[rhs_index].name))
                 # Consumed one non-terminal
                 next_token_index += 1
                 continue
@@ -4113,7 +4116,9 @@ class ParserEarley(ParserGenerator):
                     # Recursively build subtree
                     # Also we pass the next token index
                     child_node, next_token_index = \
-                        cls._build_unique_tree(child_list[0], next_token_index)
+                        cls._build_unique_tree(child,
+                                               next_token_index,
+                                               depth + 1)
 
                     # If no unique subtree then return None
                     # Otherwise just append it as child node
