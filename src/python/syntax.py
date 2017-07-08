@@ -3892,11 +3892,12 @@ class ParserEarley(ParserGenerator):
             # There must be something after the dot
             assert (self.get_dotted_symbol() is not None)
 
-            # Just advance the index and leave other stuff intact
+            # First advance the index
             ret = self.__class__(self.p, self.index + 1, self.token_index)
+
             # Also duplicate the child list list
             for i in range(0, len(self.child_list_list)):
-                for j in ret.child_list_list[i]:
+                for j in self.child_list_list[i]:
                     ret.child_list_list[i].append(j)
 
             return ret
@@ -4088,10 +4089,10 @@ class ParserEarley(ParserGenerator):
         sn = SyntaxNode(item.get_reduce_symbol().name)
 
         for child_list in item.child_list_list:
-            if len(child_list) != 1:
+            assert(len(child_list) != 0)
+            if len(child_list) > 1:
                 dbg_printf("More than one possible parse tree for LHS %s",
                            str(item.p.lhs))
-
                 return None
 
             # Recursively build subtree
