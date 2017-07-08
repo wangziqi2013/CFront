@@ -3891,7 +3891,7 @@ class ParserEarley(ParserGenerator):
             """
             # There must be something after the dot
             assert (self.get_dotted_symbol() is not None)
-            
+
             ret = self.__class__(self.p, self.index + 1, self.token_index)
 
             # Also duplicate the child list list
@@ -4072,38 +4072,68 @@ class ParserEarley(ParserGenerator):
 
             return None
 
-        return cls._build_unique_tree(last_state.item_list[0])
+        return cls._build_unique_tree(last_state.item_list[0], 0)
 
     @classmethod
-    def _build_unique_tree(cls, item):
+    def _build_unique_tree(cls, item, next_token_index):
         """
         Given an item object, build a list of subtrees using this object. This
         function is called recursively
         
         :param item: The EarleyItem object
+        :param next_token_index: The index of the next token. This is recursive variable
         :return: SyntaxTree object, or None if tree not unique
         """
+        dbg_printf("Recovering tree for %s @ token index %d",
+                   str(item.p),
+                   next_token_index)
         # Add a syntax node and use the LHS of the production as the
         # label of the symbol
         sn = SyntaxNode(item.get_reduce_symbol().name)
 
+        # This is the index of RHS nodes in the production
+        rhs_index = 0
         for child_list in item.child_list_list:
-            print child_list
-            assert(len(child_list) != 0)
-            if len(child_list) > 1:
-                dbg_printf("More than one possible parse tree for LHS %s",
-                           str(item.p.lhs))
-                return None
+            #print child_list
+            #assert(len(child_list) != 0)
+            #if len(child_list) > 1:
+            #    dbg_printf("More than one possible parse tree for LHS %s @ index %d",
+            #               str(item.p.lhs),
+            #               index)
+            #    return None
+            # If it is a terminal then just append it to the syntax node
+            if isinstance(item.p[rhs_index], Terminal) is True:
+                sn.append(item.p[rhs_index])
+                # Consumed one non-terminal
+                next_token_index += 1
+                continue
 
-            # Recursively build subtree
-            child_node = cls._build_unique_tree(child_list[0])
-            # If no unique subtree then return None
-            if child_node is None:
-                return None
+            for child in child_list:
+                if child.token_index == next_token_index:
+                    # Recursively build subtree
+                    # Also we pass the next token index
+                    child_node, next_token_index = \
+                        cls._build_unique_tree(child_list[0], next_token_index)
 
-            sn.append(child_node)
+                    # If no unique subtree then return None
+                    # Otherwise just append it as child node
+                    if child_node is None:
+                        return None, -1
+                    else:
+                        sn.append(child_node)
 
-        return sn
+                    # Break here such that we will hit else branch of
+                    # the loop if no match
+                    break
+            else:
+                dbg_printf("Did not find a matching item for LHS %s @ token index %d",
+                           str(item.p.lhs),
+                           next_token_index)
+                return None, -1
+
+            rhs_index += 1
+
+        return sn, next_token_index
 
 #####################################################################
 #####################################################################
