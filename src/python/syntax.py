@@ -4042,7 +4042,10 @@ class ParserEarley(ParserGenerator):
 
         # Recover the parse tree from the state list, token list and the
         # root name and return the tree or None
-        tree = self.build_unique_tree(state_list, token_list, root_name)
+        tree, last_index = self.build_unique_tree(state_list, token_list, root_name)
+        # If we did not manage to the last token then parsing fails
+        if last_index != token_count:
+            return None
 
         return tree
 
@@ -4394,9 +4397,9 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
 
         return
 
-    @staticmethod
+    @classmethod
     @TestNode()
-    def test_earley_parse(argv):
+    def test_earley_parse(cls, argv):
         """
         This function tests Earley parsing
         
@@ -4420,7 +4423,12 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         dbg_printf("Source file: %s", source_file_name)
 
         pe = ParserEarley(syntax_file_name)
-        pe.parse("declaration", "int a, b = 0;", False)
+        tree = pe.parse("declaration", "int a, b = 0;", False)
+
+        if tree is None:
+            dbg_printf("Failed to parse")
+        else:
+            cls.print_parse_tree(tree)
 
         return
 
