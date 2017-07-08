@@ -3884,23 +3884,15 @@ class ParserEarley(ParserGenerator):
 
             return
 
-        def advance(self, next_token=False):
+        def advance(self):
             """
             Returns a new item object with the dot symbol advanced
-            
-            :param next_token: Whether to also increment the token index, as we
-                               call this for both advancing over a terminal or a
-                               non-terminal
             :return: EarleyItem
             """
             # There must be something after the dot
             assert (self.get_dotted_symbol() is not None)
-
-            # First advance the index
-            if next_token is False:
-                ret = self.__class__(self.p, self.index + 1, self.token_index)
-            else:
-                ret = self.__class__(self.p, self.index + 1, self.token_index + 1)
+            
+            ret = self.__class__(self.p, self.index + 1, self.token_index)
 
             # Also duplicate the child list list
             for i in range(0, len(self.child_list_list)):
@@ -4013,7 +4005,7 @@ class ParserEarley(ParserGenerator):
                 elif isinstance(dotted_symbol, Terminal) is True \
                      and token_list[current_token_index].name == dotted_symbol.name:
                     # Advance the dot and add it into the next state
-                    next_state.append(item.advance(True))
+                    next_state.append(item.advance())
                 elif dotted_symbol is None:
                     # This disallows empty reduction as there must be
                     # at least one symbol at the right hand side of the production
@@ -4041,7 +4033,7 @@ class ParserEarley(ParserGenerator):
 
                             # This must be done after we added the subtree. Also the new
                             # item inherits the subtree we just added
-                            current_state.append(from_item.advance(False))
+                            current_state.append(from_item.advance())
 
                 list_index += 1
 
