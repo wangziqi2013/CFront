@@ -4043,8 +4043,11 @@ class ParserEarley(ParserGenerator):
         # Recover the parse tree from the state list, token list and the
         # root name and return the tree or None
         tree, last_index = self.build_unique_tree(state_list, token_list, root_name)
+
         # If we did not manage to the last token then parsing fails
-        if last_index != token_count:
+        if tree is not None and \
+           last_index != token_count:
+            dbg_printf("Returned a partial syntax tree, but not all tokens are used")
             return None
 
         return tree
