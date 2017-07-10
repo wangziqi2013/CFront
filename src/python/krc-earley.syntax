@@ -281,8 +281,8 @@ direct-abstract-declarator:
     direct-abstract-declarator T_LPAREN parameter-type-list T_RPAREN      # $1, T_FUNC_CALL $3
 
 # This works for Earley parser
-typedef-name:
-    T_IDENT                                           # T_TYPEDEF_NAME, T_IDENT@1
+#typedef-name:
+#    T_IDENT                                           # T_TYPEDEF_NAME, T_IDENT@1
  
 initializer:
     assignment-expression                             # $1

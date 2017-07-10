@@ -4011,12 +4011,16 @@ class ParserEarley(ParserGenerator):
             state_list[0].append(self.EarleyItem(p, 0, 0, 0))
 
         # This is the current token index we will scan
-        for current_token_index in range(0, token_count):
+        for current_token_index in range(0, token_count + 1):
             # Token index is also state index
             current_state = state_list[current_token_index]
-            # This is always available as the length of the state list
-            # is one greater than the token list
-            next_state = state_list[current_token_index + 1]
+
+            if current_token_index != token_count:
+                # This is always available as the length of the state list
+                # is one greater than the token list
+                next_state = state_list[current_token_index + 1]
+            else:
+                next_state = None
 
             # Could not use for loop to increment it since
             # the length of the list will change
@@ -4036,7 +4040,8 @@ class ParserEarley(ParserGenerator):
                     for p in dotted_symbol.lhs_set:
                         current_state.append(
                             self.EarleyItem(p, 0, current_token_index, current_token_index))
-                elif isinstance(dotted_symbol, Terminal) is True and \
+                elif next_state is not None and \
+                     isinstance(dotted_symbol, Terminal) is True and \
                      token_list[current_token_index].name == dotted_symbol.name:
                     # Advance the dot and add it into the next state
                     # Note that we should set state index accordingly
@@ -4100,10 +4105,14 @@ class ParserEarley(ParserGenerator):
         last_state = state_list[-1]
 
         # If there are more than one parses in the last state
-        if len(last_state.item_list) != 1:
+        if len(last_state.item_list) > 1:
+            print last_state.item_list
             dbg_printf("More than one final items")
 
-            return None
+            return None, -1
+        elif len(last_state.item_list) == 0:
+            dbg_printf("No final item - parsing failure")
+            return None, -1
 
         final_item = last_state.item_list[0]
         if  final_item.could_reduce() is False or \
@@ -4111,7 +4120,7 @@ class ParserEarley(ParserGenerator):
             final_item.token_index != 0:
             dbg_printf("Final item not a complete item")
 
-            return None
+            return None, -1
 
         # Print the decomposition first
         # This function is totally readonly
@@ -4128,10 +4137,10 @@ class ParserEarley(ParserGenerator):
         :param item: The EarleyItem object
         :param next_token_index: The index of the next token. This is recursive variable
         :param depth: For debugging purposes
-        :return: SyntaxTree object, or None if tree not unique
+        :return: tuple(SyntaxTree object or None if tree not unique, next token index)
         """
         dbg_printf("Recovering tree for %s @ token index %d, depth %d",
-                   str(item.p),
+                   str(item),
                    next_token_index,
                    depth)
         # Add a syntax node and use the LHS of the production as the
@@ -4154,34 +4163,41 @@ class ParserEarley(ParserGenerator):
                 sn.append(SyntaxNode(item.p[rhs_index].name))
                 # Consumed one non-terminal
                 next_token_index += 1
+                # Also consider the next slot in the production
+                rhs_index += 1
                 continue
+
+            # These two stores the maximum child length
+            max_child_length = -1
+            max_child = None
 
             for child in child_list:
                 child_dotted_symbol = child.get_dotted_symbol()
                 if child.token_index == next_token_index and \
                    child_dotted_symbol is None:
-                    # Recursively build subtree
-                    # Also we pass the next token index
-                    child_node, next_token_index = \
-                        cls._build_unique_tree(child,
-                                               next_token_index,
-                                               depth + 1)
+                    child_length = child.state_index - child.token_index
+                    if child_length > max_child_length:
+                        max_child = child
 
-                    # If no unique subtree then return None
-                    # Otherwise just append it as child node
-                    if child_node is None:
-                        return None, -1
-                    else:
-                        sn.append(child_node)
-
-                    # Break here such that we will hit else branch of
-                    # the loop if no match
-                    break
-            else:
+            if max_child is None:
                 dbg_printf("Did not find a matching item for LHS %s @ token index %d",
                            str(item.p.lhs),
                            next_token_index)
                 return None, -1
+
+            # Recursively build subtree
+            # Also we pass the next token index
+            child_node, next_token_index = \
+                cls._build_unique_tree(max_child,
+                                       next_token_index,
+                                       depth + 1)
+
+            # If no unique subtree then return None
+            # Otherwise just append it as child node
+            if child_node is None:
+                return None, -1
+            else:
+                sn.append(child_node)
 
             rhs_index += 1
 
@@ -4212,7 +4228,7 @@ class ParserEarley(ParserGenerator):
                     assert(isinstance(child, cls.EarleyItem) is True)
 
                     dbg_printf("%sIndex %d %s", depth * " ", index, child)
-                    #cls.print_state_decomposition(child, depth + 1)
+                    cls.print_state_decomposition(child, depth + 1)
 
             # This is always called
             index += 1
@@ -4499,12 +4515,15 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         dbg_printf("Source file: %s", source_file_name)
 
         pe = ParserEarley(syntax_file_name)
-        tree = pe.parse("declaration", "int a = 1, b = 0;", False)
+        tree = pe.parse("declaration", "typedef int *(*a[])(void);", False)
 
         if tree is None:
             dbg_printf("Failed to parse")
         else:
             cls.print_parse_tree(tree)
+
+        pe = ParserEarley(syntax_file_name)
+        print pe.parse("expression", "a", False)
 
         return
 

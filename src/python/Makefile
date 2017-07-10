@@ -11,7 +11,7 @@ lalr-gen:
 	python ./syntax.py --lalr ./krc-lr.syntax --dump-file=./krc-lr.tabl
 
 earley-parse:
-	python ./syntax.py --earley ./krc-lr.syntax --token-file=./lex_test.c
+	python ./syntax.py --earley ./krc-earley.syntax --token-file=./lex_test.c
 
 lr-parse:
 	python ./syntax.py --lr ./krc-lr.table --token-file=./lex_test.c
