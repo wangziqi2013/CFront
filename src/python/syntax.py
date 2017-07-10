@@ -4100,6 +4100,10 @@ class ParserEarley(ParserGenerator):
 
             return None
 
+        # Print the decomposition first
+        # This function is totally readonly
+        cls.print_state_decomposition(last_state.item_list[0], 0)
+
         return cls._build_unique_tree(last_state.item_list[0], 0)
 
     @classmethod
@@ -4170,6 +4174,37 @@ class ParserEarley(ParserGenerator):
 
         dbg_printf("Function returns")
         return sn, next_token_index
+
+    @classmethod
+    def print_state_decomposition(cls, current_item, depth=0):
+        """
+        This function prints the parse sub-trees of a state. It is mainly
+        used for debugging purposes
+        
+        :param current_item: The item we are decomposing
+        :param depth: Recursion variable
+        :return: None
+        """
+        index = 0
+        for child_list in current_item.child_list_list:
+            # This is the symbol on the index indicated by the index
+            current_symbol = current_item.p[index]
+            # For terminals there must be no child, so skip it
+            if isinstance(current_symbol, Terminal) is True:
+                dbg_printf("%sTerminal %s", depth * " ", current_symbol.name)
+                continue
+
+            # Then for each child print this
+            for child in child_list:
+                # The item as child must be an EarleyItem object
+                assert(isinstance(child, EarleyItem) is True)
+
+                dbg_printf("%sIndex %d %s", depth * " ", index, child)
+                cls.print_state_decomposition(child, depth + 1)
+
+            index += 1
+
+        return
 
 #####################################################################
 #####################################################################
