@@ -3865,13 +3865,17 @@ class ParserEarley(ParserGenerator):
         (index of the token). Note that not all LR item function is callable 
         for this object, and we should only use the most basic ones
         """
-        def __init__(self, p, index, token_index, state_index):
+        def __init__(self, p, index, token_index, state_index, template_item=None):
             """
             Initialize the base class with a production and index in the production
             
             :param p: The production object 
             :param index: The index of the current position within the production
             :param token_index: The index of the token
+            :param state_index: The index of the state this item is appended to
+            :param template_item: When advancing an item we need the older item's
+                                  child list. If this is None then we initialize
+                                  empty child list
             """
             LRItem.__init__(self, p, index)
             self.token_index = token_index
@@ -3883,7 +3887,16 @@ class ParserEarley(ParserGenerator):
             # We also prepare a list of list of possible parse trees
             # for each symbol in the RHS. We will search this forest for
             # possible parsing states
-            self.child_list_list = [[]] * len(self.p)
+            if template_item is None:
+                # This initializes a list object for each slot
+                self.child_list_list = [list() for i in range(0, len(self.p))]
+            else:
+                self.child_list_list = []
+                # Also duplicate the child list list
+                for i in range(0, len(template_item.child_list_list)):
+                    self.child_list_list.append(list())
+                    for j in template_item.child_list_list[i]:
+                        self.child_list_list[i].append(j)
 
             return
 
@@ -3896,17 +3909,18 @@ class ParserEarley(ParserGenerator):
             """
             # There must be something after the dot
             assert (self.get_dotted_symbol() is not None)
+            # Make sure there is always a state index
+            # while maintaining the same signature as the parent class
+            assert(state_index != -1)
 
-            # Note that state index is not inherited
+            # Use self as a template for copying child lists
             ret = self.__class__(self.p,
                                  self.index + 1,
                                  self.token_index,
-                                 state_index)
+                                 state_index,
+                                 self)
 
-            # Also duplicate the child list list
-            for i in range(0, len(self.child_list_list)):
-                for j in self.child_list_list[i]:
-                    ret.child_list_list[i].append(j)
+            #ret.child_list_list = self.child_list_list
 
             return ret
 
@@ -4022,8 +4036,8 @@ class ParserEarley(ParserGenerator):
                     for p in dotted_symbol.lhs_set:
                         current_state.append(
                             self.EarleyItem(p, 0, current_token_index, current_token_index))
-                elif isinstance(dotted_symbol, Terminal) is True \
-                     and token_list[current_token_index].name == dotted_symbol.name:
+                elif isinstance(dotted_symbol, Terminal) is True and \
+                     token_list[current_token_index].name == dotted_symbol.name:
                     # Advance the dot and add it into the next state
                     # Note that we should set state index accordingly
                     next_state.append(item.advance(current_token_index + 1))
@@ -4044,14 +4058,13 @@ class ParserEarley(ParserGenerator):
 
                     # Could directly iterate here since we do not modify it
                     for from_item in from_state.item_list:
-                        # This is the dotted symbol where the reduced from is from
+                        # This is the dotted symbol where the reduced symbol is from
                         from_item_dotted_symbol = from_item.get_dotted_symbol()
                         # GOTO using the reduced symbol
                         if isinstance(from_item_dotted_symbol, NonTerminal) is True and \
                            reduce_symbol.name == from_item_dotted_symbol.name:
                             # This is a possible subtree of the symbol we just reduced
                             from_item.child_list_list[from_item.index].append(item)
-
                             # This must be done after we added the subtree. Also the new
                             # item inherits the subtree we just added
                             # Note that the state index is current state index
