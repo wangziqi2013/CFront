@@ -3926,6 +3926,17 @@ class ParserEarley(ParserGenerator):
             return LRItem.__eq__(self, other) and \
                    (self.token_index == other.token_index)
 
+        def __str__(self):
+            """
+            This function returns a string representation of the object
+            
+            :return: str 
+            """
+            ret = "[EarleyItem %s, %s, %s]" % (self.p, self.token_index, self.state_index)
+            return ret
+
+        __repr__= __str__
+
     def parse(self, root_name, s, is_filename):
         """
         Start parsing the given file. We use a tokenizer to tokenize the given
