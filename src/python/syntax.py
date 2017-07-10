@@ -3865,7 +3865,7 @@ class ParserEarley(ParserGenerator):
         (index of the token). Note that not all LR item function is callable 
         for this object, and we should only use the most basic ones
         """
-        def __init__(self, p, index, token_index):
+        def __init__(self, p, index, token_index, state_index):
             """
             Initialize the base class with a production and index in the production
             
@@ -3876,6 +3876,9 @@ class ParserEarley(ParserGenerator):
             LRItem.__init__(self, p, index)
             self.token_index = token_index
 
+            # This is the index of the state this item is added to
+            self.state_index = state_index
+
             # One of the child it predicts that reduced successfully
             # We also prepare a list of list of possible parse trees
             # for each symbol in the RHS. We will search this forest for
@@ -3884,15 +3887,21 @@ class ParserEarley(ParserGenerator):
 
             return
 
-        def advance(self):
+        def advance(self, state_index=-1):
             """
             Returns a new item object with the dot symbol advanced
+            
+            :param state_index: The state index for the new item
             :return: EarleyItem
             """
             # There must be something after the dot
             assert (self.get_dotted_symbol() is not None)
 
-            ret = self.__class__(self.p, self.index + 1, self.token_index)
+            # Note that state index is not inherited
+            ret = self.__class__(self.p,
+                                 self.index + 1,
+                                 self.token_index,
+                                 state_index)
 
             # Also duplicate the child list list
             for i in range(0, len(self.child_list_list)):
@@ -3974,7 +3983,7 @@ class ParserEarley(ParserGenerator):
         # state object as initialization
         for p in root_symbol.lhs_set:
             # Append items with dot position at 0 and token index at 0
-            state_list[0].append(self.EarleyItem(p, 0, 0))
+            state_list[0].append(self.EarleyItem(p, 0, 0, 0))
 
         # This is the current token index we will scan
         for current_token_index in range(0, token_count):
@@ -4001,11 +4010,12 @@ class ParserEarley(ParserGenerator):
                     # Predict all productions and add them into the current state
                     for p in dotted_symbol.lhs_set:
                         current_state.append(
-                            self.EarleyItem(p, 0, current_token_index))
+                            self.EarleyItem(p, 0, current_token_index, current_token_index))
                 elif isinstance(dotted_symbol, Terminal) is True \
                      and token_list[current_token_index].name == dotted_symbol.name:
                     # Advance the dot and add it into the next state
-                    next_state.append(item.advance())
+                    # Note that we should set state index accordingly
+                    next_state.append(item.advance(current_token_index + 1))
                 elif dotted_symbol is None:
                     # This disallows empty reduction as there must be
                     # at least one symbol at the right hand side of the production
@@ -4033,7 +4043,8 @@ class ParserEarley(ParserGenerator):
 
                             # This must be done after we added the subtree. Also the new
                             # item inherits the subtree we just added
-                            current_state.append(from_item.advance())
+                            # Note that the state index is current state index
+                            current_state.append(from_item.advance(current_token_index))
 
                 list_index += 1
 
@@ -4118,7 +4129,9 @@ class ParserEarley(ParserGenerator):
                 continue
 
             for child in child_list:
-                if child.token_index == next_token_index:
+                child_dotted_symbol = child.get_dotted_symbol()
+                if child.token_index == next_token_index and \
+                   child_dotted_symbol is None:
                     # Recursively build subtree
                     # Also we pass the next token index
                     child_node, next_token_index = \
@@ -4144,6 +4157,7 @@ class ParserEarley(ParserGenerator):
 
             rhs_index += 1
 
+        dbg_printf("Function returns")
         return sn, next_token_index
 
 #####################################################################
@@ -4426,7 +4440,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
         dbg_printf("Source file: %s", source_file_name)
 
         pe = ParserEarley(syntax_file_name)
-        tree = pe.parse("declaration", "int a, b = 0;", False)
+        tree = pe.parse("declaration", "int a = 1, b = 0;", False)
 
         if tree is None:
             dbg_printf("Failed to parse")
