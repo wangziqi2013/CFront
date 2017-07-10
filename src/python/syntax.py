@@ -4518,7 +4518,7 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             cls.print_parse_tree(tree)
 
         pe = ParserEarley(syntax_file_name)
-        tree = pe.parse("root", "int main() {printf(\"Hello World!\\n\"); return 0;}", False)
+        tree = pe.parse("root", "int main() {const char *p = &(\"This is ia string\") + 1; printf(\"Hello World!\\n\"); return 0;}", False)
 
         if tree is None:
             dbg_printf("Failed to parse")
