@@ -4015,9 +4015,11 @@ class ParserEarley(ParserGenerator):
             # Token index is also state index
             current_state = state_list[current_token_index]
 
+            # If there is a next state then grab the next state object
+            # Otherwise we know this is the last state and just set it to
+            # None. The None value also serves as an indication to later
+            # procedures that we are at the last state
             if current_token_index != token_count:
-                # This is always available as the length of the state list
-                # is one greater than the token list
                 next_state = state_list[current_token_index + 1]
             else:
                 next_state = None
@@ -4032,7 +4034,8 @@ class ParserEarley(ParserGenerator):
 
                 # Three possible outcome:
                 #   1. Non-terminal - predict (GOTO)
-                #   2. Terminal - scan (SHIFT)
+                #   2. Terminal - scan (SHIFT)          -> Only do this when we are
+                #                                          NOT in the last state
                 #   3. None object - complete (REDUCE)
                 dotted_symbol = item.get_dotted_symbol()
                 if isinstance(dotted_symbol, NonTerminal) is True:
