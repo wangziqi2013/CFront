@@ -4191,17 +4191,17 @@ class ParserEarley(ParserGenerator):
             current_symbol = current_item.p[index]
             # For terminals there must be no child, so skip it
             if isinstance(current_symbol, Terminal) is True:
-                dbg_printf("%sTerminal %s", depth * " ", current_symbol.name)
-                continue
+                dbg_printf("%sIndex %d Terminal %s", depth * " ", index, current_symbol.name)
+            else:
+                # Then for each child print this
+                for child in child_list:
+                    # The item as child must be an EarleyItem object
+                    assert(isinstance(child, cls.EarleyItem) is True)
 
-            # Then for each child print this
-            for child in child_list:
-                # The item as child must be an EarleyItem object
-                assert(isinstance(child, EarleyItem) is True)
+                    dbg_printf("%sIndex %d %s", depth * " ", index, child)
+                    #cls.print_state_decomposition(child, depth + 1)
 
-                dbg_printf("%sIndex %d %s", depth * " ", index, child)
-                cls.print_state_decomposition(child, depth + 1)
-
+            # This is always called
             index += 1
 
         return
