@@ -3920,6 +3920,7 @@ class ParserEarley(ParserGenerator):
                                  state_index,
                                  self)
 
+            # NOTE: DO NOT DO THIS - ALWAYS COPY
             #ret.child_list_list = self.child_list_list
 
             return ret
@@ -4105,6 +4106,9 @@ class ParserEarley(ParserGenerator):
         :param root_name: The string name of the root symbol
         :return: None or SyntaxNode
         """
+        # Avoid editor warning
+        del token_list
+
         last_state = state_list[-1]
 
         # Check last state for an eligible item that completes all
@@ -4145,14 +4149,6 @@ class ParserEarley(ParserGenerator):
         # This is the index of RHS nodes in the production
         rhs_index = 0
         for child_list in item.child_list_list:
-            #print child_list
-            #assert(len(child_list) != 0)
-            #if len(child_list) > 1:
-            #    dbg_printf("More than one possible parse tree for LHS %s @ index %d",
-            #               str(item.p.lhs),
-            #               index)
-            #    return None
-
             # If it is a terminal then just append it to the syntax node
             if isinstance(item.p[rhs_index], Terminal) is True:
                 sn.append(SyntaxNode(item.p[rhs_index].name))
@@ -4203,7 +4199,14 @@ class ParserEarley(ParserGenerator):
     def print_state_decomposition(cls, current_item, depth=0):
         """
         This function prints the parse sub-trees of a state. It is mainly
-        used for debugging purposes
+        used for debugging purposes.
+        
+        Note that this function prints out all possible decomposition plans.
+        In practice we only select the plan based on a maximum-length principle.
+        That is, we select items from left-to-right, and whenever there are
+        multiple candidates we always select the one with the longest token
+        sequence. This matches the heuristics we as human adopts when reading the 
+        source code and are thus convenient.
         
         :param current_item: The item we are decomposing
         :param depth: Recursion variable
