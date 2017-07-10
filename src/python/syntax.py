@@ -4104,29 +4104,21 @@ class ParserEarley(ParserGenerator):
         """
         last_state = state_list[-1]
 
-        # If there are more than one parses in the last state
-        if len(last_state.item_list) > 1:
-            print last_state.item_list
-            dbg_printf("More than one final items")
+        # Check last state for an eligible item that completes all
+        # symbols in the production with the root symbol and uses
+        # all tokens
+        for item in last_state.item_list:
+            if item.could_reduce() is True and \
+               item.get_reduce_symbol().name == root_name and \
+               item.token_index == 0:
+                # Print the decomposition first
+                # This function is totally readonly
+                cls.print_state_decomposition(item, 0)
 
-            return None, -1
-        elif len(last_state.item_list) == 0:
-            dbg_printf("No final item - parsing failure")
-            return None, -1
+                return cls._build_unique_tree(item, 0)
 
-        final_item = last_state.item_list[0]
-        if  final_item.could_reduce() is False or \
-            final_item.get_reduce_symbol().name != root_name or \
-            final_item.token_index != 0:
-            dbg_printf("Final item not a complete item")
-
-            return None, -1
-
-        # Print the decomposition first
-        # This function is totally readonly
-        cls.print_state_decomposition(last_state.item_list[0], 0)
-
-        return cls._build_unique_tree(last_state.item_list[0], 0)
+        dbg_printf("Did not find eligible parsed item in the final state")
+        return None, -1
 
     @classmethod
     def _build_unique_tree(cls, item, next_token_index, depth=0):
@@ -4523,7 +4515,12 @@ class ParserGeneratorTestCase(DebugRunTestCaseBase):
             cls.print_parse_tree(tree)
 
         pe = ParserEarley(syntax_file_name)
-        print pe.parse("expression", "a", False)
+        tree = pe.parse("root", "int main() {printf(\"Hello World!\\n\"); return 0;}", False)
+
+        if tree is None:
+            dbg_printf("Failed to parse")
+        else:
+            cls.print_parse_tree(tree)
 
         return
 
