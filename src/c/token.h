@@ -61,6 +61,11 @@ typedef enum {
   T_XOR_ASSIGN,         // ^=
 
   T_COMMA,              // ,
+
+  T_LCPAREN,            // {
+  T_RCPAREN,            // }
+
+  T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
 
 // Defines operator associativity

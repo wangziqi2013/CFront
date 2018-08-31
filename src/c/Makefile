@@ -6,7 +6,7 @@ LDFLAGS=
 
 all: ./bin/test_parse_exp
 
-./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o
+./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o
 	$(CC) test_parse_exp.o parse_exp.o stack.o -o ./bin/test_parse_exp $(LDFLAGS)
 
 test_parse_exp.o: test_parse_exp.c
@@ -17,6 +17,9 @@ parse_exp.o: parse_exp.c token.h ast.h stack.h parse_exp.h
 
 stack.o: stack.c stack.h
 	$(CC) stack.c -c -o stack.o $(CFLAGS) $(LDFLAGS)
+
+token.o: token.c token.h
+	$(CC) token.c -c -o token.o $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -f *.o
