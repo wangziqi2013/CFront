@@ -2,7 +2,8 @@
 # This file generates the C++ parser for a given grammar
 #
 # We provide four types of parser generators: LL(1), LR(1)
-# SLR(1) and LALR(1)
+# SLR(1) and LALR(1), and an on-line Earley parser to experiment
+# with
 #
 
 from common import *
@@ -1493,7 +1494,7 @@ class ItemSet:
         # This is the set of items
         self.item_set = set()
 
-        # This maps GOTO with terminals and non-terminals
+        # This maps go to with terminals and non-terminals
         # to the next state
         self.goto_table = {}
 
@@ -3596,12 +3597,6 @@ class ParserLR(ParserGeneratorLR):
         symbol_stack = self.symbol_stack
 
         token = tk.get_next_token()
-
-        #temp = set(["T_DECL", "T_TYPEDEF", "T_DECL_BODY",
-        #            "T_COMPOUND_STMT_BEGIN",
-        #            "T_COMPOUND_STMT_END",
-        #            "T_STMT_LIST",
-        #            "T_DECL_LIST"])
 
         while True:
             top_state = state_stack[-1]
