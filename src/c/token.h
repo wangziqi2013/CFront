@@ -2,6 +2,8 @@
 #ifndef _TOKEN_H
 #define _TOKEN_H
 
+#include <stdint.h>
+
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both
 // unary "plus" and binary "add" is T_PLUS. Extra information such as operator property 
@@ -25,7 +27,7 @@ typedef enum {
   T_SIZEOF,             // sizeof
   T_DIV,                // /
   T_MOD,                // %
-  
+
   T_LSHIFT,             // <<
   T_RSHIFT,             // >>
 
@@ -61,16 +63,19 @@ typedef enum {
   T_COMMA,              // ,
 } token_type_t;
 
+// Defines operator associativity
 typedef enum {
-  
-} op_property_t;
+  LEFT_TO_RIGHT,
+  RIGHT_TO_LEFT,
+} associativity_t;
 
 typedef struct {
   // Raw type of the token, dependent only on the string literal
-  token_type_t type;          
+  token_type_t type;
   union {
-    // If the token is part of an expression then this stores the property
-    op_property_t property;
+    // Lower number means higher precedence
+    uint8_t precedence;
+    associativity_t associativity;
     // If the token is an identifier, number, char/string literal then this stores
     // the exact string
     char *str;
