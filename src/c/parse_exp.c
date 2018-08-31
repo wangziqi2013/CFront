@@ -15,7 +15,16 @@ typedef struct {
   void **data;
 } stack_t;
 
+stack_t *init_stack() {
+  stack_t *stack = (stack_t *)malloc(sizeof(stack_t));
+  if(stack == NULL) perror(__func__);
+  stack->data = (void **)malloc(sizeof(void *) * STACK_INIT_CAPACITY);
+  if(stack->data == NULL) perror(__func__);
+  stack->size = 0;
+  stack->capacity = STACK_INIT_CAPACITY;
 
+  return stack;
+}
 
 void stack_push(stack_t *stack, void *p) {
   if(stack->size == stack->capacity) {
