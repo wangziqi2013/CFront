@@ -3,6 +3,7 @@
 #define _TOKEN_H
 
 #include <stdint.h>
+#include <assert.h>
 
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both
