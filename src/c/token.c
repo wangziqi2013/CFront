@@ -3,6 +3,7 @@
 
 // Fill an operator token object according to its type
 // Return value is the new location after getting the token
+// Note: sizeof() is treated as a keyword by the tokenizer
 char *token_get_op(char *s, token_t *token) {
   assert(*s != '\0');
   switch(s[0]) {
@@ -35,5 +36,22 @@ char *token_get_op(char *s, token_t *token) {
         default: token->type = T_PLUS; return s + 1;                    // +
       }
     case '*':
+      switch(s[1]) {
+        case '=': token->type = T_MUL_ASSIGN; return s + 2;             // *=
+        case '\0': 
+        default: token->type = T_STAR; return s + 1;                    // *
+      }
+    case '/':
+      switch(s[1]) {
+        case '=': token->type = T_DIV_ASSIGN; return s + 2;             // /=
+        case '\0': 
+        default: token->type = T_DIV; return s + 1;                     // /
+      }
+    case '%':
+      switch(s[1]) {
+        case '=': token->type = T_MOD_ASSIGN; return s + 2;             // %=
+        case '\0': 
+        default: token->type = T_MOD; return s + 1;                     // %
+      }
   }
 }
