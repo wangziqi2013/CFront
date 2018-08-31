@@ -1,9 +1,5 @@
 
 #include "stack.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 
 stack_t *stack_init() {
   stack_t *stack = (stack_t *)malloc(sizeof(stack_t));
