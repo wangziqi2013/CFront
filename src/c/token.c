@@ -27,6 +27,13 @@ char *token_get_op(char *s, token_t *token) {
         case '\0': 
         default: token->type = T_MINUS; return s + 1;                   // -
       }
-    case '+'
+    case '+':
+      switch(s[1]) {
+        case '+': token->type = T_INC; return s + 2;                    // ++
+        case '=': token->type = T_PLUS_ASSIGN; return s + 2;            // +=
+        case '\0': 
+        default: token->type = T_PLUS; return s + 1;                    // +
+      }
+    case '*':
   }
 }
