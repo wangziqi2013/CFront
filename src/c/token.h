@@ -8,16 +8,57 @@
 // is derived
 typedef enum {
   // Expression token types
-  T_LPAREN,
-  T_RPAREN,
-  T_LSPAREN,
-  T_RSPAREN,
-  T_DOT,
-  T_ARROW,
-  T_INC,
-  T_DEC,
-  T_PLUS,
-  T_MINUS,
+  T_LPAREN,             // (
+  T_RPAREN,             // )
+  T_LSPAREN,            // [
+  T_RSPAREN,            // ]
+  T_DOT,                // .
+  T_ARROW,              // ->
+  T_INC,                // ++
+  T_DEC,                // --
+  T_PLUS,               // +
+  T_MINUS,              // -
+  T_LOGICAL_NEGATION,   // !
+  T_BIT_COMPLETEMT,     // ~
+  T_STAR,               // *
+  T_AND,                // &   This is both address op and bitwise and
+  T_SIZEOF,             // sizeof
+  T_DIV,                // /
+  T_MOD,                // %
+  
+  T_LSHIFT,             // <<
+  T_RSHIFT,             // >>
+
+  T_LESS,               // <
+  T_GREATER,            // >
+  T_LEQ,                // <=      
+  T_GEQ,                // >=
+
+  T_EQ,                 // ==
+  T_NEQ,                // !=
+
+  T_BIT_XOR,            // ^
+  T_BIT_OR,             // |
+
+  T_LOGICAL_AND,        // &&
+  T_LOGICAL_OR,         // ||
+
+  T_QMARK,              // ?
+  T_COLON,              // :
+
+  T_ASSIGN,             // =
+  T_PLUS_ASSIGN,        // +=
+  T_MINUS_ASSIGN,       // -=
+  T_MUL_ASSIGN,         // *=
+  T_DIV_ASSIGN,         // /=
+  T_MOD_ASSIGN,         // %=
+  T_LSHIFT_ASSIGN,      // <<=
+  T_RSHIFT_ASSIGN,      // >>=
+  T_AND_ASSIGN,         // &=
+  T_OR_ASSIGN,          // |=
+  T_XOR_ASSIGN,         // ^=
+
+  T_COMMA,              // ,
 } token_type_t;
 
 typedef enum {
