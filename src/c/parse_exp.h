@@ -10,6 +10,9 @@ typedef struct {
   // Either 0 or 1
   int last_active_stack;
   stack_t *stacks[2];
-} parse_exp_context_t;
+} parse_exp_cxt_t;
+
+parse_exp_cxt_t *parse_exp_init();
+void parse_exp_free(parse_exp_cxt_t *cxt);
 
 #endif
