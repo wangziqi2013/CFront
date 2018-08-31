@@ -2,7 +2,7 @@
 CC=gcc
 LD=ld
 CFLAGS=-O0 
-LDFLAGS=-lc
+LDFLAGS=
 
 all: ./bin/test_parse_exp
 
@@ -12,7 +12,7 @@ all: ./bin/test_parse_exp
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_exp.o: parse_exp.c token.h
+parse_exp.o: parse_exp.c token.h ast.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
 
 clean:
