@@ -1,5 +1,4 @@
 
-
 #include "parse_exp.h"
 
 parse_exp_cxt_t *parse_exp_init() {
@@ -8,7 +7,7 @@ parse_exp_cxt_t *parse_exp_init() {
   cxt->stacks[0] = stack_init();
   cxt->stacks[1] = stack_init();
   // If the first token is an operator then it must be prefix operator
-  cxt->last_active_stack = 1;
+  cxt->last_active_stack = OP_STACK;
   return cxt;
 }
 

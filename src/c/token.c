@@ -110,7 +110,8 @@ const char *token_symstr(token_type_t type) {
 // Return value:
 //   1. If input is not '\0' then return the next unread character
 //   2. If input is '\0' then return NULL
-//   3. If not valid operator could be found then assert fail
+//   3. If not valid operator could be found then token type is T_ILLEGAL
+//      and the pointer is not changed
 // Note: 
 //   1. sizeof() is treated as a keyword by the tokenizer
 //   2. // and /* and */ and // are not processed
@@ -222,6 +223,25 @@ char *token_get_op(char *s, token_t *token) {
       }
   }
 
-  assert(0);
-  return NULL;
+  token->type = T_ILLEGAL;
+  return s;
+}
+
+// Returns an identifier, including both keywords and user defined identifier
+// Same rule as the get_op call
+char *token_get_ident(char *s, token_t *token) {
+  char ch = *s;
+  if(ch == '\0') {
+    return NULL;
+  } else if(isalpha(ch) || ch == '_') {
+    char *end = s + 1;
+    while(isalnum(*end) || *end == '_') end++;
+    char *buffer = (char *)malloc(sizeof(char) * (end - s + 1));
+    strcpy(buffer, s, end - s);
+    token->type = T_IDENT;
+    token->str = buffer;
+  }
+  
+  token->type = T_ILLEGAL;
+  return s;
 }

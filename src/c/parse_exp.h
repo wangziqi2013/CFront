@@ -6,8 +6,11 @@
 #include "token.h"
 #include "ast.h"
 
+#define AST_STACK 0
+#define OP_STACK 1
+
 typedef struct {
-  // Either 0 or 1
+  // Either AST_STACK or OP_STACK
   int last_active_stack;
   stack_t *stacks[2];
 } parse_exp_cxt_t;
