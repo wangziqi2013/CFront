@@ -7,7 +7,7 @@ LDFLAGS=
 all: ./bin/test_parse_exp
 
 ./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o
-	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o -o ./bin/test_parse_exp $(LDFLAGS)
+	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
 
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)

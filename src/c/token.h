@@ -94,6 +94,25 @@ typedef enum {
   T_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_UNSIGNED, T_VOID, T_VOLATILE, T_WHILE,
   T_KEYWORDS_END,
 
+  // AST type used within an expression
+  EXP_BEGIN = 2000,
+  EXP_FUNC_CALL = 2000,       // func()
+  EXP_ARRAY_SUB,              // array[]
+  EXP_DOT,                    // obj.name
+  EXP_ARROW,                  // ptr->name
+  EXP_POST_INC,               // x++
+  EXP_PRE_INC,                // ++x
+  EXP_POST_DEC,               // x--
+  EXP_PRE_DEC,                // --x
+  EXP_PLUS,                   // +x
+  EXP_MINUS,                  // -x
+  EXP_LOGICAL_NOT,            // !exp
+  EXP_BIT_NOT,                // ~exp
+  EXP_CAST,                   // (type)
+
+
+  T_EXP_END,
+
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
 
@@ -107,9 +126,11 @@ typedef struct {
   // Raw type of the token, dependent only on the string literal
   token_type_t type;
   union {
-    // Lower number means higher precedence
-    uint8_t precedence;
-    associativity_t associativity;
+    struct {
+      // Lower number means higher precedence
+      uint8_t precedence;
+      associativity_t associativity;
+    };
     // If the token is an identifier, number, char/string literal then this stores
     // the exact string
     char *str;
