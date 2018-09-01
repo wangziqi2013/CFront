@@ -197,7 +197,8 @@ const char *token_symstr(token_type_t type) {
     case T_VOLATILE: return "volatile";
     case T_WHILE: return "while";
   }
-
+  
+  //printf("%d\n", type);
   assert(0);
   return NULL;
 }

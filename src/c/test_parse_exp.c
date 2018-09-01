@@ -61,14 +61,20 @@ void test_get_op() {
 
 void test_bin_search() {
   printf("=== Test get_keyword_type() ===\n");
+  token_type_t type;
   for(int i = 0;i < sizeof(keywords) / sizeof(const char *);i++) {
-    token_type_t type = get_keyword_type(keywords[i]);
+    type = get_keyword_type(keywords[i]);
     if(type == T_ILLEGAL) {
       printf("ILLEGAL ");
     } else {
       printf("%s(%s) ", token_typestr(type), token_symstr(type));
     }
   }
+
+  type = get_keyword_type("aaaa");
+  assert(type == T_ILLEGAL);
+  type = get_keyword_type("zzzzzzz");
+  type = get_keyword_type("wangziqi");
 
   putchar('\n');
   printf("Pass!\n");
@@ -79,5 +85,6 @@ int main() {
   printf("=== Hello World! ===\n");
   test_stack();
   test_get_op();
+  test_bin_search();
   return 0;
 }
