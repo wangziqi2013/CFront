@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include "error.h"
 
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both

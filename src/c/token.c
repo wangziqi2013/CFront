@@ -377,7 +377,7 @@ char *token_get_int(char *s, token_t *token) {
       if(isxdigit(s[2])) {
         s += 2;
         token->type = T_HEX_INT_CONST;
-      } else fprintf(stderr, "Invalid hex integer literal\n");
+      } else error_exit("Invalid hex integer literal\n");
     } else if(isdigit(s[1])) {
       s++;
       token->type = T_OCT_INT_CONST;
@@ -404,7 +404,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
   char *end = s;
   do {
     while(*end != '\0' && *end != closing) end++;
-    if(*end == '\0') fprintf(stderr, "String or char literal not closed\n");
+    if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
   } while(end[-1] == '\\');
 
   token->str = malloc(sizeof(char) * (end - s + 1));
@@ -423,7 +423,9 @@ char *token_get_next(char *s, token_t *token) {
     else if(isspace(*s)) while(isspace(*s)) s++;
     else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
     else if(s[0] == '/' && s[1] == '*') {
+      s += 2;
       while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
+      if(s[0] == 0) error_exit("Block comment not closed at the end of file\n");
       s += 2;
     }
     else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);

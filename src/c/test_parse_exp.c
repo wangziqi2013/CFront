@@ -125,7 +125,7 @@ void test_token_get_next() {
       assert(0);    \n \
       return NULL;  \n \
     }               \n \
-  ";
+  \" asda dasdasd\\n \" ";
   s = test2;
   while((s = token_get_next(s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
