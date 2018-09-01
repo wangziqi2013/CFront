@@ -21,8 +21,8 @@ typedef enum {
   T_DEC,                // --
   T_PLUS,               // +
   T_MINUS,              // -
-  T_LOGICAL_NEGATION,   // !
-  T_BIT_COMPLETEMT,     // ~
+  T_LOGICAL_NOT,        // !
+  T_BIT_NOT,            // ~
   T_STAR,               // *
   T_AND,                // &   This is both address op and bitwise and
   T_SIZEOF,             // sizeof

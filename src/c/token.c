@@ -18,7 +18,7 @@ char *token_get_op(char *s, token_t *token) {
     case '.': token->type = T_DOT; return s + 1;                        // .
     case '?': token->type = T_QMARK; return s + 1;                      // ?
     case ':': token->type = T_COLON; return s + 1;                      // :
-    case '~': token->type = T_BIT_COMPLETEMT; return s + 1;             // ~
+    case '~': token->type = T_BIT_NOT; return s + 1;             // ~
     // Multi character
     case '-':
       switch(s[1]) {
@@ -82,6 +82,18 @@ char *token_get_op(char *s, token_t *token) {
           } 
         case '\0': 
         default: token->type = T_GREATER; return s + 1;                 // >
+      }
+    case '=':
+      switch(s[1]) {
+        case '=': token->type = T_EQ; return s + 2;                     // ==
+        case '\0': 
+        default: token->type = T_ASSIGN; return s + 1;                  // =
+      }
+    case '!':
+      switch(s[1]) {
+        case '=': token->type = T_NEQ; return s + 2;                     // ==
+        case '\0': 
+        default: token->type = T_LOGICAL_NOT; return s + 1;              // =
       }
   }
 }
