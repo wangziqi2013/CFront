@@ -76,6 +76,7 @@ const char *token_typestr(token_type_t type) {
     case T_COMMA: return "T_COMMA";
     case T_LCPAREN: return "T_LCPAREN";
     case T_RCPAREN: return "T_RCPAREN";
+    case T_SEMICOLON: return "T_SEMICOLON";
     // User defined identifier
     case T_IDENT: return "T_IDENT";
     // Keywords
@@ -165,6 +166,7 @@ const char *token_symstr(token_type_t type) {
     case T_COMMA: return ",";
     case T_LCPAREN: return "{";
     case T_RCPAREN: return "}";
+    case T_SEMICOLON: return ";";
     // keywords
     case T_AUTO: return "auto"; 
     case T_BREAK: return "break"; 

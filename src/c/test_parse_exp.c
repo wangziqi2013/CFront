@@ -104,6 +104,34 @@ void test_token_get_next() {
     else printf("%s ", token_symstr(token.type));
   }
   putchar('\n');
+
+  char test2[] = " \n \
+    // Returns the next token, or illegal                           \n \
+    // Same rule for return value and conditions as token_get_op()  \n \
+    char *token_get_next(char *s, token_t *token) {                 \n \
+      while(1) {                                                    \n \
+        if(s == NULL || *s == '\0') return NULL;                    \n \
+        else if(isspace(*s)) while(isspace(*s)) s++;                \n \
+        else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++; \n \
+        else if(s[0] == '/' && s[1] == '*') {                         \n \
+          while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;  \n \
+          s += 2;                                                     \n \
+        }                                                             \n \
+        else if(isalpha(*s) || *s == '_') return token_get_ident(s, token); \n \
+        else return token_get_op(s, token);                                 \n \
+      }                                                                     \n \
+                                                                            \n \
+      assert(0);    \n \
+      return NULL;  \n \
+    }               \n \
+  ";
+  s = test2;
+  while((s = token_get_next(s, &token)) != NULL) {
+    if(token.type == T_IDENT) printf("%s ", token.str);
+    else printf("%s ", token_symstr(token.type));
+  }
+  putchar('\n');
+
   printf("Pass!\n");
   return;
 }

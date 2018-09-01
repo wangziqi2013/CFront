@@ -69,7 +69,9 @@ typedef enum {
   T_LCPAREN,            // {
   T_RCPAREN,            // }
 
-  T_IDENT = 44,
+  T_SEMICOLON,          // ;
+
+  T_IDENT = 500,
 
   // Add this to the index of keywords in the table
   T_KEYWORDS = 1000,
