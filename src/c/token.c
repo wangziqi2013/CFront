@@ -3,7 +3,10 @@
 
 // Fill an operator token object according to its type
 // Return value is the new location after getting the token
-// Note: sizeof() is treated as a keyword by the tokenizer
+// Note: 
+//   1. sizeof() is treated as a keyword by the tokenizer
+//   2. // and /* and */ and // are not processed
+//   3. { and } are processed here
 char *token_get_op(char *s, token_t *token) {
   assert(*s != '\0');
   switch(s[0]) {
@@ -18,7 +21,7 @@ char *token_get_op(char *s, token_t *token) {
     case '.': token->type = T_DOT; return s + 1;                        // .
     case '?': token->type = T_QMARK; return s + 1;                      // ?
     case ':': token->type = T_COLON; return s + 1;                      // :
-    case '~': token->type = T_BIT_NOT; return s + 1;             // ~
+    case '~': token->type = T_BIT_NOT; return s + 1;                    // ~
     // Multi character
     case '-':
       switch(s[1]) {
@@ -108,4 +111,7 @@ char *token_get_op(char *s, token_t *token) {
         case '\0': 
         default: token->type = T_OR; return s + 1;                      // |
   }
+
+  assert(0);
+  return NULL;
 }
