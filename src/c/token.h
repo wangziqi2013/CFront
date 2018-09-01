@@ -80,9 +80,8 @@ typedef enum {
   T_CHAR_CONST,
   T_STR_CONST,
   T_FLOAT_CONST,
+  T_IDENT,
   T_LITERALS_END,
-
-  T_IDENT = 500,
 
   // Add this to the index of keywords in the table
   T_KEYWORDS_BEGIN = 1000,
@@ -119,7 +118,8 @@ extern const char *keywords[32];
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
 char *token_get_op(char *s, token_t *token);
-void copy_literal(token_t *token, const char *begin, const char *end);
+void token_copy_literal(token_t *token, const char *begin, const char *end);
+void token_free_literal(token_t *token);
 char *token_get_ident(char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
