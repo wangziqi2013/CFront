@@ -74,7 +74,9 @@ void test_bin_search() {
   type = get_keyword_type("aaaa");
   assert(type == T_ILLEGAL);
   type = get_keyword_type("zzzzzzz");
+  assert(type == T_ILLEGAL);
   type = get_keyword_type("wangziqi");
+  assert(type == T_ILLEGAL);
 
   putchar('\n');
   printf("Pass!\n");
