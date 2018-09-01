@@ -29,6 +29,7 @@ token_type_t get_keyword_type(const char *s) {
 
 // Converts the token type to a string
 const char *token_typestr(token_type_t type) {
+  assert(type != T_ILLEGAL);
   switch(type) {
     case T_LPAREN: return "T_LPAREN";
     case T_RPAREN: return "T_RPAREN";
@@ -117,6 +118,7 @@ const char *token_typestr(token_type_t type) {
 }
 
 const char *token_symstr(token_type_t type) {
+  assert(type != T_ILLEGAL);
   switch(type) {
     case T_LPAREN: return "(";
     case T_RPAREN: return ")";
@@ -365,7 +367,7 @@ char *token_get_next(char *s, token_t *token) {
     else if(isspace(*s)) while(isspace(*s)) s++;
     else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
     else if(s[0] == '/' && s[1] == '*') while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
-    else if(isalpha(ch) || ch == '_') return token_get_ident();
+    else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
     else return token_get_op(s, token);
   }
 

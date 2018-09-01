@@ -87,10 +87,31 @@ void test_bin_search() {
   return;
 }
 
+void test_token_get_next() {
+  printf("=== Test test_token_get_next() ===\n");
+  char test[] = \
+    "// Hello World \n \
+     void main() {  \n \
+        /* This is a block comment   \n \
+           That cross multiple lines \n \
+         */                          \n \
+     }                               \n \
+     \n";
+  token_t token;
+  char *s = test;
+  while((s = token_get_next(s, &token)) != NULL) {
+    printf("%s ", token_symstr(token.type));
+  }
+  putchar('\n');
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
   test_get_op();
   test_bin_search();
+  test_token_get_next();
   return 0;
 }
