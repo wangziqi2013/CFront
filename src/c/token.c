@@ -5,7 +5,7 @@ const char *keywords[] = {
   "auto", "break", "case", "char", "const", "continue", "default", "do",
   "double", "else", "enum", "extern", "float", "for", "goto", "if",
   "int", "long", "register", "return", "short", "signed", "sizeof", "static",
-  "struct", "switch", "typedef", "union", "short", "void", "volatile", "while",
+  "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
 };
 
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
@@ -337,12 +337,19 @@ char *token_get_ident(char *s, token_t *token) {
   } else if(isalpha(ch) || ch == '_') {
     char *end = s + 1;
     while(isalnum(*end) || *end == '_') end++;
-    char *buffer = (char *)malloc(sizeof(char) * (end - s + 1));
-    if(buffer == NULL) perror(__func__);
-    memcpy(buffer, s, end - s);
-    buffer[end - s] = '\0';
-    token->type = T_IDENT;
-    token->str = buffer;
+    // Exchange end with '\0' in order to call the function
+    char temp = *end; *end = '\0';
+    token_type_t type = get_keyword_type(s);
+    if(type == T_ILLEGAL) {
+      token->str = (char *)malloc(sizeof(char) * (end - s + 1));
+      if(token->str == NULL) perror(__func__);
+      strcpy(token->str, s);
+      token->type = T_IDENT;
+    } else {
+      token->type = type;
+    }
+    // Always restore the char
+    *end = temp;
     return end;
   }
   
