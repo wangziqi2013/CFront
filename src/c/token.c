@@ -91,9 +91,21 @@ char *token_get_op(char *s, token_t *token) {
       }
     case '!':
       switch(s[1]) {
-        case '=': token->type = T_NEQ; return s + 2;                     // ==
+        case '=': token->type = T_NEQ; return s + 2;                     // !=
         case '\0': 
-        default: token->type = T_LOGICAL_NOT; return s + 1;              // =
+        default: token->type = T_LOGICAL_NOT; return s + 1;              // !
       }
+    case '&':
+      switch(s[1]) {
+        case '&': token->type = T_LOGICAL_AND; return s + 2;             // &&
+        case '=': token->type = T_AND_ASSIGN; return s + 2;              // &=
+        case '\0': 
+        default: token->type = T_AND; return s + 1;                      // &
+    case '|':
+      switch(s[1]) {
+        case '|': token->type = T_LOGICAL_OR; return s + 2;             // ||
+        case '=': token->type = T_OR_ASSIGN; return s + 2;              // |=
+        case '\0': 
+        default: token->type = T_OR; return s + 1;                      // |
   }
 }
