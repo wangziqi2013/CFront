@@ -339,12 +339,17 @@ char *token_get_op(char *s, token_t *token) {
 
 // Copies ident, int, char, str, etc. literal into the token
 // Argument end is the first character after the literal
-void copy_literal(token_t *token, const char *begin, const char *end) {
+void token_copy_literal(token_t *token, const char *begin, const char *end) {
   token->str = malloc(sizeof(char) * (end - begin + 1));
   if(token->str == NULL) perror(__func__);
   memcpy(token->str, begin, end - begin);
   token->str[end - begin] = '\0';
   return;
+}
+
+// Frees the literal buffer in the token. If not a literal then do nothing
+void token_free_literal(token_t *token) {
+  if(token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END) free(token->str);
 }
 
 // Returns an identifier, including both keywords and user defined identifier
@@ -362,7 +367,7 @@ char *token_get_ident(char *s, token_t *token) {
     *end = temp;
     if(type == T_ILLEGAL) {
       token->type = T_IDENT;
-      copy_literal(token, s, end);
+      token_copy_literal(token, s, end);
     } else {
       token->type = type;
     }
@@ -393,7 +398,7 @@ char *token_get_int(char *s, token_t *token) {
   else if(token->type == T_HEX_INT_CONST) while(isxdigit(*end)) end++;
   else while(*end >= '0' && *end < '8') end++;
   assert(end != s);
-  copy_literal(token, s, end);
+  token_copy_literal(token, s, end);
 
   return end;
 }
@@ -407,7 +412,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
     while(*end != '\0' && *end != closing) end++;
     if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
   } while(end[-1] == '\\');
-  copy_literal(token, s, end);
+  token_copy_literal(token, s, end);
 
   return end + 1;
 }

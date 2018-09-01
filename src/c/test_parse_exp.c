@@ -103,8 +103,9 @@ void test_token_get_next() {
   error_init(test);
   while((s = token_get_next(s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
-    if(sym == NULL) { printf("%s ", token.str); free(token.str); }
-    else printf("%s ", token_symstr(token.type));
+    if(sym == NULL) printf("%s ", token.str);
+    else printf("%s ", sym);
+    token_free_literal(&token);
   }
   putchar('\n');
 
@@ -132,8 +133,9 @@ void test_token_get_next() {
   error_init(test2);
   while((s = token_get_next(s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
-    if(sym == NULL) { printf("%s ", token.str); free(token.str); }
-    else printf("%s ", token_symstr(token.type));
+    if(sym == NULL) printf("%s ", token.str);
+    else printf("%s ", sym);
+    token_free_literal(&token);
   }
   putchar('\n');
 
