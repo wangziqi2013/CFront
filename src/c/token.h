@@ -111,10 +111,12 @@ typedef struct {
 
 extern const char *keywords[32];
 
-char *token_get_op(char *s, token_t *token);
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
+char *token_get_op(char *s, token_t *token);
 char *token_get_ident(char *s, token_t *token);
+char *token_get_int(char *s, token_t *token);
+char *token_get_str(char *s, token_t *token, char closing);
 char *token_get_next(char *s, token_t *token);
 token_type_t get_keyword_type(const char *s);
 
