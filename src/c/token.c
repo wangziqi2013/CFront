@@ -337,31 +337,36 @@ char *token_get_op(char *s, token_t *token) {
   return s;
 }
 
+// Copies ident, int, char, str, etc. literal into the token
+// Argument end is the first character after the literal
+void copy_literal(token_t *token, const char *begin, const char *end) {
+  token->str = malloc(sizeof(char) * (end - begin + 1));
+  if(token->str == NULL) perror(__func__);
+  memcpy(token->str, begin, end - begin);
+  token->str[end - begin] = '\0';
+  return;
+}
+
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
 // Note:
-//   1. If keywords are detected then the string will be NULL
+//   1. If keywords are detected then the buffer is not initialized
 char *token_get_ident(char *s, token_t *token) {
-  if(s == NULL) return NULL;
-  char ch = *s;
-  if(ch == '\0') {
-    return NULL;
-  } else if(isalpha(ch) || ch == '_') {
+  if(s == NULL || *s == '\0') return NULL;
+  else if(isalpha(*s) || *s == '_') {
     char *end = s + 1;
     while(isalnum(*end) || *end == '_') end++;
     // Exchange end with '\0' in order to call the function
     char temp = *end; *end = '\0';
     token_type_t type = get_keyword_type(s);
+    *end = temp;
     if(type == T_ILLEGAL) {
-      token->str = (char *)malloc(sizeof(char) * (end - s + 1));
-      if(token->str == NULL) perror(__func__);
-      strcpy(token->str, s);
       token->type = T_IDENT;
+      copy_literal(token, s, end);
     } else {
       token->type = type;
     }
-    // Always restore the char
-    *end = temp;
+    
     return end;
   }
   
@@ -388,11 +393,7 @@ char *token_get_int(char *s, token_t *token) {
   else if(token->type == T_HEX_INT_CONST) while(isxdigit(*end)) end++;
   else while(*end >= '0' && *end < '8') end++;
   assert(end != s);
-
-  token->str = malloc(sizeof(char) * (end - s + 1));
-  if(token->str == NULL) perror(__func__);
-  memcpy(token->str, s, end - s);
-  token->str[end - s] = '\0';
+  copy_literal(token, s, end);
 
   return end;
 }
@@ -406,11 +407,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
     while(*end != '\0' && *end != closing) end++;
     if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
   } while(end[-1] == '\\');
-
-  token->str = malloc(sizeof(char) * (end - s + 1));
-  if(token->str == NULL) perror(__func__);
-  memcpy(token->str, s, end - s);
-  token->str[end - s] = '\0';
+  copy_literal(token, s, end);
 
   return end + 1;
 }
