@@ -98,8 +98,8 @@ typedef enum {
   EXP_BEGIN = 2000,
   EXP_FUNC_CALL = 2000,       // func()
   EXP_ARRAY_SUB,              // array[]
-  EXP_DOT,                    // obj.name
-  EXP_ARROW,                  // ptr->name
+  EXP_DOT,                    // obj.field
+  EXP_ARROW,                  // ptr->field
   EXP_POST_INC,               // x++
   EXP_PRE_INC,                // ++x
   EXP_POST_DEC,               // x--
@@ -109,8 +109,23 @@ typedef enum {
   EXP_LOGICAL_NOT,            // !exp
   EXP_BIT_NOT,                // ~exp
   EXP_CAST,                   // (type)
-
-
+  EXP_DEREF,                  // *ptr
+  EXP_ADDR,                   // &x
+  EXP_SIZEOF,                 // sizeof(type/name)
+  EXP_MUL, EXP_DIV, EXP_MOD,  // binary * / %
+  EXP_ADD, EXP_SUB,           // binary + -
+  EXP_LSHIFT, EXP_RSHIFT,     // << >>
+  EXP_LESS, EXP_GREATER, EXP_LEQ, EXP_GEQ, // < > <= >=
+  EXP_EQ, EXP_NEQ,            // == !=
+  EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,    // binary & | ^
+  EXP_LOGICAL_AND, EXP_LOGICAL_OR,         // && ||
+  EXP_COND,                                // ? :
+  EXP_ASSIGN,                              // =
+  EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,          // += -=
+  EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
+  EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
+  EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
+  EXP_COMMA,                  // binary ,
   T_EXP_END,
 
   T_ILLEGAL = 10000,    // Mark a return value
