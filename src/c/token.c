@@ -53,5 +53,35 @@ char *token_get_op(char *s, token_t *token) {
         case '\0': 
         default: token->type = T_MOD; return s + 1;                     // %
       }
+    case '^':
+      switch(s[1]) {
+        case '=': token->type = T_XOR_ASSIGN; return s + 2;             // ^=
+        case '\0': 
+        default: token->type = T_BIT_XOR; return s + 1;                 // ^
+      }
+    case '<':
+      switch(s[1]) {
+        case '=': token->type = T_LEQ; return s + 2;                    // <=
+        case '<': 
+          switch(s[2]) {
+            case '=': token->type = T_LSHIFT_ASSIGN; return s + 3;      // <<=
+            case '\0':
+            default: token->type = T_LSHIFT; return s + 2;              // <<
+          } 
+        case '\0': 
+        default: token->type = T_LESS; return s + 1;                    // <
+      }
+    case '>':
+      switch(s[1]) {
+        case '=': token->type = T_GEQ; return s + 2;                    // >=
+        case '>': 
+          switch(s[2]) {
+            case '=': token->type = T_RSHIFT_ASSIGN; return s + 3;      // >>=
+            case '\0':
+            default: token->type = T_RSHIFT; return s + 2;              // >>
+          } 
+        case '\0': 
+        default: token->type = T_GREATER; return s + 1;                 // >
+      }
   }
 }
