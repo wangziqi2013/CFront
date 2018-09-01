@@ -29,12 +29,13 @@ void test_stack() {
 void test_get_op() {
   printf("=== Test token_get_op() ===\n");
   char *p;
-  char test1[] = "-----====-=-=++==";
+  char test1[] = "-----====-=-=++>>=>>>";
   token_t token;
   p = test1;
   while(*(p = token_get_op(p, &token)) != '\0') {
-    printf("%d ", token.type);
+    printf("%s ", token_typestr(token.type));
   }
+  printf("%s ", token_typestr(token.type));
   putchar('\n');
 
   printf("Pass!\n");

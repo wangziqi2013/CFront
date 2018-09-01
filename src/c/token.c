@@ -31,12 +31,12 @@ const char *token_typestr(token_type_t type) {
     case T_NEQ: return "T_NEQ";
     case T_BIT_XOR: return "T_BIT_XOR";
     case T_BIT_OR: return "T_BIT_OR";
-    case T_LOGICAL_AND: return "T_RPAREN";
-    case T_LOGICAL_OR: return "T_RPAREN";
+    case T_LOGICAL_AND: return "T_LOGICAL_AND";
+    case T_LOGICAL_OR: return "T_LOGICAL_OR";
     case T_QMARK: return "T_QMARK";
     case T_COLON: return "T_COLON";
     case T_ASSIGN: return "T_ASSIGN";
-    case T_PLUS_ASSIGN: return "T_RPAT_PLUS_ASSIGNREN";
+    case T_PLUS_ASSIGN: return "T_PLUS_ASSIGN";
     case T_MINUS_ASSIGN: return "T_MINUS_ASSIGN";
     case T_MUL_ASSIGN: return "T_MUL_ASSIGN";
     case T_DIV_ASSIGN: return "T_DIV_ASSIGN";
@@ -49,6 +49,58 @@ const char *token_typestr(token_type_t type) {
     case T_COMMA: return "T_COMMA";
     case T_LCPAREN: return "T_LCPAREN";
     case T_RCPAREN: return "T_RCPAREN";
+  }
+
+  return NULL;
+}
+
+const char *token_symstr(token_type_t type) {
+  switch(type) {
+    case T_LPAREN: return "(";
+    case T_RPAREN: return ")";
+    case T_LSPAREN: return "[";
+    case T_RSPAREN: return "]";
+    case T_DOT: return ".";
+    case T_ARROW: return "->";
+    case T_INC: return "++";
+    case T_DEC: return "--";
+    case T_PLUS: return "+";
+    case T_MINUS: return "-";
+    case T_LOGICAL_NOT: return "!";
+    case T_BIT_NOT: return "~";
+    case T_STAR: return "*";
+    case T_AND: return "&";
+    case T_SIZEOF: return "sizeof";
+    case T_DIV: return "/";
+    case T_MOD: return "%";
+    case T_LSHIFT: return "<<";
+    case T_RSHIFT: return ">>";
+    case T_LESS: return "<";
+    case T_GREATER: return ">";
+    case T_LEQ: return "<=";
+    case T_GEQ: return ">=";
+    case T_EQ: return "==";
+    case T_NEQ: return "!=";
+    case T_BIT_XOR: return "^";
+    case T_BIT_OR: return "|";
+    case T_LOGICAL_AND: return "&&";
+    case T_LOGICAL_OR: return "||";
+    case T_QMARK: return "?";
+    case T_COLON: return ":";
+    case T_ASSIGN: return "=";
+    case T_PLUS_ASSIGN: return "+=";
+    case T_MINUS_ASSIGN: return "-=";
+    case T_MUL_ASSIGN: return "*=";
+    case T_DIV_ASSIGN: return "/+";
+    case T_MOD_ASSIGN: return "%=";
+    case T_LSHIFT_ASSIGN: return "<<=";
+    case T_RSHIFT_ASSIGN: return ">>=";
+    case T_AND_ASSIGN: return "&=";
+    case T_OR_ASSIGN: return "|=";
+    case T_XOR_ASSIGN: return "^=";
+    case T_COMMA: return ",";
+    case T_LCPAREN: return "{";
+    case T_RCPAREN: return "}";
   }
 
   return NULL;

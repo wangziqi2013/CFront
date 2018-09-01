@@ -90,5 +90,6 @@ typedef struct {
 } token_t;
 
 char *token_get_op(char *s, token_t *token);
+const char *token_typestr(token_type_t type);
 
 #endif
