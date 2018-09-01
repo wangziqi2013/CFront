@@ -121,6 +121,7 @@ const char *token_symstr(token_type_t type) {
 //   2. // and /* and */ and // are not processed
 //   3. { and } are processed here
 char *token_get_op(char *s, token_t *token) {
+  if(s == NULL) return NULL;
   switch(s[0]) {
     case '\0': return NULL;
     // Must be single character operator
@@ -234,6 +235,7 @@ char *token_get_op(char *s, token_t *token) {
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
 char *token_get_ident(char *s, token_t *token) {
+  if(s == NULL) return NULL;
   char ch = *s;
   if(ch == '\0') {
     return NULL;
@@ -241,10 +243,12 @@ char *token_get_ident(char *s, token_t *token) {
     char *end = s + 1;
     while(isalnum(*end) || *end == '_') end++;
     char *buffer = (char *)malloc(sizeof(char) * (end - s + 1));
+    if(buffer == NULL) perror(__func__);
     memcpy(buffer, s, end - s);
     buffer[end - s] = '\0';
     token->type = T_IDENT;
     token->str = buffer;
+    return end;
   }
   
   token->type = T_ILLEGAL;

@@ -36,12 +36,14 @@ void test_get_op() {
   result[0] = '\0';
   while(p != NULL) {
     p = token_get_op(p, &token);
-    if(token.type != T_ILLEGAL) {
+    if(p == NULL) break;
+    else if(token.type != T_ILLEGAL) {
       printf("%s(%s) ", token_typestr(token.type), token_symstr(token.type));
       strcat(result, token_symstr(token.type));
     } else {
       p = token_get_ident(p, &token);
-      if(token.type != T_ILLEGAL) {
+      if(p == NULL) break;
+      else if(token.type != T_ILLEGAL) {
         printf("%s(%s) ", token_typestr(token.type), token.str);
         strcat(result, token.str);
         free(token.str);
@@ -49,7 +51,6 @@ void test_get_op() {
         assert(0);
       }
     }
-    
   }
   putchar('\n');
   assert(strcmp(result, test1) == 0);

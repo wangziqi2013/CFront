@@ -1,7 +1,7 @@
 
 CC=gcc
 LD=ld
-CFLAGS=-O0 
+CFLAGS=-O0 -g
 LDFLAGS=
 
 all: ./bin/test_parse_exp
