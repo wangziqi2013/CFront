@@ -65,9 +65,11 @@ void test_bin_search() {
   for(int i = 0;i < sizeof(keywords) / sizeof(const char *);i++) {
     type = get_keyword_type(keywords[i]);
     if(type == T_ILLEGAL) {
-      printf("ILLEGAL ");
+      printf("ILLEGAL %s\n", keywords[i]);
+      assert(0);
     } else {
       printf("%s(%s) ", token_typestr(type), token_symstr(type));
+      assert(strcmp(token_symstr(type), keywords[i]) == 0);
     }
   }
 
@@ -76,6 +78,8 @@ void test_bin_search() {
   type = get_keyword_type("zzzzzzz");
   assert(type == T_ILLEGAL);
   type = get_keyword_type("wangziqi");
+  assert(type == T_ILLEGAL);
+  type = get_keyword_type("jklasd");
   assert(type == T_ILLEGAL);
 
   putchar('\n');
