@@ -72,6 +72,13 @@ typedef enum {
 
   T_IDENT,
 
+  // Add this to the index of keywords in the table
+  T_KEYWORDS = 1000
+  T_AUTO, T_BREAK, T_CASE, T_CHAR, T_CONST, T_CONTINUE, T_DEFAULT, T_DO,
+  T_DOUBLE, T_ELSE, T_ENUM, T_EXTERN, T_FLOAT, T_FOR, T_GOTO, T_IF,
+  T_INT, T_LONG, T_REGISTER, T_RETURN, T_SHORT, T_SIGNED, T_SIZEOF, T_STATIC,
+  S_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_SHORT, T_VOID, T_VOLATILE, T_WHILE,
+
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
 
@@ -94,9 +101,13 @@ typedef struct {
   };
 } token_t;
 
+extern const char *keywords[];
+
 char *token_get_op(char *s, token_t *token);
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
 char *token_get_ident(char *s, token_t *token);
+char *token_get_next(char *s, token_t *token);
+token_type_t get_keyword_type(const char *s);
 
 #endif
