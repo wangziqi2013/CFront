@@ -25,11 +25,10 @@ typedef enum {
   T_DEC,                // --
   T_PLUS,               // +
   T_MINUS,              // -
-  T_LOGICAL_NOT,        // !
+  T_LOGICAL_NOT = 10,   // !
   T_BIT_NOT,            // ~
   T_STAR,               // *
   T_AND,                // &   This is both address op and bitwise and
-  //T_SIZEOF,             // sizeof
   T_DIV,                // /
   T_MOD,                // %
 
@@ -38,7 +37,7 @@ typedef enum {
 
   T_LESS,               // <
   T_GREATER,            // >
-  T_LEQ,                // <=      
+  T_LEQ = 20,           // <=      
   T_GEQ,                // >=
 
   T_EQ,                 // ==
@@ -53,7 +52,7 @@ typedef enum {
   T_QMARK,              // ?
   T_COLON,              // :
 
-  T_ASSIGN,             // =
+  T_ASSIGN = 30,        // =
   T_PLUS_ASSIGN,        // +=
   T_MINUS_ASSIGN,       // -=
   T_MUL_ASSIGN,         // *=
@@ -63,14 +62,14 @@ typedef enum {
   T_RSHIFT_ASSIGN,      // >>=
   T_AND_ASSIGN,         // &=
   T_OR_ASSIGN,          // |=
-  T_XOR_ASSIGN,         // ^=
+  T_XOR_ASSIGN = 40,    // ^=
 
   T_COMMA,              // ,
 
   T_LCPAREN,            // {
   T_RCPAREN,            // }
 
-  T_IDENT,
+  T_IDENT = 44,
 
   // Add this to the index of keywords in the table
   T_KEYWORDS = 1000,

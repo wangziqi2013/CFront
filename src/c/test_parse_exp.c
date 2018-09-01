@@ -100,7 +100,8 @@ void test_token_get_next() {
   token_t token;
   char *s = test;
   while((s = token_get_next(s, &token)) != NULL) {
-    printf("%s ", token_symstr(token.type));
+    if(token.type == T_IDENT) printf("%s ", token.str);
+    else printf("%s ", token_symstr(token.type));
   }
   putchar('\n');
   printf("Pass!\n");

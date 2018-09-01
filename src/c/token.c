@@ -221,8 +221,8 @@ char *token_get_op(char *s, token_t *token) {
     case '\0': return NULL;
     // Must be single character operator
     case ',': token->type = T_COMMA; return s + 1;                      // ,
-    case '(': token->type = T_LCPAREN; return s + 1;                    // (
-    case ')': token->type = T_RCPAREN; return s + 1;                    // )
+    case '(': token->type = T_LPAREN; return s + 1;                    // (
+    case ')': token->type = T_RPAREN; return s + 1;                    // )
     case '[': token->type = T_LSPAREN; return s + 1;                    // [
     case ']': token->type = T_RSPAREN; return s + 1;                    // ]
     case '{': token->type = T_LCPAREN; return s + 1;                    // {
@@ -366,7 +366,10 @@ char *token_get_next(char *s, token_t *token) {
     if(s == NULL || *s == '\0') return NULL;
     else if(isspace(*s)) while(isspace(*s)) s++;
     else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
-    else if(s[0] == '/' && s[1] == '*') while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
+    else if(s[0] == '/' && s[1] == '*') {
+      while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
+      s += 2;
+    }
     else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
     else return token_get_op(s, token);
   }
