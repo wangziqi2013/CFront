@@ -16,7 +16,8 @@
 // is derived
 typedef enum {
   // Expression token types
-  T_LPAREN,             // (
+  T_OP_BEGIN = 0,
+  T_LPAREN = 0,         // (
   T_RPAREN,             // )
   T_LSPAREN,            // [
   T_RSPAREN,            // ]
@@ -66,6 +67,8 @@ typedef enum {
   T_XOR_ASSIGN = 40,    // ^=
 
   T_COMMA,              // ,
+
+  T_OP_END,
 
   T_LCPAREN,            // {
   T_RCPAREN,            // }

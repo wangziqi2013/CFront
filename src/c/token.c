@@ -440,7 +440,6 @@ char *token_get_next(char *s, token_t *token) {
       return s;
     }
   }
-
   assert(0);
   return NULL;
 }

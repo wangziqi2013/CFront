@@ -16,7 +16,7 @@ typedef struct {
   char *s;
 } parse_exp_cxt_t;
 
-parse_exp_cxt_t *parse_exp_init();
+parse_exp_cxt_t *parse_exp_init(char *input);
 void parse_exp_free(parse_exp_cxt_t *cxt);
 
 #endif
