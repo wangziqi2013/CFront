@@ -2,6 +2,7 @@
 #ifndef _TOKEN_H
 #define _TOKEN_H
 
+#include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
 
@@ -87,5 +88,7 @@ typedef struct {
     char *str;
   };
 } token_t;
+
+char *token_get_op(char *s, token_t *token);
 
 #endif

@@ -1,6 +1,15 @@
 
 #include "token.h"
 
+// Converts the token type to a string
+const char *token_typestr(token_type_t type) {
+  switch(type) {
+
+  }
+
+  return NULL;
+}
+
 // Fill an operator token object according to its type
 // Return value is the new location after getting the token
 // Note: 
@@ -104,12 +113,14 @@ char *token_get_op(char *s, token_t *token) {
         case '=': token->type = T_AND_ASSIGN; return s + 2;              // &=
         case '\0': 
         default: token->type = T_AND; return s + 1;                      // &
+      }
     case '|':
       switch(s[1]) {
         case '|': token->type = T_LOGICAL_OR; return s + 2;             // ||
         case '=': token->type = T_OR_ASSIGN; return s + 2;              // |=
         case '\0': 
-        default: token->type = T_OR; return s + 1;                      // |
+        default: token->type = T_BIT_OR; return s + 1;                  // |
+      }
   }
 
   assert(0);
