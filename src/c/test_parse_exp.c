@@ -100,7 +100,8 @@ void test_token_get_next() {
   token_t token;
   char *s = test;
   while((s = token_get_next(s, &token)) != NULL) {
-    if(token.type == T_IDENT) printf("%s ", token.str);
+    const char *sym = token_symstr(token.type);
+    if(sym == NULL) printf("%s ", token.str);
     else printf("%s ", token_symstr(token.type));
   }
   putchar('\n');
@@ -127,7 +128,8 @@ void test_token_get_next() {
   ";
   s = test2;
   while((s = token_get_next(s, &token)) != NULL) {
-    if(token.type == T_IDENT) printf("%s ", token.str);
+    const char *sym = token_symstr(token.type);
+    if(sym == NULL) printf("%s ", token.str);
     else printf("%s ", token_symstr(token.type));
   }
   putchar('\n');

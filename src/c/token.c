@@ -114,7 +114,6 @@ const char *token_typestr(token_type_t type) {
     case T_WHILE: return "T_WHILE";
   }
 
-  assert(0);
   return NULL;
 }
 
@@ -202,8 +201,6 @@ const char *token_symstr(token_type_t type) {
     case T_WHILE: return "while";
   }
   
-  //printf("%d\n", type);
-  assert(0);
   return NULL;
 }
 
