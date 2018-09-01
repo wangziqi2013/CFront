@@ -29,14 +29,27 @@ void test_stack() {
 void test_get_op() {
   printf("=== Test token_get_op() ===\n");
   char *p;
-  char test1[] = "-----====-=-=++>>=>>>";
+  char test1[] = "-----====-=wangziqi2013-=++>>=>>>_____ident";
   char result[256];
   token_t token;
   p = test1;
   result[0] = '\0';
-  while((p = token_get_op(p, &token)) != NULL) {
-    printf("%s(%s) ", token_typestr(token.type), token_symstr(token.type));
-    strcat(result, token_symstr(token.type));
+  while(p != NULL) {
+    p = token_get_op(p, &token);
+    if(token.type != T_ILLEGAL) {
+      printf("%s(%s) ", token_typestr(token.type), token_symstr(token.type));
+      strcat(result, token_symstr(token.type));
+    } else {
+      p = token_get_ident(p, &token);
+      if(token.type != T_ILLEGAL) {
+        printf("%s(%s) ", token_typestr(token.type), token.str);
+        strcat(result, token.str);
+        free(token.str);
+      } else {
+        assert(0);
+      }
+    }
+    
   }
   putchar('\n');
   assert(strcmp(result, test1) == 0);

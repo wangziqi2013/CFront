@@ -49,8 +49,11 @@ const char *token_typestr(token_type_t type) {
     case T_COMMA: return "T_COMMA";
     case T_LCPAREN: return "T_LCPAREN";
     case T_RCPAREN: return "T_RCPAREN";
+
+    case T_IDENT: return "T_IDENT";
   }
 
+  assert(0);
   return NULL;
 }
 
@@ -103,6 +106,7 @@ const char *token_symstr(token_type_t type) {
     case T_RCPAREN: return "}";
   }
 
+  assert(0);
   return NULL;
 }
 
@@ -237,7 +241,8 @@ char *token_get_ident(char *s, token_t *token) {
     char *end = s + 1;
     while(isalnum(*end) || *end == '_') end++;
     char *buffer = (char *)malloc(sizeof(char) * (end - s + 1));
-    strcpy(buffer, s, end - s);
+    memcpy(buffer, s, end - s);
+    buffer[end - s] = '\0';
     token->type = T_IDENT;
     token->str = buffer;
   }

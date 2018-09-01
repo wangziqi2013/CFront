@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both
@@ -68,6 +70,8 @@ typedef enum {
   T_LCPAREN,            // {
   T_RCPAREN,            // }
 
+  T_IDENT,
+
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
 
@@ -93,5 +97,6 @@ typedef struct {
 char *token_get_op(char *s, token_t *token);
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
+char *token_get_ident(char *s, token_t *token);
 
 #endif
