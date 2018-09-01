@@ -16,14 +16,14 @@ token_type_t get_keyword_type(const char *s) {
   while(begin < end - 1) {
     int middle = (begin + end) / 2;
     int cmp = strcmp(keywords[middle], s);
-    if(cmp == 0) return T_KEYWORDS + middle;
+    if(cmp == 0) return T_KEYWORDS_BEGIN + middle;
     else if(cmp < 0) begin = middle + 1;
     else end = middle;
     assert(begin < sizeof(keywords) / sizeof(const char *));
     assert(end <= sizeof(keywords) / sizeof(const char *));
   }
   // This means the given token is not a keyword
-  if(strcmp(keywords[begin], s) == 0) return T_KEYWORDS + begin;
+  if(strcmp(keywords[begin], s) == 0) return T_KEYWORDS_BEGIN + begin;
   return T_ILLEGAL;
 }
 

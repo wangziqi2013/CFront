@@ -73,21 +73,24 @@ typedef enum {
   T_SEMICOLON,          // ;
   
   // Literal types
-  T_DEC_INT_CONST,
+  T_LITERALS_BEGIN = 200,
+  T_DEC_INT_CONST = 200,
   T_HEX_INT_CONST,
   T_OCT_INT_CONST,
   T_CHAR_CONST,
   T_STR_CONST,
   T_FLOAT_CONST,
+  T_LITERALS_END,
 
   T_IDENT = 500,
 
   // Add this to the index of keywords in the table
-  T_KEYWORDS = 1000,
+  T_KEYWORDS_BEGIN = 1000,
   T_AUTO = 1000, T_BREAK, T_CASE, T_CHAR, T_CONST, T_CONTINUE, T_DEFAULT, T_DO,
   T_DOUBLE, T_ELSE, T_ENUM, T_EXTERN, T_FLOAT, T_FOR, T_GOTO, T_IF,
   T_INT, T_LONG, T_REGISTER, T_RETURN, T_SHORT, T_SIGNED, T_SIZEOF, T_STATIC,
   T_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_UNSIGNED, T_VOID, T_VOLATILE, T_WHILE,
+  T_KEYWORDS_END,
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
@@ -116,6 +119,7 @@ extern const char *keywords[32];
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
 char *token_get_op(char *s, token_t *token);
+void copy_literal(token_t *token, const char *begin, const char *end);
 char *token_get_ident(char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
