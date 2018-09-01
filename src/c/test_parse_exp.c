@@ -115,7 +115,7 @@ void test_token_get_next() {
         else if(isspace(*s)) while(isspace(*s)) s++;                \n \
         else if(s[0] == '/' && s[1] == '/') while(*s != '\\n' && *s != '\\0') s++; \n \
         else if(s[0] == '/' && s[1] == '*') {                         \n \
-          while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;  \n \
+          while((s[0] != '\\0') && (s[0] != '*' || s[1] != '/')) s++;  \n \
           s += 2;                                                     \n \
         }                                                             \n \
         else if(isalpha(*s) || *s == '_') return token_get_ident(s, token); \n \

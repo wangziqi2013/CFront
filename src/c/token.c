@@ -219,9 +219,10 @@ char *token_get_op(char *s, token_t *token) {
   switch(s[0]) {
     case '\0': return NULL;
     // Must be single character operator
+    case ';': token->type = T_SEMICOLON; return s + 1;                  // Not really an operator
     case ',': token->type = T_COMMA; return s + 1;                      // ,
-    case '(': token->type = T_LPAREN; return s + 1;                    // (
-    case ')': token->type = T_RPAREN; return s + 1;                    // )
+    case '(': token->type = T_LPAREN; return s + 1;                     // (
+    case ')': token->type = T_RPAREN; return s + 1;                     // )
     case '[': token->type = T_LSPAREN; return s + 1;                    // [
     case ']': token->type = T_RSPAREN; return s + 1;                    // ]
     case '{': token->type = T_LCPAREN; return s + 1;                    // {
@@ -401,7 +402,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
   memcpy(token->str, s, end - s);
   token->str[end - s] = '\0';
 
-  return end;
+  return end + 1;
 }
 
 // Returns the next token, or illegal
