@@ -107,14 +107,17 @@ const char *token_symstr(token_type_t type) {
 }
 
 // Fill an operator token object according to its type
-// Return value is the new location after getting the token
+// Return value:
+//   1. If input is not '\0' then return the next unread character
+//   2. If input is '\0' then return NULL
+//   3. If not valid operator could be found then assert fail
 // Note: 
 //   1. sizeof() is treated as a keyword by the tokenizer
 //   2. // and /* and */ and // are not processed
 //   3. { and } are processed here
 char *token_get_op(char *s, token_t *token) {
-  assert(*s != '\0');
   switch(s[0]) {
+    case '\0': return NULL;
     // Must be single character operator
     case ',': token->type = T_COMMA; return s + 1;                      // ,
     case '(': token->type = T_LCPAREN; return s + 1;                    // (

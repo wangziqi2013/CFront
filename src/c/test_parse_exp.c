@@ -30,13 +30,16 @@ void test_get_op() {
   printf("=== Test token_get_op() ===\n");
   char *p;
   char test1[] = "-----====-=-=++>>=>>>";
+  char result[256];
   token_t token;
   p = test1;
-  while(*(p = token_get_op(p, &token)) != '\0') {
-    printf("%s ", token_typestr(token.type));
+  result[0] = '\0';
+  while((p = token_get_op(p, &token)) != NULL) {
+    printf("%s(%s) ", token_typestr(token.type), token_symstr(token.type));
+    strcat(result, token_symstr(token.type));
   }
-  printf("%s ", token_typestr(token.type));
   putchar('\n');
+  assert(strcmp(result, test1) == 0);
 
   printf("Pass!\n");
   return;
