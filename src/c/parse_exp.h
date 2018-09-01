@@ -13,6 +13,7 @@ typedef struct {
   // Either AST_STACK or OP_STACK
   int last_active_stack;
   stack_t *stacks[2];
+  char *s;
 } parse_exp_cxt_t;
 
 parse_exp_cxt_t *parse_exp_init();
