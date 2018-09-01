@@ -77,6 +77,7 @@ typedef enum {
   T_OCT_INT_CONST,
   T_CHAR_CONST,
   T_STR_CONST,
+  T_FLOAT_CONST,
 
   T_IDENT = 500,
 

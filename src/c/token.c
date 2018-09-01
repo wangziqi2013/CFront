@@ -28,6 +28,7 @@ token_type_t get_keyword_type(const char *s) {
 }
 
 // Converts the token type to a string
+// Note that all types except the illegal has a string representation
 const char *token_typestr(token_type_t type) {
   assert(type != T_ILLEGAL);
   switch(type) {
@@ -77,6 +78,13 @@ const char *token_typestr(token_type_t type) {
     case T_LCPAREN: return "T_LCPAREN";
     case T_RCPAREN: return "T_RCPAREN";
     case T_SEMICOLON: return "T_SEMICOLON";
+    // Literal types
+    case T_DEC_INT_CONST: return "T_DEC_INT_CONST";
+    case T_HEX_INT_CONST: return "T_HEX_INT_CONST";
+    case T_OCT_INT_CONST: return "T_OCT_INT_CONST";
+    case T_CHAR_CONST: return "T_CHAR_CONST";
+    case T_STR_CONST: return "T_STR_CONST";
+    case T_FLOAT_CONST: return "T_FLOAT_CONST";
     // User defined identifier
     case T_IDENT: return "T_IDENT";
     // Keywords
@@ -117,6 +125,8 @@ const char *token_typestr(token_type_t type) {
   return NULL;
 }
 
+// Return the actual symbol of the token type
+// For identifier and literal types this function returns NULL
 const char *token_symstr(token_type_t type) {
   assert(type != T_ILLEGAL);
   switch(type) {
