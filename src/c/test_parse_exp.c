@@ -60,7 +60,19 @@ void test_get_op() {
 }
 
 void test_bin_search() {
-  
+  printf("=== Test get_keyword_type() ===\n");
+  for(int i = 0;i < sizeof(keywords) / sizeof(const char *);i++) {
+    token_type_t type = get_keyword_type(keywords[i]);
+    if(type == T_ILLEGAL) {
+      printf("ILLEGAL ");
+    } else {
+      printf("%s(%s) ", token_typestr(type), token_symstr(type));
+    }
+  }
+
+  putchar('\n');
+  printf("Pass!\n");
+  return;
 }
 
 int main() {

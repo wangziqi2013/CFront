@@ -1,7 +1,7 @@
 
 #include "token.h"
 
-extern const char *keywords[] = {
+const char *keywords[] = {
   "auto", "break", "case", "char", "const", "continue", "default", "do",
   "double", "else", "enum", "extern", "float", "for", "goto", "if",
   "int", "long", "register", "return", "short", "signed", "sizeof", "static",
@@ -44,7 +44,7 @@ const char *token_typestr(token_type_t type) {
     case T_BIT_NOT: return "T_BIT_NOT";
     case T_STAR: return "T_STAR";
     case T_AND: return "T_AND";
-    case T_SIZEOF: return "T_SIZEOF";
+    //case T_SIZEOF: return "T_SIZEOF";
     case T_DIV: return "T_DIV";
     case T_MOD: return "T_MOD";
     case T_LSHIFT: return "T_LSHIFT";
@@ -75,9 +75,8 @@ const char *token_typestr(token_type_t type) {
     case T_COMMA: return "T_COMMA";
     case T_LCPAREN: return "T_LCPAREN";
     case T_RCPAREN: return "T_RCPAREN";
-
+    // User defined identifier
     case T_IDENT: return "T_IDENT";
-
     // Keywords
     case T_AUTO: return "T_AUTO"; 
     case T_BREAK: return "T_BREAK"; 
@@ -107,7 +106,7 @@ const char *token_typestr(token_type_t type) {
     case T_SWITCH: return "T_SWITCH";
     case T_TYPEDEF: return "T_TYPEDEF";
     case T_UNION: return "T_UNION";
-    case T_SHORT: return "T_SHORT";
+    case T_UNSIGNED: return "T_UNSIGNED";
     case T_VOID: return "T_VOID";
     case T_VOLATILE: return "T_VOLATILE";
     case T_WHILE: return "T_WHILE";
@@ -133,7 +132,7 @@ const char *token_symstr(token_type_t type) {
     case T_BIT_NOT: return "~";
     case T_STAR: return "*";
     case T_AND: return "&";
-    case T_SIZEOF: return "sizeof";
+    //case T_SIZEOF: return "sizeof";
     case T_DIV: return "/";
     case T_MOD: return "%";
     case T_LSHIFT: return "<<";
@@ -193,7 +192,7 @@ const char *token_symstr(token_type_t type) {
     case T_SWITCH: return "switch";
     case T_TYPEDEF: return "typedef";
     case T_UNION: return "union";
-    case T_SHORT: return "short";
+    case T_UNSIGNED: return "unsigned";
     case T_VOID: return "void";
     case T_VOLATILE: return "volatile";
     case T_WHILE: return "while";
@@ -354,10 +353,10 @@ char *token_get_ident(char *s, token_t *token) {
 // Same rule for return value and conditions as token_get_op()
 char *token_get_next(char *s, token_t *token) {
   if(s == NULL || *s == '\0') return NULL;
-  else if(isalpha(ch) || ch == '_') {
-    return token_get_ident();
-  }
+  //else if(isalpha(ch) || ch == '_') {
+  //  return token_get_ident();
+  //}
 
   // This call may fail because there is no 
-  s = token_get_op(s, token);
+  //s = token_get_op(s, token);
 }

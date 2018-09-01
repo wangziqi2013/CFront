@@ -29,7 +29,7 @@ typedef enum {
   T_BIT_NOT,            // ~
   T_STAR,               // *
   T_AND,                // &   This is both address op and bitwise and
-  T_SIZEOF,             // sizeof
+  //T_SIZEOF,             // sizeof
   T_DIV,                // /
   T_MOD,                // %
 
@@ -73,11 +73,11 @@ typedef enum {
   T_IDENT,
 
   // Add this to the index of keywords in the table
-  T_KEYWORDS = 1000
+  T_KEYWORDS = 1000,
   T_AUTO, T_BREAK, T_CASE, T_CHAR, T_CONST, T_CONTINUE, T_DEFAULT, T_DO,
   T_DOUBLE, T_ELSE, T_ENUM, T_EXTERN, T_FLOAT, T_FOR, T_GOTO, T_IF,
   T_INT, T_LONG, T_REGISTER, T_RETURN, T_SHORT, T_SIGNED, T_SIZEOF, T_STATIC,
-  T_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_SHORT, T_VOID, T_VOLATILE, T_WHILE,
+  T_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_UNSIGNED, T_VOID, T_VOLATILE, T_WHILE,
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
@@ -101,7 +101,7 @@ typedef struct {
   };
 } token_t;
 
-extern const char *keywords[];
+extern const char *keywords[32];
 
 char *token_get_op(char *s, token_t *token);
 const char *token_typestr(token_type_t type);
