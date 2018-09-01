@@ -434,7 +434,11 @@ char *token_get_next(char *s, token_t *token) {
     else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
     else if(isdigit(*s)) return token_get_int(s, token);
     else if(*s == '\'' || *s == '\"') return token_get_str(s + 1, token, *s);
-    else return token_get_op(s, token);
+    else {
+      s = token_get_op(s, token);
+      if(token->type == T_ILLEGAL) error_row_col_exit(before, "Unknown symbol \'%c\'\n", *before);
+      return s;
+    }
   }
 
   assert(0);
