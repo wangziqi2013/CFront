@@ -360,11 +360,15 @@ char *token_get_ident(char *s, token_t *token) {
 // Returns the next token, or illegal
 // Same rule for return value and conditions as token_get_op()
 char *token_get_next(char *s, token_t *token) {
-  if(s == NULL || *s == '\0') return NULL;
-  //else if(isalpha(ch) || ch == '_') {
-  //  return token_get_ident();
-  //}
+  while(1) {
+    if(s == NULL || *s == '\0') return NULL;
+    else if(isspace(*s)) while(isspace(*s)) s++;
+    else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
+    else if(s[0] == '/' && s[1] == '*') while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
+    else if(isalpha(ch) || ch == '_') return token_get_ident();
+    else return token_get_op(s, token);
+  }
 
-  // This call may fail because there is no 
-  //s = token_get_op(s, token);
+  assert(0);
+  return NULL;
 }
