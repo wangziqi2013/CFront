@@ -59,6 +59,10 @@ void test_get_op() {
   return;
 }
 
+void test_bin_search() {
+  
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
