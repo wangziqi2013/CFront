@@ -80,10 +80,34 @@ const char *token_typestr(token_type_t type) {
     case T_BREAK: return "T_BREAK"; 
     case T_CASE: return "T_CASE"; 
     case T_CHAR: return "T_CHAR"; 
-    case T_CONST: return "T_CONST", T_CONTINUE, T_DEFAULT, T_DO,
-  T_DOUBLE, T_ELSE, T_ENUM, T_EXTERN, T_FLOAT, T_FOR, T_GOTO, T_IF,
-  T_INT, T_LONG, T_REGISTER, T_RETURN, T_SHORT, T_SIGNED, T_SIZEOF, T_STATIC,
-  S_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_SHORT, T_VOID, T_VOLATILE, T_WHILE,
+    case T_CONST: return "T_CONST"; 
+    case T_CONTINUE: return "T_CONTINUE"; 
+    case T_DEFAULT: return "T_DEFAULT"; 
+    case T_DO: return "T_DO";
+    case T_DOUBLE: return "T_DOUBLE"; 
+    case T_ELSE: return "T_ELSE";
+    case T_ENUM: return "T_ENUM"; 
+    case T_EXTERN: return "T_EXTERN";
+    case T_FLOAT: return "T_FLOAT";
+    case T_FOR: return "T_FOR";
+    case T_GOTO: return "T_GOTO"; 
+    case T_IF: return "T_IF";
+    case T_INT: return "T_INT";
+    case T_LONG: return "T_LONG"; 
+    case T_REGISTER: return "T_REGISTER";
+    case T_RETURN: return "T_RETURN"; 
+    case T_SHORT: return "T_SHORT";
+    case T_SIGNED: return "T_SIGNED";
+    case T_SIZEOF: return "T_SIZEOF";
+    case T_STATIC: return "T_STATIC";
+    case T_STRUCT: return "T_STRUCT";
+    case T_SWITCH: return "T_SWITCH";
+    case T_TYPEDEF: return "T_TYPEDEF";
+    case T_UNION: return "T_UNION";
+    case T_SHORT: return "T_SHORT";
+    case T_VOID: return "T_VOID";
+    case T_VOLATILE: return "T_VOLATILE";
+    case T_WHILE: return "T_WHILE";
   }
 
   assert(0);
@@ -137,6 +161,39 @@ const char *token_symstr(token_type_t type) {
     case T_COMMA: return ",";
     case T_LCPAREN: return "{";
     case T_RCPAREN: return "}";
+    // keywords
+    case T_AUTO: return "auto"; 
+    case T_BREAK: return "break"; 
+    case T_CASE: return "case"; 
+    case T_CHAR: return "char"; 
+    case T_CONST: return "const"; 
+    case T_CONTINUE: return "continue"; 
+    case T_DEFAULT: return "default"; 
+    case T_DO: return "do";
+    case T_DOUBLE: return "double"; 
+    case T_ELSE: return "else";
+    case T_ENUM: return "enum"; 
+    case T_EXTERN: return "extern";
+    case T_FLOAT: return "float";
+    case T_FOR: return "for";
+    case T_GOTO: return "goto"; 
+    case T_IF: return "if";
+    case T_INT: return "int";
+    case T_LONG: return "long"; 
+    case T_REGISTER: return "register";
+    case T_RETURN: return "return"; 
+    case T_SHORT: return "short";
+    case T_SIGNED: return "signed";
+    case T_SIZEOF: return "sizeof";
+    case T_STATIC: return "static";
+    case T_STRUCT: return "struct";
+    case T_SWITCH: return "switch";
+    case T_TYPEDEF: return "typedef";
+    case T_UNION: return "union";
+    case T_SHORT: return "short";
+    case T_VOID: return "void";
+    case T_VOLATILE: return "volatile";
+    case T_WHILE: return "while";
   }
 
   assert(0);
