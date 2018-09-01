@@ -70,6 +70,13 @@ typedef enum {
   T_RCPAREN,            // }
 
   T_SEMICOLON,          // ;
+  
+  // Literal types
+  T_DEC_INT_CONST,
+  T_HEX_INT_CONST,
+  T_OCT_INT_CONST,
+  T_CHAR_CONST,
+  T_STR_CONST,
 
   T_IDENT = 500,
 

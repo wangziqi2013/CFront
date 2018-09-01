@@ -361,6 +361,34 @@ char *token_get_ident(char *s, token_t *token) {
   return s;
 }
 
+char *token_get_int(char *s, token_t *token) {
+  if(s == NULL || *s == '\0') return NULL;
+  token->type = T_DEC_INT_CONST;
+  if(s[0] == '0') {
+    if(s[1] == 'x') {
+      if(isxdigit(s[2])) {
+        s += 2;
+        token->type = T_HEX_INT_CONST;
+      } else fprintf(stderr, "Invalid hex integer literal\n");
+    } else if(isdigit(s[1])) {
+      s++;
+      token->type = T_OCT_INT_CONST;
+    }
+  }
+  char *end = s;
+  if(token->type == T_DEC_INT_CONST) while(isdigit(*end)) end++;
+  else if(token->type == T_HEX_INT_CONST) while(isxdigit(*end)) end++;
+  else while(*end >= '0' && *end < '8') end++;
+  assert(end != s);
+
+  token->str = malloc(sizeof(char) * (end - s + 1));
+  if(token->str == NULL) perror(__func__);
+  memcpy(token->str, s, end - s);
+  token->str[end - s] = '\0';
+
+  return end;
+}
+
 // Returns the next token, or illegal
 // Same rule for return value and conditions as token_get_op()
 char *token_get_next(char *s, token_t *token) {
@@ -373,6 +401,7 @@ char *token_get_next(char *s, token_t *token) {
       s += 2;
     }
     else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
+    else if(isdigit(*s)) return token_get_int(s, token);
     else return token_get_op(s, token);
   }
 
