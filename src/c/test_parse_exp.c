@@ -111,9 +111,9 @@ void test_token_get_next() {
     // Same rule for return value and conditions as token_get_op()  \n \
     char *token_get_next(char *s, token_t *token) {                 \n \
       while(1) {                                                    \n \
-        if(s == NULL || *s == '\0') return NULL;                    \n \
+        if(s == NULL || *s == '\\0') return NULL;                    \n \
         else if(isspace(*s)) while(isspace(*s)) s++;                \n \
-        else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++; \n \
+        else if(s[0] == '/' && s[1] == '/') while(*s != '\\n' && *s != '\\0') s++; \n \
         else if(s[0] == '/' && s[1] == '*') {                         \n \
           while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;  \n \
           s += 2;                                                     \n \

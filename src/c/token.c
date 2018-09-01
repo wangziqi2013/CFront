@@ -386,6 +386,24 @@ char *token_get_int(char *s, token_t *token) {
   return end;
 }
 
+char *token_get_str(char *s, token_t *token, char closing) {
+  if(s == NULL || *s == '\0') return NULL;
+  if(closing == '\'') token->type = T_CHAR_CONST;
+  else token->type = T_STR_CONST;
+  char *end = s;
+  do {
+    while(*end != '\0' && *end != closing) end++;
+    if(*end == '\0') fprintf(stderr, "String or char literal not closed\n");
+  } while(end[-1] == '\\');
+
+  token->str = malloc(sizeof(char) * (end - s + 1));
+  if(token->str == NULL) perror(__func__);
+  memcpy(token->str, s, end - s);
+  token->str[end - s] = '\0';
+
+  return end;
+}
+
 // Returns the next token, or illegal
 // Same rule for return value and conditions as token_get_op()
 char *token_get_next(char *s, token_t *token) {
@@ -399,6 +417,7 @@ char *token_get_next(char *s, token_t *token) {
     }
     else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
     else if(isdigit(*s)) return token_get_int(s, token);
+    else if(*s == '\'' || *s == '\"') return token_get_str(s + 1, token, *s);
     else return token_get_op(s, token);
   }
 
