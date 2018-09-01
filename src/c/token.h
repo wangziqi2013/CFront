@@ -98,6 +98,9 @@ typedef enum {
   EXP_BEGIN = 2000,
   EXP_FUNC_CALL = 2000,       // func()
   EXP_ARRAY_SUB,              // array[]
+  EXP_LPAREN,                 // ( as parenthesis
+  EXP_RPAREN,                 // )
+  EXP_RSPAREN,                // ]
   EXP_DOT,                    // obj.field
   EXP_ARROW,                  // ptr->field
   EXP_POST_INC,               // x++
@@ -120,6 +123,7 @@ typedef enum {
   EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,    // binary & | ^
   EXP_LOGICAL_AND, EXP_LOGICAL_OR,         // && ||
   EXP_COND,                                // ? :
+  EXP_COLON,                               // Used in ? : expression
   EXP_ASSIGN,                              // =
   EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,          // += -=
   EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
@@ -138,7 +142,6 @@ typedef enum {
 } associativity_t;
 
 typedef struct {
-  // Raw type of the token, dependent only on the string literal
   token_type_t type;
   union {
     struct {
