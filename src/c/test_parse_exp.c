@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "stack.h"
 #include "token.h"
+#include "error.h"
 
 void test_stack() {
   printf("=== Test Stack ===\n");
@@ -99,6 +100,7 @@ void test_token_get_next() {
      \n";
   token_t token;
   char *s = test;
+  error_init(test);
   while((s = token_get_next(s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
     if(sym == NULL) { printf("%s ", token.str); free(token.str); }
@@ -127,6 +129,7 @@ void test_token_get_next() {
     }               \n \
   \" asda dasdasd\\n \" ";
   s = test2;
+  error_init(test2);
   while((s = token_get_next(s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
     if(sym == NULL) { printf("%s ", token.str); free(token.str); }

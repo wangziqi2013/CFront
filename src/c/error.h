@@ -13,6 +13,7 @@
 
 void error_init(const char *s);
 void error_free();
+void error_get_row_col(const char *s, int *row, int *col);
 
 #endif
 

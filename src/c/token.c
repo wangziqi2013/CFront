@@ -419,13 +419,14 @@ char *token_get_str(char *s, token_t *token, char closing) {
 // Same rule for return value and conditions as token_get_op()
 char *token_get_next(char *s, token_t *token) {
   while(1) {
+    const char *before = s;
     if(s == NULL || *s == '\0') return NULL;
     else if(isspace(*s)) while(isspace(*s)) s++;
     else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
     else if(s[0] == '/' && s[1] == '*') {
       s += 2;
       while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
-      if(s[0] == 0) error_exit("Block comment not closed at the end of file\n");
+      if(s[0] == '\0') error_row_col_exit(before, "Block comment not closed at the end of file\n");
       s += 2;
     }
     else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
