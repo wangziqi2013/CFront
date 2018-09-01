@@ -1,6 +1,29 @@
 
 #include "token.h"
 
+extern const char *keywords[] = {
+  "auto", "break", "case", "char", "const", "continue", "default", "do",
+  "double", "else", "enum", "extern", "float", "for", "goto", "if",
+  "int", "long", "register", "return", "short", "signed", "sizeof", "static",
+  "struct", "switch", "typedef", "union", "short", "void", "volatile", "while",
+};
+
+// Return T_ILLEGAL if not a keyword; keyword type otherwise
+// Note:
+//   1. Argument s must be a null-terminated string
+token_type_t get_keyword_type(const char *s) {
+  int begin = 0, end = sizeof(keywords) / sizeof(const char *);
+  while(begin < end - 1) {
+    int middle = (begin + end) / 2;
+    int cmp = strcmp(middle, s);
+    if(cmp == 0) begin = end = middle;
+    else if(cmp < 0) begin = middle;
+    else end = middle;
+  }
+
+  return T_KEYWORDS + begin;
+}
+
 // Converts the token type to a string
 const char *token_typestr(token_type_t type) {
   switch(type) {
@@ -51,6 +74,16 @@ const char *token_typestr(token_type_t type) {
     case T_RCPAREN: return "T_RCPAREN";
 
     case T_IDENT: return "T_IDENT";
+
+    // Keywords
+    case T_AUTO: return "T_AUTO"; 
+    case T_BREAK: return "T_BREAK"; 
+    case T_CASE: return "T_CASE"; 
+    case T_CHAR: return "T_CHAR"; 
+    case T_CONST: return "T_CONST", T_CONTINUE, T_DEFAULT, T_DO,
+  T_DOUBLE, T_ELSE, T_ENUM, T_EXTERN, T_FLOAT, T_FOR, T_GOTO, T_IF,
+  T_INT, T_LONG, T_REGISTER, T_RETURN, T_SHORT, T_SIGNED, T_SIZEOF, T_STATIC,
+  S_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_SHORT, T_VOID, T_VOLATILE, T_WHILE,
   }
 
   assert(0);
@@ -234,6 +267,8 @@ char *token_get_op(char *s, token_t *token) {
 
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
+// Note:
+//   1. If keywords are detected then the string will be NULL
 char *token_get_ident(char *s, token_t *token) {
   if(s == NULL) return NULL;
   char ch = *s;
@@ -253,4 +288,16 @@ char *token_get_ident(char *s, token_t *token) {
   
   token->type = T_ILLEGAL;
   return s;
+}
+
+// Returns the next token, or illegal
+// Same rule for return value and conditions as token_get_op()
+char *token_get_next(char *s, token_t *token) {
+  if(s == NULL || *s == '\0') return NULL;
+  else if(isalpha(ch) || ch == '_') {
+    return token_get_ident();
+  }
+
+  // This call may fail because there is no 
+  s = token_get_op(s, token);
 }
