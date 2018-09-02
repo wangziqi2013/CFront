@@ -37,6 +37,15 @@ int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
   return token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END;
 }
 
+// Returns whether the next token is a type; Note that we check the next token
+// without actually extracting it from the stream by not changing cxt->s
+int parse_exp_istype(parse_exp_cxt_t *cxt) {
+  token_t token;
+  token_get_next(cxt->s, &token);
+  // TODO: CHECK IF IT IS BUILT IN TYPE OR USER DEFINED TYPE (SHOULD USE THE SYMBOL TABLE)
+  return 0;
+}
+
 // Frees the entire token including the literal if it has one
 void parse_exp_free_token(token_t *token) {
   token_free_literal(token);
@@ -129,7 +138,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
       case T_AND: token->type = EXP_ADDR; break;
       case T_SIZEOF: token->type = EXP_SIZEOF; break;
       default: error_row_col_exit(before, 
-                                  "Did not expect to see \"%s\" as a prefix operator", 
+                                  "Did not expect to see \"%s\" as a prefix operator\n", 
                                   token_symstr(token->type));
     }
   }
@@ -139,7 +148,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
 
 void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   assert(stack_id == OP_STACK || stack_id == AST_STACK);
-  printf("Shift %s\n", token_typestr(token->type));
+  //printf("Shift %s\n", token_typestr(token->type));
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
   return;
@@ -209,8 +218,17 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       return parse_exp_reduce_all(cxt);
     } else if(parse_exp_isprimary(cxt, token)) {
       parse_exp_shift(cxt, AST_STACK, token);
+    } else if(token->type == EXP_RPAREN) {
+
+      parse_exp_free_token(token);
+    } else if(token->type == EXP_RSPAREN) {
+
+      parse_exp_free_token(token);
     } else {
-      // TODO: SPECIAL PROCESSING FOR PARENTHESIS AND ARRAY INDEXING
+      if(token == LPAREN) {
+        // TODO: CHECK IF IT IS A TYPE CAST; if not then treat it as normal parenthesis
+      }
+
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
       // Special care must be taken for postfix ++ and -- because they cause the 
