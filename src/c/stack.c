@@ -39,7 +39,7 @@ void *stack_pop(stack_t *stack) {
 
 void *stack_peek(stack_t *stack) {
   assert(stack->size != 0);
-  return stack->data[stack->size];
+  return stack->data[stack->size - 1];
 }
 
 void *stack_at(stack_t *stack, int index) {
