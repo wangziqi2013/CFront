@@ -43,3 +43,4 @@ void *stack_peek(stack_t *stack) {
 }
 
 int stack_empty(stack_t *stack) { return stack->size == 0; }
+int stack_size(stack_t *stack) { return stack->size; }
