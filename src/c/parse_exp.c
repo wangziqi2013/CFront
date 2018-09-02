@@ -1,46 +1,6 @@
 
 #include "parse_exp.h"
 
-// The layout of precedences is consistent with the layout of the token table 
-// (51 elements)
-int precedences[] = {
-  1, 1,       // EXP_FUNC_CALL, EXP_ARRAY_SUB, f() arr[]
-  0,          // EXP_LPAREN, (exp...
-  999, 999,   // EXP_RPAREN, EXP_RSPAREN, ) ] <-- Force reduce of all operators
-  1, 1,       // EXP_DOT, EXP_ARROW, obj.field obj->field
-  1, 2, 1, 2, // EXP_POST_INC, EXP_PRE_INC, EXP_POST_DEC, EXP_PRE_DEC
-  2, 2,       // EXP_PLUS, EXP_MINUS, +a -a
-  2, 2,       // EXP_LOGICAL_NOT, EXP_BIT_NOT, !exp ~exp
-  2,          // EXP_CAST, (type)
-  2, 2,       // EXP_DEREF, EXP_ADDR, *ptr &x
-  2,          // EXP_SIZEOF,                 // sizeof(type/name)
-  3, 3, 3,    // EXP_MUL, EXP_DIV, EXP_MOD,  // binary * / %
-  4, 4,       // EXP_ADD, EXP_SUB,           // binary + -
-  5, 5,       // EXP_LSHIFT, EXP_RSHIFT,     // << >>
-  6, 6, 6, 6, // EXP_LESS, EXP_GREATER, EXP_LEQ, EXP_GEQ, // < > <= >=
-  7, 7,       // EXP_EQ, EXP_NEQ,            // == !=
-  8, 9, 10,   // EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,    // binary & | ^
-  11, 12,     // EXP_LOGICAL_AND, EXP_LOGICAL_OR,         // && ||
-  13, 13,     // EXP_COND, EXP_COLON, ? :
-  14, 14, 14, // EXP_ASSIGN, EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,          // = += -=
-  14, 14, 14, // EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
-  14, 14, 14, // EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
-  14, 14,     // EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
-  15,         // EXP_COMMA,                               // binary ,
-};
-
-// Returns the precedence and associativity
-// Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L
-// and the rest are L-TO-R 
-void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
-  assert(type >= EXP_BEGIN && type < EXP_END);
-  assert(sizeof(precedences) / sizeof(precedences[0]) == (EXP_END - EXP_BEGIN));
-  *preced = precedences[type - EXP_BEGIN];
-  if(*preced == 2 || *preced == 13 || *preced == 14) *assoc = ASSOC_RL;
-  else *assoc = ASSOC_LR;
-  return;
-}
-
 parse_exp_cxt_t *parse_exp_init(char *input) {
   parse_exp_cxt_t *cxt = (parse_exp_cxt_t *)malloc(sizeof(parse_exp_cxt_t));
   if(cxt == NULL) perror(__func__);
@@ -70,6 +30,17 @@ int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
           (type == T_SIZEOF));
 }
 
+// Returns whether a token is primary token
+int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
+  return token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END;
+}
+
+// Frees the entire token including the literal if it has one
+void parse_exp_free_token(token_t *token) {
+  token_free_literal(token);
+  free(token);
+}
+
 // Returned token is allocated from the heap, caller free
 // If the token does not belong to expressions, or we reached the end then 
 // return NULL
@@ -78,7 +49,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   char *before = cxt->s;
   cxt->s = token_get_next(cxt->s, token);
   if(cxt->s == NULL || !parse_exp_isexp(cxt, token)) {
-    free(token);
+    parse_exp_free_token(token);
     // Reset the text pointer such that the next token is still obtained
     cxt->s = before;
     return NULL;
@@ -163,10 +134,16 @@ void parse_exp(parse_exp_cxt_t *cxt) {
   while(1) {
     token_t *token = parse_exp_next_token(cxt);
     if(token == NULL) {
-      // TODO: FINISHED ALL TOKENS
+      // TODO: FINISHED ALL TOKENS, REDUCE ALL
       // TODO: Maybe check for type cast?
       printf("Reaches the end\n");
       exit(1);
+    } else if(parse_exp_isprimary(cxt, token)) {
+      stack_push(cxt->stacks[AST_STACK], token); // Something here
+      cxt->last_active_stack = AST_STACK;
+    } else {
+      int preced; assoc_t assoc;
+      token_get_property(token->type, &preced, &assoc);
     }
   }
 }

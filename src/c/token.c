@@ -1,17 +1,57 @@
 
 #include "token.h"
 
-const char *keywords[] = {
+const char *keywords[32] = {
   "auto", "break", "case", "char", "const", "continue", "default", "do",
   "double", "else", "enum", "extern", "float", "for", "goto", "if",
   "int", "long", "register", "return", "short", "signed", "sizeof", "static",
   "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
 };
 
+// The layout of precedences is consistent with the layout of the token table 
+// (51 elements)
+int precedences[51] = {
+  1, 1,       // EXP_FUNC_CALL, EXP_ARRAY_SUB, f() arr[]
+  0,          // EXP_LPAREN, (exp...
+  999, 999,   // EXP_RPAREN, EXP_RSPAREN, ) ] <-- Force reduce of all operators
+  1, 1,       // EXP_DOT, EXP_ARROW, obj.field obj->field
+  1, 2, 1, 2, // EXP_POST_INC, EXP_PRE_INC, EXP_POST_DEC, EXP_PRE_DEC
+  2, 2,       // EXP_PLUS, EXP_MINUS, +a -a
+  2, 2,       // EXP_LOGICAL_NOT, EXP_BIT_NOT, !exp ~exp
+  2,          // EXP_CAST, (type)
+  2, 2,       // EXP_DEREF, EXP_ADDR, *ptr &x
+  2,          // EXP_SIZEOF,                 // sizeof(type/name)
+  3, 3, 3,    // EXP_MUL, EXP_DIV, EXP_MOD,  // binary * / %
+  4, 4,       // EXP_ADD, EXP_SUB,           // binary + -
+  5, 5,       // EXP_LSHIFT, EXP_RSHIFT,     // << >>
+  6, 6, 6, 6, // EXP_LESS, EXP_GREATER, EXP_LEQ, EXP_GEQ, // < > <= >=
+  7, 7,       // EXP_EQ, EXP_NEQ,            // == !=
+  8, 9, 10,   // EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,    // binary & | ^
+  11, 12,     // EXP_LOGICAL_AND, EXP_LOGICAL_OR,         // && ||
+  13, 13,     // EXP_COND, EXP_COLON, ? :
+  14, 14, 14, // EXP_ASSIGN, EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,          // = += -=
+  14, 14, 14, // EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
+  14, 14, 14, // EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
+  14, 14,     // EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
+  15,         // EXP_COMMA,                               // binary ,
+};
+
+// Returns the precedence and associativity
+// Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L
+// and the rest are L-TO-R 
+void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
+  assert(type >= EXP_BEGIN && type < EXP_END);
+  assert(sizeof(precedences) / sizeof(precedences[0]) == (EXP_END - EXP_BEGIN));
+  *preced = precedences[type - EXP_BEGIN];
+  if(*preced == 2 || *preced == 13 || *preced == 14) *assoc = ASSOC_RL;
+  else *assoc = ASSOC_LR;
+  return;
+}
+
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
 // Note:
 //   1. Argument s must be a null-terminated string
-token_type_t get_keyword_type(const char *s) {
+token_type_t token_get_keyword_type(const char *s) {
   int begin = 0, end = sizeof(keywords) / sizeof(const char *);
   while(begin < end - 1) {
     int middle = (begin + end) / 2;
@@ -363,7 +403,7 @@ char *token_get_ident(char *s, token_t *token) {
     while(isalnum(*end) || *end == '_') end++;
     // Exchange end with '\0' in order to call the function
     char temp = *end; *end = '\0';
-    token_type_t type = get_keyword_type(s);
+    token_type_t type = token_get_keyword_type(s);
     *end = temp;
     if(type == T_ILLEGAL) {
       token->type = T_IDENT;

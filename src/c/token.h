@@ -75,7 +75,7 @@ typedef enum {
 
   T_SEMICOLON,          // ;
   
-  // Literal types
+  // Literal types (i.e. primary expressions)
   T_LITERALS_BEGIN = 200,
   T_DEC_INT_CONST = 200,
   T_HEX_INT_CONST,
@@ -135,15 +135,27 @@ typedef enum {
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
 
-typedef struct {
+typedef struct token_t {
   token_type_t type;
-  // If the token is an identifier, number, char/string literal then this stores
-  // the exact string
-  char *str;
+  union {
+    // If the token is a primary expression then this stores
+    // the exact string; Otherwise it stores the child pointer 
+    // (primary exp does not have child)
+    char *str;
+    struct token_t *child;
+  };
+  struct token_t *sibling;
 } token_t;
 
-extern const char *keywords[32];
+typedef enum {
+  ASSOC_LR, ASSOC_RL,
+} assoc_t;
 
+extern const char *keywords[32];
+extern int precedences[51];
+
+void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
+token_type_t token_get_keyword_type(const char *s);
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
 char *token_get_op(char *s, token_t *token);
@@ -153,6 +165,5 @@ char *token_get_ident(char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
 char *token_get_next(char *s, token_t *token);
-token_type_t get_keyword_type(const char *s);
 
 #endif
