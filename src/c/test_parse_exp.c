@@ -5,6 +5,7 @@
 #include "token.h"
 #include "error.h"
 #include "ast.h"
+#include "parse_exp.h"
 
 void test_stack() {
   printf("=== Test Stack ===\n");
@@ -174,6 +175,16 @@ void test_ast() {
   return;
 }
 
+void test_simple_exp_parse() {
+  printf("=== Test Simple Expression Parsing ===\n");
+  char test[] = "a >> b + c * d";
+  parse_exp_cxt_t *cxt = parse_exp_init(test);
+  token_t *token = parse_exp(cxt);
+  ast_print(token, 0);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -181,5 +192,6 @@ int main() {
   test_bin_search();
   test_token_get_next();
   test_ast();
+  test_simple_exp_parse();
   return 0;
 }
