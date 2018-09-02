@@ -135,24 +135,11 @@ typedef enum {
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
 
-// Defines operator associativity
-typedef enum {
-  LEFT_TO_RIGHT,
-  RIGHT_TO_LEFT,
-} associativity_t;
-
 typedef struct {
   token_type_t type;
-  union {
-    struct {
-      // Lower number means higher precedence
-      uint8_t precedence;
-      associativity_t associativity;
-    };
-    // If the token is an identifier, number, char/string literal then this stores
-    // the exact string
-    char *str;
-  };
+  // If the token is an identifier, number, char/string literal then this stores
+  // the exact string
+  char *str;
 } token_t;
 
 extern const char *keywords[32];

@@ -18,6 +18,17 @@ typedef struct {
   int allow_comma;
 } parse_exp_cxt_t;
 
+// Defines operator associativity
+typedef enum {
+  LEFT_TO_RIGHT,
+  RIGHT_TO_LEFT,
+} associativity_t;
+
+typedef struct {
+  int precedence;
+  associativity_t associativity;
+} op_property_t;
+
 parse_exp_cxt_t *parse_exp_init(char *input);
 void parse_exp_free(parse_exp_cxt_t *cxt);
 

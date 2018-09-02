@@ -2,7 +2,7 @@
 #include "parse_exp.h"
 
 // The layout of precedences is consistent with the layout of the token table
-int precedences[] = {
+op_property_t precedences[] = {
   1, // EXP_FUNC_CALL
   1, // EXP_ARRAY_SUB
   0, // EXP_LPAREN
