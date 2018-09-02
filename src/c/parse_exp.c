@@ -36,7 +36,7 @@ void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
   assert(type >= EXP_BEGIN && type < EXP_END);
   assert(sizeof(precedences) / sizeof(precedences[0]) == (EXP_END - EXP_BEGIN));
   *preced = precedences[type - EXP_BEGIN];
-  if(*preced == 2 || *preced == 13 || *preced == 14) *assoc = ASSOC_RL
+  if(*preced == 2 || *preced == 13 || *preced == 14) *assoc = ASSOC_RL;
   else *assoc = ASSOC_LR;
   return;
 }
