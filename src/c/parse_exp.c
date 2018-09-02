@@ -1,5 +1,6 @@
 
 #include "parse_exp.h"
+#include "error.h"
 
 parse_exp_cxt_t *parse_exp_init(char *input) {
   parse_exp_cxt_t *cxt = (parse_exp_cxt_t *)malloc(sizeof(parse_exp_cxt_t));
@@ -10,6 +11,8 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   cxt->last_active_stack = OP_STACK;
   cxt->s = input;
   cxt->allow_comma = 1;
+  // Enable error reporting
+  error_init(input);
   return cxt;
 }
 
@@ -53,6 +56,9 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
     cxt->s = before;
     return NULL;
   }
+
+  // Primary expressions are returned as-is
+  if(parse_exp_isprimary(cxt, token)) return token;
 
   if(cxt->last_active_stack == AST_STACK) {
     // If the last active stack is AST stack, then the op must be postfix (unary)
@@ -102,7 +108,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
       case T_XOR_ASSIGN: token->type = EXP_XOR_ASSIGN; break;
       case T_COMMA: token->type = EXP_COMMA; break;
       default: error_row_col_exit(before, 
-                                  "Did not expect to see \"%s\" as a postfix operator", 
+                                  "Did not expect to see \"%s\" as a postfix operator\n", 
                                   token_symstr(token->type));
     }
   } else {
@@ -131,6 +137,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
 
 void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   assert(stack_id == OP_STACK || stack_id == AST_STACK);
+  printf("Shift %s\n", token_typestr(token->type));
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
   return;
@@ -163,7 +170,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int preced; assoc_t assoc;
   int top_preced; assoc_t top_assoc;
   token_get_property(token->type, &preced, &assoc);
-  token_t *op_stack_top = stack_empty(cxt->stacks[OP_STACK]) ? NULL : stack_peek(cxt->stacks[OP_STACK]);
+  token_t *op_stack_top = stack_empty(cxt->stacks[OP_STACK]) ? NULL : (token_t *)stack_peek(cxt->stacks[OP_STACK]);
   while(op_stack_top != NULL) {
     token_get_property(op_stack_top->type, &top_preced, &top_assoc);
     if(preced > top_preced || 
@@ -202,6 +209,7 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       parse_exp_shift(cxt, AST_STACK, token);
     } else {
       parse_exp_reduce_preced(cxt, token);
+      parse_exp_shift(cxt, OP_STACK, token);
     }
   }
 }
