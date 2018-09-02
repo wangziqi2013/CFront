@@ -129,7 +129,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   return token;
 }
 
-void parse_exp_push(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
+void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   assert(stack_id == OP_STACK || stack_id == AST_STACK);
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
@@ -149,11 +149,11 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
     // Note that nodes are poped in reverse order
     ast_push_child(top_op, operand);
     if(stack_empty(ast)) {
-      // TODO: ERROR, DO NOT HAVE ENOUGH NUMBER OF OPERAND
+      error_row_col_exit(cxt->s, "Wrong number of operands\n");
     }
   }
 
-  stack_push(ast, top_op);
+  parse_exp_shift(cxt, AST_STACK, top_op);
   return stack_empty(op) ? NULL : stack_peek(op);
 }
 
@@ -168,7 +168,7 @@ void parse_exp(parse_exp_cxt_t *cxt) {
       exit(1);
     } else if(parse_exp_isprimary(cxt, token)) {
       ast_make_node(token);
-      parse_exp_push(cxt, AST_STACK, token);
+      parse_exp_shift(cxt, AST_STACK, token);
     } else {
       int preced; assoc_t assoc;
       token_get_property(token->type, &preced, &assoc);
