@@ -146,14 +146,6 @@ void test_token_get_next() {
   return;
 }
 
-void ast_pre_traverse(token_t *root, int depth) {
-  for(int i = 0;i < depth;i++) putchar(' ');
-  printf("%d\n", root->type);
-  for(token_t *child = root->child;child != NULL; child = child->sibling) 
-    ast_pre_traverse(child, depth + 1);
-  return;
-}
-
 void test_ast() {
   printf("=== Test AST ===\n");
   // lvl | node content
