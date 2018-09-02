@@ -25,7 +25,10 @@ void error_get_row_col(const char *s, int *row, int *col) {
       if(*p == '\n') (*row)++, *col = 1;
       else (*col)++;
     }
-    if(*p == '\0') *row = *col = -2;
+    if(*p == '\0') {
+      *row = *col = -2;
+      fprintf(stderr, "Did you forget to register a new pointer with error module?\n");
+    }
   }
   return;
 }

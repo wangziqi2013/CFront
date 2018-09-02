@@ -57,7 +57,9 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
     return NULL;
   }
 
-  // Primary expressions are returned as-is
+  // Initialize AST pointers before we use it to build AST
+  ast_make_node(token);
+  // Primary expressions are not considered for operator type deciding
   if(parse_exp_isprimary(cxt, token)) return token;
 
   if(cxt->last_active_stack == AST_STACK) {
@@ -205,7 +207,6 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
     if(token == NULL) {
       return parse_exp_reduce_all(cxt);
     } else if(parse_exp_isprimary(cxt, token)) {
-      ast_make_node(token);
       parse_exp_shift(cxt, AST_STACK, token);
     } else {
       parse_exp_reduce_preced(cxt, token);
