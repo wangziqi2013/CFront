@@ -9,7 +9,7 @@ const char *keywords[32] = {
 };
 
 // The layout of precedences is consistent with the layout of the token table 
-// (51 elements)
+// (51 elements); 0 and 999 are not used, which are just placeholders
 int precedences[51] = {
   1, 1,       // EXP_FUNC_CALL, EXP_ARRAY_SUB, f() arr[]
   0,          // EXP_LPAREN, (exp...
@@ -46,6 +46,20 @@ void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
   if(*preced == 2 || *preced == 13 || *preced == 14) *assoc = ASSOC_RL;
   else *assoc = ASSOC_LR;
   return;
+}
+
+// Number of operands of the token. Most operands below precedence 2 has two
+// operands, the only exception being : ? which has three.
+int token_get_num_operand(token_type_t type) {
+  assert(type >= EXP_BEGIN && type < EXP_END);
+  // Only case in precedence 1 and has 1 operand
+  if(type == EXP_POST_DEC || type == EXP_POST_INC) return 1;
+  int preced = precedences[type - EXP_BEGIN];
+  if(preced < 2)
+    if(preced == 13) return 3;
+    else return 2;
+  else if(preced == 2) return 1;
+  else return 2;
 }
 
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
