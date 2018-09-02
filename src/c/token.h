@@ -100,13 +100,8 @@ typedef enum {
 
 typedef struct token_t {
   token_type_t type;
-  union {
-    // If the token is a primary expression then this stores
-    // the exact string; Otherwise it stores the child pointer 
-    // (primary exp does not have child)
-    char *str;
-    struct token_t *child;
-  };
+  char *str;
+  struct token_t *child;
   struct token_t *sibling;
 } token_t;
 
