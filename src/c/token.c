@@ -52,14 +52,14 @@ void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
 // operands, the only exception being : ? which has three.
 int token_get_num_operand(token_type_t type) {
   assert(type >= EXP_BEGIN && type < EXP_END);
-  // Only case in precedence 1 and has 1 operand
-  if(type == EXP_POST_DEC || type == EXP_POST_INC) return 1;
+  // Only case in precedence 1 and has two operand
+  if(type == EXP_DOT || type == EXP_ARROW) return 2;
   int preced = precedences[type - EXP_BEGIN];
-  if(preced < 2)
+  assert(preced != 0 && preced != 999);
+  if(preced > 2)
     if(preced == 13) return 3;
     else return 2;
-  else if(preced == 2) return 1;
-  else return 2;
+  else return 1;
 }
 
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
