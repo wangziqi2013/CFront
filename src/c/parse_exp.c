@@ -145,16 +145,31 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
   token_t *top_op = stack_pop(op);
   int op_num = token_get_num_operand(top_op->type);
   for(int i = 0;i < op_num;i++) {
+    if(stack_empty(ast)) 
+      error_row_col_exit(cxt->s, "Wrong number of operands for %s\n", token_typestr(top_op->type));
     token_t *operand = stack_pop(ast);
     // Note that nodes are poped in reverse order
     ast_push_child(top_op, operand);
-    if(stack_empty(ast)) {
-      error_row_col_exit(cxt->s, "Wrong number of operands for %s\n", token_typestr(top_op->type));
-    }
   }
 
   parse_exp_shift(cxt, AST_STACK, top_op);
   return stack_empty(op) ? NULL : stack_peek(op);
+}
+
+// Reduce until the precedence of the stack top is less than (or equal to, depending 
+// on the associativity) the given token
+void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
+  int preced; assoc_t assoc;
+  int top_preced; assoc_t top_assoc;
+  token_get_property(token->type, &preced, &assoc);
+  token_t *op_stack_top = stack_empty(cxt->stacks[OP_STACK]) ? NULL : stack_peek(cxt->stacks[OP_STACK]);
+  while(op_stack_top != NULL) {
+    token_get_property(op_stack_top->type, &top_preced, &top_assoc);
+    if(preced > top_preced || 
+       ((preced == top_preced) && (assoc == ASSOC_RL))) break;
+    op_stack_top = parse_exp_reduce(cxt);
+  }
+  return;
 }
 
 void parse_exp(parse_exp_cxt_t *cxt) {
@@ -170,8 +185,9 @@ void parse_exp(parse_exp_cxt_t *cxt) {
       ast_make_node(token);
       parse_exp_shift(cxt, AST_STACK, token);
     } else {
-      int preced; assoc_t assoc;
-      token_get_property(token->type, &preced, &assoc);
+      //int preced; assoc_t assoc;
+      //token_get_property(token->type, &preced, &assoc);
+      // TODO: REDUCE UNTIL PRECED AND ASSOC MEETS REQUIREMENT
       if(stack_empty(op)) {
         stack_push(op, token);
       }

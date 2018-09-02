@@ -26,6 +26,7 @@ void parse_exp_free_token(token_t *token);
 token_t *parse_exp_next_token(parse_exp_cxt_t *cxt);
 void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token);
 token_t *parse_exp_reduce(parse_exp_cxt_t *cxt);
+void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token);
 void parse_exp(parse_exp_cxt_t *cxt);
 
 #endif
