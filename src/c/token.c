@@ -52,8 +52,9 @@ void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
 // operands, the only exception being : ? which has three.
 int token_get_num_operand(token_type_t type) {
   assert(type >= EXP_BEGIN && type < EXP_END);
-  // Only case in precedence 1 and has two operand
-  if(type == EXP_DOT || type == EXP_ARROW) return 2;
+  // Only case in precedence 1 and has 1 operand
+  if(type == EXP_DOT || type == EXP_ARROW || 
+     type == EXP_ARRAY_SUB || type == EXP_FUNC_CALL) return 2;
   int preced = precedences[type - EXP_BEGIN];
   assert(preced != 0 && preced != 999);
   if(preced > 2)
