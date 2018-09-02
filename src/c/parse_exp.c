@@ -183,7 +183,9 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int top_preced; assoc_t top_assoc;
   token_get_property(token->type, &preced, &assoc);
   token_t *op_stack_top = stack_empty(cxt->stacks[OP_STACK]) ? NULL : (token_t *)stack_peek(cxt->stacks[OP_STACK]);
-  while(op_stack_top != NULL) {
+  while(op_stack_top != NULL && op_stack_top->type != EXP_FUNC_CALL && 
+        op_stack_top->type != EXP_ARRAY_SUB && op_stack_top->type != EXP_LPAREN &&
+        op_stack_top->type != EXP_CAST) {
     token_get_property(op_stack_top->type, &top_preced, &top_assoc);
     if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
