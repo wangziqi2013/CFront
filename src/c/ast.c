@@ -28,10 +28,10 @@ token_t *ast_push_child(token_t *token, token_t *child) {
 }
 
 void ast_print(token_t *token, int depth) {
-  for(int i = 0;i < depth;i++) putchar('  ');
+  for(int i = 0;i < depth * 2;i++) putchar(' ');
   const char *symstr = token_symstr(token->type);
-  printf("%s %s", token_typestr(token->type), symstr == NULL ? "" : symstr);
+  printf("%d:%s %s\n", token->type, token_typestr(token->type), symstr == NULL ? "" : symstr);
   for(token_t *child = token->child;child != NULL; child = child->sibling) 
-    ast_pre_traverse(child, depth + 1);
+    ast_print(child, depth + 1);
   return;
 }

@@ -191,15 +191,12 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   return (token_t *)stack_pop(ast);
 }
 
-void parse_exp(parse_exp_cxt_t *cxt) {
+token_t *parse_exp(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   while(1) {
     token_t *token = parse_exp_next_token(cxt);
     if(token == NULL) {
-      // TODO: FINISHED ALL TOKENS, REDUCE ALL
-      // TODO: Maybe check for type cast?
-      printf("Reaches the end\n");
-      exit(1);
+      return parse_exp_reduce_all(cxt);
     } else if(parse_exp_isprimary(cxt, token)) {
       ast_make_node(token);
       parse_exp_shift(cxt, AST_STACK, token);

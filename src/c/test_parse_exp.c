@@ -177,7 +177,7 @@ void test_ast() {
   ast_append_child(&token3, &token7);
   ast_push_child(&token5, &token8);
 
-  ast_pre_traverse(&token1, 0);
+  ast_print(&token1, 0);
   printf("Pass!\n");
   return;
 }
