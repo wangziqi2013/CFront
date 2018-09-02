@@ -103,6 +103,8 @@ typedef struct token_t {
   char *str;
   struct token_t *child;
   struct token_t *sibling;
+  // The offset in source file, for debugging
+  char *offset;
 } token_t;
 
 typedef enum {

@@ -332,6 +332,7 @@ const char *token_symstr(token_type_t type) {
 //   2. // and /* and */ and // are not processed
 //   3. { and } are processed here
 char *token_get_op(char *s, token_t *token) {
+  token->offset = s;
   if(s == NULL) return NULL;
   switch(s[0]) {
     case '\0': return NULL;
@@ -464,6 +465,7 @@ void token_free_literal(token_t *token) {
 // Note:
 //   1. If keywords are detected then the buffer is not initialized
 char *token_get_ident(char *s, token_t *token) {
+  token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
   else if(isalpha(*s) || *s == '_') {
     char *end = s + 1;
@@ -478,7 +480,6 @@ char *token_get_ident(char *s, token_t *token) {
     } else {
       token->type = type;
     }
-    
     return end;
   }
   
@@ -487,6 +488,7 @@ char *token_get_ident(char *s, token_t *token) {
 }
 
 char *token_get_int(char *s, token_t *token) {
+  token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
   token->type = T_DEC_INT_CONST;
   if(s[0] == '0') {
@@ -511,6 +513,7 @@ char *token_get_int(char *s, token_t *token) {
 }
 
 char *token_get_str(char *s, token_t *token, char closing) {
+  token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
   if(closing == '\'') token->type = T_CHAR_CONST;
   else token->type = T_STR_CONST;

@@ -146,7 +146,7 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
   int op_num = token_get_num_operand(top_op->type);
   for(int i = 0;i < op_num;i++) {
     if(stack_empty(ast)) 
-      error_row_col_exit(cxt->s, "Wrong number of operands for %s\n", token_typestr(top_op->type));
+      error_row_col_exit(top_op->offset, "Wrong number of operands for %s\n", token_typestr(top_op->type));
     token_t *operand = stack_pop(ast);
     // Note that nodes are poped in reverse order
     ast_push_child(top_op, operand);
@@ -185,12 +185,7 @@ void parse_exp(parse_exp_cxt_t *cxt) {
       ast_make_node(token);
       parse_exp_shift(cxt, AST_STACK, token);
     } else {
-      //int preced; assoc_t assoc;
-      //token_get_property(token->type, &preced, &assoc);
-      // TODO: REDUCE UNTIL PRECED AND ASSOC MEETS REQUIREMENT
-      if(stack_empty(op)) {
-        stack_push(op, token);
-      }
+      parse_exp_reduce_preced(cxt, token);
     }
   }
 }
