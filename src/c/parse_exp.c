@@ -24,7 +24,6 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
 // Literals (incl. ident), operators, and sizeof() could be part of an expression
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
   token_type_t type = token->type;
-  if(cxt->allow_comma == 0 && type == T_COMMA) return 0; 
   return ((type >= T_OP_BEGIN && type < T_OP_END) || 
           (type >= T_LITERALS_BEGIN && type < T_LITERALS_END) || 
           (type == T_SIZEOF));
@@ -130,16 +129,25 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   return token;
 }
 
+void parse_exp_push(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
+  assert(stack_id == OP_STACK || stack_id == AST_STACK);
+  stack_push(cxt->stacks[stack_id], token);
+  cxt->last_active_stack = stack_id;
+  return;
+}
+
 // One reduce step of the topmost operator
 // Return the next op at stack top; NULL if stack empty
+// If op stack is empty then do nothing, and return NULL to indicate this
 token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
-  assert(!stack_empty(op) && !stack_empty(ast));
+  if(stack_empty(op)) return NULL;
   token_t *top_op = stack_pop(op);
   int op_num = token_get_num_operand(top_op->type);
   for(int i = 0;i < op_num;i++) {
     token_t *operand = stack_pop(ast);
-    // TODO: PUSH OPERAND INTO THE CHILD LIST OF TOP_OP
+    // Note that nodes are poped in reverse order
+    ast_push_child(top_op, operand);
     if(stack_empty(ast)) {
       // TODO: ERROR, DO NOT HAVE ENOUGH NUMBER OF OPERAND
     }
@@ -159,8 +167,8 @@ void parse_exp(parse_exp_cxt_t *cxt) {
       printf("Reaches the end\n");
       exit(1);
     } else if(parse_exp_isprimary(cxt, token)) {
-      stack_push(ast, token); // TODO: INIT THE NODE SIBLING POINTER
-      cxt->last_active_stack = AST_STACK;
+      ast_make_node(token);
+      parse_exp_push(cxt, AST_STACK, token);
     } else {
       int preced; assoc_t assoc;
       token_get_property(token->type, &preced, &assoc);
