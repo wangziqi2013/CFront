@@ -146,7 +146,8 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
   int op_num = token_get_num_operand(top_op->type);
   for(int i = 0;i < op_num;i++) {
     if(stack_empty(ast)) 
-      error_row_col_exit(top_op->offset, "Wrong number of operands for %s\n", token_typestr(top_op->type));
+      error_row_col_exit(top_op->offset, "Wrong number of operands for operator %s\n", 
+                         token_typestr(top_op->type));
     token_t *operand = stack_pop(ast);
     // Note that nodes are poped in reverse order
     ast_push_child(top_op, operand);
@@ -170,6 +171,23 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
     op_stack_top = parse_exp_reduce(cxt);
   }
   return;
+}
+
+// Reduce as much as we can and pop the only element from the AST stack
+// Report error if in the final state there are more than one element on AST stack
+// or any element on operator stack
+token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
+  stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
+  while(parse_exp_reduce(cxt) != NULL);
+  if(!stack_empty(op))
+    error_row_col_exit(((token_t *)stack_peek(op))->offset,
+                       "Did not find operand for operator %s\n", 
+                       token_typestr(((token_t *)stack_peek(op))->type));
+  else if(stack_size(ast) != 1)
+    error_row_col_exit(((token_t *)stack_at(ast, 0))->offset,
+                       "Missing operator for expression\n");
+  
+  return (token_t *)stack_pop(ast);
 }
 
 void parse_exp(parse_exp_cxt_t *cxt) {

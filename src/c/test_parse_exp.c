@@ -134,8 +134,10 @@ void test_token_get_next() {
   error_init(test2);
   while((s = token_get_next(s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
+    int row, col;
+    error_get_row_col(token.offset, &row, &col);
     if(sym == NULL) printf("%s ", token.str);
-    else printf("%s ", sym);
+    else printf("%s(%d %d) ", sym, row, col);
     token_free_literal(&token);
   }
   putchar('\n');
@@ -154,9 +156,10 @@ void ast_pre_traverse(token_t *root, int depth) {
 
 void test_ast() {
   printf("=== Test AST ===\n");
-  // 1 | 1 
-  // 2 | 2 3   4 5
-  // 3 |   6 7   8 
+  // lvl | node content
+  // [1] | 1 
+  // [2] | 2 3   4 5
+  // [3] |   6 7   8 
   // Should print 1 2 3 6 7 4 5 8
   token_t token1; token1.type = 1; token1.child = token1.sibling = NULL;
   token_t token2; token2.type = 2; token2.child = token2.sibling = NULL;
