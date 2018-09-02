@@ -31,14 +31,19 @@ int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
 }
 
 // Returned token is allocated from the heap, caller free
+// If the token does not belong to expressions, or we reached the end then 
+// return NULL
 token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   token_t *token = (token_t *)malloc(sizeof(token_t));
-  const char *before = cxt->s;
+  char *before = cxt->s;
   cxt->s = token_get_next(cxt->s, token);
   if(cxt->s == NULL || !parse_exp_isexp(cxt, token)) {
     free(token);
+    // Reset the text pointer such that the next token is still obtained
+    cxt->s = before;
     // TODO: FINISHED ALL TOKENS
     // TODO: Maybe check for type cast?
+    return NULL;
   }
 
   if(cxt->last_active_stack == AST_STACK) {
@@ -77,17 +82,17 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
       case T_QMARK: token->type = EXP_COND; break;
       case T_COLON: token->type = EXP_COLON; break;
       case T_ASSIGN: token->type = EXP_ASSIGN; break;
-      case T_PLUS_ASSIGN: return token->type = EXP_ADD_ASSIGN; break;
-      case T_MINUS_ASSIGN: return token->type = EXP_SUB_ASSIGN; break;
-      case T_MUL_ASSIGN: return token->type = EXP_MUL_ASSIGN; break;
-      case T_DIV_ASSIGN: return token->type = EXP_DIV_ASSIGN; break;
-      case T_MOD_ASSIGN: return token->type = EXP_MOD_ASSIGN; break;
-      case T_LSHIFT_ASSIGN: return token->type = EXP_LSHIFT_ASSIGN; break;
-      case T_RSHIFT_ASSIGN: return token->type = EXP_RSHIFT_ASSIGN; break;
-      case T_AND_ASSIGN: return token->type = EXP_AND_ASSIGN; break;
-      case T_OR_ASSIGN: return token->type = EXP_OR_ASSIGN; break;
-      case T_XOR_ASSIGN: return token->type = EXP_XOR_ASSIGN; break;
-      case T_COMMA: return token->type = EXP_COMMA; break;
+      case T_PLUS_ASSIGN: token->type = EXP_ADD_ASSIGN; break;
+      case T_MINUS_ASSIGN: token->type = EXP_SUB_ASSIGN; break;
+      case T_MUL_ASSIGN: token->type = EXP_MUL_ASSIGN; break;
+      case T_DIV_ASSIGN: token->type = EXP_DIV_ASSIGN; break;
+      case T_MOD_ASSIGN: token->type = EXP_MOD_ASSIGN; break;
+      case T_LSHIFT_ASSIGN: token->type = EXP_LSHIFT_ASSIGN; break;
+      case T_RSHIFT_ASSIGN: token->type = EXP_RSHIFT_ASSIGN; break;
+      case T_AND_ASSIGN: token->type = EXP_AND_ASSIGN; break;
+      case T_OR_ASSIGN: token->type = EXP_OR_ASSIGN; break;
+      case T_XOR_ASSIGN: token->type = EXP_XOR_ASSIGN; break;
+      case T_COMMA: token->type = EXP_COMMA; break;
       default: error_row_col_exit(before, 
                                   "Did not expect to see \"%s\" as a postfix operator", 
                                   token_symstr(token->type));
@@ -95,52 +100,23 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   } else {
     // If the last active stack is operator stack then it must be an unary prefix operator
     switch(token->type) {
-      case T_LPAREN: token->type = EXP_FUNC_CALL; break;
-      case T_RPAREN: token->type = EXP_RPAREN; break;
-      case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
-      case T_RSPAREN: token->type = EXP_RSPAREN; break;
-      case T_DOT: token->type = EXP_DOT; break;
-      case T_ARROW: token->type = EXP_ARROW; break;
-      case T_INC: token->type = EXP_POST_INC; break;
-      case T_DEC: token->type = EXP_POST_DEC; break;
-      case T_PLUS: token->type = EXP_ADD; break;
-      case T_MINUS: token->type = EXP_SUB; break;
-      //case T_LOGICAL_NOT: token->type = EXP_; break;
-      //case T_BIT_NOT: token->type = EXP_; break;
-      case T_STAR: token->type = EXP_MUL; break;
-      case T_AND: token->type = EXP_BIT_AND; break;
-      //case T_SIZEOF: token->type = EXP_; break;
-      case T_DIV: token->type = EXP_DIV; break;
-      case T_MOD: token->type = EXP_MOD; break;
-      case T_LSHIFT: token->type = EXP_LSHIFT; break;
-      case T_RSHIFT: token->type = EXP_RSHIFT; break;
-      case T_LESS: token->type = EXP_LESS; break;
-      case T_GREATER: token->type = EXP_GREATER; break;
-      case T_LEQ: token->type = EXP_LEQ; break;
-      case T_GEQ: token->type = EXP_GEQ; break;
-      case T_EQ: token->type = EXP_EQ; break;
-      case T_NEQ: token->type = EXP_NEQ; break;
-      case T_BIT_XOR: token->type = EXP_BIT_XOR; break;
-      case T_BIT_OR: token->type = EXP_BIT_OR; break;
-      case T_LOGICAL_AND: token->type = EXP_LOGICAL_AND; break;
-      case T_LOGICAL_OR: token->type = EXP_LOGICAL_OR; break;
-      case T_QMARK: token->type = EXP_COND; break;
-      case T_COLON: token->type = EXP_COLON; break;
-      case T_ASSIGN: token->type = EXP_ASSIGN; break;
-      case T_PLUS_ASSIGN: return token->type = EXP_ADD_ASSIGN; break;
-      case T_MINUS_ASSIGN: return token->type = EXP_SUB_ASSIGN; break;
-      case T_MUL_ASSIGN: return token->type = EXP_MUL_ASSIGN; break;
-      case T_DIV_ASSIGN: return token->type = EXP_DIV_ASSIGN; break;
-      case T_MOD_ASSIGN: return token->type = EXP_MOD_ASSIGN; break;
-      case T_LSHIFT_ASSIGN: return token->type = EXP_LSHIFT_ASSIGN; break;
-      case T_RSHIFT_ASSIGN: return token->type = EXP_RSHIFT_ASSIGN; break;
-      case T_AND_ASSIGN: return token->type = EXP_AND_ASSIGN; break;
-      case T_OR_ASSIGN: return token->type = EXP_OR_ASSIGN; break;
-      case T_XOR_ASSIGN: return token->type = EXP_XOR_ASSIGN; break;
-      case T_COMMA: return token->type = EXP_COMMA; break;
+      case T_LPAREN: token->type = EXP_LPAREN; break;        // Ordinary parenthesis or type cast
+      case T_RPAREN: token->type = EXP_RPAREN; break;        // ( exp... )
+      // Postfix ++ and -- must be reduced immediately because they have the highest precedence
+      case T_INC: token->type = EXP_PRE_INC; break;
+      case T_DEC: token->type = EXP_PRE_DEC; break;
+      case T_PLUS: token->type = EXP_PLUS; break;
+      case T_MINUS: token->type = EXP_MINUS; break;
+      case T_LOGICAL_NOT: token->type = EXP_LOGICAL_NOT; break;
+      case T_BIT_NOT: token->type = EXP_BIT_NOT; break;
+      case T_STAR: token->type = EXP_DEREF; break;
+      case T_AND: token->type = EXP_ADDR; break;
+      case T_SIZEOF: token->type = EXP_SIZEOF; break;
       default: error_row_col_exit(before, 
                                   "Did not expect to see \"%s\" as a prefix operator", 
                                   token_symstr(token->type));
     }
   }
+
+  return token;
 }
