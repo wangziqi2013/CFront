@@ -210,8 +210,14 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
     } else if(parse_exp_isprimary(cxt, token)) {
       parse_exp_shift(cxt, AST_STACK, token);
     } else {
+      // TODO: SPECIAL PROCESSING FOR PARENTHESIS AND ARRAY INDEXING
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
+      // Special care must be taken for postfix ++ and -- because they cause the 
+      // parser to think an op has been pushed and all following are unary prefix op
+      // We need to reduce immediately upon seeing them. This does not affect correctness
+      // because these two have the highest priority
+      if(token->type == EXP_POST_DEC || token->type == EXP_POST_INC) parse_exp_reduce(cxt);
     }
   }
 }
