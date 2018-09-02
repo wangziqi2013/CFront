@@ -130,7 +130,27 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   return token;
 }
 
+// One reduce step of the topmost operator
+// Return the next op at stack top; NULL if stack empty
+token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
+  stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
+  assert(!stack_empty(op) && !stack_empty(ast));
+  token_t *top_op = stack_pop(op);
+  int op_num = token_get_num_operand(top_op->type);
+  for(int i = 0;i < op_num;i++) {
+    token_t *operand = stack_pop(ast);
+    // TODO: PUSH OPERAND INTO THE CHILD LIST OF TOP_OP
+    if(stack_empty(ast)) {
+      // TODO: ERROR, DO NOT HAVE ENOUGH NUMBER OF OPERAND
+    }
+  }
+
+  stack_push(ast, top_op);
+  return stack_empty(op) ? NULL : stack_peek(op);
+}
+
 void parse_exp(parse_exp_cxt_t *cxt) {
+  stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   while(1) {
     token_t *token = parse_exp_next_token(cxt);
     if(token == NULL) {
@@ -139,11 +159,14 @@ void parse_exp(parse_exp_cxt_t *cxt) {
       printf("Reaches the end\n");
       exit(1);
     } else if(parse_exp_isprimary(cxt, token)) {
-      stack_push(cxt->stacks[AST_STACK], token); // Something here
+      stack_push(ast, token); // TODO: INIT THE NODE SIBLING POINTER
       cxt->last_active_stack = AST_STACK;
     } else {
       int preced; assoc_t assoc;
       token_get_property(token->type, &preced, &assoc);
+      if(stack_empty(op)) {
+        stack_push(op, token);
+      }
     }
   }
 }

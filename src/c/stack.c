@@ -36,3 +36,10 @@ void *stack_pop(stack_t *stack) {
   assert(stack->size != 0);
   return stack->data[--stack->size];
 }
+
+void *stack_peek(stack_t *stack) {
+  assert(stack->size != 0);
+  return stack->data[stack->size];
+}
+
+int stack_empty(stack_t *stack) { return stack->size == 0; }
