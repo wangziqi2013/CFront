@@ -179,13 +179,14 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
 token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   while(parse_exp_reduce(cxt) != NULL);
-  if(!stack_empty(op))
+  if(!stack_empty(op)) {
     error_row_col_exit(((token_t *)stack_peek(op))->offset,
                        "Did not find operand for operator %s\n", 
                        token_typestr(((token_t *)stack_peek(op))->type));
-  else if(stack_size(ast) != 1)
+  } else if(stack_size(ast) != 1) {
     error_row_col_exit(((token_t *)stack_at(ast, 0))->offset,
                        "Missing operator for expression\n");
+  }
   
   return (token_t *)stack_pop(ast);
 }
