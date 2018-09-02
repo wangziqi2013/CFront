@@ -154,9 +154,10 @@ void ast_pre_traverse(token_t *root, int depth) {
 
 void test_ast() {
   printf("=== Test AST ===\n");
-  // 1 
-  // 2 3   4 5
-  //   6 7   8 
+  // 1 | 1 
+  // 2 | 2 3   4 5
+  // 3 |   6 7   8 
+  // Should print 1 2 3 6 7 4 5 8
   token_t token1; token1.type = 1; token1.child = token1.sibling = NULL;
   token_t token2; token2.type = 2; token2.child = token2.sibling = NULL;
   token_t token3; token3.type = 3; token3.child = token3.sibling = NULL;
