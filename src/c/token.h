@@ -129,8 +129,8 @@ typedef enum {
   EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
   EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
   EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
-  EXP_COMMA,                  // binary ,
-  T_EXP_END,
+  EXP_COMMA,                               // binary ,
+  EXP_END,
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
