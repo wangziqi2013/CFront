@@ -174,13 +174,66 @@ const char *token_typestr(token_type_t type) {
     case T_VOID: return "T_VOID";
     case T_VOLATILE: return "T_VOLATILE";
     case T_WHILE: return "T_WHILE";
+    // Expressions
+    case EXP_FUNC_CALL: return "EXP_FUNC_CALL";
+    case EXP_ARRAY_SUB: return "EXP_ARRAY_SUB";
+    case EXP_LPAREN: return "EXP_LPAREN";
+    case EXP_RPAREN: return "EXP_RPAREN";
+    case EXP_RSPAREN: return "EXP_RSPAREN";
+    case EXP_DOT: return "EXP_DOT";
+    case EXP_ARROW: return "EXP_ARROW";
+    case EXP_POST_INC: return "EXP_POST_INC";
+    case EXP_PRE_INC: return "EXP_PRE_INC";
+    case EXP_POST_DEC: return "EXP_POST_DEC";
+    case EXP_PRE_DEC: return "EXP_PRE_DEC";
+    case EXP_PLUS: return "EXP_PLUS";
+    case EXP_MINUS: return "EXP_MINUS";
+    case EXP_LOGICAL_NOT: return "EXP_LOGICAL_NOT";
+    case EXP_BIT_NOT: return "EXP_BIT_NOT";
+    case EXP_CAST: return "EXP_CAST";
+    case EXP_DEREF: return "EXP_DEREF";
+    case EXP_ADDR: return "EXP_ADDR";
+    case EXP_SIZEOF: return "EXP_SIZEOF";
+    case EXP_MUL: return "EXP_MUL";
+    case EXP_DIV: return "EXP_DIV";
+    case EXP_MOD: return "EXP_MOD";
+    case EXP_ADD: return "EXP_ADD";
+    case EXP_SUB: return "EXP_SUB";
+    case EXP_LSHIFT: return "EXP_LSHIFT";
+    case EXP_RSHIFT: return "EXP_RSHIFT";
+    case EXP_LESS: return "EXP_LESS";
+    case EXP_GREATER: return "EXP_GREATER";
+    case EXP_LEQ: return "EXP_LEQ";
+    case EXP_GEQ: return "EXP_GEQ";
+    case EXP_EQ: return "EXP_EQ";
+    case EXP_NEQ: return "EXP_NEQ";
+    case EXP_BIT_AND: return "EXP_BIT_AND";
+    case EXP_BIT_OR: return "EXP_BIT_OR";
+    case EXP_BIT_XOR: return "EXP_BIT_XOR";
+    case EXP_LOGICAL_AND: return "EXP_LOGICAL_AND";
+    case EXP_LOGICAL_OR: return "EXP_LOGICAL_OR";
+    case EXP_COND: return "EXP_COND";
+    case EXP_COLON: return "EXP_COLON";
+    case EXP_ASSIGN: return "EXP_ASSIGN";
+    case EXP_ADD_ASSIGN: return "EXP_ADD_ASSIGN";
+    case EXP_SUB_ASSIGN: return "EXP_SUB_ASSIGN";
+    case EXP_MUL_ASSIGN: return "EXP_MUL_ASSIGN";
+    case EXP_DIV_ASSIGN: return "EXP_DIV_ASSIGN";
+    case EXP_MOD_ASSIGN: return "EXP_MOD_ASSIGN";
+    case EXP_AND_ASSIGN: return "EXP_AND_ASSIGN";
+    case EXP_OR_ASSIGN: return "EXP_OR_ASSIGN";
+    case EXP_XOR_ASSIGN: return "EXP_XOR_ASSIGN";
+    case EXP_LSHIFT_ASSIGN: return "EXP_LSHIFT_ASSIGN";
+    case EXP_RSHIFT_ASSIGN: return "EXP_RSHIFT_ASSIGN";
+    case EXP_COMMA: return "EXP_COMMA";
   }
 
   return NULL;
 }
 
 // Return the actual symbol of the token type
-// For identifier and literal types this function returns NULL
+// For identifier and literal types and non-token types (e.g. expressions) this 
+// function returns NULL
 const char *token_symstr(token_type_t type) {
   assert(type != T_ILLEGAL);
   switch(type) {
