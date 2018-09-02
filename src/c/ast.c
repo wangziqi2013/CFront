@@ -22,7 +22,7 @@ token_t *ast_append_child(token_t *token, token_t *child) {
 
 // Adds the node as the first child of the token
 token_t *ast_push_child(token_t *token, token_t *child) {
-  child->sibling = token->sibling;
+  child->sibling = token->child;
   token->child = child;
   return token;
 }

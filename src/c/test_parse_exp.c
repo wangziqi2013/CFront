@@ -4,6 +4,7 @@
 #include "stack.h"
 #include "token.h"
 #include "error.h"
+#include "ast.h"
 
 void test_stack() {
   printf("=== Test Stack ===\n");
@@ -157,13 +158,13 @@ void test_ast() {
   // 2 3   4 5
   //   6 7   8 
   token_t token1; token1.type = 1; token1.child = token1.sibling = NULL;
-  token_t token2; token1.type = 1; token2.child = token2.sibling = NULL;
-  token_t token3; token1.type = 1; token3.child = token3.sibling = NULL;
-  token_t token4; token1.type = 1; token4.child = token4.sibling = NULL;
-  token_t token5; token1.type = 1; token5.child = token5.sibling = NULL;
-  token_t token6; token1.type = 1; token6.child = token6.sibling = NULL;
-  token_t token7; token1.type = 1; token7.child = token7.sibling = NULL;
-  token_t token8; token1.type = 1; token8.child = token8.sibling = NULL;
+  token_t token2; token2.type = 2; token2.child = token2.sibling = NULL;
+  token_t token3; token3.type = 3; token3.child = token3.sibling = NULL;
+  token_t token4; token4.type = 4; token4.child = token4.sibling = NULL;
+  token_t token5; token5.type = 5; token5.child = token5.sibling = NULL;
+  token_t token6; token6.type = 6; token6.child = token6.sibling = NULL;
+  token_t token7; token7.type = 7; token7.child = token7.sibling = NULL;
+  token_t token8; token8.type = 8; token8.child = token8.sibling = NULL;
   ast_push_child(&token1, &token3);
   ast_push_child(&token1, &token2);
   ast_append_child(&token1, &token4);
@@ -171,8 +172,8 @@ void test_ast() {
   ast_append_child(&token3, &token6);
   ast_append_child(&token3, &token7);
   ast_push_child(&token5, &token8);
-  
-  ast_pre_traverse(&token1, 0)
+
+  ast_pre_traverse(&token1, 0);
   printf("Pass!\n");
   return;
 }
@@ -183,5 +184,6 @@ int main() {
   test_get_op();
   test_bin_search();
   test_token_get_next();
+  test_ast();
   return 0;
 }
