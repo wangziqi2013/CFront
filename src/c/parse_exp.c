@@ -168,6 +168,7 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
 
 // Reduce until the precedence of the stack top is less than (or equal to, depending 
 // on the associativity) the given token
+// Note: Higher precedence has lower numerical number
 void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int preced; assoc_t assoc;
   int top_preced; assoc_t top_assoc;
@@ -175,7 +176,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   token_t *op_stack_top = stack_empty(cxt->stacks[OP_STACK]) ? NULL : (token_t *)stack_peek(cxt->stacks[OP_STACK]);
   while(op_stack_top != NULL) {
     token_get_property(op_stack_top->type, &top_preced, &top_assoc);
-    if(preced > top_preced || 
+    if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
     op_stack_top = parse_exp_reduce(cxt);
   }
