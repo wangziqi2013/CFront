@@ -94,7 +94,7 @@ typedef enum {
   T_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_UNSIGNED, T_VOID, T_VOLATILE, T_WHILE,
   T_KEYWORDS_END,
 
-  // AST type used within an expression
+  // AST type used within an expression (51 elements)
   EXP_BEGIN = 2000,
   EXP_FUNC_CALL = 2000,       // func()
   EXP_ARRAY_SUB,              // array[]
