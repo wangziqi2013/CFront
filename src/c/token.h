@@ -17,71 +17,34 @@
 typedef enum {
   // Expression token types
   T_OP_BEGIN = 0,
-  T_LPAREN = 0,         // (
-  T_RPAREN,             // )
-  T_LSPAREN,            // [
-  T_RSPAREN,            // ]
-  T_DOT,                // .
-  T_ARROW,              // ->
-  T_INC,                // ++
-  T_DEC,                // --
-  T_PLUS,               // +
-  T_MINUS,              // -
-  T_LOGICAL_NOT = 10,   // !
-  T_BIT_NOT,            // ~
-  T_STAR,               // *
-  T_AND,                // &   This is both address op and bitwise and
-  T_DIV,                // /
-  T_MOD,                // %
+  T_LPAREN = 0, T_RPAREN, T_LSPAREN, T_RSPAREN,       // ( ) [ ]
+  T_DOT, T_ARROW,                                     // . ->
+  T_INC, T_DEC, T_PLUS, T_MINUS,                      // ++ -- + -
+  T_LOGICAL_NOT = 10, T_BIT_NOT,                      // ! ~
+  T_STAR, T_AND,                                      // * &
+  T_DIV, T_MOD,                                       // / %
+  T_LSHIFT, T_RSHIFT,                                 // << >>
 
-  T_LSHIFT,             // <<
-  T_RSHIFT,             // >>
-
-  T_LESS,               // <
-  T_GREATER,            // >
-  T_LEQ = 20,           // <=      
-  T_GEQ,                // >=
-
-  T_EQ,                 // ==
-  T_NEQ,                // !=
-
-  T_BIT_XOR,            // ^
-  T_BIT_OR,             // |
-
-  T_LOGICAL_AND,        // &&
-  T_LOGICAL_OR,         // ||
-
-  T_QMARK,              // ?
-  T_COLON,              // :
-
-  T_ASSIGN = 30,        // =
-  T_PLUS_ASSIGN,        // +=
-  T_MINUS_ASSIGN,       // -=
-  T_MUL_ASSIGN,         // *=
-  T_DIV_ASSIGN,         // /=
-  T_MOD_ASSIGN,         // %=
-  T_LSHIFT_ASSIGN,      // <<=
-  T_RSHIFT_ASSIGN,      // >>=
-  T_AND_ASSIGN,         // &=
-  T_OR_ASSIGN,          // |=
-  T_XOR_ASSIGN = 40,    // ^=
-
-  T_COMMA,              // ,
-
+  T_LESS, T_GREATER, T_LEQ = 20, T_GEQ, T_EQ, T_NEQ,  // < > <= >= == !=
+  T_BIT_XOR, T_BIT_OR,                                // ^ |
+  T_LOGICAL_AND, T_LOGICAL_OR,                        // && ||
+  T_QMARK, T_COLON,                                   // ? :
+  T_ASSIGN = 30,                                      // =
+  T_PLUS_ASSIGN, T_MINUS_ASSIGN, T_MUL_ASSIGN,        // = += -= *=
+  T_DIV_ASSIGN, T_MOD_ASSIGN,                         // /= %=
+  T_LSHIFT_ASSIGN, T_RSHIFT_ASSIGN,                   // <<= >>=
+  T_AND_ASSIGN, T_OR_ASSIGN, T_XOR_ASSIGN = 40,       // &= |= ^=
+  T_COMMA,                                            // ,
   T_OP_END,
 
   T_LCPAREN,            // {
   T_RCPAREN,            // }
-
   T_SEMICOLON,          // ;
   
   // Literal types (i.e. primary expressions)
   T_LITERALS_BEGIN = 200,
-  T_DEC_INT_CONST = 200,
-  T_HEX_INT_CONST,
-  T_OCT_INT_CONST,
-  T_CHAR_CONST,
-  T_STR_CONST,
+  T_DEC_INT_CONST = 200, T_HEX_INT_CONST, T_OCT_INT_CONST,
+  T_CHAR_CONST, T_STR_CONST,
   T_FLOAT_CONST,
   T_IDENT,
   T_LITERALS_END,
