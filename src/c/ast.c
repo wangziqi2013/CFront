@@ -7,7 +7,7 @@ token_t *ast_make_node(token_t *token) {
   return token;
 }
 
-int ast_is_leaf(token_t *token) { return token->child == NULL; }
+int ast_isleaf(token_t *token) { return token->child == NULL; }
 
 token_t *ast_append_child(token_t *token, token_t *child) {
   if(token->child == NULL) token->child = child;

@@ -149,7 +149,7 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
     // Note that nodes are poped in reverse order
     ast_push_child(top_op, operand);
     if(stack_empty(ast)) {
-      error_row_col_exit(cxt->s, "Wrong number of operands\n");
+      error_row_col_exit(cxt->s, "Wrong number of operands for %s\n", token_typestr(top_op->type));
     }
   }
 
