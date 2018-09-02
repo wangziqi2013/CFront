@@ -222,15 +222,18 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
 
       parse_exp_free_token(token);
     } else if(token->type == EXP_RSPAREN) {
-
+      token_t *op_top = stack_peek(op);
+      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) {
+        op_top = parse_exp_reduce(cxt);
+      }
+      parse_exp_reduce(cxt);
       parse_exp_free_token(token);
     } else {
-      if(token == LPAREN) {
-        // TODO: CHECK IF IT IS A TYPE CAST; if not then treat it as normal parenthesis
-      }
+      if(token->type == EXP_LPAREN && parse_exp_istype(cxt)) token->type = EXP_CAST;
 
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
+      // TODO: If we just shifted in a cast then parse type declarator
       // Special care must be taken for postfix ++ and -- because they cause the 
       // parser to think an op has been pushed and all following are unary prefix op
       // We need to reduce immediately upon seeing them. This does not affect correctness
