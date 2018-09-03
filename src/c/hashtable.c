@@ -66,10 +66,10 @@ void ht_resize(hashtable_t *ht) {
   return;
 }
 
-// Returns value, or NULL if not found
+// Returns value, or HT_NOTFOUND if not found
 void *ht_find(hashtable_t *ht, void *key) {
   int slot = ht_find_slot(ht, ht->keys, key);
-  return ht->keys[slot] == NULL ? NULL : ht->values[slot];
+  return ht->keys[slot] == NULL ? HT_NOTFOUND : ht->values[slot];
 }
 
 // Returns the value just inserted; return current value otherwise
