@@ -44,6 +44,17 @@ void ast_print(token_t *token, int depth) {
   return;
 }
 
+// Releases memory for every node in the AST
+void ast_free(token_t *token) {
+  token_t *next;
+  while(token->child != NULL) {
+    next = token->child->sibling;
+    ast_free(token->child);
+    token->child = next;
+  }
+  token_free(token);
+}
+
 // Returns the last inserted node
 token_t *_ast_collect_funcarg(token_t *comma, token_t *token) {
   assert(comma->child != NULL && comma->child->sibling != NULL);
@@ -56,7 +67,7 @@ token_t *_ast_collect_funcarg(token_t *comma, token_t *token) {
     ast_insert_after(token, child2);
     token = _ast_collect_funcarg(child1, token);
   }
-  //token_free(comma);
+  token_free(comma);
   return token;
 }
 
