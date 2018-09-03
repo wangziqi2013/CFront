@@ -1,5 +1,7 @@
 {
   "files.associations": {
-    "ast.h": "c"
+    "ast.h": "c",
+    "hashtable.h": "c",
+    "parse_decl.h": "c"
   }
 }

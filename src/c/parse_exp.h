@@ -5,6 +5,7 @@
 #include "stack.h"
 #include "token.h"
 #include "ast.h"
+#include "hashtable.h"
 
 #define AST_STACK 0
 #define OP_STACK 1
@@ -14,6 +15,8 @@ typedef struct {
   int last_active_stack;
   stack_t *stacks[2];
   char *s;
+  // Used for parsing declarations
+  hashtable_t *udef_types;
 } parse_exp_cxt_t;
 
 parse_exp_cxt_t *parse_exp_init(char *input);
