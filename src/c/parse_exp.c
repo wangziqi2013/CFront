@@ -206,7 +206,7 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
                        token_typestr(((token_t *)stack_peek(op))->type));
   } else if(stack_size(ast) != 1) {
     error_row_col_exit(((token_t *)stack_at(ast, 0))->offset,
-                       "Missing operator for expression\n");
+                       "Missing operator for expression\n"); // TODO: MAKE IT MORE MEANINGFUL
   }
   
   return (token_t *)stack_pop(ast);
@@ -221,13 +221,19 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
     } else if(parse_exp_isprimary(cxt, token)) {
       parse_exp_shift(cxt, AST_STACK, token);
     } else if(token->type == EXP_RPAREN) {
-
+      token_t *op_top = stack_peek(op);
+      while(op_top != NULL && 
+            op_top->type != EXP_ARRAY_SUB && op_top->type != EXP_FUNC_CALL &&
+            op_top->type != EXP_LPAREN) 
+        op_top = parse_exp_reduce(cxt);
+      if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
+      else if(op_top->type == EXP_LPAREN) { stack_pop(op); }
+      else { parse_exp_reduce(cxt); }
       parse_exp_free_token(token);
     } else if(token->type == EXP_RSPAREN) {
       token_t *op_top = stack_peek(op);
-      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) {
-        op_top = parse_exp_reduce(cxt);
-      }
+      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt);
+      if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
       parse_exp_reduce(cxt);
       parse_exp_free_token(token);
     } else {
