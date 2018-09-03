@@ -6,6 +6,7 @@
 #include "error.h"
 #include "ast.h"
 #include "parse_exp.h"
+#include "hashtable.h"
 
 void test_stack() {
   printf("=== Test Stack ===\n");
@@ -201,6 +202,30 @@ void test_simple_exp_parse() {
   return;
 }
 
+void test_ht() {
+  printf("=== Test Hash Table ===\n");
+  const int test_size = HT_INIT_CAPACITY * 10 + 100;
+  const int test_len = 16;
+  char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
+  char **tests = malloc(sizeof(char *) * test_size);
+  srand(0);
+  for(int i = 0;i < test_size;i++) {
+    tests[i] = malloc(sizeof(char) * test_len);
+    for(int j = 0;j < test_len - 1;j++) tests[i][j] = rand() % sizeof(alphabet);
+    tests[i][test_len - 1] = '\0';
+  }
+
+  hashtable_t *ht = ht_str_init();
+  for(int i = 0;i < test_size;i++) {
+    ht_insert(ht, tests[i], tests[i]);
+  }
+  for(int i = 0;i < test_size;i++) free(tests[i]);
+  free(tests);
+  ht_free(ht);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -209,5 +234,6 @@ int main() {
   test_token_get_next();
   test_ast();
   test_simple_exp_parse();
+  test_ht();
   return 0;
 }
