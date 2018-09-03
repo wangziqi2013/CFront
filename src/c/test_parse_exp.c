@@ -177,7 +177,7 @@ void test_ast() {
 
 void test_simple_exp_parse() {
   printf("=== Test Simple Expression Parsing ===\n");
-  char test[] = "a++ >> b + ++c * ***d++--";
+  char test[] = " ((f(1,2,3,((wzq123 + 888)--)))) * (a++ >> b + ++c * ***d[++wzq--[1234]])";
   parse_exp_cxt_t *cxt = parse_exp_init(test);
   token_t *token = parse_exp(cxt);
   ast_print(token, 0);
