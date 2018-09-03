@@ -49,7 +49,7 @@ int parse_exp_istype(parse_exp_cxt_t *cxt) {
 // If the token does not belong to expressions, or we reached the end then 
 // return NULL
 token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
-  token_t *token = (token_t *)malloc(sizeof(token_t));
+  token_t *token = token_alloc();
   char *before = cxt->s;
   cxt->s = token_get_next(cxt->s, token);
   if(cxt->s == NULL || !parse_exp_isexp(cxt, token)) {
