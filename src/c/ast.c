@@ -71,3 +71,15 @@ void ast_collect_funcarg(token_t *token) {
   while(comma->type == EXP_COMMA) { next = comma->child; token_free(comma); comma = next; }
   return;
 }
+
+// Transforms conditional expression from two 2-operand operators to
+// a signle cond operator
+void ast_movecond(token_t *token) {
+  assert(token->type == EXP_COND && token->child->sibling->type == EXP_COLON);
+  token_t *colon = token->child->sibling, *child2 = colon->child->sibling;
+  ast_append_child(token, colon->child);
+  ast_append_child(token, child2);
+  token->child->sibling = colon->child;
+  token_free(colon);
+  return;
+}

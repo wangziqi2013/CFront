@@ -10,5 +10,6 @@ token_t *ast_append_child(token_t *token, token_t *child);
 token_t *ast_push_child(token_t *token, token_t *child);
 void ast_print(token_t *token, int depth);
 void ast_collect_funcarg(token_t *token);
+void ast_movecond(token_t *token);
 
 #endif
