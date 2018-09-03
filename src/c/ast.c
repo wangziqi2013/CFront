@@ -36,3 +36,9 @@ void ast_print(token_t *token, int depth) {
     ast_print(child, depth + 1);
   return;
 }
+
+// Transforms function argument from comma expression to flat structure
+void ast_collect_funcarg(token_t *token) {
+  assert(token->type == EXP_FUNC_CALL);
+  token_t *comma = token->child->sibling;
+}

@@ -148,7 +148,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
 
 void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   assert(stack_id == OP_STACK || stack_id == AST_STACK);
-  //printf("Shift %s\n", token_typestr(token->type));
+  //printf("Shift %s into %d\n", token_typestr(token->type), stack_id);
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
   return;
@@ -157,11 +157,12 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
 // One reduce step of the topmost operator
 // Return the next op at stack top; NULL if stack empty
 // If op stack is empty then do nothing, and return NULL to indicate this
-token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
+// If the override is -1 then we ignore it
+token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   if(stack_empty(op)) return NULL;
   token_t *top_op = stack_pop(op);
-  int op_num = token_get_num_operand(top_op->type);
+  int op_num = op_num_override == -1 ? token_get_num_operand(top_op->type) : op_num_override;
   for(int i = 0;i < op_num;i++) {
     if(stack_empty(ast)) 
       error_row_col_exit(top_op->offset, "Wrong number of operands for operator %s\n", 
@@ -177,7 +178,9 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt) {
 
 // Reduce until the precedence of the stack top is less than (or equal to, depending 
 // on the associativity) the given token
-// Note: Higher precedence has lower numerical number
+// Note:
+//   1. Higher precedence has lower numerical number
+//   2. 
 void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int preced; assoc_t assoc;
   int top_preced; assoc_t top_assoc;
@@ -189,7 +192,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
     token_get_property(op_stack_top->type, &top_preced, &top_assoc);
     if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
-    op_stack_top = parse_exp_reduce(cxt);
+    op_stack_top = parse_exp_reduce(cxt, -1);
   }
   return;
 }
@@ -199,7 +202,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
 // or any element on operator stack
 token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
-  while(parse_exp_reduce(cxt) != NULL);
+  while(parse_exp_reduce(cxt, -1) != NULL);
   if(!stack_empty(op)) {
     error_row_col_exit(((token_t *)stack_peek(op))->offset,
                        "Did not find operand for operator %s\n", 
@@ -207,8 +210,7 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   } else if(stack_size(ast) != 1) {
     error_row_col_exit(((token_t *)stack_at(ast, 0))->offset,
                        "Missing operator for expression\n"); // TODO: MAKE IT MORE MEANINGFUL
-  }
-  
+  } 
   return (token_t *)stack_pop(ast);
 }
 
@@ -222,31 +224,36 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       parse_exp_shift(cxt, AST_STACK, token);
     } else if(token->type == EXP_RPAREN) {
       token_t *op_top = stack_peek(op);
-      while(op_top != NULL && 
-            op_top->type != EXP_ARRAY_SUB && op_top->type != EXP_FUNC_CALL &&
-            op_top->type != EXP_LPAREN) 
-        op_top = parse_exp_reduce(cxt);
-      if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
-      else if(op_top->type == EXP_LPAREN) { stack_pop(op); }
-      else { parse_exp_reduce(cxt); }
+      // Special case: function with no argument
+      if(op_top->type == EXP_FUNC_CALL) {
+        parse_exp_reduce(cxt, 1);
+      } else {
+        while(op_top != NULL && 
+              op_top->type != EXP_ARRAY_SUB && op_top->type != EXP_FUNC_CALL &&
+              op_top->type != EXP_LPAREN) 
+          op_top = parse_exp_reduce(cxt, -1);
+        if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
+        else if(op_top->type == EXP_LPAREN) { stack_pop(op); }
+        else { parse_exp_reduce(cxt, -1); }
+      }
       parse_exp_free_token(token);
     } else if(token->type == EXP_RSPAREN) {
       token_t *op_top = stack_peek(op);
-      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt);
+      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1);
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
-      parse_exp_reduce(cxt);
+      parse_exp_reduce(cxt, -1);
       parse_exp_free_token(token);
     } else {
       if(token->type == EXP_LPAREN && parse_exp_istype(cxt)) token->type = EXP_CAST;
 
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
-      // TODO: If we just shifted in a cast then parse type declarator
+      // TODO: If we just shifted in a cast then parse type declarator and then push it onto the op stack
       // Special care must be taken for postfix ++ and -- because they cause the 
       // parser to think an op has been pushed and all following are unary prefix op
       // We need to reduce immediately upon seeing them. This does not affect correctness
       // because these two have the highest priority
-      if(token->type == EXP_POST_DEC || token->type == EXP_POST_INC) parse_exp_reduce(cxt);
+      if(token->type == EXP_POST_DEC || token->type == EXP_POST_INC) parse_exp_reduce(cxt, -1);
     }
   }
 }
