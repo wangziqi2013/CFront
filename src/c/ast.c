@@ -44,13 +44,18 @@ void ast_print(token_t *token, int depth) {
   return;
 }
 
-void _ast_collect_funcarg(token_t *comma, token_t *insert_point) {
+void _ast_collect_funcarg(token_t *comma, token_t *token) {
   assert(comma->child != NULL && comma->child->sibling != NULL);
   if(comma->child->type != EXP_COMMA) {
-
+    ast_append_child(token, comma->child);
+    ast_append_child(token, comma->child->sibling);
   } else {
-  
+    _ast_collect_funcarg(comma->child, token);
+    ast_append_child(token, comma->child->sibling);
   }
+  // We know it is comma node, so could just free
+  free(comma);
+  return;
 }
 
 // Transforms function argument from comma expression to flat structure
@@ -60,6 +65,6 @@ void ast_collect_funcarg(token_t *token) {
   assert(token->type == EXP_FUNC_CALL);
   token_t *comma = token->child->sibling;
   if(comma == NULL || comma->type != EXP_COMMA) return;
-  _ast_collect_funcarg(comma, token->child);
+  _ast_collect_funcarg(comma, token);
   return;
 }
