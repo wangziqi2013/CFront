@@ -222,14 +222,14 @@ void test_ht() {
   }
   for(int i = test_size - 1;i >= 0;i--) {
     void *ret = ht_find(ht, tests[i]);
-    assert(ret != NULL);
+    assert(ret != HT_NOTFOUND);
     assert(strcmp(ret, tests[i]) == 0);
   }
 
-  assert(ht_find(ht, "wangziqi2013") == NULL);
-  assert(ht_find(ht, "+_1234567890") == NULL);
-  assert(ht_find(ht, "!@#$") == NULL);
-  assert(ht_find(ht, "QWERT[]{}") == NULL);
+  assert(ht_find(ht, "wangziqi2013") == HT_NOTFOUND);
+  assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
+  assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
+  assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
 
   for(int i = 0;i < test_size;i++) free(tests[i]);
   free(tests);
