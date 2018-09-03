@@ -180,7 +180,6 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
 // on the associativity) the given token
 // Note:
 //   1. Higher precedence has lower numerical number
-//   2. 
 void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int preced; assoc_t assoc;
   int top_preced; assoc_t top_assoc;
@@ -234,10 +233,10 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
               op_top->type != EXP_LPAREN) 
           op_top = parse_exp_reduce(cxt, -1);
         if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
-        else if(op_top->type == EXP_LPAREN) { token_free(stack_pop(op)); }
+        else if(op_top->type == EXP_LPAREN) { token_free(stack_pop(op)); } // Left paren is not used in AST
         else { parse_exp_reduce(cxt, -1); }
       }
-      token_free(token);
+      token_free(token); // Right paren is always not used in AST
     } else if(token->type == EXP_RSPAREN) {
       token_t *op_top = stack_peek(op);
       while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1);

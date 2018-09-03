@@ -46,9 +46,8 @@ void ast_print(token_t *token, int depth) {
 
 // Releases memory for every node in the AST
 void ast_free(token_t *token) {
-  token_t *next;
   while(token->child != NULL) {
-    next = token->child->sibling;
+    token_t *next = token->child->sibling;
     ast_free(token->child);
     token->child = next;
   }
