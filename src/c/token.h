@@ -122,6 +122,7 @@ const char *token_symstr(token_type_t type);
 char *token_get_op(char *s, token_t *token);
 void token_copy_literal(token_t *token, const char *begin, const char *end);
 void token_free_literal(token_t *token);
+void token_free(token_t *token);
 char *token_get_ident(char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);

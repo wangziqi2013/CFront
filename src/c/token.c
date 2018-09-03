@@ -461,6 +461,11 @@ void token_free_literal(token_t *token) {
   if(token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END) free(token->str);
 }
 
+void token_free(token_t *token) {
+  token_free_literal();
+  free(token);
+}
+
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
 // Note:
