@@ -8,6 +8,17 @@ const char *keywords[32] = {
   "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
 };
 
+uint32_t kwd_props[32] = {
+  // auto          break case char             const            continue default do
+  KWD_PROP_ISTYPE, 0,    0,   KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,       0,      0,
+  // double        else enum             extern           float            for goto if
+  KWD_PROP_ISTYPE, 0,   KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,  0,   0,
+  // int           long             register         return short            signed           sizeof static
+  KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,     KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,     KWD_PROP_ISTYPE,
+  // struct        switch typedef          union            unsigned         void             volatile         while
+  KWD_PROP_ISTYPE, 0,     KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0
+};
+
 // The layout of precedences is consistent with the layout of the token table 
 // (51 elements); 0 and 999 are not used, which are just placeholders
 int precedences[51] = {
@@ -35,6 +46,11 @@ int precedences[51] = {
   14, 14,     // EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
   15,         // EXP_COMMA,                               // binary ,
 };
+
+// If a keyword can be part of a type declaration
+int kwd_istype(token_type_t type) {
+  return kwd
+}
 
 // Returns the precedence and associativity
 // Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L

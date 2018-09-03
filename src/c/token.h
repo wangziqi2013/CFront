@@ -96,7 +96,11 @@ typedef enum {
   EXP_END,
 
   T_ILLEGAL = 10000,    // Mark a return value
+  T_STOP,               // Used to instruct the parser to stop
 } token_type_t;
+
+// Keyword property flags
+#define KWD_PROP_ISTYPE 0x00000001
 
 typedef struct token_t {
   token_type_t type;
@@ -112,6 +116,7 @@ typedef enum {
 } assoc_t;
 
 extern const char *keywords[32];
+extern uint32_t kwd_props[32];
 extern int precedences[51];
 
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
