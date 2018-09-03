@@ -49,7 +49,8 @@ int precedences[51] = {
 
 // If a keyword can be part of a type declaration
 int kwd_istype(token_type_t type) {
-  return kwd
+  assert(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END);
+  return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_PROP_ISTYPE);
 }
 
 // Returns the precedence and associativity
