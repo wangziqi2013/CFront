@@ -220,6 +220,17 @@ void test_ht() {
   for(int i = 0;i < test_size;i++) {
     results[i] = ht_insert(ht, tests[i], tests[i]);
   }
+  for(int i = test_size - 1;i >= 0;i--) {
+    void *ret = ht_find(ht, tests[i]);
+    assert(ret != NULL);
+    assert(strcmp(ret, tests[i]) == 0);
+  }
+
+  assert(ht_find(ht, "wangziqi2013") == NULL);
+  assert(ht_find(ht, "+_1234567890") == NULL);
+  assert(ht_find(ht, "!@#$") == NULL);
+  assert(ht_find(ht, "QWERT[]{}") == NULL);
+
   for(int i = 0;i < test_size;i++) free(tests[i]);
   free(tests);
   free(results);

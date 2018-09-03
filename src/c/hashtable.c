@@ -39,7 +39,6 @@ void ht_free(hashtable_t *ht) {
 // Returns an existing slot for key, if it already exists, or an empty one
 int ht_find_slot(hashtable_t *ht, void **keys, void *key) {
   hashval_t begin = ht->hash(key) & ht->mask;
-  printf("%s\n", (char *)key);
   while(keys[begin] && !ht->eq(keys[begin], key)) begin = (begin + 1) & ht->mask;
   return begin;
 }
