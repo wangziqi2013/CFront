@@ -4,16 +4,23 @@ LD=ld
 CFLAGS=-O0 -g
 LDFLAGS=
 
+ifeq ($(OPT), 1)
+	CFLAGS=-O3
+endif
+
 all: ./bin/test_parse_exp
 
-./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o
-	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
+./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o
+	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
 
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_exp.o: parse_exp.c token.h ast.h stack.h parse_exp.h
+parse_exp.o: parse_exp.c parse_exp.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
+
+parse_decl.o: parse_decl.c parse_decl.h
+	$(CC) parse_decl.c -c -o parse_decl.o $(CFLAGS) $(LDFLAGS)
 
 stack.o: stack.c stack.h
 	$(CC) stack.c -c -o stack.o $(CFLAGS) $(LDFLAGS)
