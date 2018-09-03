@@ -10,7 +10,6 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   // If the first token is an operator then it must be prefix operator
   cxt->last_active_stack = OP_STACK;
   cxt->s = input;
-  cxt->allow_comma = 1;
   // Enable error reporting
   error_init(input);
   return cxt;
@@ -146,7 +145,7 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
   if(stack_id == AST_STACK) {
-    switch(token_type) {
+    switch(token->type) {
       case EXP_FUNC_CALL: ast_collect_funcarg(token); break;
       case EXP_COND: ast_movecond(token); break;
     }

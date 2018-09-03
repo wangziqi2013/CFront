@@ -14,8 +14,6 @@ typedef struct {
   int last_active_stack;
   stack_t *stacks[2];
   char *s;
-  // In function argument lists comma should not be parsed as expression
-  int allow_comma;
 } parse_exp_cxt_t;
 
 parse_exp_cxt_t *parse_exp_init(char *input);
