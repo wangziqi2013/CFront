@@ -46,15 +46,14 @@ void ast_print(token_t *token, int depth) {
 
 void _ast_collect_funcarg(token_t *comma, token_t *token) {
   assert(comma->child != NULL && comma->child->sibling != NULL);
+  token_t *child1 = comma->child, *child2 = child1->sibling;
   if(comma->child->type != EXP_COMMA) {
-    ast_append_child(token, comma->child);
-    ast_append_child(token, comma->child->sibling);
+    ast_append_child(token, child1);
+    ast_append_child(token, child2);
   } else {
-    _ast_collect_funcarg(comma->child, token);
-    ast_append_child(token, comma->child->sibling);
+    _ast_collect_funcarg(child1, token);
+    ast_append_child(token, child2);
   }
-  // We know it is comma node, so could just free
-  free(comma);
   return;
 }
 
@@ -66,5 +65,9 @@ void ast_collect_funcarg(token_t *token) {
   token_t *comma = token->child->sibling;
   if(comma == NULL || comma->type != EXP_COMMA) return;
   _ast_collect_funcarg(comma, token);
+  // Remove the second sibling and free all comma nodes
+  token->child->sibling = token->child->sibling->sibling;
+  token_t *next;
+  while(comma->type == EXP_COMMA) { next = comma->child; token_free(comma); comma = next; }
   return;
 }
