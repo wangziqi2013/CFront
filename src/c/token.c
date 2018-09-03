@@ -466,6 +466,13 @@ void token_free(token_t *token) {
   free(token);
 }
 
+token_t *token_alloc() {
+  token_t *token = (token_t *)malloc(sizeof(token_t));
+  token->child = token->sibling = NULL;
+  token->type = T_ILLEGAL;
+  return token;
+}
+
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
 // Note:
