@@ -462,7 +462,7 @@ void token_free_literal(token_t *token) {
 }
 
 void token_free(token_t *token) {
-  token_free_literal();
+  token_free_literal(token);
   free(token);
 }
 

@@ -145,6 +145,7 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   //printf("Shift %s into %d\n", token_typestr(token->type), stack_id);
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
+  if(token->type == EXP_FUNC_CALL && stack_id == AST_STACK) ast_collect_funcarg(token);
   return;
 }
 
