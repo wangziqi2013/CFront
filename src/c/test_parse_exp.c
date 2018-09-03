@@ -208,19 +208,21 @@ void test_ht() {
   const int test_len = 16;
   char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
   char **tests = malloc(sizeof(char *) * test_size);
+  void **results = malloc(sizeof(void *) * test_size);
   srand(0);
   for(int i = 0;i < test_size;i++) {
     tests[i] = malloc(sizeof(char) * test_len);
-    for(int j = 0;j < test_len - 1;j++) tests[i][j] = rand() % sizeof(alphabet);
+    for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % sizeof(alphabet)];
     tests[i][test_len - 1] = '\0';
   }
 
   hashtable_t *ht = ht_str_init();
   for(int i = 0;i < test_size;i++) {
-    ht_insert(ht, tests[i], tests[i]);
+    results[i] = ht_insert(ht, tests[i], tests[i]);
   }
   for(int i = 0;i < test_size;i++) free(tests[i]);
   free(tests);
+  free(results);
   ht_free(ht);
   printf("Pass!\n");
   return;
