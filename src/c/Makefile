@@ -6,8 +6,8 @@ LDFLAGS=
 
 all: ./bin/test_parse_exp
 
-./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o
-	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
+./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o
+	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
 
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
@@ -26,6 +26,9 @@ error.o: error.c error.h
 
 ast.o: ast.c ast.h
 	$(CC) ast.c -c -o ast.o $(CFLAGS) $(LDFLAGS)
+
+hashtable.o: hashtable.c hashtable.h
+	$(CC) hashtable.c -c -o hashtable.o $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -f *.o
