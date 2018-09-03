@@ -9,7 +9,7 @@
 // Must be a power of two
 #define HT_INIT_CAPACITY 128
 #define HT_INIT_MASK 0x7F
-#define HT_RESIZE_THRESHOLD(size) (size / 4 * 3)
+#define HT_RESIZE_THRESHOLD(capacity) (capacity / 8 * 7)
 
 typedef unsigned long hashval_t;
 typedef int (*eq_cb_t)(void *, void *);
