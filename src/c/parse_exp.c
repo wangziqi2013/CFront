@@ -46,12 +46,6 @@ int parse_exp_istype(parse_exp_cxt_t *cxt) {
   return 0;
 }
 
-// Frees the entire token including the literal if it has one
-void parse_exp_free_token(token_t *token) {
-  token_free_literal(token);
-  free(token);
-}
-
 // Returned token is allocated from the heap, caller free
 // If the token does not belong to expressions, or we reached the end then 
 // return NULL
@@ -60,7 +54,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   char *before = cxt->s;
   cxt->s = token_get_next(cxt->s, token);
   if(cxt->s == NULL || !parse_exp_isexp(cxt, token)) {
-    parse_exp_free_token(token);
+    token_free(token);
     // Reset the text pointer such that the next token is still obtained
     cxt->s = before;
     return NULL;
@@ -237,13 +231,13 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
         else if(op_top->type == EXP_LPAREN) { stack_pop(op); }
         else { parse_exp_reduce(cxt, -1); }
       }
-      parse_exp_free_token(token);
+      token_free(token);
     } else if(token->type == EXP_RSPAREN) {
       token_t *op_top = stack_peek(op);
       while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1);
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
       parse_exp_reduce(cxt, -1);
-      parse_exp_free_token(token);
+      token_free(token);
     } else {
       if(token->type == EXP_LPAREN && parse_exp_istype(cxt)) token->type = EXP_CAST;
 
