@@ -28,6 +28,11 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
 // Literals (incl. ident), operators, and sizeof() could be part of an expression
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
   token_type_t type = token->type;
+  stack_t *op = cxt->stacks[OP_STACK];
+  // For closing symbols, i.e. ) and ], they do not count as part of the current 
+  // expression if there is a stop sign at the top of the stack
+  if(!stack_empty(op) && ((token_t *)stack_peek(op))->type == T_STOP && 
+     (type == T_RPAREN || type == T_RSPAREN)) return 0; 
   return ((type >= T_OP_BEGIN && type < T_OP_END) || 
           (type >= T_LITERALS_BEGIN && type < T_LITERALS_END) || 
           (type == T_SIZEOF));
