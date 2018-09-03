@@ -37,5 +37,18 @@ void ht_resize(hashtable_t *ht) {
   void **new_keys = (void **)malloc(sizeof(void *) * ht->capacity);
   void **new_values = (void **)malloc(sizeof(void *) * ht->capacity);
   if(new_keys == NULL || new_values == NULL) perror(__func__);
-
+  memset(new_keys, 0x00, sizeof(void *) * ht->capacity);
+  for(int i = 0;i < ht->capacity / 2;i++) {
+    if(ht->keys[i]) {
+      int slot = ht_find_slot(new_keys, ht->keys[i], ht->mask);
+      assert(new_keys[slot] == NULL);
+      new_keys[slot] = ht->keys[i];
+      new_values[slot] = ht->values[i];
+    }
+  }
+  free(ht->keys);
+  free(ht->values);
+  ht->keys = new_keys;
+  ht->values = new_values;
+  return;
 }
