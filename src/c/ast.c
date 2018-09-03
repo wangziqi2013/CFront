@@ -27,6 +27,13 @@ token_t *ast_push_child(token_t *token, token_t *child) {
   return token;
 }
 
+// Adds a node as a sibling after the given one, adding a child
+token_t *ast_insert_after(token_t *token, token_t *child) {
+  child->sibling = token->sibling;
+  token->sibling = child;
+  return token;
+}
+
 void ast_print(token_t *token, int depth) {
   for(int i = 0;i < depth * 2;i++) putchar(' ');
   const char *symstr = token_symstr(token->type);
@@ -37,8 +44,22 @@ void ast_print(token_t *token, int depth) {
   return;
 }
 
+void _ast_collect_funcarg(token_t *comma, token_t *insert_point) {
+  assert(comma->child != NULL && comma->child->sibling != NULL);
+  if(comma->child->type != EXP_COMMA) {
+
+  } else {
+  
+  }
+}
+
 // Transforms function argument from comma expression to flat structure
+// Three cases: argument less func; one argument func (must not be comma exp)
+// and functions with >= 2 arguments
 void ast_collect_funcarg(token_t *token) {
   assert(token->type == EXP_FUNC_CALL);
   token_t *comma = token->child->sibling;
+  if(comma == NULL || comma->type != EXP_COMMA) return;
+  _ast_collect_funcarg(comma, token->child);
+  return;
 }
