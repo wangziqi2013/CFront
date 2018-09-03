@@ -181,6 +181,12 @@ void test_simple_exp_parse() {
   parse_exp_cxt_t *cxt = parse_exp_init(test);
   token_t *token = parse_exp(cxt);
   ast_print(token, 0);
+  parse_exp_free(cxt);
+  printf("=====================================\n");
+  char test2[] = "x == x + 2 && qwe > rty ? y * 6 >> 3 : *z++ += 1000";
+  cxt = parse_exp_init(test2);
+  token = parse_exp(cxt);
+  ast_print(token, 0);
   printf("Pass!\n");
   return;
 }

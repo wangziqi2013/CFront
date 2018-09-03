@@ -58,7 +58,7 @@ int token_get_num_operand(token_type_t type) {
   int preced = precedences[type - EXP_BEGIN];
   assert(preced != 0 && preced != 999);
   if(preced > 2)
-    if(preced == 13) return 3;
+    if(preced == 13) return 2;
     else return 2;
   else return 1;
 }
