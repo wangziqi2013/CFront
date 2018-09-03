@@ -182,16 +182,21 @@ void test_simple_exp_parse() {
   token_t *token = parse_exp(cxt);
   ast_print(token, 0);
   parse_exp_free(cxt);
+  ast_free(token);
   printf("=====================================\n");
   char test2[] = "x == x + 2 && qwe > rty ? y * 6 >> 3 : *z++ += 1000";
   cxt = parse_exp_init(test2);
   token = parse_exp(cxt);
   ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
   printf("=====================================\n");
   char test3[] = "sizeof(1) * sizeof **a++";
   cxt = parse_exp_init(test3);
   token = parse_exp(cxt);
   ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
   printf("Pass!\n");
   return;
 }

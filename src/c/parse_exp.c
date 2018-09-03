@@ -41,6 +41,7 @@ int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
 int parse_exp_istype(parse_exp_cxt_t *cxt) {
   token_t token;
   token_get_next(cxt->s, &token);
+  token_free_literal(&token);
   // TODO: CHECK IF IT IS BUILT IN TYPE OR USER DEFINED TYPE (SHOULD USE THE SYMBOL TABLE)
   return 0;
 }
@@ -233,7 +234,7 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
               op_top->type != EXP_LPAREN) 
           op_top = parse_exp_reduce(cxt, -1);
         if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
-        else if(op_top->type == EXP_LPAREN) { stack_pop(op); }
+        else if(op_top->type == EXP_LPAREN) { token_free(stack_pop(op)); }
         else { parse_exp_reduce(cxt, -1); }
       }
       token_free(token);
