@@ -187,6 +187,11 @@ void test_simple_exp_parse() {
   cxt = parse_exp_init(test2);
   token = parse_exp(cxt);
   ast_print(token, 0);
+  printf("=====================================\n");
+  char test3[] = "sizeof(1) * sizeof **a++";
+  cxt = parse_exp_init(test3);
+  token = parse_exp(cxt);
+  ast_print(token, 0);
   printf("Pass!\n");
   return;
 }
