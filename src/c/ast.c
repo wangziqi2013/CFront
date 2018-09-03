@@ -68,7 +68,7 @@ void ast_collect_funcarg(token_t *token) {
   token_t *comma = token->child->sibling;
   if(comma == NULL || comma->type != EXP_COMMA) return;
   // The comma node has been freed. The function returns the last node inserted
-  token->child->sibling = _ast_collect_funcarg(comma, token->child);
+  token->child->sibling = _ast_collect_funcarg(comma, comma);
   return;
 }
 
