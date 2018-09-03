@@ -1,6 +1,15 @@
 
 #include "hashtable.h"
 
+int streq_cb(void *a, void *b) { return strcmp(a, b) == 0; }
+// Credits: K&R C Second Edition Page 144
+hashval_t strhash_cb(void *a) { 
+  char *s = (char *)a;
+  hashval_t hashval;
+  for(hashval = (hashval_t)0; *s != '\0'; s++) hashval = *s + 31 * hashval;
+  return hashval;
+}
+
 hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash) {
   hashtable_t *ht = (hashtable_t *)malloc(sizeof(hashtable_t));
   if(ht == NULL) perror(__func__);
@@ -14,6 +23,10 @@ hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash) {
   if(ht->keys == NULL || ht->values == NULL) perror(__func__);
   memset(ht->keys, 0x00, sizeof(void *) * ht->capacity);
   return ht;
+}
+
+hashtable_t *ht_str_init() {
+  return ht_init(streq_cb, strhash_cb);
 }
 
 void ht_free(hashtable_t *ht) {

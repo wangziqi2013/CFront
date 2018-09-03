@@ -25,7 +25,10 @@ typedef struct {
   void **values;
 } hashtable_t;
 
+int streq_cb(void *a, void *b);
+hashval_t strhash_cb(void *a);
 hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash);
+hashtable_t *ht_str_init();
 void ht_free(hashtable_t *ht);
 int ht_find_slot(hashtable_t *ht, void **keys, void *key);
 void ht_resize(hashtable_t *ht);
