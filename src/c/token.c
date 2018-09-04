@@ -9,32 +9,32 @@ const char *keywords[32] = {
 };
 
 decl_prop_t kwd_props[32] = {
-  KWD_DECL_STGCLS, // auto
+  KWD_DECL_STGCLS | DECL_AUTO, // auto
   0, 0,            // break case
-  KWD_DECL_TYPE, // char
-  KWD_DECL_QUAL, // const
+  KWD_DECL_TYPE | DECL_CHAR, // char
+  KWD_DECL_QUAL | DECL_CONST_MASK, // const
   0, 0, 0,         // continue default do
-  KWD_DECL_TYPE, // double
+  KWD_DECL_TYPE | DECL_DOUBLE, // double
   0,               // else
-  KWD_DECL_TYPE, // enum
-  KWD_DECL_STGCLS, // extern
-  KWD_DECL_TYPE, // float
+  KWD_DECL_TYPE | DECL_ENUM, // enum
+  KWD_DECL_STGCLS | DECL_EXTERN, // extern
+  KWD_DECL_TYPE | DECL_FLOAT, // float
   0, 0, 0,         // for goto if
-  KWD_DECL_TYPE, // int
-  KWD_DECL_TYPE, // long
-  KWD_DECL_STGCLS, // register
+  KWD_DECL_TYPE | DECL_INT, // int
+  KWD_DECL_TYPE | DECL_LONG, // long
+  KWD_DECL_STGCLS | DECL_REGISTER, // register
   0,               // return
-  KWD_DECL_TYPE, // short
-  KWD_DECL_TYPE, // signed
+  KWD_DECL_TYPE | DECL_SHORT, // short
+  KWD_DECL_TYPE | DECL_SIGNED, // signed
   0,               // sizeof
-  KWD_DECL_STGCLS, // static
-  KWD_DECL_TYPE, // struct
+  KWD_DECL_STGCLS | DECL_STATIC, // static
+  KWD_DECL_TYPE | DECL_STRUCT, // struct
   0,               // switch
-  KWD_DECL_STGCLS, // typedef
-  KWD_DECL_TYPE, // union
-  KWD_DECL_TYPE, // unsigned
-  KWD_DECL_TYPE, // void
-  KWD_DECL_QUAL, // volatile
+  KWD_DECL_STGCLS | DECL_TYPEDEF, // typedef
+  KWD_DECL_TYPE | DECL_UNION, // union
+  KWD_DECL_TYPE | DECL_UNSIGNED, // unsigned
+  KWD_DECL_TYPE | DECL_VOID, // void
+  KWD_DECL_QUAL | DECL_VOLATILE_MASK, // volatile
   0,               // while
 };
 
