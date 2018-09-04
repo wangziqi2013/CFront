@@ -89,6 +89,42 @@ decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
   return decl_prop;
 }
 
+// Returns a buffer that contains string representation of the property bit mask
+char *token_decl_print(decl_prop_t decl_prop) {
+  static char buffer[512]; buffer[0] = '\0';  // Should be sufficient?
+  if(decl_prop & DECL_VOLATILE_MASK) strcat(buffer, "volatile ");
+  if(decl_prop & DECL_CONST_MASK) strcat(buffer, "const ");
+  if(decl_prop & DECL_STGCLS_MASK) {
+    switch(decl_prop & DECL_STGCLS_MASK) {
+      case DECL_TYPEDEF: strcat(buffer, "typedef "); break;
+      case DECL_EXTERN: strcat(buffer, "extern "); break;
+      case DECL_AUTO: strcat(buffer, "auto "); break;
+      case DECL_REGISTER: strcat(buffer, "register "); break;
+      case DECL_STATIC: strcat(buffer, "static "); break;
+    }
+  }
+  if(decl_prop & DECL_TYPE_MASK) {
+    switch(decl_prop & DECL_TYPE_MASK) {
+      case DECL_CHAR: strcat(buffer, "char "); break;
+      case DECL_SHORT: strcat(buffer, "short "); break;
+      case DECL_INT: strcat(buffer, "int "); break;
+      case DECL_LONG: strcat(buffer, "long "); break;
+      case DECL_UCHAR: strcat(buffer, "unsigned char "); break;
+      case DECL_USHORT: strcat(buffer, "unsigned short "); break;
+      case DECL_UINT: strcat(buffer, "unsigned int "); break;
+      case DECL_ULONG: strcat(buffer, "unsigned long "); break;
+      case DECL_ENUM: strcat(buffer, "enum "); break;
+      case DECL_STRUCT: strcat(buffer, "struct "); break;
+      case DECL_UNION: strcat(buffer, "union "); break;
+      case DECL_UDEF: strcat(buffer, "<typedef'ed> "); break;
+      case DECL_FLOAT: strcat(buffer, "float "); break;
+      case DECL_DOUBLE: strcat(buffer, "double "); break;
+      case DECL_VOID: strcat(buffer, "void "); break;
+    }
+  }
+  return buffer;
+}
+
 // Returns the precedence and associativity
 // Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L
 // and the rest are L-TO-R 
