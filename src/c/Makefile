@@ -16,16 +16,16 @@ all: ./bin/test_parse_exp
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_exp.o: parse_exp.c parse_exp.h
+parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_decl.o: parse_decl.c parse_decl.h
+parse_decl.o: parse_decl.c parse_decl.h hashtable.h parse_exp.h
 	$(CC) parse_decl.c -c -o parse_decl.o $(CFLAGS) $(LDFLAGS)
 
 stack.o: stack.c stack.h
 	$(CC) stack.c -c -o stack.o $(CFLAGS) $(LDFLAGS)
 
-token.o: token.c token.h
+token.o: token.c token.h error.h
 	$(CC) token.c -c -o token.o $(CFLAGS) $(LDFLAGS)
 
 error.o: error.c error.h
