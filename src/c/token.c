@@ -77,7 +77,7 @@ int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
 // Apply the token's specifier/qualifier/type to the prop and return updated value
 // Return DECL_INVALID if incompatible
 decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
-  printf("%s 0x%X 0x%X\n", token_typestr(token->type), token->decl_prop, decl_prop);
+  //printf("%s 0x%X 0x%X\n", token_typestr(token->type), token->decl_prop, decl_prop);
   if(!token_decl_compatible(token, decl_prop)) return DECL_INVALID;
   return decl_prop | token->decl_prop;
 }
@@ -98,7 +98,6 @@ char *token_decl_print(decl_prop_t decl_prop) {
   if(decl_prop & DECL_CONST_MASK) strcat(buffer, "const ");
   if(decl_prop & DECL_SIGN_MASK) {
     switch(decl_prop & DECL_SIGN_MASK) {
-      case DECL_NOSIGN: break;
       case DECL_SIGNED: strcat(buffer, "signed "); break;
       case DECL_UNSIGNED: strcat(buffer, "unsigned "); break;
     }

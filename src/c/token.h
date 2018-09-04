@@ -96,20 +96,20 @@ typedef enum {
 // Declaration properties, see below
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
-#define DECL_INVALID       0xFFFFFFFF
-// Type related bit mask (bit 4, 5, 6, 7)
+#define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
+// Type related bit mask (bit 4, 5, 6, 7); Note that these are signed, even for incompatible types
 #define DECL_TYPE_MASK     0x000000F0
 #define DECL_CHAR     0x00000010 // Make sure integer types are in a consecutive range
 #define DECL_SHORT    0x00000020
 #define DECL_INT      0x00000030
 #define DECL_LONG     0x00000040
-#define DECL_ENUM     0x0000C050
-#define DECL_STRUCT   0x0000C060
-#define DECL_UNION    0x0000C070
-#define DECL_UDEF     0x0000C080 // User defined using typedef
-#define DECL_FLOAT    0x0000C090
-#define DECL_DOUBLE   0x0000C0A0
-#define DECL_VOID     0x0000C0B0
+#define DECL_ENUM     0x00000050
+#define DECL_STRUCT   0x00000060
+#define DECL_UNION    0x00000070
+#define DECL_UDEF     0x00000080 // User defined using typedef
+#define DECL_FLOAT    0x00000090
+#define DECL_DOUBLE   0x000000A0
+#define DECL_VOID     0x000000B0
 // Storage class bit mask (bit 8, 9, 10, 11)
 #define DECL_STGCLS_MASK      0x00000F00
 #define DECL_TYPEDEF   0x00000100
@@ -123,9 +123,8 @@ typedef uint32_t decl_prop_t;
 #define DECL_CONST_MASK    0x00002000
 // Signed and unsigned mask (bit 14, 15); Both set means do not allow sign
 #define DECL_SIGN_MASK     0x0000C000
-#define DECL_SIGNED        0x00004000
 #define DECL_UNSIGNED      0x00008000
-#define DECL_NOSIGN        0x0000C000
+#define DECL_SIGNED        0x0000C000
 // All together, if any of these bits are present, then it is a declaration keyword
 #define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK | DECL_SIGN_MASK)
 
