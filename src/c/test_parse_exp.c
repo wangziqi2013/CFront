@@ -244,6 +244,34 @@ void test_ht() {
 
 void test_decl_prop() {
   printf("=== Test Declaration Property ===\n");
+  decl_prop_t decl_prop = DECL_NULL;
+  char test1[] = "extern volatile const int unsigned";
+  char test2[] = "auto const unsigned float";
+  char test3[] = "signed char int";
+  char test4[] = "unsigned extern const long long"; // do not support long long type
+  char test5[] = "long double typedef"; // do not support long double type
+  char test6[] = "volatile const const";
+  char *tests[] = {test1, test2, test3, test4, test5, test6, };
+  for(int iter = 0;iter < sizeof(tests) / sizeof(char *);iter++) {
+    token_t token;
+    char *s = tests[iter];
+    printf("Iter #%d %s: \n", iter, tests[iter]);
+    error_init(s);
+    int comp = 1;
+    while((s = token_get_next(s, &token)) != NULL) {
+      decl_prop_t new_decl_prop = token_decl_apply(&token, decl_prop);
+      if(new_decl_prop == DECL_INVALID) {
+        printf("Incompatible: %s and %s\n", token_typestr(token.type), token_decl_print(decl_prop));
+        token_free_literal(&token);
+        comp = 0;
+        break;
+      }
+      else decl_prop = new_decl_prop;
+      token_free_literal(&token);
+    }
+    if(comp) printf("Reconstruct: %s\n", token_decl_print(decl_prop));
+  }
+  
   printf("Pass!\n");
   return;
 }
