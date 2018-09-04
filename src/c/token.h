@@ -59,13 +59,11 @@ typedef enum {
 
   // AST type used within an expression (51 elements)
   EXP_BEGIN = 2000,
-  EXP_FUNC_CALL = 2000,       // func()
-  EXP_ARRAY_SUB,              // array[]
-  EXP_LPAREN,                 // ( as parenthesis
-  EXP_RPAREN,                 // )
+  EXP_FUNC_CALL = 2000, EXP_ARRAY_SUB,      // func() array[]
+  EXP_LPAREN, EXP_RPAREN,                // ( and ) as parenthesis
   EXP_RSPAREN,                // ]
-  EXP_DOT,                    // obj.field
-  EXP_ARROW,                  // ptr->field
+  EXP_DOT, EXP_ARROW,                   // obj.field ptr->field
+                    
   EXP_POST_INC,               // x++
   EXP_PRE_INC,                // ++x
   EXP_POST_DEC,               // x--
@@ -102,11 +100,41 @@ typedef enum {
   T_STOP,               // Used to instruct the parser to stop
 } token_type_t;
 
-// Keyword property flags
-#define KWD_PROP_ISDECL 0x00000001
-#define KWD_PROP_STGCLS 0x00000002  // typedef extern auto register static
-#define KWD_PROP_TYPE   0x00000004  // void char short int long float double signed unsigned struct union (also typedef'ed name)
-#define KWD_PROP_QUAL   0x00000008  // const volatile
+// Keyword property flags (bit 0, 1, 2, 3)
+#define KWD_PROP_ISDECL    0x00000001
+#define KWD_PROP_STGCLS    0x00000002  // typedef extern auto register static
+#define KWD_PROP_TYPE      0x00000004  // void char short int long float double signed unsigned struct union (also typedef'ed name)
+#define KWD_PROP_QUAL      0x00000008  // const volatile
+// Type related bit mask (bit 4, 5, 6, 7)
+#define DECL_TYPE_MASK     0x000000F0
+#define DECL_TYPE_NONE     0x00000000
+#define DECL_TYPE_CHAR     0x00000010
+#define DECL_TYPE_SHORT    0x00000020
+#define DECL_TYPE_INT      0x00000030
+#define DECL_TYPE_LONG     0x00000040
+#define DECL_TYPE_UCHAR    0x00000050
+#define DECL_TYPE_USHORT   0x00000060
+#define DECL_TYPE_UINT     0x00000070
+#define DECL_TYPE_ULONG    0x00000080
+#define DECL_TYPE_ENUM     0x00000090
+#define DECL_TYPE_STRUCT   0x000000A0
+#define DECL_TYPE_UNION    0x000000B0
+#define DECL_TYPE_TYPEDEF  0x000000C0
+#define DECL_TYPE_FLOAT    0x000000D0
+#define DECL_TYPE_DOUBLE   0x000000E0
+#define DECL_TYPE_VOID     0x000000F0
+// Storage class bit mask (bit 8, 9, 10, 11)
+#define DECL_STG_MASK      0x00000F00
+#define DECL_STG_NONE      0x00000000
+#define DECL_STG_TYPEDEF   0x00000100
+#define DECL_STG_EXTERN    0x00000200
+#define DECL_STG_AUTO      0x00000300
+#define DECL_STG_REGISTER  0x00000400
+#define DECL_STG_STATIC    0x00000500
+// Type qualifier bit mask (bit 12, 13)
+#define DECL_QUAL_MASK     0x00003000
+#define DECL_QUAL_VOLATILE 0x00001000
+#define DECL_STG_TYPEDEF   0x00002000
 
 typedef struct token_t {
   token_type_t type;
