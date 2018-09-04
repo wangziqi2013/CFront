@@ -244,7 +244,6 @@ void test_ht() {
 
 void test_decl_prop() {
   printf("=== Test Declaration Property ===\n");
-  decl_prop_t decl_prop = DECL_NULL;
   char test1[] = "extern volatile const int unsigned";
   char test2[] = "auto const unsigned float";
   char test3[] = "signed char int";
@@ -254,6 +253,7 @@ void test_decl_prop() {
   char *tests[] = {test1, test2, test3, test4, test5, test6, };
   for(int iter = 0;iter < sizeof(tests) / sizeof(char *);iter++) {
     token_t token;
+    decl_prop_t decl_prop = DECL_NULL;
     char *s = tests[iter];
     printf("Iter #%d %s: \n", iter, tests[iter]);
     error_init(s);
@@ -261,7 +261,7 @@ void test_decl_prop() {
     while((s = token_get_next(s, &token)) != NULL) {
       decl_prop_t new_decl_prop = token_decl_apply(&token, decl_prop);
       if(new_decl_prop == DECL_INVALID) {
-        printf("Incompatible: %s and %s\n", token_typestr(token.type), token_decl_print(decl_prop));
+        printf("--> Incompatible: %s and %s\n", token_typestr(token.type), token_decl_print(decl_prop));
         token_free_literal(&token);
         comp = 0;
         break;
@@ -269,7 +269,7 @@ void test_decl_prop() {
       else decl_prop = new_decl_prop;
       token_free_literal(&token);
     }
-    if(comp) printf("Reconstruct: %s\n", token_decl_print(decl_prop));
+    if(comp) printf("--> Reconstruct: %s\n", token_decl_print(decl_prop));
   }
   
   printf("Pass!\n");

@@ -67,6 +67,7 @@ int precedences[51] = {
 };
 
 // Checks if a keyword token is compatible with a given property bit mask
+// Note: Only simple rules are enforced here, i.e. no duplicate, no conflicting type
 int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
   if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
   if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
