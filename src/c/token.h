@@ -96,6 +96,7 @@ typedef enum {
 // Declaration properties, see below
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
+#define DECL_INVALID       0xFFFFFFFF
 // Type related bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
 #define DECL_CHAR     0x00000010 // Make sure integer types are in a consecutive range

@@ -81,8 +81,9 @@ int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
+// Return DECL_INVALID if incompatible
 decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
-  assert(token_decl_compatible(token, decl_prop));
+  if(!token_decl_compatible(token, decl_prop)) return DECL_INVALID;
   decl_prop |= token->decl_prop;         // Since they are compatible just bitwise OR
   // Since they are compatible, must be the case that no sign is seen, and is integer type
   if(token->decl_prop & DECL_UNSIGNED) decl_prop += DECL_SIGN_DIFF; 
