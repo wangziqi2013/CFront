@@ -60,81 +60,73 @@ typedef enum {
   // AST type used within an expression (51 elements)
   EXP_BEGIN = 2000,
   EXP_FUNC_CALL = 2000, EXP_ARRAY_SUB,      // func() array[]
-  EXP_LPAREN, EXP_RPAREN,                // ( and ) as parenthesis
-  EXP_RSPAREN,                // ]
-  EXP_DOT, EXP_ARROW,                   // obj.field ptr->field
-                    
-  EXP_POST_INC,               // x++
-  EXP_PRE_INC,                // ++x
-  EXP_POST_DEC,               // x--
-  EXP_PRE_DEC,                // --x
-  EXP_PLUS,                   // +x
-  EXP_MINUS,                  // -x
-  EXP_LOGICAL_NOT,            // !exp
-  EXP_BIT_NOT,                // ~exp
-  EXP_CAST,                   // (type)
-  EXP_DEREF,                  // *ptr
-  EXP_ADDR,                   // &x
-  EXP_SIZEOF,                 // sizeof(type/name)
-  EXP_MUL, EXP_DIV, EXP_MOD,  // binary * / %
-  EXP_ADD, EXP_SUB,           // binary + -
-  EXP_LSHIFT, EXP_RSHIFT,     // << >>
-  EXP_LESS, EXP_GREATER, EXP_LEQ, EXP_GEQ, // < > <= >=
-  EXP_EQ, EXP_NEQ,            // == !=
-  EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,    // binary & | ^
-  EXP_LOGICAL_AND, EXP_LOGICAL_OR,         // && ||
-  EXP_COND,                                // ? :
-  EXP_COLON,                               // Used in ? : expression
-  EXP_ASSIGN,                              // =
-  EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,          // += -=
+  EXP_LPAREN, EXP_RPAREN,                   // ( and ) as parenthesis
+  EXP_RSPAREN,                              // ]
+  EXP_DOT, EXP_ARROW,                       // obj.field ptr->field
+  EXP_POST_INC, EXP_PRE_INC,                // x++ x++
+  EXP_POST_DEC, EXP_PRE_DEC,                // x-- --x
+  EXP_PLUS, EXP_MINUS,                      // +x -x
+  EXP_LOGICAL_NOT, EXP_BIT_NOT,             // !exp ~exp
+  EXP_CAST,                                 // (type)
+  EXP_DEREF, EXP_ADDR,                      // *ptr &x
+  EXP_SIZEOF,                               // sizeof(type/name)
+  EXP_MUL, EXP_DIV, EXP_MOD,                // binary * / %
+  EXP_ADD, EXP_SUB,                         // binary + -
+  EXP_LSHIFT, EXP_RSHIFT,                   // << >>
+  EXP_LESS, EXP_GREATER, EXP_LEQ, EXP_GEQ,  // < > <= >=
+  EXP_EQ, EXP_NEQ,                          // == !=
+  EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,     // binary & | ^
+  EXP_LOGICAL_AND, EXP_LOGICAL_OR,          // && ||
+  EXP_COND, EXP_COLON,                      // ? :
+  EXP_ASSIGN,                               // =
+  EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,           // += -=
   EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
   EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
-  EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
-  EXP_COMMA,                               // binary ,
+  EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,     // <<= >>=
+  EXP_COMMA,                                // ,
   EXP_END,
 
-  T_UDEF_TYPE,   // User-defined type using type-def; they are not identifiers
+  T_UDEF,        // User-defined type using type-def; they are not identifiers
   T_DECL,        // Root node of a declaration
 
   T_ILLEGAL = 10000,    // Mark a return value
   T_STOP,               // Used to instruct the parser to stop
 } token_type_t;
 
-// Keyword property flags (bit 0, 1, 2, 3)
-#define KWD_PROP_ISDECL    0x00000001
-#define KWD_PROP_STGCLS    0x00000002  // typedef extern auto register static
-#define KWD_PROP_TYPE      0x00000004  // void char short int long float double signed unsigned struct union (also typedef'ed name)
-#define KWD_PROP_QUAL      0x00000008  // const volatile
+// Declaration properties, see below
+typedef uint32_t decl_prop_t;
+// Keyword property flags (bit 0, 1, 2)
+#define KWD_DECL_MASK      0x00000007
+#define KWD_DECL_STGCLS    0x00000001  // typedef extern auto register static
+#define KWD_DECL_TYPE      0x00000002  // void char short int long float double signed unsigned struct union (also typedef'ed name)
+#define KWD_DECL_QUAL      0x00000004  // const volatile
 // Type related bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
-#define DECL_TYPE_NONE     0x00000000
-#define DECL_TYPE_CHAR     0x00000010
-#define DECL_TYPE_SHORT    0x00000020
-#define DECL_TYPE_INT      0x00000030
-#define DECL_TYPE_LONG     0x00000040
-#define DECL_TYPE_UCHAR    0x00000050
-#define DECL_TYPE_USHORT   0x00000060
-#define DECL_TYPE_UINT     0x00000070
-#define DECL_TYPE_ULONG    0x00000080
-#define DECL_TYPE_ENUM     0x00000090
-#define DECL_TYPE_STRUCT   0x000000A0
-#define DECL_TYPE_UNION    0x000000B0
-#define DECL_TYPE_TYPEDEF  0x000000C0
-#define DECL_TYPE_FLOAT    0x000000D0
-#define DECL_TYPE_DOUBLE   0x000000E0
-#define DECL_TYPE_VOID     0x000000F0
+#define DECL_CHAR     0x00000010
+#define DECL_SHORT    0x00000020
+#define DECL_INT      0x00000030
+#define DECL_LONG     0x00000040
+#define DECL_UCHAR    0x00000050
+#define DECL_USHORT   0x00000060
+#define DECL_UINT     0x00000070
+#define DECL_ULONG    0x00000080
+#define DECL_ENUM     0x00000090
+#define DECL_STRUCT   0x000000A0
+#define DECL_UNION    0x000000B0
+#define DECL_UDEF     0x000000C0 // User defined using typedef
+#define DECL_FLOAT    0x000000D0
+#define DECL_DOUBLE   0x000000E0
+#define DECL_VOID     0x000000F0
 // Storage class bit mask (bit 8, 9, 10, 11)
-#define DECL_STG_MASK      0x00000F00
-#define DECL_STG_NONE      0x00000000
-#define DECL_STG_TYPEDEF   0x00000100
-#define DECL_STG_EXTERN    0x00000200
-#define DECL_STG_AUTO      0x00000300
-#define DECL_STG_REGISTER  0x00000400
-#define DECL_STG_STATIC    0x00000500
-// Type qualifier bit mask (bit 12, 13)
-#define DECL_QUAL_MASK     0x00003000
-#define DECL_QUAL_VOLATILE 0x00001000
-#define DECL_STG_TYPEDEF   0x00002000
+#define DECL_STGCLS_MASK      0x00000F00
+#define DECL_TYPEDEF   0x00000100
+#define DECL_EXTERN    0x00000200
+#define DECL_AUTO      0x00000300
+#define DECL_REGISTER  0x00000400
+#define DECL_STATIC    0x00000500
+// Type qualifier bit mask (bit 12, 13); Note that these two are compatible
+#define DECL_VOLATILE_MASK 0x00001000
+#define DECL_CONST_MASK    0x00002000
 
 typedef struct token_t {
   token_type_t type;
@@ -154,6 +146,9 @@ extern uint32_t kwd_props[32];
 extern int precedences[51];
 
 int kwd_isdecl(token_type_t type);
+int kwd_isstgcls(token_type_t type);
+int kwd_isqual(token_type_t type);
+int kwd_istype(token_type_t type);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
 int token_get_num_operand(token_type_t type);
 token_type_t token_get_keyword_type(const char *s);

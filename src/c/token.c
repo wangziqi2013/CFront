@@ -8,33 +8,33 @@ const char *keywords[32] = {
   "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
 };
 
-uint32_t kwd_props[32] = {
-  KWD_PROP_ISDECL | KWD_PROP_STGCLS, // auto
+decl_prop_t kwd_props[32] = {
+  KWD_DECL_STGCLS, // auto
   0, 0,            // break case
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // char
-  KWD_PROP_ISDECL | KWD_PROP_QUAL, // const
+  KWD_DECL_TYPE, // char
+  KWD_DECL_QUAL, // const
   0, 0, 0,         // continue default do
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // double
+  KWD_DECL_TYPE, // double
   0,               // else
-  KWD_PROP_ISDECL, // enum
-  KWD_PROP_ISDECL | KWD_PROP_STGCLS, // extern
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // float
+  KWD_DECL_TYPE, // enum
+  KWD_DECL_STGCLS, // extern
+  KWD_DECL_TYPE, // float
   0, 0, 0,         // for goto if
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // int
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // long
-  KWD_PROP_ISDECL | KWD_PROP_STGCLS, // register
+  KWD_DECL_TYPE, // int
+  KWD_DECL_TYPE, // long
+  KWD_DECL_STGCLS, // register
   0,               // return
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // short
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // signed
+  KWD_DECL_TYPE, // short
+  KWD_DECL_TYPE, // signed
   0,               // sizeof
-  KWD_PROP_ISDECL | KWD_PROP_STGCLS, // static
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // struct
+  KWD_DECL_STGCLS, // static
+  KWD_DECL_TYPE, // struct
   0,               // switch
-  KWD_PROP_ISDECL | KWD_PROP_STGCLS, // typedef
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // union
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // unsigned
-  KWD_PROP_ISDECL | KWD_PROP_TYPE, // void
-  KWD_PROP_ISDECL | KWD_PROP_QUAL, // volatile
+  KWD_DECL_STGCLS, // typedef
+  KWD_DECL_TYPE, // union
+  KWD_DECL_TYPE, // unsigned
+  KWD_DECL_TYPE, // void
+  KWD_DECL_QUAL, // volatile
   0,               // while
 };
 
@@ -66,10 +66,28 @@ int precedences[51] = {
   15,         // EXP_COMMA,                               // binary ,
 };
 
-// If a keyword can be part of a type declaration
+// If a keyword can be part of a type declaration; if not keyword return 0
 int kwd_isdecl(token_type_t type) {
   if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
-    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_PROP_ISDECL);
+    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_MASK);
+  else return 0;
+}
+
+int kwd_isstgcls(token_type_t type) {
+  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
+    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_STGCLS);
+  else return 0;
+}
+
+int kwd_isqual(token_type_t type) {
+  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
+    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_QUAL);
+  else return 0;
+}
+
+int kwd_istype(token_type_t type) {
+  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
+    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_TYPE);
   else return 0;
 }
 
