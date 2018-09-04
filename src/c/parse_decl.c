@@ -69,7 +69,11 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
       // TODO: RETURN THE LAST TOKEN
     }
 
-    token_t *top = cxt->
-    switch()
+    assert(parse_exp_size(cxt, OP_STACK) != 0);
+    token_t *top = stack_peek(cxt->stacks[OP_STACK]);
+    switch(top->type) {
+      case T_DECL: if(token->type) ast_append_child(top, token); break;
+      case EXP_DEREF: 
+    }
   }
 }
