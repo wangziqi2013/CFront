@@ -127,6 +127,10 @@ typedef uint32_t decl_prop_t;
 // Type qualifier bit mask (bit 12, 13); Note that these two are compatible
 #define DECL_VOLATILE_MASK 0x00001000
 #define DECL_CONST_MASK    0x00002000
+// Signed and unsigned mask (bit 14, 15); still need to keep track of this
+#define DECL_SIGN_MASK     0x0000C000
+#define DECL_SIGNED        0x00004000
+#define DECL_UNSIGNED      0x00008000
 
 typedef struct token_t {
   token_type_t type;
