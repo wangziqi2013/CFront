@@ -101,6 +101,9 @@ typedef enum {
 
 // Keyword property flags
 #define KWD_PROP_ISDECL 0x00000001
+#define KWD_PROP_STGCLS 0x00000002  // typedef extern auto register static
+#define KWD_PROP_TYPE   0x00000004  // void char short int long float double signed unsigned struct union (also typedef'ed name)
+#define KWD_PROP_QUAL   0x00000008  // const volatile
 
 typedef struct token_t {
   token_type_t type;
