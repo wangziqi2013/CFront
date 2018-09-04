@@ -96,11 +96,6 @@ typedef enum {
 // Declaration properties, see below
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
-// Keyword property flags (bit 0, 1, 2)
-#define DECL_KWD_MASK      0x00000007
-#define DECL_STGCLS    0x00000001  // typedef extern auto register static
-#define DECL_TYPE      0x00000002  // void char short int long float double signed unsigned struct union (also typedef'ed name)
-#define DECL_QUAL      0x00000004  // const volatile
 // Type related bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
 #define DECL_CHAR     0x00000010
@@ -126,12 +121,15 @@ typedef uint32_t decl_prop_t;
 #define DECL_REGISTER  0x00000400
 #define DECL_STATIC    0x00000500
 // Type qualifier bit mask (bit 12, 13); Note that these two are compatible
+#define DECL_QUAL_MASK     0x00003000
 #define DECL_VOLATILE_MASK 0x00001000
 #define DECL_CONST_MASK    0x00002000
 // Signed and unsigned mask (bit 14, 15); still need to keep track of this
 #define DECL_SIGN_MASK     0x0000C000
 #define DECL_SIGNED        0x00004000
 #define DECL_UNSIGNED      0x00008000
+// All together, if any of these bits are present, then it is a declaration keyword
+#define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK | DECL_SIGN_MASK)
 
 typedef struct token_t {
   token_type_t type;

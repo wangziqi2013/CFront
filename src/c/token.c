@@ -9,32 +9,32 @@ const char *keywords[32] = {
 };
 
 decl_prop_t kwd_props[32] = {
-  DECL_STGCLS | DECL_AUTO, // auto
+  DECL_AUTO, // auto
   0, 0,            // break case
-  DECL_TYPE | DECL_CHAR, // char
-  DECL_QUAL | DECL_CONST_MASK, // const
+  DECL_CHAR, // char
+  DECL_CONST_MASK, // const
   0, 0, 0,         // continue default do
-  DECL_TYPE | DECL_DOUBLE, // double
+  DECL_DOUBLE, // double
   0,               // else
-  DECL_TYPE | DECL_ENUM, // enum
-  DECL_STGCLS | DECL_EXTERN, // extern
-  DECL_TYPE | DECL_FLOAT, // float
+  DECL_ENUM, // enum
+  DECL_EXTERN, // extern
+  DECL_FLOAT, // float
   0, 0, 0,         // for goto if
-  DECL_TYPE | DECL_INT, // int
-  DECL_TYPE | DECL_LONG, // long
-  DECL_STGCLS | DECL_REGISTER, // register
+  DECL_INT, // int
+  DECL_LONG, // long
+  DECL_REGISTER, // register
   0,               // return
-  DECL_TYPE | DECL_SHORT, // short
-  DECL_TYPE | DECL_SIGNED, // signed
+  DECL_SHORT, // short
+  DECL_SIGNED, // signed
   0,               // sizeof
-  DECL_STGCLS | DECL_STATIC, // static
-  DECL_TYPE | DECL_STRUCT, // struct
+  DECL_STATIC, // static
+  DECL_STRUCT, // struct
   0,               // switch
-  DECL_STGCLS | DECL_TYPEDEF, // typedef
-  DECL_TYPE | DECL_UNION, // union
-  DECL_TYPE | DECL_UNSIGNED, // unsigned
-  DECL_TYPE | DECL_VOID, // void
-  DECL_QUAL | DECL_VOLATILE_MASK, // volatile
+  DECL_TYPEDEF, // typedef
+  DECL_UNION, // union
+  DECL_UNSIGNED, // unsigned
+  DECL_VOID, // void
+  DECL_VOLATILE_MASK, // volatile
   0,               // while
 };
 
@@ -65,6 +65,18 @@ int precedences[51] = {
   14, 14,     // EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
   15,         // EXP_COMMA,                               // binary ,
 };
+
+// Checks if a keyword token is compatible with a given property bit mask
+int kwd_compatible(token_t *token, decl_prop_t decl_prop) {
+  if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
+  if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
+  if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
+  if(token->decl_prop & DECL_SIGN_MASK) {
+    if(decl_prop & token->decl_prop) return 0;
+    decl_prop_t type_prop = decl_prop & DECL_TYPE_MASK;
+    //if(type_prop == ) 
+  }
+}
 
 // Returns the precedence and associativity
 // Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L

@@ -8,8 +8,9 @@ void parse_decl_free(parse_decl_cxt_t *cxt) { parse_exp_free(cxt); }
 
 // Whether the token could start a declaration, i.e. being a type or modifier
 int parse_decl_istype(parse_decl_cxt_t *cxt, token_t *token) {
-  if(token->decl_prop & DECL_KWD_MASK) return 1; // built-in type & modifier
-  else if(token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) return 1; // udef types
+  if(token->decl_prop & DECL_MASK) return 1; // built-in type & modifier
+  else if(token->type == T_IDENT && 
+          ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) return 1; // udef types
   return 0;
 }
 
@@ -38,7 +39,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         } 
         break;
       default: // For keywords and other symbols. Only allow DECL keywords (see token.h)
-        if(!(token->decl_prop & DECL_KWD_MASK)) valid = 0;
+        if(!(token->decl_prop & DECL_MASK)) valid = 0;
     }
   if(!valid) {
     cxt->s = before;
@@ -65,7 +66,21 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
     token_t *top = stack_peek(cxt->stacks[OP_STACK]);
     switch(top->type) {
       case T_DECL: { 
-        //if(token->type == T)
+        if(token->decl_prop & DECL_KWD_MASK) {
+
+        } else if(0) {
+          // process struct union enum
+        } else if(0) {
+          // process sign
+        } else if(0) {
+          // process other
+        } else if(0) {
+          // process star
+        } else if(0) {
+          // process [
+        } else if(0) {
+          // process (
+        }
       }
       case EXP_DEREF: break;
     }
