@@ -103,18 +103,13 @@ typedef uint32_t decl_prop_t;
 #define DECL_SHORT    0x00000020
 #define DECL_INT      0x00000030
 #define DECL_LONG     0x00000040
-#define DECL_UCHAR    0x00000050
-#define DECL_USHORT   0x00000060
-#define DECL_UINT     0x00000070
-#define DECL_ULONG    0x00000080
-#define DECL_SIGN_DIFF 0x00000040 // Converts between integer signed/unsigned
-#define DECL_ENUM     0x00000090
-#define DECL_STRUCT   0x000000A0
-#define DECL_UNION    0x000000B0
-#define DECL_UDEF     0x000000C0 // User defined using typedef
-#define DECL_FLOAT    0x000000D0
-#define DECL_DOUBLE   0x000000E0
-#define DECL_VOID     0x000000F0
+#define DECL_ENUM     0x0000C050
+#define DECL_STRUCT   0x0000C060
+#define DECL_UNION    0x0000C070
+#define DECL_UDEF     0x0000C080 // User defined using typedef
+#define DECL_FLOAT    0x0000C090
+#define DECL_DOUBLE   0x0000C0A0
+#define DECL_VOID     0x0000C0B0
 // Storage class bit mask (bit 8, 9, 10, 11)
 #define DECL_STGCLS_MASK      0x00000F00
 #define DECL_TYPEDEF   0x00000100
@@ -126,10 +121,11 @@ typedef uint32_t decl_prop_t;
 #define DECL_QUAL_MASK     0x00003000
 #define DECL_VOLATILE_MASK 0x00001000
 #define DECL_CONST_MASK    0x00002000
-// Signed and unsigned mask (bit 14, 15); still need to keep track of this
+// Signed and unsigned mask (bit 14, 15); Both set means do not allow sign
 #define DECL_SIGN_MASK     0x0000C000
 #define DECL_SIGNED        0x00004000
 #define DECL_UNSIGNED      0x00008000
+#define DECL_NOSIGN        0x0000C000
 // All together, if any of these bits are present, then it is a declaration keyword
 #define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK | DECL_SIGN_MASK)
 

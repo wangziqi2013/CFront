@@ -71,30 +71,20 @@ int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
   if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
   if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
   if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
-  if(token->decl_prop & DECL_SIGN_MASK) {
-    if(decl_prop & token->decl_prop) return 0;
-    decl_prop_t type_prop = decl_prop & DECL_TYPE_MASK;
-    if(type_prop == DECL_CHAR || type_prop == DECL_SHORT || 
-       type_prop == DECL_INT || type_prop == DECL_LONG) return 1;
-    else return 0;
-  }
+  if(token->decl_prop & DECL_SIGN_MASK) return !(decl_prop & token->decl_prop);
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
 // Return DECL_INVALID if incompatible
 decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
+  printf("%s 0x%X 0x%X\n", token_typestr(token->type), token->decl_prop, decl_prop);
   if(!token_decl_compatible(token, decl_prop)) return DECL_INVALID;
-  decl_prop |= token->decl_prop;         // Since they are compatible just bitwise OR
-  // Since they are compatible, must be the case that no sign is seen, and is integer type
-  if(token->decl_prop & DECL_UNSIGNED) decl_prop += DECL_SIGN_DIFF; 
-  return decl_prop;
+  return decl_prop | token->decl_prop;
 }
 
 // Returns a buffer that contains string representation of the property bit mask
 char *token_decl_print(decl_prop_t decl_prop) {
   static char buffer[512]; buffer[0] = '\0';  // Should be sufficient?
-  if(decl_prop & DECL_VOLATILE_MASK) strcat(buffer, "volatile ");
-  if(decl_prop & DECL_CONST_MASK) strcat(buffer, "const ");
   if(decl_prop & DECL_STGCLS_MASK) {
     switch(decl_prop & DECL_STGCLS_MASK) {
       case DECL_TYPEDEF: strcat(buffer, "typedef "); break;
@@ -104,16 +94,21 @@ char *token_decl_print(decl_prop_t decl_prop) {
       case DECL_STATIC: strcat(buffer, "static "); break;
     }
   }
+  if(decl_prop & DECL_VOLATILE_MASK) strcat(buffer, "volatile ");
+  if(decl_prop & DECL_CONST_MASK) strcat(buffer, "const ");
+  if(decl_prop & DECL_SIGN_MASK) {
+    switch(decl_prop & DECL_SIGN_MASK) {
+      case DECL_NOSIGN: break;
+      case DECL_SIGNED: strcat(buffer, "signed "); break;
+      case DECL_UNSIGNED: strcat(buffer, "unsigned "); break;
+    }
+  }
   if(decl_prop & DECL_TYPE_MASK) {
     switch(decl_prop & DECL_TYPE_MASK) {
       case DECL_CHAR: strcat(buffer, "char "); break;
       case DECL_SHORT: strcat(buffer, "short "); break;
       case DECL_INT: strcat(buffer, "int "); break;
       case DECL_LONG: strcat(buffer, "long "); break;
-      case DECL_UCHAR: strcat(buffer, "unsigned char "); break;
-      case DECL_USHORT: strcat(buffer, "unsigned short "); break;
-      case DECL_UINT: strcat(buffer, "unsigned int "); break;
-      case DECL_ULONG: strcat(buffer, "unsigned long "); break;
       case DECL_ENUM: strcat(buffer, "enum "); break;
       case DECL_STRUCT: strcat(buffer, "struct "); break;
       case DECL_UNION: strcat(buffer, "union "); break;
