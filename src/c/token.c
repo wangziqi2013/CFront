@@ -66,18 +66,6 @@ int precedences[51] = {
   15,         // EXP_COMMA,                               // binary ,
 };
 
-// Apply the token's specifier/qualifier/type to the prop and return updated value
-decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
-  assert(token_decl_compatible(token, decl_prop));
-  decl_prop |= token->decl_prop;         // Since they are compatible just bitwise OR
-  if(token->decl_prop & DECL_UNSIGNED) { // unisgned applies to integer type
-
-  }
-  decl_prop_t type_prop = decl_prop & DECL_TYPE_MASK;
-  if(type_prop == DECL_CHAR || type_prop == DECL_SHORT || 
-     type_prop == DECL_INT || type_prop == DECL_LONG) return 1;
-}
-
 // Checks if a keyword token is compatible with a given property bit mask
 int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
   if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
@@ -90,6 +78,15 @@ int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
        type_prop == DECL_INT || type_prop == DECL_LONG) return 1;
     else return 0;
   }
+}
+
+// Apply the token's specifier/qualifier/type to the prop and return updated value
+decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
+  assert(token_decl_compatible(token, decl_prop));
+  decl_prop |= token->decl_prop;         // Since they are compatible just bitwise OR
+  // Since they are compatible, must be the case that no sign is seen, and is integer type
+  if(token->decl_prop & DECL_UNSIGNED) decl_prop += DECL_SIGN_DIFF; 
+  return decl_prop;
 }
 
 // Returns the precedence and associativity

@@ -98,7 +98,7 @@ typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
 // Type related bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
-#define DECL_CHAR     0x00000010
+#define DECL_CHAR     0x00000010 // Make sure integer types are in a consecutive range
 #define DECL_SHORT    0x00000020
 #define DECL_INT      0x00000030
 #define DECL_LONG     0x00000040
@@ -106,6 +106,7 @@ typedef uint32_t decl_prop_t;
 #define DECL_USHORT   0x00000060
 #define DECL_UINT     0x00000070
 #define DECL_ULONG    0x00000080
+#define DECL_SIGN_DIFF 0x00000040 // Converts between integer signed/unsigned
 #define DECL_ENUM     0x00000090
 #define DECL_STRUCT   0x000000A0
 #define DECL_UNION    0x000000B0
@@ -151,6 +152,7 @@ extern uint32_t kwd_props[32];
 extern int precedences[51];
 
 int kwd_compatible(token_t *token, decl_prop_t decl_prop);
+decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
 int token_get_num_operand(token_type_t type);
 token_type_t token_get_keyword_type(const char *s);
