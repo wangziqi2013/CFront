@@ -24,7 +24,7 @@ parse_exp_cxt_t *parse_exp_init(char *input);
 void parse_exp_free(parse_exp_cxt_t *cxt);
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token);
 int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token);
-int parse_exp_istype(parse_exp_cxt_t *cxt);
+int parse_exp_isdecl(parse_exp_cxt_t *cxt);
 int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id);
 int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id);
 void parse_exp_recurse(parse_exp_cxt_t *cxt);

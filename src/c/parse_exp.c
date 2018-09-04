@@ -1,5 +1,6 @@
 
 #include "parse_exp.h"
+#include "parse_decl.h"
 #include "error.h"
 
 parse_exp_cxt_t *parse_exp_init(char *input) {
@@ -49,12 +50,13 @@ int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
 
 // Returns whether the next token is a type; Note that we check the next token
 // without actually extracting it from the stream by not changing cxt->s
-int parse_exp_istype(parse_exp_cxt_t *cxt) {
+int parse_exp_isdecl(parse_exp_cxt_t *cxt) {
   token_t token;
   token_get_next(cxt->s, &token);
+  // First token of any declaration must be type or type modifiers
+  int ret = parse_decl_istype(cxt, &token);
   token_free_literal(&token);
-  // TODO: CHECK IF IT IS BUILT IN TYPE OR USER DEFINED TYPE (SHOULD USE THE SYMBOL TABLE)
-  return 0;
+  return ret;
 }
 
 // Virtual size of the stack, which is the difference between the previous top and the current top
@@ -279,8 +281,14 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       parse_exp_reduce(cxt, -1);
       token_free(token);
     } else {
-      if(token->type == EXP_LPAREN && parse_exp_istype(cxt)) token->type = EXP_CAST;
-
+      if(token->type == EXP_LPAREN && parse_exp_isdecl(cxt)) {
+        parse_exp_recurse(cxt);
+        // TODO: Calls parse function to parse unamed type declaration
+        // TODO: FREE THE TOKEN BECAUSE WE DID NOT PUSH IT
+        //token->type = EXP_CAST;
+        parse_exp_decurse(cxt);
+        assert(0);
+      }
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
       // TODO: If we just shifted in a cast then parse type declarator and then push it onto the op stack
