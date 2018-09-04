@@ -97,7 +97,7 @@ typedef enum {
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
 // Keyword property flags (bit 0, 1, 2)
-#define DECL_MASK      0x00000007
+#define DECL_KWD_MASK      0x00000007
 #define DECL_STGCLS    0x00000001  // typedef extern auto register static
 #define DECL_TYPE      0x00000002  // void char short int long float double signed unsigned struct union (also typedef'ed name)
 #define DECL_QUAL      0x00000004  // const volatile

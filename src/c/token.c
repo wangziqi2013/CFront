@@ -9,32 +9,32 @@ const char *keywords[32] = {
 };
 
 decl_prop_t kwd_props[32] = {
-  KWD_DECL_STGCLS | DECL_AUTO, // auto
+  DECL_STGCLS | DECL_AUTO, // auto
   0, 0,            // break case
-  KWD_DECL_TYPE | DECL_CHAR, // char
-  KWD_DECL_QUAL | DECL_CONST_MASK, // const
+  DECL_TYPE | DECL_CHAR, // char
+  DECL_QUAL | DECL_CONST_MASK, // const
   0, 0, 0,         // continue default do
-  KWD_DECL_TYPE | DECL_DOUBLE, // double
+  DECL_TYPE | DECL_DOUBLE, // double
   0,               // else
-  KWD_DECL_TYPE | DECL_ENUM, // enum
-  KWD_DECL_STGCLS | DECL_EXTERN, // extern
-  KWD_DECL_TYPE | DECL_FLOAT, // float
+  DECL_TYPE | DECL_ENUM, // enum
+  DECL_STGCLS | DECL_EXTERN, // extern
+  DECL_TYPE | DECL_FLOAT, // float
   0, 0, 0,         // for goto if
-  KWD_DECL_TYPE | DECL_INT, // int
-  KWD_DECL_TYPE | DECL_LONG, // long
-  KWD_DECL_STGCLS | DECL_REGISTER, // register
+  DECL_TYPE | DECL_INT, // int
+  DECL_TYPE | DECL_LONG, // long
+  DECL_STGCLS | DECL_REGISTER, // register
   0,               // return
-  KWD_DECL_TYPE | DECL_SHORT, // short
-  KWD_DECL_TYPE | DECL_SIGNED, // signed
+  DECL_TYPE | DECL_SHORT, // short
+  DECL_TYPE | DECL_SIGNED, // signed
   0,               // sizeof
-  KWD_DECL_STGCLS | DECL_STATIC, // static
-  KWD_DECL_TYPE | DECL_STRUCT, // struct
+  DECL_STGCLS | DECL_STATIC, // static
+  DECL_TYPE | DECL_STRUCT, // struct
   0,               // switch
-  KWD_DECL_STGCLS | DECL_TYPEDEF, // typedef
-  KWD_DECL_TYPE | DECL_UNION, // union
-  KWD_DECL_TYPE | DECL_UNSIGNED, // unsigned
-  KWD_DECL_TYPE | DECL_VOID, // void
-  KWD_DECL_QUAL | DECL_VOLATILE_MASK, // volatile
+  DECL_STGCLS | DECL_TYPEDEF, // typedef
+  DECL_TYPE | DECL_UNION, // union
+  DECL_TYPE | DECL_UNSIGNED, // unsigned
+  DECL_TYPE | DECL_VOID, // void
+  DECL_QUAL | DECL_VOLATILE_MASK, // volatile
   0,               // while
 };
 
@@ -65,31 +65,6 @@ int precedences[51] = {
   14, 14,     // EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,    // <<= >>=
   15,         // EXP_COMMA,                               // binary ,
 };
-
-// If a keyword can be part of a type declaration; if not keyword return 0
-int kwd_isdecl(token_type_t type) {
-  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
-    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_MASK);
-  else return 0;
-}
-
-int kwd_isstgcls(token_type_t type) {
-  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
-    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_STGCLS);
-  else return 0;
-}
-
-int kwd_isqual(token_type_t type) {
-  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
-    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_QUAL);
-  else return 0;
-}
-
-int kwd_istype(token_type_t type) {
-  if(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END)
-    return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_DECL_TYPE);
-  else return 0;
-}
 
 // Returns the precedence and associativity
 // Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L
@@ -526,6 +501,8 @@ token_t *token_alloc() {
   if(token == NULL) perror(__func__);
   token->child = token->sibling = NULL;
   token->type = T_ILLEGAL;
+  token->offset = NULL;
+  token->decl_prop = DECL_NULL;
   return token;
 }
 
@@ -548,6 +525,8 @@ char *token_get_ident(char *s, token_t *token) {
       token_copy_literal(token, s, end);
     } else {
       token->type = type;
+      assert(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END);
+      token->decl_prop = kwd_props[type - T_KEYWORDS_BEGIN];
     }
     return end;
   }
@@ -599,8 +578,10 @@ char *token_get_str(char *s, token_t *token, char closing) {
 // Returns the next token, or illegal
 // Same rule for return value and conditions as token_get_op()
 char *token_get_next(char *s, token_t *token) {
+  token->decl_prop = DECL_NULL;
+  token->type = T_ILLEGAL;
   while(1) {
-    const char *before = s;
+    const char *before = s;  
     if(s == NULL || *s == '\0') return NULL;
     else if(isspace(*s)) while(isspace(*s)) s++;
     else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
