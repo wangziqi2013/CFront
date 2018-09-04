@@ -10,13 +10,13 @@ const char *keywords[32] = {
 
 uint32_t kwd_props[32] = {
   // auto          break case char             const            continue default do
-  KWD_PROP_ISTYPE, 0,    0,   KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,       0,      0,
+  KWD_PROP_ISDECL, 0,    0,   KWD_PROP_ISDECL, KWD_PROP_ISDECL, 0,       0,      0,
   // double        else enum             extern           float            for goto if
-  KWD_PROP_ISTYPE, 0,   KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,  0,   0,
+  KWD_PROP_ISDECL, 0,   KWD_PROP_ISDECL, KWD_PROP_ISDECL, KWD_PROP_ISDECL, 0,  0,   0,
   // int           long             register         return short            signed           sizeof static
-  KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,     KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0,     KWD_PROP_ISTYPE,
+  KWD_PROP_ISDECL, KWD_PROP_ISDECL, KWD_PROP_ISDECL, 0,     KWD_PROP_ISDECL, KWD_PROP_ISDECL, 0,     KWD_PROP_ISDECL,
   // struct        switch typedef          union            unsigned         void             volatile         while
-  KWD_PROP_ISTYPE, 0,     KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, KWD_PROP_ISTYPE, 0
+  KWD_PROP_ISDECL, 0,     KWD_PROP_ISDECL, KWD_PROP_ISDECL, KWD_PROP_ISDECL, KWD_PROP_ISDECL, KWD_PROP_ISDECL, 0
 };
 
 // The layout of precedences is consistent with the layout of the token table 
@@ -48,9 +48,9 @@ int precedences[51] = {
 };
 
 // If a keyword can be part of a type declaration
-int kwd_istype(token_type_t type) {
+int kwd_isdecl(token_type_t type) {
   assert(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END);
-  return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_PROP_ISTYPE);
+  return !!(kwd_props[type - T_KEYWORDS_BEGIN] & KWD_PROP_ISDECL);
 }
 
 // Returns the precedence and associativity

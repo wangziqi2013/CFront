@@ -28,6 +28,7 @@ int parse_exp_istype(parse_exp_cxt_t *cxt);
 int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id);
 int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id);
 void parse_exp_recurse(parse_exp_cxt_t *cxt);
+void parse_exp_decurse(parse_exp_cxt_t *cxt);
 token_t *parse_exp_next_token(parse_exp_cxt_t *cxt);
 void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token);
 token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override);

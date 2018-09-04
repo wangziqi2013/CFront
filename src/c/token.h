@@ -100,7 +100,7 @@ typedef enum {
 } token_type_t;
 
 // Keyword property flags
-#define KWD_PROP_ISTYPE 0x00000001
+#define KWD_PROP_ISDECL 0x00000001
 
 typedef struct token_t {
   token_type_t type;
@@ -119,7 +119,7 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
-int kwd_istype(token_type_t type);
+int kwd_isdecl(token_type_t type);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
 int token_get_num_operand(token_type_t type);
 token_type_t token_get_keyword_type(const char *s);

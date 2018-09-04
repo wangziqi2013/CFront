@@ -16,10 +16,8 @@ void parse_decl_free(parse_decl_cxt_t *cxt) {
 // struct, union and enum are recognized here, but they need another parser
 int parse_decl_isdecl(parse_decl_cxt_t *cxt, token_t *token) {
   token_type_t type = token->type;
-  stack_t *op = cxt->stacks[OP_STACK];
-  if(!stack_empty(op) && ((token_t *)stack_peek(op))->type == T_STOP && 
-     (type == T_RPAREN || type == T_RSPAREN)) return 0; 
-  else if(kwd_istype(token->type)) return 1;
+  if(parse_exp_isempty(cxt, OP_STACK) && (type == T_RPAREN || type == T_RSPAREN)) return 0; 
+  else if(kwd_isdecl(token->type)) return 1;
   else if(token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) return 1;
   switch(token->type) {
     case T_LPAREN: case T_RPAREN: case T_STAR: case T_LSPAREN: case T_RSPAREN: return 1;
