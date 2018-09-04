@@ -51,5 +51,9 @@ void **stack_addr(stack_t *stack, int index) {
   return stack->data + index;
 }
 
+void **stack_topaddr(stack_t *stack, int index) {
+  return stack->data + stack->size;
+}
+
 int stack_empty(stack_t *stack) { return stack->size == 0; }
 int stack_size(stack_t *stack) { return stack->size; }
