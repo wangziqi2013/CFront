@@ -206,35 +206,44 @@ void test_ht() {
   printf("=== Test Hash Table ===\n");
   const int test_size = HT_INIT_CAPACITY * 10 + 100;
   const int test_len = 16;
-  char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
-  char **tests = malloc(sizeof(char *) * test_size);
-  void **results = malloc(sizeof(void *) * test_size);
-  srand(0);
-  for(int i = 0;i < test_size;i++) {
-    tests[i] = malloc(sizeof(char) * test_len);
-    for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % sizeof(alphabet)];
-    tests[i][test_len - 1] = '\0';
-  }
+  const char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
+  for(int seed = 0;seed < 100;seed++) {
+    srand(seed);
+    char **tests = malloc(sizeof(char *) * test_size);
+    void **results = malloc(sizeof(void *) * test_size);
+    for(int i = 0;i < test_size;i++) {
+      tests[i] = malloc(sizeof(char) * test_len);
+      for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % sizeof(alphabet)];
+      tests[i][test_len - 1] = '\0';
+    }
 
-  hashtable_t *ht = ht_str_init();
-  for(int i = 0;i < test_size;i++) {
-    results[i] = ht_insert(ht, tests[i], tests[i]);
-  }
-  for(int i = test_size - 1;i >= 0;i--) {
-    void *ret = ht_find(ht, tests[i]);
-    assert(ret != HT_NOTFOUND);
-    assert(strcmp(ret, tests[i]) == 0);
-  }
+    hashtable_t *ht = ht_str_init();
+    for(int i = 0;i < test_size;i++) {
+      results[i] = ht_insert(ht, tests[i], tests[i]);
+    }
+    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
+    for(int i = test_size - 1;i >= 0;i--) {
+      void *ret = ht_find(ht, tests[i]);
+      assert(ret != HT_NOTFOUND);
+      assert(strcmp(ret, tests[i]) == 0);
+    }
 
-  assert(ht_find(ht, "wangziqi2013") == HT_NOTFOUND);
-  assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
-  assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
-  assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
+    assert(ht_find(ht, "wangziqi2013") == HT_NOTFOUND);
+    assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
+    assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
+    assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
 
-  for(int i = 0;i < test_size;i++) free(tests[i]);
-  free(tests);
-  free(results);
-  ht_free(ht);
+    for(int i = 0;i < test_size;i++) free(tests[i]);
+    free(tests);
+    free(results);
+    ht_free(ht);
+  }
+  printf("\nPass!\n");
+  return;
+}
+
+void test_decl_prop() {
+  printf("=== Test Declaration Property ===\n");
   printf("Pass!\n");
   return;
 }
@@ -248,5 +257,6 @@ int main() {
   test_ast();
   test_simple_exp_parse();
   test_ht();
+  test_decl_prop();
   return 0;
 }
