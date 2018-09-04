@@ -1,4 +1,6 @@
 
+
+#include "parse_exp.h"
 #include "parse_decl.h"
 
 parse_decl_cxt_t *parse_decl_init(char *input) {
@@ -7,6 +9,13 @@ parse_decl_cxt_t *parse_decl_init(char *input) {
 
 void parse_decl_free(parse_decl_cxt_t *cxt) {
   parse_exp_free(cxt);
+}
+
+// Whether the token is a type modifier (qualifier/specifier)
+int parse_decl_istype(parse_decl_cxt_t *cxt, token_t *token) {
+  if(kwd_isdecl(token->type)) return 1;
+  else if(token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) return 1;
+  return 0;
 }
 
 // Whether the next token is decl. Note that this is context dependent, and thus 
@@ -42,6 +51,25 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
     case T_STAR: token->type = EXP_DEREF; break;
     case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
     case T_RSPAREN: token->type = EXP_RSPAREN; break;
+    case T_IDENT: if(ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) token->type = T_UDEF_TYPE; break;
   }
   return token;
+}
+
+token_t *parse_decl(parse_decl_cxt_t *cxt) {
+  assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
+  // Artificial node that is not in the token stream
+  token_t *root = token_alloc();
+  root->type = T_DECL;
+  parse_exp_shift(cxt, OP_STACK, root);
+  while(1) {
+    token_t *token = parse_decl_next_token(cxt);
+    if(token == NULL) {
+      // TODO: REDUCE UNTIL STACK EMPTY
+      // TODO: RETURN THE LAST TOKEN
+    }
+
+    token_t *top = cxt->
+    switch()
+  }
 }
