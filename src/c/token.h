@@ -150,6 +150,7 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
+int kwd_compatible(token_t *token, decl_prop_t decl_prop);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
 int token_get_num_operand(token_type_t type);
 token_type_t token_get_keyword_type(const char *s);
