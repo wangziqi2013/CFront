@@ -66,16 +66,21 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
     token_t *top = stack_peek(cxt->stacks[OP_STACK]);
     switch(top->type) {
       case T_DECL: { 
-        if(token->decl_prop & DECL_KWD_MASK) {
-
-        } else if(0) {
-          // process struct union enum
-        } else if(0) {
-          // process sign
-        } else if(0) {
-          // process other
-        } else if(0) {
-          // process star
+        if(token->decl_prop & DECL_MASK) {
+          decl_prop_t after = token_decl_apply(token, top->decl_prop);
+          if(after == DECL_INVALID) 
+            error_row_col_exit(token->offset, 
+                               "Incompatible type specifier \"%s\" with declaration \"%s\"\n", 
+                               token->str, token_decl_print(top->decl_prop));
+          top->decl_prop = after;
+          if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
+            // TODO: EXTRA PROCESSING
+            assert(0);
+          } else {
+            token_free(token);
+          }
+        } else if(token->type == T_DEREF) {
+          parse_exp_shift(cxt, OP_STACK, token);
         } else if(0) {
           // process [
         } else if(0) {
