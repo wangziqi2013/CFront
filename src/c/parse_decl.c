@@ -38,7 +38,8 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
     return NULL;
   }
   switch(token->type) {
-    case T_LPAREN: token->type = EXP_FUNC_CALL; break;
+    case T_LPAREN:   // The only symbol that can have two meanings
+      token->type = cxt->last_active_stack == OP_STACK ? EXP_LPAREN : EXP_FUNC_CALL; break;
     case T_RPAREN: token->type = EXP_RPAREN; break;
     case T_STAR: token->type = EXP_DEREF; break;
     case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;

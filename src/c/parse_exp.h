@@ -14,6 +14,7 @@ typedef struct {
   // Either AST_STACK or OP_STACK
   int last_active_stack;
   stack_t *stacks[2];
+  stack_t *tops[2];
   char *s;
   // Used for parsing declarations
   hashtable_t *udef_types;

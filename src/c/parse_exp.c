@@ -7,6 +7,10 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   if(cxt == NULL) perror(__func__);
   cxt->stacks[0] = stack_init();
   cxt->stacks[1] = stack_init();
+  cxt->tops[0] = stack_init();
+  cxt->tops[1] = stack_init();
+  stack_push(cxt->tops[0], stack_topaddr(cxt->stacks[0]));
+  stack_push(cxt->tops[1], stack_topaddr(cxt->stacks[1]));
   // If the first token is an operator then it must be prefix operator
   cxt->last_active_stack = OP_STACK;
   cxt->s = input;
@@ -19,6 +23,8 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
 void parse_exp_free(parse_exp_cxt_t *cxt) {
   stack_free(cxt->stacks[0]);
   stack_free(cxt->stacks[1]);
+  stack_free(cxt->tops[0]);
+  stack_free(cxt->tops[1]);
   ht_free(cxt->udef_types);
   free(cxt);
   return;
@@ -52,11 +58,15 @@ int parse_exp_istype(parse_exp_cxt_t *cxt) {
   return 0;
 }
 
+// Virtual size of the stack, which is the difference between the previous top and the current top
+int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id) {
+  return stack_topaddr(cxt->stacks[stack_id])  - stack_peek(cxt->tops[stack_id]);
+}
+
 // Whether the stack is empty, either because it is empty, or the topmost element
 // is the stop token
 int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id) {
-  return (stack_empty(cxt->stacks[stack_id]) || 
-          ((token_t *)stack_peek(cxt->stacks[stack_id]))->type == T_TOP);
+  return parse_exp_size(cxt, stack_id) == 0;
 }
 
 // Returned token is allocated from the heap, caller free
@@ -173,11 +183,11 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
 // If the override is -1 then we ignore it
 token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
-  if(stack_empty(op)) return NULL;
+  if(parse_exp_isempty(cxt, OP_STACK)) return NULL;
   token_t *top_op = stack_pop(op);
   int op_num = op_num_override == -1 ? token_get_num_operand(top_op->type) : op_num_override;
   for(int i = 0;i < op_num;i++) {
-    if(stack_empty(ast)) 
+    if(parse_exp_isempty(cxt, AST_STACK))
       error_row_col_exit(top_op->offset, "Wrong number of operands for operator %s\n", 
                          token_typestr(top_op->type));
     token_t *operand = stack_pop(ast);
@@ -186,7 +196,7 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
   }
 
   parse_exp_shift(cxt, AST_STACK, top_op);
-  return stack_empty(op) ? NULL : stack_peek(op);
+  return parse_exp_isempty(cxt, OP_STACK) ? NULL : stack_peek(op);
 }
 
 // Reduce until the precedence of the stack top is less than (or equal to, depending 
@@ -197,7 +207,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int preced; assoc_t assoc;
   int top_preced; assoc_t top_assoc;
   token_get_property(token->type, &preced, &assoc);
-  token_t *op_stack_top = stack_empty(cxt->stacks[OP_STACK]) ? NULL : (token_t *)stack_peek(cxt->stacks[OP_STACK]);
+  token_t *op_stack_top = parse_exp_isempty(cxt, OP_STACK) ? NULL : (token_t *)stack_peek(cxt->stacks[OP_STACK]);
   while(op_stack_top != NULL && op_stack_top->type != EXP_FUNC_CALL && 
         op_stack_top->type != EXP_ARRAY_SUB && op_stack_top->type != EXP_LPAREN &&
         op_stack_top->type != EXP_CAST) {
@@ -215,7 +225,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
 token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   while(parse_exp_reduce(cxt, -1) != NULL);
-  if(!stack_empty(op)) {
+  if(!parse_exp_isempty(cxt, OP_STACK)) {
     error_row_col_exit(((token_t *)stack_peek(op))->offset,
                        "Did not find operand for operator %s\n", 
                        token_typestr(((token_t *)stack_peek(op))->type));

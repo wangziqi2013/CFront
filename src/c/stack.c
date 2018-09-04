@@ -47,11 +47,7 @@ void *stack_at(stack_t *stack, int index) {
   return stack->data[index];
 }
 
-void **stack_addr(stack_t *stack, int index) {
-  return stack->data + index;
-}
-
-void **stack_topaddr(stack_t *stack, int index) {
+void **stack_topaddr(stack_t *stack) {
   return stack->data + stack->size;
 }
 
