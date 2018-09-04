@@ -24,5 +24,6 @@ void *stack_peek(stack_t *stack);
 void *stack_at(stack_t *stack, int index);
 int stack_empty(stack_t *stack);
 int stack_size(stack_t *stack);
+void **stack_addr(stack_t *stack, int index);
 
 #endif
