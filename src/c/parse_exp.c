@@ -9,8 +9,7 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   cxt->stacks[1] = stack_init();
   cxt->tops[0] = stack_init();
   cxt->tops[1] = stack_init();
-  stack_push(cxt->tops[0], stack_topaddr(cxt->stacks[0]));
-  stack_push(cxt->tops[1], stack_topaddr(cxt->stacks[1]));
+  parse_exp_recurse(cxt);
   // If the first token is an operator then it must be prefix operator
   cxt->last_active_stack = OP_STACK;
   cxt->s = input;
@@ -60,13 +59,26 @@ int parse_exp_istype(parse_exp_cxt_t *cxt) {
 
 // Virtual size of the stack, which is the difference between the previous top and the current top
 int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id) {
-  return stack_topaddr(cxt->stacks[stack_id])  - stack_peek(cxt->tops[stack_id]);
+  return stack_topaddr(cxt->stacks[stack_id]) - (void **)stack_peek(cxt->tops[stack_id]);
 }
 
 // Whether the stack is empty, either because it is empty, or the topmost element
 // is the stop token
 int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id) {
   return parse_exp_size(cxt, stack_id) == 0;
+}
+
+// Creates a new level of virtual stack
+void parse_exp_recurse(parse_exp_cxt_t *cxt) {
+  stack_push(cxt->tops[0], stack_topaddr(cxt->stacks[0]));
+  stack_push(cxt->tops[1], stack_topaddr(cxt->stacks[1]));
+  return;
+}
+
+void parse_exp_decurse(parse_exp_cxt_t *cxt) {
+  assert((void **)stack_peek(cxt->tops[0]) == stack_topaddr(cxt->stacks[0]));
+  assert((void **)stack_peek(cxt->tops[1]) == stack_topaddr(cxt->stacks[1]));
+  stack_pop(cxt->tops[0]); stack_pop(cxt->tops[1]);
 }
 
 // Returned token is allocated from the heap, caller free
@@ -229,7 +241,7 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
     error_row_col_exit(((token_t *)stack_peek(op))->offset,
                        "Did not find operand for operator %s\n", 
                        token_typestr(((token_t *)stack_peek(op))->type));
-  } else if(stack_size(ast) != 1) {
+  } else if(parse_exp_size(cxt, AST_STACK) != 1) {
     error_row_col_exit(((token_t *)stack_at(ast, 0))->offset,
                        "Missing operator for expression\n"); // TODO: MAKE IT MORE MEANINGFUL
   } 
