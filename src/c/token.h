@@ -95,11 +95,12 @@ typedef enum {
 
 // Declaration properties, see below
 typedef uint32_t decl_prop_t;
+#define DECL_NULL          0x00000000
 // Keyword property flags (bit 0, 1, 2)
-#define KWD_DECL_MASK      0x00000007
-#define KWD_DECL_STGCLS    0x00000001  // typedef extern auto register static
-#define KWD_DECL_TYPE      0x00000002  // void char short int long float double signed unsigned struct union (also typedef'ed name)
-#define KWD_DECL_QUAL      0x00000004  // const volatile
+#define DECL_MASK      0x00000007
+#define DECL_STGCLS    0x00000001  // typedef extern auto register static
+#define DECL_TYPE      0x00000002  // void char short int long float double signed unsigned struct union (also typedef'ed name)
+#define DECL_QUAL      0x00000004  // const volatile
 // Type related bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
 #define DECL_CHAR     0x00000010
@@ -139,6 +140,8 @@ typedef struct token_t {
   struct token_t *sibling;
   // The offset in source file, for debugging
   char *offset;
+  // Property if the kwd is part of declaration; Set when a kwd is found
+  decl_prop_t decl_prop;
 } token_t;
 
 typedef enum {
@@ -149,10 +152,6 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
-int kwd_isdecl(token_type_t type);
-int kwd_isstgcls(token_type_t type);
-int kwd_isqual(token_type_t type);
-int kwd_istype(token_type_t type);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
 int token_get_num_operand(token_type_t type);
 token_type_t token_get_keyword_type(const char *s);
