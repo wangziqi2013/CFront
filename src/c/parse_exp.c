@@ -30,9 +30,8 @@ int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
   token_type_t type = token->type;
   stack_t *op = cxt->stacks[OP_STACK];
   // For closing symbols, i.e. ) and ], they do not count as part of the current 
-  // expression if there is a stop sign at the top of the stack
-  if(!stack_empty(op) && ((token_t *)stack_peek(op))->type == T_STOP && 
-     (type == T_RPAREN || type == T_RSPAREN)) return 0; 
+  // expression if there is a stop sign at the top of the stack or it's empty
+  if(parse_exp_isempty(cxt, OP_STACK) && (type == T_RPAREN || type == T_RSPAREN)) return 0; 
   return ((type >= T_OP_BEGIN && type < T_OP_END) || 
           (type >= T_LITERALS_BEGIN && type < T_LITERALS_END) || 
           (type == T_SIZEOF));
@@ -51,6 +50,13 @@ int parse_exp_istype(parse_exp_cxt_t *cxt) {
   token_free_literal(&token);
   // TODO: CHECK IF IT IS BUILT IN TYPE OR USER DEFINED TYPE (SHOULD USE THE SYMBOL TABLE)
   return 0;
+}
+
+// Whether the stack is empty, either because it is empty, or the topmost element
+// is the stop token
+int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id) {
+  return (stack_empty(cxt->stacks[stack_id]) || 
+          ((token_t *)stack_peek(cxt->stacks[stack_id]))->type == T_TOP);
 }
 
 // Returned token is allocated from the heap, caller free
@@ -184,7 +190,7 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
 }
 
 // Reduce until the precedence of the stack top is less than (or equal to, depending 
-// on the associativity) the given token
+// on the associativity) the given token, or the stack becomes empty
 // Note:
 //   1. Higher precedence has lower numerical number
 void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
