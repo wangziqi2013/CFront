@@ -731,10 +731,14 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
 // Looks ahead into the token stream. If token stream ended before num then return NULL
 // Return value cannot be used
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
-  assert(num > 0);
-  cxt->ignore_pb = 1;  
-  while(cxt->pb_num < num) token_pushback(cxt, token_get_next(cxt));
-  cxt->ignore_pb = 0;
+  assert(num > 0);  
+  while(cxt->pb_num < num) {
+    cxt->ignore_pb = 1;
+    token_t *token = token_get_next(cxt); // This may return NULL if token stream reaches the end
+    cxt->ignore_pb = 0;
+    if(token != NULL) token_pushback(cxt, token);
+    else return NULL;
+  }
   if(cxt->pb_num == num) return cxt->pushbacks;
   else {
     token_t *ret = cxt->pushbacks;
