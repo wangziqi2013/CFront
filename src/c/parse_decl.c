@@ -17,11 +17,9 @@ int parse_decl_istype(parse_decl_cxt_t *cxt, token_t *token) {
 // Note: The following tokens are considered as part of a type expression:
 //   1. ( ) [ ] *  2. specifiers, qualifiers and types 3. typedef'ed names
 token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
-  token_t *token = token_alloc();
-  char *before = cxt->s;
+  token_t *token = token_get_next(cxt->token_cxt);
   int valid = 1;
-  cxt->s = token_get_next(cxt->token_cxt, cxt->s, token);
-  if(cxt->s == NULL || 
+  if(token == NULL || 
      (parse_exp_isempty(cxt, OP_STACK) && (token->type == T_RPAREN || token->type == T_RSPAREN)))
     valid = 0;
   else
@@ -36,8 +34,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         if(!(token->decl_prop & DECL_MASK)) valid = 0;
     }
   if(!valid) {
-    cxt->s = before;
-    token_free(token);
+    token_pushback(cxt->token_cxt, token);
     return NULL;
   }
   return token;
@@ -45,8 +42,6 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
 
 // Could be at most one AST on the current virtual stack
 void parse_decl_shift(parse_decl_cxt_t *cxt, int stack_id, token_t *token) {
-  if(stack_id == AST_STACK && parse_exp_size(cxt, AST_STACK) != 0) 
-    error_row_col_exit(token->offset, "At most one name is allowed in a declaration\n");
   parse_exp_shift(cxt, stack_id, token);
 }
 
@@ -65,36 +60,44 @@ token_t *parse_decl_reduce(parse_decl_cxt_t *cxt, token_t *root) {
 
 }
 
+// Base type = one of udef/builtin/enum/struct/union
+token_t *parse_basetype(parse_decl_cxt_t *cxt) {
+
+}
+
 token_t *parse_decl(parse_decl_cxt_t *cxt) {
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
   // Artificial node that is not in the token stream
   token_t *root = token_alloc();
   root->type = T_DECL;
+  parse_exp_shift(cxt, OP_STACK, root);
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) {
       // TODO: REDUCE UNTIL STACK EMPTY
       // TODO: RETURN THE LAST TOKEN
     }
-
-    assert(parse_exp_size(cxt, OP_STACK) != 0);
     token_t *top = stack_peek(cxt->stacks[OP_STACK]);
+    if(token->decl_prop & DECL_MASK) {
+      if(top->type == EXP_DEREF && !(token->decl_prop & DECL_QUAL_MASK)) 
+        error_row_col_exit(token->offset, "Type specifier \"%s\" cannot be applied to \'*\'\n", 
+                           token_symstr(token->type));
+      decl_prop_t after = token_decl_apply(token, top->decl_prop);
+      if(after == DECL_INVALID) 
+        error_row_col_exit(token->offset, 
+                            "Incompatible type specifier \"%s\" with declaration \"%s\"\n", 
+                            token->str, token_decl_print(top->decl_prop));
+      top->decl_prop = after;
+      if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
+        // TODO: EXTRA PROCESSING
+        assert(0);
+      } else {
+        token_free(token);  // Have been applied to the bit mask, no longer useful
+      }
+    }
     switch(top->type) {
       case T_DECL: { 
-        if(token->decl_prop & DECL_MASK) {
-          decl_prop_t after = token_decl_apply(token, top->decl_prop);
-          if(after == DECL_INVALID) 
-            error_row_col_exit(token->offset, 
-                               "Incompatible type specifier \"%s\" with declaration \"%s\"\n", 
-                               token->str, token_decl_print(top->decl_prop));
-          top->decl_prop = after;
-          if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
-            // TODO: EXTRA PROCESSING
-            assert(0);
-          } else {
-            token_free(token);
-          }
-        } else if(token->type == EXP_DEREF) {
+         if(token->type == EXP_DEREF) {
           parse_exp_shift(cxt, OP_STACK, token);
         } else if(0) {
           // process [
