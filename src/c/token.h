@@ -41,6 +41,7 @@ typedef enum {
   T_LCPAREN,            // {
   T_RCPAREN,            // }
   T_SEMICOLON,          // ;
+  T_ELLIPSIS,           // ...
   
   // Literal types (i.e. primary expressions)
   T_LITERALS_BEGIN = 200,

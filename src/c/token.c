@@ -452,7 +452,17 @@ char *token_get_op(char *s, token_t *token) {
     case ']': token->type = T_RSPAREN; return s + 1;                    // ]
     case '{': token->type = T_LCPAREN; return s + 1;                    // {
     case '}': token->type = T_RCPAREN; return s + 1;                    // }
-    case '.': token->type = T_DOT; return s + 1;                        // .
+    case '.': 
+      switch(s[1]) {
+        case '.': 
+          switch(s[2]) {
+            case '.': token->type = T_ELLIPSIS; return s + 3;
+            case '\0':
+            default: token->type = T_DOT; return s + 1;
+          }
+        case '\0':
+        default: token->type = T_DOT; return s + 1;                     // .
+      }
     case '?': token->type = T_QMARK; return s + 1;                      // ?
     case ':': token->type = T_COLON; return s + 1;                      // :
     case '~': token->type = T_BIT_NOT; return s + 1;                    // ~
