@@ -38,6 +38,7 @@ void test_get_op() {
   token_t token;
   p = test1;
   result[0] = '\0';
+  token_cxt_t *token_cxt = token_cxt_init();
   while(p != NULL) {
     p = token_get_op(p, &token);
     if(p == NULL) break;
@@ -45,7 +46,7 @@ void test_get_op() {
       printf("%s(%s) ", token_typestr(token.type), token_symstr(token.type));
       strcat(result, token_symstr(token.type));
     } else {
-      p = token_get_ident(p, &token);
+      p = token_get_ident(token_cxt, p, &token);
       if(p == NULL) break;
       else if(token.type != T_ILLEGAL) {
         printf("%s(%s) ", token_typestr(token.type), token.str);
@@ -58,6 +59,7 @@ void test_get_op() {
   }
   putchar('\n');
   assert(strcmp(result, test1) == 0);
+  token_cxt_free(token_cxt);
 
   printf("Pass!\n");
   return;
@@ -104,7 +106,8 @@ void test_token_get_next() {
   token_t token;
   char *s = test;
   error_init(test);
-  while((s = token_get_next(s, &token)) != NULL) {
+  token_cxt_t *token_cxt = token_cxt_init();
+  while((s = token_get_next(token_cxt, s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
     if(sym == NULL) printf("%s ", token.str);
     else printf("%s ", sym);
@@ -134,7 +137,7 @@ void test_token_get_next() {
   \" asda dasdasd\\n \" ";
   s = test2;
   error_init(test2);
-  while((s = token_get_next(s, &token)) != NULL) {
+  while((s = token_get_next(token_cxt, s, &token)) != NULL) {
     const char *sym = token_symstr(token.type);
     int row, col;
     error_get_row_col(token.offset, &row, &col);
@@ -143,6 +146,7 @@ void test_token_get_next() {
     token_free_literal(&token);
   }
   putchar('\n');
+  token_cxt_free(token_cxt);
 
   printf("Pass!\n");
   return;
@@ -254,11 +258,12 @@ void test_decl_prop() {
   for(int iter = 0;iter < sizeof(tests) / sizeof(char *);iter++) {
     token_t token;
     decl_prop_t decl_prop = DECL_NULL;
+    token_cxt_t *token_cxt = token_cxt_init();
     char *s = tests[iter];
     printf("Iter #%d %s: \n", iter, tests[iter]);
     error_init(s);
     int comp = 1;
-    while((s = token_get_next(s, &token)) != NULL) {
+    while((s = token_get_next(token_cxt, s, &token)) != NULL) {
       decl_prop_t new_decl_prop = token_decl_apply(&token, decl_prop);
       if(new_decl_prop == DECL_INVALID) {
         printf("--> Incompatible: %s and %s\n", token_typestr(token.type), token_decl_print(decl_prop));
@@ -270,6 +275,7 @@ void test_decl_prop() {
       token_free_literal(&token);
     }
     if(comp) printf("--> Reconstruct: %s\n", token_decl_print(decl_prop));
+    token_cxt_free(token_cxt);
   }
   
   printf("Pass!\n");

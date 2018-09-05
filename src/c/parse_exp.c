@@ -14,6 +14,7 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   // If the first token is an operator then it must be prefix operator
   cxt->last_active_stack = OP_STACK;
   cxt->s = input;
+  cxt->token_cxt = token_cxt_init();
   // Enable error reporting
   error_init(input);
   return cxt;
@@ -24,6 +25,7 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
   stack_free(cxt->stacks[1]);
   stack_free(cxt->tops[0]);
   stack_free(cxt->tops[1]);
+  token_cxt_free(cxt->token_cxt);
   free(cxt);
   return;
 }
@@ -50,7 +52,7 @@ int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
 // without actually extracting it from the stream by not changing cxt->s
 int parse_exp_isdecl(parse_exp_cxt_t *cxt) {
   token_t token;
-  token_get_next(cxt->s, &token);
+  token_get_next(cxt->token_cxt, cxt->s, &token);
   // First token of any declaration must be type or type modifiers
   int ret = parse_decl_istype(cxt, &token);
   token_free_literal(&token);
@@ -87,7 +89,7 @@ void parse_exp_decurse(parse_exp_cxt_t *cxt) {
 token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
   token_t *token = token_alloc();
   char *before = cxt->s;
-  cxt->s = token_get_next(cxt->s, token);
+  cxt->s = token_get_next(cxt->token_cxt, cxt->s, token);
   if(cxt->s == NULL || !parse_exp_isexp(cxt, token)) {
     token_free(token);
     // Reset the text pointer such that the next token is still obtained

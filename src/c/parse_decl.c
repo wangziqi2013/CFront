@@ -21,7 +21,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   token_t *token = token_alloc();
   char *before = cxt->s;
   int valid = 1;
-  cxt->s = token_get_next(cxt->s, token);
+  cxt->s = token_get_next(cxt->token_cxt, cxt->s, token);
   if(cxt->s == NULL || 
      (parse_exp_isempty(cxt, OP_STACK) && (token->type == T_RPAREN || token->type == T_RSPAREN)))
     valid = 0;
@@ -49,12 +49,33 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   return token;
 }
 
+// Could be at most one AST on the current virtual stack
+void parse_decl_shift(parse_decl_cxt_t *cxt, int stack_id, token_t *token) {
+  if(stack_id == AST_STACK && parse_exp_size(cxt, AST_STACK) != 0) 
+    error_row_col_exit(token->offset, "At most one name is allowed in a declaration\n");
+  parse_exp_shift(cxt, stack_id, token);
+}
+
+token_t *parse_decl_reduce(parse_decl_cxt_t *cxt, token_t *root) {
+  if(parse_exp_size(cxt, OP_STACK) == 0) return NULL;
+  token_t *top = stack_pop(cxt->stacks[OP_STACK]);
+  if(parse_exp_size(cxt, AST_STACK) == 0) { // Unnamed declaration
+    if(top->type == EXP_DEREF) {
+      assert(root->type == T_DECL);
+      root->type = T_ABS_DECL;
+    } else {
+      error_row_col_exit(top->offset, "")
+    }
+  }
+  
+
+}
+
 token_t *parse_decl(parse_decl_cxt_t *cxt) {
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
   // Artificial node that is not in the token stream
   token_t *root = token_alloc();
   root->type = T_DECL;
-  parse_exp_shift(cxt, OP_STACK, root);
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) {
@@ -79,12 +100,12 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
           } else {
             token_free(token);
           }
-        } else if(token->type == T_DEREF) {
+        } else if(token->type == EXP_DEREF) {
           parse_exp_shift(cxt, OP_STACK, token);
         } else if(0) {
           // process [
         } else if(0) {
-          // process (
+          if(ast == NULL)
         }
       }
       case EXP_DEREF: break;
