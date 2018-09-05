@@ -25,7 +25,7 @@ parse_decl.o: parse_decl.c parse_decl.h hashtable.h parse_exp.h
 stack.o: stack.c stack.h
 	$(CC) stack.c -c -o stack.o $(CFLAGS) $(LDFLAGS)
 
-token.o: token.c token.h error.h hashtable.h
+token.o: token.c token.h error.h hashtable.h stack.h
 	$(CC) token.c -c -o token.o $(CFLAGS) $(LDFLAGS)
 
 error.o: error.c error.h

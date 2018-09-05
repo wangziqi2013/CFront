@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "error.h"
+#include "stack.h"
 #include "hashtable.h"
 
 // Types of raw tokens. 
@@ -142,8 +143,8 @@ typedef struct token_t {
 } token_t;
 
 typedef struct {
-  // Used for parsing declarations
-  hashtable_t *udef_types;
+  hashtable_t *udef_types;  // Auto detected when lexing T_IDENT
+  stack_t *pushbacks;       // Unused look-ahead symbols
 } token_cxt_t;
 
 typedef enum {
