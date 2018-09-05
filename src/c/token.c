@@ -96,10 +96,14 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
   if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
   else {
     token->next = cxt->pushbacks->next;
+    cxt->pushbacks->next = token;
     assert(token->next != NULL);
     cxt->pushbacks = token;
   }
   cxt->pb_num++;
+  /*for(token_t *t = cxt->pushbacks->next;t != cxt->pushbacks;t = t->next) {
+    printf("pushback has %s\n", t->str ? t->str : "??");
+  }*/
 }
 
 // Adds a user-defined type
