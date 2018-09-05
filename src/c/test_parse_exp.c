@@ -296,9 +296,11 @@ void test_token_lookahead() {
   token_pushback(token_cxt, t3);
   token_pushback(token_cxt, t4);
   assert(token_cxt->pb_num == 4);
-  assert(atoi(token_get_next(token_cxt)->str) == 1);
-  assert(atoi(token_get_next(token_cxt)->str) == 2);
-  assert(atoi(token_get_next(token_cxt)->str) == 3);
+  for(int i = 1;i <= 3;i++) { // Should see 1 2 3
+    token = token_get_next(token_cxt);
+    assert(atoi(token->str) == i);
+    token_free(token);
+  }
   for(int i = 1;i <= 5;i++) {  // Should see 4 5 6 7 8
     token = token_lookahead(token_cxt, i);
     assert(atoi(token->str) == i + 3);
@@ -306,20 +308,21 @@ void test_token_lookahead() {
   for(int i = 1;i <= 5;i++) { // Should see 4 5 6 7 8 again
     token = token_get_next(token_cxt);
     assert(atoi(token->str) == i + 3);
+    token_free(token);
   }
   for(int i = 1;i <= 5;i++) { // Should see 9 10 11 12 13
     token = token_lookahead(token_cxt, i);
     assert(atoi(token->str) == i + 8);
   }
-  for(int i = 9;i <= 100;i++) { // Should see NULL ....
+  for(int i = 9;i <= 100;i++) { // Should see NULL .... but allocates 14 15 16
     token = token_lookahead(token_cxt, i);
     assert(token == NULL);
   }
-  for(int i = 8;i >= 1;i--) { // Should see 13 12 11 10 9
-    token = token_lookahead(token_cxt, i);
+  for(int i = 8;i >= 1;i--) { // Should see 16 15 14 13 12 11 10 9
+    token = token_lookahead(token_cxt, i); 
     assert(atoi(token->str) == i + 8);
   }
-  token_cxt_free(token_cxt);
+  token_cxt_free(token_cxt); // Should free the rest of the token nodes (9 - 16)
   printf("Pass!\n");
   return;
 }

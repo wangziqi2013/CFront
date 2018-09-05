@@ -84,7 +84,7 @@ void token_cxt_free(token_cxt_t *cxt) {
     cxt->pushbacks->next = NULL;
     while(curr != NULL) {
       cxt->pushbacks = curr->next;
-      curr->decl_prop &= ~TOKEN_ISLOOKAHEAD;
+      curr->decl_prop &= ~TOKEN_ISLOOKAHEAD;  // Avoid the free lookahead node error
       token_free(curr);
       curr = cxt->pushbacks;
     }
@@ -721,7 +721,7 @@ token_t *token_get_next(token_cxt_t *cxt) {
 }
 
 void token_pushback(token_cxt_t *cxt, token_t *token) {
-  if(token == NULL) return;
+  assert(token != NULL);
   if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
   else {
     token->next = cxt->pushbacks->next;

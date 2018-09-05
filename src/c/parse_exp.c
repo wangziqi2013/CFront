@@ -50,11 +50,8 @@ int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
 // Returns whether the next token is a type; Note that we check the next token
 // without actually extracting it from the stream by not changing cxt->s
 int parse_exp_isdecl(parse_exp_cxt_t *cxt) {
-  token_t *token = token_get_next(cxt->token_cxt);
-  // First token of any declaration must be type or type modifiers
-  int ret = parse_decl_istype(cxt, token);
-  token_pushback(cxt->token_cxt, token);
-  return ret;
+  token_t *token = token_lookahead(cxt->token_cxt, 1);
+  if(token == NULL || !parse_decl_istype(cxt, token)) return 0;
 }
 
 // Virtual size of the stack, which is the difference between the previous top and the current top
@@ -85,12 +82,9 @@ void parse_exp_decurse(parse_exp_cxt_t *cxt) {
 // If the token does not belong to expressions, or we reached the end then 
 // return NULL
 token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
-  token_t *token = token_get_next(cxt->token_cxt);
-  if(token == NULL || !parse_exp_isexp(cxt, token)) {
-    token_pushback(cxt->token_cxt, token);
-    return NULL;
-  }
-
+  token_t *token = token_lookahead(cxt->token_cxt, 1);
+  if(token == NULL || !parse_exp_isexp(cxt, token)) return NULL;
+  else token = token_get_next(cxt->token_cxt);
   // Initialize AST pointers before we use it to build AST
   ast_make_node(token);
   // Primary expressions are not considered for operator type deciding
