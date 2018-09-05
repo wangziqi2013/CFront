@@ -282,6 +282,48 @@ void test_decl_prop() {
   return;
 }
 
+void test_token_lookahead() {
+  printf("=== Test Token Lookahead ===\n");
+  char test[] = "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16";
+  token_cxt_t *token_cxt = token_cxt_init(test);
+  token_t *token, *t1, *t2, *t3, *t4;
+  t1 = token_get_next(token_cxt);
+  t2 = token_get_next(token_cxt);
+  t3 = token_get_next(token_cxt);
+  t4 = token_get_next(token_cxt);
+  token_pushback(token_cxt, t1);
+  token_pushback(token_cxt, t2);
+  token_pushback(token_cxt, t3);
+  token_pushback(token_cxt, t4);
+  assert(token_cxt->pb_num == 4);
+  assert(atoi(token_get_next(token_cxt)->str) == 1);
+  assert(atoi(token_get_next(token_cxt)->str) == 2);
+  assert(atoi(token_get_next(token_cxt)->str) == 3);
+  for(int i = 1;i <= 5;i++) {  // Should see 4 5 6 7 8
+    token = token_lookahead(token_cxt, i);
+    assert(atoi(token->str) == i + 3);
+  }
+  for(int i = 1;i <= 5;i++) { // Should see 4 5 6 7 8 again
+    token = token_get_next(token_cxt);
+    assert(atoi(token->str) == i + 3);
+  }
+  for(int i = 1;i <= 5;i++) { // Should see 9 10 11 12 13
+    token = token_lookahead(token_cxt, i);
+    assert(atoi(token->str) == i + 8);
+  }
+  for(int i = 9;i <= 100;i++) { // Should see NULL ....
+    token = token_lookahead(token_cxt, i);
+    assert(token == NULL);
+  }
+  for(int i = 8;i >= 1;i--) { // Should see 13 12 11 10 9
+    token = token_lookahead(token_cxt, i);
+    assert(atoi(token->str) == i + 8);
+  }
+  token_cxt_free(token_cxt);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -292,5 +334,6 @@ int main() {
   test_simple_exp_parse();
   test_ht();
   test_decl_prop();
+  test_token_lookahead();
   return 0;
 }
