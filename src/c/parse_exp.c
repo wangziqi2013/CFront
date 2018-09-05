@@ -58,6 +58,11 @@ int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id) {
   return stack_topaddr(cxt->stacks[stack_id]) - (void **)stack_peek(cxt->tops[stack_id]);
 }
 
+// Returns NULL if stack empty, or stack top
+token_t *parse_exp_peek(parse_exp_cxt_t *cxt, int stack_id) {
+  return parse_exp_isempty(cxt, stack_id) ? NULL : (token_t *)stack_peek(cxt->tops[stack_id]);
+}
+
 // Whether the stack is empty, either because it is empty, or the topmost element
 // is the stop token
 int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id) {
