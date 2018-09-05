@@ -15,7 +15,7 @@ int parse_decl_istype(parse_decl_cxt_t *cxt, token_t *token) {
 
 // Same rule as parse_exp_next_token()
 // Note: The following tokens are considered as part of a type expression:
-//   1. ( ) [ ] *  2. specifiers, qualifiers and types 3. typedef'ed names
+//   1. ( ) [ ] *  2. const volatile 3. identifier
 token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   token_t *token = token_get_next(cxt->token_cxt);
   int valid = 1;
@@ -24,14 +24,20 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
     valid = 0;
   else
     switch(token->type) {
-      case T_LPAREN:   // The only symbol that can have two meanings
-        token->type = cxt->last_active_stack == OP_STACK ? EXP_LPAREN : EXP_FUNC_CALL; break;
+      case T_LPAREN: {  // If the next symbol constitutes a base type then this is func call
+        token_t *lookahead = token_lookahead(cxt->token_cxt, 1);
+        if(lookahead != NULL && (parse_decl_istype(cxt, lookahead) || lookahead->type = T_RPAREN)) 
+          token->type = EXP_FUNC_CALL;
+        else token->type = EXP_LPAREN;
+        break;
+      }
       case T_RPAREN: token->type = EXP_RPAREN; break;
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
       case T_RSPAREN: token->type = EXP_RSPAREN; break;
-      default: // For keywords and other symbols. Only allow DECL keywords (see token.h)
-        if(!(token->decl_prop & DECL_MASK)) valid = 0;
+      case T_IDENT: break;
+      default: // Only allow DECL_QUAL and identifier
+        if(!(token->decl_prop & DECL_QUAL_MASK)) valid = 0;
     }
   if(!valid) {
     token_pushback(cxt->token_cxt, token);
