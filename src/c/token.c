@@ -108,6 +108,7 @@ int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
   if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
   if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
   if(token->decl_prop & DECL_SIGN_MASK) return !(decl_prop & token->decl_prop);
+  assert(0); return 0;
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
@@ -194,8 +195,8 @@ token_type_t token_get_keyword_type(const char *s) {
     if(cmp == 0) return T_KEYWORDS_BEGIN + middle;
     else if(cmp < 0) begin = middle + 1;
     else end = middle;
-    assert(begin < sizeof(keywords) / sizeof(const char *));
-    assert(end <= sizeof(keywords) / sizeof(const char *));
+    assert(begin < (int)sizeof(keywords) / (int)sizeof(const char *));
+    assert(end <= (int)sizeof(keywords) / (int)sizeof(const char *));
   }
   // This means the given token is not a keyword
   if(strcmp(keywords[begin], s) == 0) return T_KEYWORDS_BEGIN + begin;
@@ -347,7 +348,12 @@ const char *token_typestr(token_type_t type) {
     case EXP_LSHIFT_ASSIGN: return "EXP_LSHIFT_ASSIGN";
     case EXP_RSHIFT_ASSIGN: return "EXP_RSHIFT_ASSIGN";
     case EXP_COMMA: return "EXP_COMMA";
+    case T_UDEF: return "T_UDEF";
+    case T_DECL: return "T_DECL"; 
+    case T_ABS_DECL: return "T_ABS_DECL"; 
+    case T_BASETYPE: return "T_BASETYPE";
     case T_ILLEGAL: return "T_ILLEGAL";
+    default: return "(unknown)";
   }
 
   return NULL;
@@ -439,9 +445,8 @@ const char *token_symstr(token_type_t type) {
     case T_VOID: return "void";
     case T_VOLATILE: return "volatile";
     case T_WHILE: return "while";
+    default: return NULL;
   }
-  
-  return NULL;
 }
 
 // Fill an operator token object according to its type

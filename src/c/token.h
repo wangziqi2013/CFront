@@ -93,7 +93,6 @@ typedef enum {
   T_DECL, T_ABS_DECL, T_BASETYPE, // Root node of a declaration
 
   T_ILLEGAL = 10000,    // Mark a return value
-  T_STOP,               // Used to instruct the parser to stop
 } token_type_t;
 
 // Declaration properties, see below
@@ -165,7 +164,7 @@ token_cxt_t *token_cxt_init(char *input);
 void token_cxt_free(token_cxt_t *cxt);
 void token_add_utype(token_cxt_t *cxt, token_t *token);
 int token_isutype(token_cxt_t *cxt, token_t *token);
-int kwd_compatible(token_t *token, decl_prop_t decl_prop);
+int token_decl_compatible(token_t *token, decl_prop_t decl_prop);
 decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop);
 char *token_decl_print(decl_prop_t decl_prop);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
