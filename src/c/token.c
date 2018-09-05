@@ -352,6 +352,7 @@ const char *token_typestr(token_type_t type) {
     case T_DECL: return "T_DECL"; 
     case T_ABS_DECL: return "T_ABS_DECL"; 
     case T_BASETYPE: return "T_BASETYPE";
+    case T_: return "T_";
     case T_ILLEGAL: return "T_ILLEGAL";
     default: return "(unknown)";
   }

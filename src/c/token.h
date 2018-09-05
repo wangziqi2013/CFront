@@ -91,6 +91,7 @@ typedef enum {
 
   T_UDEF,                         // User-defined type using type-def; they are not identifiers
   T_DECL, T_ABS_DECL, T_BASETYPE, // Root node of a declaration
+  T_,                             // Placeholder
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
