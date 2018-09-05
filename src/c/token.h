@@ -147,6 +147,8 @@ typedef struct token_t {
 typedef struct {
   hashtable_t *udef_types;   // Auto detected when lexing T_IDENT
   token_t *pushbacks;        // Unused look-ahead symbols
+  int pb_num;                // Number of pushbacks
+  int ignore_pb;             // Whether to ignore pushbacked tokens
   char *s;                   // Current read position
 } token_cxt_t;
 
@@ -180,5 +182,6 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
 token_t *token_get_next(token_cxt_t *cxt);
+token_t *token_lookahead(token_cxt_t *cxt, int num);
 
 #endif

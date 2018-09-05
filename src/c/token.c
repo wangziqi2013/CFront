@@ -72,6 +72,8 @@ token_cxt_t *token_cxt_init(char *input) {
   cxt->udef_types = ht_str_init();
   cxt->pushbacks = NULL;
   cxt->s = input;
+  cxt->pb_num = 0;
+  cxt->ignore_pb = 0;
   return cxt;
 }
 
@@ -97,6 +99,7 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
     assert(token->next != NULL);
     cxt->pushbacks = token;
   }
+  cxt->pb_num++;
 }
 
 // Adds a user-defined type
@@ -692,10 +695,12 @@ char *token_get_str(char *s, token_t *token, char closing) {
 // token must be allocated on the heap, not stack
 token_t *token_get_next(token_cxt_t *cxt) {
   token_t *token;
-  if(cxt->pushbacks) {
+  if(cxt->pushbacks && !cxt->ignore_pb) {
+    assert(cxt->pb_num > 0);
     token = cxt->pushbacks->next;
     if(token == cxt->pushbacks) cxt->pushbacks = NULL;
     else cxt->pushbacks->next = token->next;
+    cxt->pb_num--;
     return token;
   }
   token = token_alloc();
@@ -723,12 +728,16 @@ token_t *token_get_next(token_cxt_t *cxt) {
 }
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL
+// Return value cannot be used
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
-  /*
   assert(num > 0);
-  int sz = stack_size(cxt->pushbacks);
-  while(stack_size(cxt->pushbacks) < num) {
-    //stack_push(cxt->pushbacks, );
+  cxt->ignore_pb = 1;  
+  while(cxt->pb_num < num) token_pushback(cxt, token_get_next(cxt));
+  cxt->ignore_pb = 0;
+  if(cxt->pb_num == num) return cxt->pushbacks;
+  else {
+    token_t *ret = cxt->pushbacks;
+    while(num--) ret = ret->next;
+    return ret;
   }
-  */
 }
