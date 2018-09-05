@@ -66,6 +66,17 @@ int precedences[51] = {
   15,         // EXP_COMMA,                               // binary ,
 };
 
+token_cxt_t *token_init() {
+  token_cxt_t *cxt = (token_cxt_t *)malloc(sizeof(token_cxt_t));
+  if(cxt == NULL) perror(__func__);
+  cxt->udef_types = ht_str_init();
+  return cxt;
+}
+
+void token_free(token_cxt_t *cxt) {
+  ht_free(cxt->udef_types);
+}
+
 // Checks if a keyword token is compatible with a given property bit mask
 // Note: Only simple rules are enforced here, i.e. no duplicate, no conflicting type
 int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {

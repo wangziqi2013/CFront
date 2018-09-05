@@ -14,7 +14,6 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   // If the first token is an operator then it must be prefix operator
   cxt->last_active_stack = OP_STACK;
   cxt->s = input;
-  cxt->udef_types = ht_str_init();
   // Enable error reporting
   error_init(input);
   return cxt;
@@ -25,7 +24,6 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
   stack_free(cxt->stacks[1]);
   stack_free(cxt->tops[0]);
   stack_free(cxt->tops[1]);
-  ht_free(cxt->udef_types);
   free(cxt);
   return;
 }

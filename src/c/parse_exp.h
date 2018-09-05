@@ -11,13 +11,11 @@
 #define OP_STACK 1
 
 typedef struct {
-  // Either AST_STACK or OP_STACK
+  // Either AST_STACK or OP_STACK; do not need save because a shift will happen
   int last_active_stack;
   stack_t *stacks[2];
   stack_t *tops[2];
   char *s;
-  // Used for parsing declarations
-  hashtable_t *udef_types;
 } parse_exp_cxt_t;
 
 parse_exp_cxt_t *parse_exp_init(char *input);

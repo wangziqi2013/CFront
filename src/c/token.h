@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "error.h"
+#include "hashtable.h"
 
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both
@@ -86,8 +87,8 @@ typedef enum {
   EXP_COMMA,                                // ,
   EXP_END,
 
-  T_UDEF,        // User-defined type using type-def; they are not identifiers
-  T_DECL,        // Root node of a declaration
+  T_UDEF,             // User-defined type using type-def; they are not identifiers
+  T_DECL, T_ABS_DECL, // Root node of a declaration
 
   T_ILLEGAL = 10000,    // Mark a return value
   T_STOP,               // Used to instruct the parser to stop
@@ -139,6 +140,11 @@ typedef struct token_t {
   decl_prop_t decl_prop;
 } token_t;
 
+typedef struct {
+  // Used for parsing declarations
+  hashtable_t *udef_types;
+} token_cxt_t;
+
 typedef enum {
   ASSOC_LR, ASSOC_RL,
 } assoc_t;
@@ -147,6 +153,8 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
+token_cxt_t *token_init();
+void token_free(token_cxt_t *cxt);
 int kwd_compatible(token_t *token, decl_prop_t decl_prop);
 decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop);
 char *token_decl_print(decl_prop_t decl_prop);
