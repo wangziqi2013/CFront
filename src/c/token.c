@@ -691,13 +691,14 @@ char *token_get_str(char *s, token_t *token, char closing) {
 // Returns the next token, or illegal
 // token must be allocated on the heap, not stack
 token_t *token_get_next(token_cxt_t *cxt) {
-  /*
+  token_t *token;
   if(cxt->pushbacks) {
-    *token = *(token_t *)stack_pop(cxt->pushbacks);
-    return s;
+    token = cxt->pushbacks->next;
+    if(token == cxt->pushbacks) cxt->pushbacks = NULL;
+    else cxt->pushbacks->next = token->next;
+    return token;
   }
-  */
-  token_t *token = token_alloc();
+  token = token_alloc();
   while(1) {
     const char *before = cxt->s;  
     if(cxt->s == NULL || *cxt->s == '\0') return NULL;
