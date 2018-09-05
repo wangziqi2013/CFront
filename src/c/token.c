@@ -710,7 +710,7 @@ token_t *token_get_next(token_cxt_t *cxt) {
       cxt->s += 2;
     }
     else if(isalpha(*cxt->s) || *cxt->s == '_') { cxt->s = token_get_ident(cxt, cxt->s, token); break; }
-    else if(isdigit(*cxt->s)) return token_get_int(cxt->s, token);
+    else if(isdigit(*cxt->s))                   { cxt->s = token_get_int(cxt->s, token); break; }
     else if(*cxt->s == '\'' || *cxt->s == '\"') { cxt->s = token_get_str(cxt->s + 1, token, *cxt->s); break; }
     else {
       cxt->s = token_get_op(cxt->s, token);
@@ -723,9 +723,11 @@ token_t *token_get_next(token_cxt_t *cxt) {
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
+  /*
   assert(num > 0);
   int sz = stack_size(cxt->pushbacks);
   while(stack_size(cxt->pushbacks) < num) {
     //stack_push(cxt->pushbacks, );
   }
+  */
 }

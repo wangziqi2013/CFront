@@ -106,9 +106,10 @@ void test_token_get_next() {
   char *s = test;
   error_init(test);
   token_cxt_t *token_cxt = token_cxt_init();
-  while((token_t *token = token_get_next(token_cxt)) != NULL) {
-    const char *sym = token_symstr(token.type);
-    if(sym == NULL) printf("%s ", token.str);
+  token_t *token;
+  while((token = token_get_next(token_cxt)) != NULL) {
+    const char *sym = token_symstr(token->type);
+    if(sym == NULL) printf("%s ", token->str);
     else printf("%s ", sym);
     token_free(token);
   }
@@ -136,11 +137,11 @@ void test_token_get_next() {
   \" asda dasdasd\\n \" ";
   s = test2;
   error_init(test2);
-  while((token_t *token = token_get_next(token_cxt)) != NULL) {
-    const char *sym = token_symstr(token.type);
+  while((token = token_get_next(token_cxt)) != NULL) {
+    const char *sym = token_symstr(token->type);
     int row, col;
-    error_get_row_col(token.offset, &row, &col);
-    if(sym == NULL) printf("%s ", token.str);
+    error_get_row_col(token->offset, &row, &col);
+    if(sym == NULL) printf("%s ", token->str);
     else printf("%s(%d %d) ", sym, row, col);
     token_free(token);
   }
@@ -261,10 +262,11 @@ void test_decl_prop() {
     printf("Iter #%d %s: \n", iter, tests[iter]);
     error_init(s);
     int comp = 1;
-    while((token_t *token = token_get_next(token_cxt)) != NULL) {
-      decl_prop_t new_decl_prop = token_decl_apply(&token, decl_prop);
+    token_t *token;
+    while((token = token_get_next(token_cxt)) != NULL) {
+      decl_prop_t new_decl_prop = token_decl_apply(token, decl_prop);
       if(new_decl_prop == DECL_INVALID) {
-        printf("--> Incompatible: %s and %s\n", token_typestr(token.type), token_decl_print(decl_prop));
+        printf("--> Incompatible: %s and %s\n", token_typestr(token->type), token_decl_print(decl_prop));
         token_free(token);
         comp = 0;
         break;

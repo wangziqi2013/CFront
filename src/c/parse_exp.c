@@ -143,7 +143,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
       case T_OR_ASSIGN: token->type = EXP_OR_ASSIGN; break;
       case T_XOR_ASSIGN: token->type = EXP_XOR_ASSIGN; break;
       case T_COMMA: token->type = EXP_COMMA; break;
-      default: error_row_col_exit(before, 
+      default: error_row_col_exit(token->offset, 
                                   "Did not expect to see \"%s\" as a postfix operator\n", 
                                   token_symstr(token->type));
     }
@@ -162,7 +162,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
       case T_STAR: token->type = EXP_DEREF; break;
       case T_AND: token->type = EXP_ADDR; break;
       case T_SIZEOF: token->type = EXP_SIZEOF; break;
-      default: error_row_col_exit(before, 
+      default: error_row_col_exit(token->offset, 
                                   "Did not expect to see \"%s\" as a prefix operator\n", 
                                   token_symstr(token->type));
     }
