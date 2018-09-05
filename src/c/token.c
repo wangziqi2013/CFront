@@ -84,7 +84,8 @@ void token_cxt_free(token_cxt_t *cxt) {
     cxt->pushbacks->next = NULL;
     while(curr != NULL) {
       cxt->pushbacks = curr->next;
-      free(curr);
+      curr->decl_prop &= ~TOKEN_ISLOOKAHEAD;
+      token_free(curr);
       curr = cxt->pushbacks;
     }
   }
@@ -204,7 +205,6 @@ token_type_t token_get_keyword_type(const char *s) {
 // Converts the token type to a string
 // Note that all types except the illegal has a string representation
 const char *token_typestr(token_type_t type) {
-  assert(type != T_ILLEGAL);
   switch(type) {
     case T_LPAREN: return "T_LPAREN";
     case T_RPAREN: return "T_RPAREN";
@@ -347,6 +347,7 @@ const char *token_typestr(token_type_t type) {
     case EXP_LSHIFT_ASSIGN: return "EXP_LSHIFT_ASSIGN";
     case EXP_RSHIFT_ASSIGN: return "EXP_RSHIFT_ASSIGN";
     case EXP_COMMA: return "EXP_COMMA";
+    case T_ILLEGAL: return "T_ILLEGAL";
   }
 
   return NULL;
@@ -594,7 +595,6 @@ void token_free_literal(token_t *token) {
 
 void token_free(token_t *token) {
   if(token->decl_prop & TOKEN_ISLOOKAHEAD) { error_exit("Internal error: Freeing a lookahead node\n"); }
-  printf("free %s\n", token->str ? token->str : "???");
   token_free_literal(token);
   free(token);
 }
@@ -603,10 +603,10 @@ token_t *token_alloc() {
   token_t *token = (token_t *)malloc(sizeof(token_t));
   if(token == NULL) perror(__func__);
   token->child = token->sibling = NULL;
+  token->str = NULL;
   token->type = T_ILLEGAL;
   token->offset = NULL;
   token->decl_prop = DECL_NULL;
-  token->str = NULL;
   return token;
 }
 
