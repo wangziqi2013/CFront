@@ -593,6 +593,8 @@ void token_free_literal(token_t *token) {
 }
 
 void token_free(token_t *token) {
+  if(token->decl_prop & TOKEN_ISLOOKAHEAD) { error_exit("Internal error: Freeing a lookahead node\n"); }
+  printf("free %s\n", token->str ? token->str : "???");
   token_free_literal(token);
   free(token);
 }
@@ -604,6 +606,7 @@ token_t *token_alloc() {
   token->type = T_ILLEGAL;
   token->offset = NULL;
   token->decl_prop = DECL_NULL;
+  token->str = NULL;
   return token;
 }
 
@@ -690,6 +693,7 @@ token_t *token_get_next(token_cxt_t *cxt) {
     if(token == cxt->pushbacks) cxt->pushbacks = NULL;
     else cxt->pushbacks->next = token->next;
     cxt->pb_num--;
+    token->decl_prop &= ~TOKEN_ISLOOKAHEAD;
     return token;
   }
   token = token_alloc();
@@ -731,7 +735,7 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
 // Looks ahead into the token stream. If token stream ended before num then return NULL
 // Return value cannot be used
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
-  assert(num > 0);  
+  assert(num > 0 && cxt->pb_num >= 0);  
   while(cxt->pb_num < num) {
     cxt->ignore_pb = 1;
     token_t *token = token_get_next(cxt); // This may return NULL if token stream reaches the end
@@ -739,10 +743,8 @@ token_t *token_lookahead(token_cxt_t *cxt, int num) {
     if(token != NULL) token_pushback(cxt, token);
     else return NULL;
   }
-  if(cxt->pb_num == num) return cxt->pushbacks;
-  else {
-    token_t *ret = cxt->pushbacks;
-    while(num--) ret = ret->next;
-    return ret;
-  }
+  token_t *ret = cxt->pushbacks;
+  if(cxt->pb_num != num) while(num--) ret = ret->next;
+  ret->decl_prop |= TOKEN_ISLOOKAHEAD; // Set this bit to avoid freeing a lookahead node
+  return ret;
 }

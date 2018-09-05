@@ -98,6 +98,7 @@ typedef enum {
 
 // Declaration properties, see below
 typedef uint32_t decl_prop_t;
+#define TOKEN_ISLOOKAHEAD  0x00000001 // Tracks whether the node is returned as a lookahead node
 #define DECL_NULL          0x00000000
 #define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
 // Type related bit mask (bit 4, 5, 6, 7); Note that these are signed, even for incompatible types
