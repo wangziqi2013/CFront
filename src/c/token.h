@@ -89,8 +89,8 @@ typedef enum {
   EXP_COMMA,                                // ,
   EXP_END,
 
-  T_UDEF,             // User-defined type using type-def; they are not identifiers
-  T_DECL, T_ABS_DECL, // Root node of a declaration
+  T_UDEF,                         // User-defined type using type-def; they are not identifiers
+  T_DECL, T_ABS_DECL, T_BASETYPE, // Root node of a declaration
 
   T_ILLEGAL = 10000,    // Mark a return value
   T_STOP,               // Used to instruct the parser to stop

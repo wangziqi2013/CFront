@@ -60,17 +60,35 @@ token_t *parse_decl_reduce(parse_decl_cxt_t *cxt, token_t *root) {
 
 }
 
-// Base type = one of udef/builtin/enum/struct/union
-token_t *parse_basetype(parse_decl_cxt_t *cxt) {
-
+// Base type = one of udef/builtin/enum/struct/union; In this stage only allows 
+// keywords with TOKEN_DECL set
+// The stack is not changed
+void parse_basetype(parse_decl_cxt_t *cxt, token_t *basetype) {
+  token_t *token = token_get_next(cxt->token_cxt);
+  assert(basetype->type == T_BASETYPE);
+  while(token != NULL && (token->decl_prop & DECL_MASK)) {
+    if(!token_decl_compatible(token, basetype->decl_prop)) 
+      error_row_col_exit(token_offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
+      token->str, token_decl_print(basetype->decl_prop));
+    basetype->decl_prop = token_decl_apply(token, basetype->decl_prop);
+    if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
+      assert(0); // TODO: PARSE STRUCT ENUM UNION
+      // token = parse_cmpsit(cxt, ...);
+    }
+    ast_append_child(basetype, token);
+    token = token_get_next(cxt->token_cxt);
+  }
+  if(token != NULL) token_pushback(cxt, token);
+  return;
 }
 
 token_t *parse_decl(parse_decl_cxt_t *cxt) {
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
   // Artificial node that is not in the token stream
-  token_t *root = token_alloc();
-  root->type = T_DECL;
-  parse_exp_shift(cxt, OP_STACK, root);
+  token_t *basetype = token_alloc(), *decl = token_alloc();
+  basetype->type = T_BASETYPE, decl->type = T_DECL;
+  ast_append_child(decl, basetype);
+  parse_basetype(cxt, basetype);
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) {
