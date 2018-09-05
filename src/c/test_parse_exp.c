@@ -103,15 +103,14 @@ void test_token_get_next() {
          */                          \n \
      }                               \n \
      \n";
-  token_t token;
   char *s = test;
   error_init(test);
   token_cxt_t *token_cxt = token_cxt_init();
-  while((s = token_get_next(token_cxt, s, &token)) != NULL) {
+  while((token_t *token = token_get_next(token_cxt)) != NULL) {
     const char *sym = token_symstr(token.type);
     if(sym == NULL) printf("%s ", token.str);
     else printf("%s ", sym);
-    token_free_literal(&token);
+    token_free(token);
   }
   putchar('\n');
 
@@ -137,13 +136,13 @@ void test_token_get_next() {
   \" asda dasdasd\\n \" ";
   s = test2;
   error_init(test2);
-  while((s = token_get_next(token_cxt, s, &token)) != NULL) {
+  while((token_t *token = token_get_next(token_cxt)) != NULL) {
     const char *sym = token_symstr(token.type);
     int row, col;
     error_get_row_col(token.offset, &row, &col);
     if(sym == NULL) printf("%s ", token.str);
     else printf("%s(%d %d) ", sym, row, col);
-    token_free_literal(&token);
+    token_free(token);
   }
   putchar('\n');
   token_cxt_free(token_cxt);
@@ -256,23 +255,22 @@ void test_decl_prop() {
   char test6[] = "volatile const const";
   char *tests[] = {test1, test2, test3, test4, test5, test6, };
   for(int iter = 0;iter < sizeof(tests) / sizeof(char *);iter++) {
-    token_t token;
     decl_prop_t decl_prop = DECL_NULL;
     token_cxt_t *token_cxt = token_cxt_init();
     char *s = tests[iter];
     printf("Iter #%d %s: \n", iter, tests[iter]);
     error_init(s);
     int comp = 1;
-    while((s = token_get_next(token_cxt, s, &token)) != NULL) {
+    while((token_t *token = token_get_next(token_cxt)) != NULL) {
       decl_prop_t new_decl_prop = token_decl_apply(&token, decl_prop);
       if(new_decl_prop == DECL_INVALID) {
         printf("--> Incompatible: %s and %s\n", token_typestr(token.type), token_decl_print(decl_prop));
-        token_free_literal(&token);
+        token_free(token);
         comp = 0;
         break;
       }
       else decl_prop = new_decl_prop;
-      token_free_literal(&token);
+      token_free(token);
     }
     if(comp) printf("--> Reconstruct: %s\n", token_decl_print(decl_prop));
     token_cxt_free(token_cxt);
