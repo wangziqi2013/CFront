@@ -239,6 +239,7 @@ const char *token_typestr(token_type_t type) {
     case T_LCPAREN: return "T_LCPAREN";
     case T_RCPAREN: return "T_RCPAREN";
     case T_SEMICOLON: return "T_SEMICOLON";
+    case T_ELLIPSIS: return "T_ELLIPSIS";
     // Literal types
     case T_DEC_INT_CONST: return "T_DEC_INT_CONST";
     case T_HEX_INT_CONST: return "T_HEX_INT_CONST";
@@ -390,6 +391,7 @@ const char *token_symstr(token_type_t type) {
     case T_LCPAREN: return "{";
     case T_RCPAREN: return "}";
     case T_SEMICOLON: return ";";
+    case T_ELLIPSIS: return "...";
     // keywords
     case T_AUTO: return "auto"; 
     case T_BREAK: return "break"; 

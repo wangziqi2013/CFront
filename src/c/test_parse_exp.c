@@ -33,7 +33,7 @@ void test_stack() {
 void test_get_op() {
   printf("=== Test token_get_op() ===\n");
   char *p;
-  char test1[] = "-----====-=-=++>>=>>>";
+  char test1[] = "-----====-=-=++>>=>>>.+..+...+....+......";
   char result[256];
   token_t token;
   p = test1;
