@@ -66,15 +66,25 @@ int precedences[51] = {
   15,         // EXP_COMMA,                               // binary ,
 };
 
-token_cxt_t *token_init() {
+token_cxt_t *token_cxt_init() {
   token_cxt_t *cxt = (token_cxt_t *)malloc(sizeof(token_cxt_t));
   if(cxt == NULL) perror(__func__);
   cxt->udef_types = ht_str_init();
   return cxt;
 }
 
-void token_free(token_cxt_t *cxt) {
+void token_cxt_free(token_cxt_t *cxt) {
   ht_free(cxt->udef_types);
+  free(cxt);
+}
+
+// Adds a user-defined type
+void token_add_utype(token_cxt_t *cxt, token_t *token) {
+  ht_insert(cxt->udef_types, token->str, NULL);
+}
+
+int token_isutype(token_cxt_t *cxt, token_t *token) {
+  return token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND;
 }
 
 // Checks if a keyword token is compatible with a given property bit mask
@@ -576,7 +586,7 @@ token_t *token_alloc() {
 // Same rule as the get_op call
 // Note:
 //   1. If keywords are detected then the buffer is not initialized
-char *token_get_ident(char *s, token_t *token) {
+char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
   token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
   else if(isalpha(*s) || *s == '_') {
@@ -589,6 +599,7 @@ char *token_get_ident(char *s, token_t *token) {
     if(type == T_ILLEGAL) {
       token->type = T_IDENT;
       token_copy_literal(token, s, end);
+      if(token_isutype(cxt, token)) token->type = T_UDEF;
     } else {
       token->type = type;
       assert(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END);
@@ -643,7 +654,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
 
 // Returns the next token, or illegal
 // Same rule for return value and conditions as token_get_op()
-char *token_get_next(char *s, token_t *token) {
+char *token_get_next(token_cxt_t *cxt, char *s, token_t *token) {
   token->decl_prop = DECL_NULL;
   token->type = T_ILLEGAL;
   while(1) {
@@ -657,7 +668,7 @@ char *token_get_next(char *s, token_t *token) {
       if(s[0] == '\0') error_row_col_exit(before, "Block comment not closed at the end of file\n");
       s += 2;
     }
-    else if(isalpha(*s) || *s == '_') return token_get_ident(s, token);
+    else if(isalpha(*s) || *s == '_') return token_get_ident(cxt, s, token);
     else if(isdigit(*s)) return token_get_int(s, token);
     else if(*s == '\'' || *s == '\"') return token_get_str(s + 1, token, *s);
     else {

@@ -153,8 +153,10 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
-token_cxt_t *token_init();
-void token_free(token_cxt_t *cxt);
+token_cxt_t *token_cxt_init();
+void token_cxt_free(token_cxt_t *cxt);
+void token_add_utype(token_cxt_t *cxt, token_t *token);
+int token_isutype(token_cxt_t *cxt, token_t *token);
 int kwd_compatible(token_t *token, decl_prop_t decl_prop);
 decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop);
 char *token_decl_print(decl_prop_t decl_prop);
@@ -168,9 +170,9 @@ void token_copy_literal(token_t *token, const char *begin, const char *end);
 void token_free_literal(token_t *token);
 void token_free(token_t *token);
 token_t *token_alloc();
-char *token_get_ident(char *s, token_t *token);
+char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
-char *token_get_next(char *s, token_t *token);
+char *token_get_next(token_cxt_t *cxt, char *s, token_t *token);
 
 #endif
