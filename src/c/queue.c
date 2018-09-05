@@ -10,9 +10,11 @@ queue_t *queue_init() {
 }
 
 void queue_free(queue_t *queue) {
+  assert(queue->enq->next == queue->deq);
+  queue->enq->next = NULL;
   while(queue->deq != NULL) {
     queue->enq = queue->deq->next;
-    free(deq);
+    free(queue->deq);
     queue->deq = queue->enq;
   }
   free(queue);

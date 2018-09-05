@@ -705,3 +705,12 @@ char *token_get_next(token_cxt_t *cxt, char *s, token_t *token) {
   assert(0);
   return NULL;
 }
+
+// Looks ahead into the token stream. If token stream ended before num then return NULL
+token_t *token_lookahead(token_cxt_t *cxt, int num) {
+  assert(num > 0);
+  int sz = stack_size(cxt->pushbacks);
+  while(stack_size(cxt->pushbacks) < num) {
+    //stack_push(cxt->pushbacks, );
+  }
+}
