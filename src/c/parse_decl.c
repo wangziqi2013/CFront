@@ -7,10 +7,10 @@ parse_decl_cxt_t *parse_decl_init(char *input) { return parse_exp_init(input); }
 void parse_decl_free(parse_decl_cxt_t *cxt) { parse_exp_free(cxt); }
 
 // Whether the token could start a declaration, i.e. being a type or modifier
-int parse_decl_istype(parse_decl_cxt_t *cxt, token_t *token) {
+int parse_decl_isbasetype(parse_decl_cxt_t *cxt, token_t *token) {
   if(token->decl_prop & DECL_MASK) return 1; // built-in type & modifier
   else if(token->type == T_UDEF) return 1; // udef types
-  return 0;
+  return 0; (void)cxt;
 }
 
 // Same rule as parse_exp_next_token()
@@ -26,7 +26,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
     switch(token->type) {
       case T_LPAREN: {  // If the next symbol constitutes a base type then this is func call
         token_t *lookahead = token_lookahead(cxt->token_cxt, 1);
-        if(lookahead != NULL && (parse_decl_istype(cxt, lookahead) || lookahead->type = T_RPAREN)) 
+        if(lookahead != NULL && (parse_decl_isbasetype(cxt, lookahead) || lookahead->type == T_RPAREN)) 
           token->type = EXP_FUNC_CALL;
         else token->type = EXP_LPAREN;
         break;
@@ -63,7 +63,7 @@ token_t *parse_decl_reduce(parse_decl_cxt_t *cxt, token_t *root) {
     }
   }
   
-
+  return NULL;
 }
 
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 
@@ -74,7 +74,7 @@ void parse_basetype(parse_decl_cxt_t *cxt, token_t *basetype) {
   assert(basetype->type == T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
     if(!token_decl_compatible(token, basetype->decl_prop)) 
-      error_row_col_exit(token_offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
+      error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
       token->str, token_decl_print(basetype->decl_prop));
     basetype->decl_prop = token_decl_apply(token, basetype->decl_prop);
     if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
@@ -84,7 +84,7 @@ void parse_basetype(parse_decl_cxt_t *cxt, token_t *basetype) {
     ast_append_child(basetype, token);
     token = token_get_next(cxt->token_cxt);
   }
-  if(token != NULL) token_pushback(cxt, token);
+  if(token != NULL) token_pushback(cxt->token_cxt, token);
   return;
 }
 
@@ -95,41 +95,8 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
   basetype->type = T_BASETYPE, decl->type = T_DECL;
   ast_append_child(decl, basetype);
   parse_basetype(cxt, basetype);
+  return decl;/*
   while(1) {
-    token_t *token = parse_decl_next_token(cxt);
-    if(token == NULL) {
-      // TODO: REDUCE UNTIL STACK EMPTY
-      // TODO: RETURN THE LAST TOKEN
-    }
-    token_t *top = stack_peek(cxt->stacks[OP_STACK]);
-    if(token->decl_prop & DECL_MASK) {
-      if(top->type == EXP_DEREF && !(token->decl_prop & DECL_QUAL_MASK)) 
-        error_row_col_exit(token->offset, "Type specifier \"%s\" cannot be applied to \'*\'\n", 
-                           token_symstr(token->type));
-      decl_prop_t after = token_decl_apply(token, top->decl_prop);
-      if(after == DECL_INVALID) 
-        error_row_col_exit(token->offset, 
-                            "Incompatible type specifier \"%s\" with declaration \"%s\"\n", 
-                            token->str, token_decl_print(top->decl_prop));
-      top->decl_prop = after;
-      if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
-        // TODO: EXTRA PROCESSING
-        assert(0);
-      } else {
-        token_free(token);  // Have been applied to the bit mask, no longer useful
-      }
-    }
-    switch(top->type) {
-      case T_DECL: { 
-         if(token->type == EXP_DEREF) {
-          parse_exp_shift(cxt, OP_STACK, token);
-        } else if(0) {
-          // process [
-        } else if(0) {
-          //if(ast == NULL) {}
-        }
-      }
-      case EXP_DEREF: break;
-    }
-  }
+    token_t *token = parse_decl_next_token(cxt);(void)token;
+  }*/
 }
