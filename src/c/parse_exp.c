@@ -53,7 +53,7 @@ int parse_exp_isdecl(parse_exp_cxt_t *cxt) {
   token_t *token = token_get_next(cxt->token_cxt);
   // First token of any declaration must be type or type modifiers
   int ret = parse_decl_istype(cxt, token);
-  token_free(token);
+  token_pushback(cxt->token_cxt, token);
   return ret;
 }
 

@@ -158,7 +158,7 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
-token_cxt_t *token_cxt_init();
+token_cxt_t *token_cxt_init(char *input);
 void token_cxt_free(token_cxt_t *cxt);
 void token_pushback(token_cxt_t *cxt, token_t *token);
 void token_add_utype(token_cxt_t *cxt, token_t *token);

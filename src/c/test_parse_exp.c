@@ -38,7 +38,7 @@ void test_get_op() {
   token_t token;
   p = test1;
   result[0] = '\0';
-  token_cxt_t *token_cxt = token_cxt_init();
+  token_cxt_t *token_cxt = token_cxt_init(test1);
   while(p != NULL) {
     p = token_get_op(p, &token);
     if(p == NULL) break;
@@ -105,7 +105,7 @@ void test_token_get_next() {
      \n";
   char *s = test;
   error_init(test);
-  token_cxt_t *token_cxt = token_cxt_init();
+  token_cxt_t *token_cxt = token_cxt_init(test);
   token_t *token;
   while((token = token_get_next(token_cxt)) != NULL) {
     const char *sym = token_symstr(token->type);
@@ -257,9 +257,9 @@ void test_decl_prop() {
   char *tests[] = {test1, test2, test3, test4, test5, test6, };
   for(int iter = 0;iter < sizeof(tests) / sizeof(char *);iter++) {
     decl_prop_t decl_prop = DECL_NULL;
-    token_cxt_t *token_cxt = token_cxt_init();
     char *s = tests[iter];
-    printf("Iter #%d %s: \n", iter, tests[iter]);
+    token_cxt_t *token_cxt = token_cxt_init(s);
+    printf("Iter #%d %s: \n", iter, s);
     error_init(s);
     int comp = 1;
     token_t *token;
