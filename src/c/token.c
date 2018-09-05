@@ -599,7 +599,10 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
     if(type == T_ILLEGAL) {
       token->type = T_IDENT;
       token_copy_literal(token, s, end);
-      if(token_isutype(cxt, token)) token->type = T_UDEF;
+      if(token_isutype(cxt, token)) {
+        token->type = T_UDEF;
+        token->decl_prop |= DECL_UDEF;
+      }
     } else {
       token->type = type;
       assert(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END);

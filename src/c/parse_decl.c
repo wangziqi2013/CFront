@@ -9,8 +9,7 @@ void parse_decl_free(parse_decl_cxt_t *cxt) { parse_exp_free(cxt); }
 // Whether the token could start a declaration, i.e. being a type or modifier
 int parse_decl_istype(parse_decl_cxt_t *cxt, token_t *token) {
   if(token->decl_prop & DECL_MASK) return 1; // built-in type & modifier
-  else if(token->type == T_IDENT && 
-          ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) return 1; // udef types
+  else if(token->type == T_UDEF) return 1; // udef types
   return 0;
 }
 
@@ -33,11 +32,6 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
       case T_RSPAREN: token->type = EXP_RSPAREN; break;
-      case T_IDENT: // Identifiers are allowed but udef types must be marked as types
-        if(ht_find(cxt->udef_types, token->str) != HT_NOTFOUND) { 
-          token->type = T_UDEF; token->decl_prop |= DECL_UDEF;
-        } 
-        break;
       default: // For keywords and other symbols. Only allow DECL keywords (see token.h)
         if(!(token->decl_prop & DECL_MASK)) valid = 0;
     }
@@ -105,7 +99,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         } else if(0) {
           // process [
         } else if(0) {
-          if(ast == NULL)
+          //if(ast == NULL) {}
         }
       }
       case EXP_DEREF: break;
