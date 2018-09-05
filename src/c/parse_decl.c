@@ -31,7 +31,9 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         else token->type = EXP_LPAREN;
         break;
       }
-      case T_RPAREN: token->type = EXP_RPAREN; break;
+      case T_RPAREN: {
+        token->type = EXP_RPAREN;
+      } break;
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
       case T_RSPAREN: token->type = EXP_RSPAREN; break;
@@ -46,26 +48,6 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   return token;
 }
 
-// Could be at most one AST on the current virtual stack
-void parse_decl_shift(parse_decl_cxt_t *cxt, int stack_id, token_t *token) {
-  parse_exp_shift(cxt, stack_id, token);
-}
-
-token_t *parse_decl_reduce(parse_decl_cxt_t *cxt, token_t *root) {
-  if(parse_exp_size(cxt, OP_STACK) == 0) return NULL;
-  token_t *top = stack_pop(cxt->stacks[OP_STACK]);
-  if(parse_exp_size(cxt, AST_STACK) == 0) { // Unnamed declaration
-    if(top->type == EXP_DEREF) {
-      assert(root->type == T_DECL);
-      root->type = T_ABS_DECL;
-    } else {
-      error_row_col_exit(top->offset, "")
-    }
-  }
-  
-  return NULL;
-}
-
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 
 // keywords with TOKEN_DECL set
 // The stack is not changed
@@ -75,7 +57,7 @@ void parse_basetype(parse_decl_cxt_t *cxt, token_t *basetype) {
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
     if(!token_decl_compatible(token, basetype->decl_prop)) 
       error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
-      token->str, token_decl_print(basetype->decl_prop));
+      token_symstr(token->type), token_decl_print(basetype->decl_prop));
     basetype->decl_prop = token_decl_apply(token, basetype->decl_prop);
     if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
       assert(0); // TODO: PARSE STRUCT ENUM UNION
@@ -95,8 +77,35 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
   basetype->type = T_BASETYPE, decl->type = T_DECL;
   ast_append_child(decl, basetype);
   parse_basetype(cxt, basetype);
-  return decl;/*
+  //return decl;
+  // Creates an empty node and shift it into OP stack
+  token_t *empty = token_alloc();
+  empty->type = T_;
+  parse_exp_shift(cxt, AST_STACK, empty);
   while(1) {
-    token_t *token = parse_decl_next_token(cxt);(void)token;
-  }*/
+    token_t *token = parse_decl_next_token(cxt);
+    if(token == NULL) return ast_append_child(decl, parse_exp_reduce_all(cxt));
+    if(token->type & DECL_QUAL_MASK) { // Special case for type qualifiers
+      token_t *top = parse_exp_peek(cxt, OP_STACK);
+      if(top == NULL || top->type != EXP_DEREF) 
+        error_row_col_exit(token->offset, "Qualifier \"%s\" must modify pointer\n", token_symstr(token->type));
+      if(!token_decl_compatible(token, top->decl_prop))
+        error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
+                           token_symstr(token->type), token_decl_print(top->decl_prop));
+      top->decl_prop = token_decl_apply(token, top->decl_prop);
+      ast_push_child(top, token);
+      continue;
+    }
+    switch(token->type) {
+      case EXP_DEREF: parse_exp_shift(cxt, OP_STACK, token); break;
+      case T_IDENT: {
+        token_t *op_top = parse_exp_peek(cxt, AST_STACK);
+        if(op_top != NULL && op_top->type == T_) token_free(stack_pop(cxt->stacks[AST_STACK]));
+        else if(op_top != NULL) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
+        parse_exp_shift(cxt, AST_STACK, token);
+        break;
+      } //case T_
+      default: printf("%s\n", token_typestr(token->type)); assert(0);
+    }
+  }
 }

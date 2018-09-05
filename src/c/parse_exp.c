@@ -232,12 +232,12 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   while(parse_exp_reduce(cxt, -1) != NULL);
   if(!parse_exp_isempty(cxt, OP_STACK)) {
-    error_row_col_exit(((token_t *)stack_peek(op))->offset,
+    error_row_col_exit(parse_exp_peek(cxt, OP_STACK)->offset,
                        "Did not find operand for operator %s\n", 
                        token_typestr(((token_t *)stack_peek(op))->type));
   } else if(parse_exp_size(cxt, AST_STACK) != 1) {
-    error_row_col_exit(((token_t *)stack_at(ast, 0))->offset,
-                       "Missing operator for expression\n"); // TODO: MAKE IT MORE MEANINGFUL
+    error_row_col_exit(parse_exp_peek(cxt, AST_STACK)->offset,
+                       "Missing operator for the entity\n"); // TODO: MAKE IT MORE MEANINGFUL
   } 
   return (token_t *)stack_pop(ast);
 }
