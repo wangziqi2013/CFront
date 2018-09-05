@@ -42,6 +42,12 @@ void *stack_peek(stack_t *stack) {
   return stack->data[stack->size - 1];
 }
 
+// Offset is from the top of the stack towards the bottom
+void *stack_peek_at(stack_t *stack, int offset) {
+  assert(offset >= 0 && offset < stack->size);
+  return stack->data[stack->size - 1 - offset];
+}
+
 void *stack_at(stack_t *stack, int index) {
   assert(index >= 0 && index < stack->size);
   return stack->data[index];
