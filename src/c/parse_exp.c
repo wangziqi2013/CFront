@@ -33,7 +33,6 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
 // Literals (incl. ident), operators, and sizeof() could be part of an expression
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
   token_type_t type = token->type;
-  stack_t *op = cxt->stacks[OP_STACK];
   // For closing symbols, i.e. ) and ], they do not count as part of the current 
   // expression if there is a stop sign at the top of the stack or it's empty
   if(parse_exp_isempty(cxt, OP_STACK) && (type == T_RPAREN || type == T_RSPAREN)) return 0; 
@@ -44,14 +43,14 @@ int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
 
 // Returns whether a token is primary token
 int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
-  return token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END;
+  return token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END; (void)cxt;
 }
 
-// Returns whether the next token is a type; Note that we check the next token
-// without actually extracting it from the stream by not changing cxt->s
-int parse_exp_isdecl(parse_exp_cxt_t *cxt) {
+// Returns whether the next lookahead token is a type
+int parse_exp_la_isdecl(parse_exp_cxt_t *cxt) {
   token_t *token = token_lookahead(cxt->token_cxt, 1);
-  if(token == NULL || !parse_decl_istype(cxt, token)) return 0;
+  if(token == NULL || !parse_decl_isbasetype(cxt, token)) return 0;
+  return 1;
 }
 
 // Virtual size of the stack, which is the difference between the previous top and the current top
@@ -174,6 +173,7 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
     switch(token->type) {
       case EXP_FUNC_CALL: ast_collect_funcarg(token); break;
       case EXP_COND: ast_movecond(token); break;
+      default: break;
     }
   }
   return;
@@ -211,8 +211,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   token_get_property(token->type, &preced, &assoc);
   token_t *op_stack_top = parse_exp_isempty(cxt, OP_STACK) ? NULL : (token_t *)stack_peek(cxt->stacks[OP_STACK]);
   while(op_stack_top != NULL && op_stack_top->type != EXP_FUNC_CALL && 
-        op_stack_top->type != EXP_ARRAY_SUB && op_stack_top->type != EXP_LPAREN &&
-        op_stack_top->type != EXP_CAST) {
+        op_stack_top->type != EXP_ARRAY_SUB && op_stack_top->type != EXP_LPAREN) {
     token_get_property(op_stack_top->type, &top_preced, &top_assoc);
     if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
@@ -239,14 +238,14 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
 }
 
 token_t *parse_exp(parse_exp_cxt_t *cxt) {
-  stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
+  stack_t *op = cxt->stacks[OP_STACK];
   while(1) {
     token_t *token = parse_exp_next_token(cxt);
     if(token == NULL) {
       return parse_exp_reduce_all(cxt);
     } else if(parse_exp_isprimary(cxt, token)) {
       parse_exp_shift(cxt, AST_STACK, token);
-    } else if(token->type == EXP_RPAREN) {
+    } else if(token->type == EXP_RPAREN) {   // All tokens down here are operators
       token_t *op_top = stack_peek(op);
       // Special case: function with no argument; must be the case that a FUNC_CALL '(' is 
       // pushed immediately followed by ')'
@@ -268,15 +267,18 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
       parse_exp_reduce(cxt, -1);
       token_free(token);
+    } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) {
+      token->type = EXP_CAST;
+      parse_exp_recurse(cxt);
+      token_t *decl = parse_decl(cxt);
+      parse_exp_decurse(cxt);
+      parse_exp_shift(cxt, OP_STACK, token);
+      ast_append_child(token, decl);
+      token_t *temp = token_get_next(cxt->token_cxt);
+      if(temp != NULL && temp->type == T_LPAREN) {
+        error_row_col_exit(temp->offset, "Type cast expects a right parenthesis, not %s\n", token_typestr(token->type));
+      } else { token_free(temp); }
     } else {
-      if(token->type == EXP_LPAREN && parse_exp_isdecl(cxt)) {
-        parse_exp_recurse(cxt);
-        // TODO: Calls parse function to parse unamed type declaration
-        // TODO: FREE THE TOKEN BECAUSE WE DID NOT PUSH IT
-        //token->type = EXP_CAST;
-        parse_exp_decurse(cxt);
-        assert(0);
-      }
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
       // TODO: If we just shifted in a cast then parse type declarator and then push it onto the op stack

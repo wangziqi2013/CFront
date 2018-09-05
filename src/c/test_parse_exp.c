@@ -68,7 +68,7 @@ void test_get_op() {
 void test_bin_search() {
   printf("=== Test token_get_keyword_type() ===\n");
   token_type_t type;
-  for(int i = 0;i < sizeof(keywords) / sizeof(const char *);i++) {
+  for(int i = 0;i < (int)sizeof(keywords) / (int)sizeof(const char *);i++) {
     type = token_get_keyword_type(keywords[i]);
     if(type == T_ILLEGAL) {
       printf("ILLEGAL %s\n", keywords[i]);
@@ -103,7 +103,6 @@ void test_token_get_next() {
          */                          \n \
      }                               \n \
      \n";
-  char *s = test;
   error_init(test);
   token_cxt_t *token_cxt = token_cxt_init(test);
   token_t *token;
@@ -135,7 +134,6 @@ void test_token_get_next() {
       return NULL;  \n \
     }               \n \
   \" asda dasdasd\\n \" ";
-  s = test2;
   error_init(test2);
   while((token = token_get_next(token_cxt)) != NULL) {
     const char *sym = token_symstr(token->type);
@@ -189,7 +187,7 @@ void test_simple_exp_parse() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "x == x + 2 && qwe > rty ? y * 6 >> 3 : *z++ += 1000";
+  char test2[] = "x == x + 2 && qwe > rty ? (void const volatile)y * 6 >> 3 : *z++ += 1000";
   cxt = parse_exp_init(test2);
   token = parse_exp(cxt);
   ast_print(token, 0);
@@ -255,7 +253,7 @@ void test_decl_prop() {
   char test5[] = "long double typedef"; // do not support long double type
   char test6[] = "volatile const const";
   char *tests[] = {test1, test2, test3, test4, test5, test6, };
-  for(int iter = 0;iter < sizeof(tests) / sizeof(char *);iter++) {
+  for(int iter = 0;iter < (int)sizeof(tests) / (int)sizeof(char *);iter++) {
     decl_prop_t decl_prop = DECL_NULL;
     char *s = tests[iter];
     token_cxt_t *token_cxt = token_cxt_init(s);
