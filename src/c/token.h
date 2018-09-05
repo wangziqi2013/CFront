@@ -135,16 +135,18 @@ typedef struct token_t {
   token_type_t type;
   char *str;
   struct token_t *child;
-  struct token_t *sibling;
-  // The offset in source file, for debugging
-  char *offset;
-  // Property if the kwd is part of declaration; Set when a kwd is found
-  decl_prop_t decl_prop;
+  union {
+    struct token_t *sibling; // If token is in AST then use child-sibling representation
+    struct token_t *next;    // If token is in pushbacks queue then form a circular queue
+  };
+  
+  char *offset;              // The offset in source file, for debugging
+  decl_prop_t decl_prop;     // Property if the kwd is part of declaration; Set when a kwd is found
 } token_t;
 
 typedef struct {
-  hashtable_t *udef_types;  // Auto detected when lexing T_IDENT
-  stack_t *pushbacks;       // Unused look-ahead symbols
+  hashtable_t *udef_types;   // Auto detected when lexing T_IDENT
+  token_t *pushbacks;        // Unused look-ahead symbols
 } token_cxt_t;
 
 typedef enum {

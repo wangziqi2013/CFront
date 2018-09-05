@@ -70,18 +70,31 @@ token_cxt_t *token_cxt_init() {
   token_cxt_t *cxt = (token_cxt_t *)malloc(sizeof(token_cxt_t));
   if(cxt == NULL) perror(__func__);
   cxt->udef_types = ht_str_init();
-  cxt->pushbacks = stack_init();
+  cxt->pushbacks = NULL;
   return cxt;
 }
 
 void token_cxt_free(token_cxt_t *cxt) {
   ht_free(cxt->udef_types);
-  stack_free(cxt->pushbacks);
+  if(cxt->pushbacks) {
+    token_t *curr = cxt->pushbacks->next;
+    cxt->pushbacks->next = NULL;
+    while(curr != NULL) {
+      cxt->pushbacks = curr->next;
+      free(curr);
+      curr = cxt->pushbacks;
+    }
+  }
   free(cxt);
 }
 
 void token_pushback(token_cxt_t *cxt, token_t *token) {
-  stack_push(cxt->pushbacks, token);
+  if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
+  else {
+    token->next = cxt->pushbacks->next;
+    assert(token->next != NULL);
+    cxt->pushbacks = token;
+  }
 }
 
 // Adds a user-defined type
