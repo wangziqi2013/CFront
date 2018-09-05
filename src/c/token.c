@@ -91,21 +91,6 @@ void token_cxt_free(token_cxt_t *cxt) {
   free(cxt);
 }
 
-void token_pushback(token_cxt_t *cxt, token_t *token) {
-  if(token == NULL) return;
-  if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
-  else {
-    token->next = cxt->pushbacks->next;
-    cxt->pushbacks->next = token;
-    assert(token->next != NULL);
-    cxt->pushbacks = token;
-  }
-  cxt->pb_num++;
-  /*for(token_t *t = cxt->pushbacks->next;t != cxt->pushbacks;t = t->next) {
-    printf("pushback has %s\n", t->str ? t->str : "??");
-  }*/
-}
-
 // Adds a user-defined type
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
   ht_insert(cxt->udef_types, token->str, NULL);
@@ -709,8 +694,8 @@ token_t *token_get_next(token_cxt_t *cxt) {
   }
   token = token_alloc();
   while(1) {
-    const char *before = cxt->s;  
-    if(cxt->s == NULL || *cxt->s == '\0') return NULL;
+    const char *before = cxt->s;
+    if(cxt->s == NULL || *cxt->s == '\0') { token_free(token); return NULL; }
     else if(isspace(*cxt->s)) while(isspace(*cxt->s)) cxt->s++;
     else if(cxt->s[0] == '/' && cxt->s[1] == '/') while(*cxt->s != '\n' && *cxt->s != '\0') cxt->s++;
     else if(cxt->s[0] == '/' && cxt->s[1] == '*') {
@@ -729,6 +714,18 @@ token_t *token_get_next(token_cxt_t *cxt) {
     }
   }
   return token;
+}
+
+void token_pushback(token_cxt_t *cxt, token_t *token) {
+  if(token == NULL) return;
+  if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
+  else {
+    token->next = cxt->pushbacks->next;
+    cxt->pushbacks->next = token;
+    assert(token->next != NULL);
+    cxt->pushbacks = token;
+  }
+  cxt->pb_num++;
 }
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL

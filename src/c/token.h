@@ -162,7 +162,6 @@ extern int precedences[51];
 
 token_cxt_t *token_cxt_init(char *input);
 void token_cxt_free(token_cxt_t *cxt);
-void token_pushback(token_cxt_t *cxt, token_t *token);
 void token_add_utype(token_cxt_t *cxt, token_t *token);
 int token_isutype(token_cxt_t *cxt, token_t *token);
 int kwd_compatible(token_t *token, decl_prop_t decl_prop);
@@ -182,6 +181,7 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
 token_t *token_get_next(token_cxt_t *cxt);
+void token_pushback(token_cxt_t *cxt, token_t *token);
 token_t *token_lookahead(token_cxt_t *cxt, int num);
 
 #endif
