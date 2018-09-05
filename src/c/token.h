@@ -147,6 +147,7 @@ typedef struct token_t {
 typedef struct {
   hashtable_t *udef_types;   // Auto detected when lexing T_IDENT
   token_t *pushbacks;        // Unused look-ahead symbols
+  char *s;                   // Current read position
 } token_cxt_t;
 
 typedef enum {
@@ -177,6 +178,6 @@ token_t *token_alloc();
 char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
-char *token_get_next(token_cxt_t *cxt, char *s, token_t *token);
+token_t *token_get_next(token_cxt_t *cxt);
 
 #endif

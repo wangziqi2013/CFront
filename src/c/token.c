@@ -66,11 +66,12 @@ int precedences[51] = {
   15,         // EXP_COMMA,                               // binary ,
 };
 
-token_cxt_t *token_cxt_init() {
+token_cxt_t *token_cxt_init(char *input) {
   token_cxt_t *cxt = (token_cxt_t *)malloc(sizeof(token_cxt_t));
   if(cxt == NULL) perror(__func__);
   cxt->udef_types = ht_str_init();
   cxt->pushbacks = NULL;
+  cxt->s = input;
   return cxt;
 }
 
@@ -89,6 +90,7 @@ void token_cxt_free(token_cxt_t *cxt) {
 }
 
 void token_pushback(token_cxt_t *cxt, token_t *token) {
+  if(token == NULL) return;
   if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
   else {
     token->next = cxt->pushbacks->next;
@@ -687,36 +689,36 @@ char *token_get_str(char *s, token_t *token, char closing) {
 }
 
 // Returns the next token, or illegal
-// Same rule for return value and conditions as token_get_op()
-char *token_get_next(token_cxt_t *cxt, char *s, token_t *token) {
-  if(stack_size(cxt->pushbacks)) {
+// token must be allocated on the heap, not stack
+token_t *token_get_next(token_cxt_t *cxt) {
+  /*
+  if(cxt->pushbacks) {
     *token = *(token_t *)stack_pop(cxt->pushbacks);
     return s;
   }
-  token->decl_prop = DECL_NULL;
-  token->type = T_ILLEGAL;
+  */
+  token_t *token = token_alloc();
   while(1) {
-    const char *before = s;  
-    if(s == NULL || *s == '\0') return NULL;
-    else if(isspace(*s)) while(isspace(*s)) s++;
-    else if(s[0] == '/' && s[1] == '/') while(*s != '\n' && *s != '\0') s++;
-    else if(s[0] == '/' && s[1] == '*') {
-      s += 2;
-      while((s[0] != '\0') && (s[0] != '*' || s[1] != '/')) s++;
-      if(s[0] == '\0') error_row_col_exit(before, "Block comment not closed at the end of file\n");
-      s += 2;
+    const char *before = cxt->s;  
+    if(cxt->s == NULL || *cxt->s == '\0') return NULL;
+    else if(isspace(*cxt->s)) while(isspace(*cxt->s)) cxt->s++;
+    else if(cxt->s[0] == '/' && cxt->s[1] == '/') while(*cxt->s != '\n' && *cxt->s != '\0') cxt->s++;
+    else if(cxt->s[0] == '/' && cxt->s[1] == '*') {
+      cxt->s += 2;
+      while((cxt->s[0] != '\0') && (cxt->s[0] != '*' || cxt->s[1] != '/')) cxt->s++;
+      if(cxt->s[0] == '\0') error_row_col_exit(before, "Block comment not closed at the end of file\n");
+      cxt->s += 2;
     }
-    else if(isalpha(*s) || *s == '_') return token_get_ident(cxt, s, token);
-    else if(isdigit(*s)) return token_get_int(s, token);
-    else if(*s == '\'' || *s == '\"') return token_get_str(s + 1, token, *s);
+    else if(isalpha(*cxt->s) || *cxt->s == '_') { cxt->s = token_get_ident(cxt, cxt->s, token); break; }
+    else if(isdigit(*cxt->s)) return token_get_int(cxt->s, token);
+    else if(*cxt->s == '\'' || *cxt->s == '\"') { cxt->s = token_get_str(cxt->s + 1, token, *cxt->s); break; }
     else {
-      s = token_get_op(s, token);
+      cxt->s = token_get_op(cxt->s, token);
       if(token->type == T_ILLEGAL) error_row_col_exit(before, "Unknown symbol \'%c\'\n", *before);
-      return s;
+      break;
     }
   }
-  assert(0);
-  return NULL;
+  return token;
 }
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL
