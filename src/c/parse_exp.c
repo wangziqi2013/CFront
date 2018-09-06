@@ -204,10 +204,16 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
 // Return the next op at stack top; NULL if stack empty
 // If op stack is empty then do nothing, and return NULL to indicate this
 // If the override is -1 then we ignore it
+// If the override is -2 then allow reduction of [ and (, disable them otherwise
 token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   if(parse_exp_isempty(cxt, OP_STACK)) return NULL;
   token_t *top_op = stack_pop(op);
+  // Note that '[' and '(' are reduced manually, and this routine could not reduce them
+  // Otherwise ( and [ may not be balanced, e.g. (a[0) would be a legal case
+  if(op_num_override != -2 && 
+     (top_op->type == EXP_FUNC_CALL || top_op->type == EXP_LPAREN || top_op->type == EXP_ARRAY_SUB)) 
+    error_row_col_exit(top_op->offset, "Symbol \"%s\" unclosed\n", token_typestr(top_op->type));
   int op_num = op_num_override == -1 ? token_get_num_operand(top_op->type) : op_num_override;
   for(int i = 0;i < op_num;i++) {
     if(parse_exp_isempty(cxt, AST_STACK))
@@ -266,28 +272,26 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       return parse_exp_reduce_all(cxt);
     } else if(parse_exp_isprimary(cxt, token)) {
       parse_exp_shift(cxt, AST_STACK, token);
-    } else if(token->type == EXP_RPAREN) {   // All tokens down here are operators
-      token_t *op_top = stack_peek(op);
+    } else if(token->type == EXP_RPAREN) {   // All tokens below this line are operators
+      token_t *op_top = parse_exp_peek(cxt, OP_STACK);
       // Special case: function with no argument; must be the case that a FUNC_CALL '(' is 
       // pushed immediately followed by ')'
-      if(cxt->last_active_stack == OP_STACK && op_top->type == EXP_FUNC_CALL) {
+      if(op_top != NULL && cxt->last_active_stack == OP_STACK && op_top->type == EXP_FUNC_CALL) {
         parse_exp_shift(cxt, AST_STACK, token_get_empty());
-        parse_exp_reduce(cxt, -1);
+        parse_exp_reduce(cxt, -2); // This reduces no argument EXP_FUNC_CALL
       } else {
-        while(op_top != NULL && 
-              op_top->type != EXP_ARRAY_SUB && op_top->type != EXP_FUNC_CALL &&
-              op_top->type != EXP_LPAREN) 
+        while(op_top != NULL && op_top->type != EXP_FUNC_CALL && op_top->type != EXP_LPAREN) 
           op_top = parse_exp_reduce(cxt, -1);
         if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
         else if(op_top->type == EXP_LPAREN) { token_free(stack_pop(op)); } // Left paren is not used in AST
-        else { parse_exp_reduce(cxt, -1); }
+        else { parse_exp_reduce(cxt, -2); } // This reduces EXP_FUNC_CALL
       }
       token_free(token); // Right paren is always not used in AST
     } else if(token->type == EXP_RSPAREN) {
-      token_t *op_top = stack_peek(op);
+      token_t *op_top = parse_exp_peek(cxt, OP_STACK);
       while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1);
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
-      parse_exp_reduce(cxt, -1);
+      parse_exp_reduce(cxt, -2); // This reduces '['
       token_free(token);
     } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) {
       token->type = EXP_CAST;
@@ -301,7 +305,6 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
     } else {
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
-      // TODO: If we just shifted in a cast then parse type declarator and then push it onto the op stack
       // Special care must be taken for postfix ++ and -- because they cause the 
       // parser to think an op has been pushed and all following are unary prefix op
       // We need to reduce immediately upon seeing them. This does not affect correctness

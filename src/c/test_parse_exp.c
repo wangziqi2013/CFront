@@ -340,6 +340,20 @@ void test_parse_decl() {
   return;
 }
 
+void test_anomaly() {
+  printf("=== Test anomalies ===\n");
+  char test1[] = "d[++wzq--[1234]]";
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  cxt = parse_exp_init(test1);
+  token = parse_exp(cxt);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -352,5 +366,6 @@ int main() {
   test_decl_prop();
   test_token_lookahead();
   test_parse_decl();
+  test_anomaly();
   return 0;
 }
