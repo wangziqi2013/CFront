@@ -54,9 +54,17 @@ void ast_free(token_t *token) {
   token_free(token);
 }
 
+// Get n-th child; Return NULL if index is larger than the number of children
+token_t *ast_get_child(token_t *token, int index) {
+  assert(index >= 0 && token != NULL);
+  token = token->child;
+  while(token != NULL && index-- != 0) token = token->sibling;
+  return token;
+}
+
 // Returns the last inserted node
 token_t *_ast_collect_funcarg(token_t *comma, token_t *token) {
-  assert(comma->child != NULL && comma->child->sibling != NULL);
+  assert(ast_get_child(comma, 0) != NULL && ast_get_child(comma, 1) != NULL);
   token_t *child1 = comma->child, *child2 = child1->sibling;
   if(child1->type != EXP_COMMA) {
     ast_insert_after(token, child2);
