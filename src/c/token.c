@@ -622,6 +622,12 @@ token_t *token_alloc() {
   return token;
 }
 
+token_t *token_alloc_type(token_type_t type) {
+  token_t *token = token_alloc();
+  token->type = type;
+  return token;
+}
+
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
 // Note:
