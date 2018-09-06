@@ -91,9 +91,9 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) return ast_append_child(decl, parse_exp_reduce_all(cxt));
-    if(token->type & DECL_QUAL_MASK) { // Special case for type qualifiers
+    if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
       token_t *top = parse_exp_peek(cxt, OP_STACK);
-      if(top == NULL || top->type != EXP_DEREF) 
+      if(top == NULL || top->type != EXP_DEREF || cxt->last_active_stack != OP_STACK) 
         error_row_col_exit(token->offset, "Qualifier \"%s\" must modify pointer\n", token_symstr(token->type));
       if(!token_decl_compatible(token, top->decl_prop))
         error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
