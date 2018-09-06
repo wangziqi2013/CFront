@@ -1,14 +1,20 @@
 
 #include "error.h"
+#include <setjmp.h>
 
 // This global pointer holds the begin of the text. We use this pointer and 
 // a given pointer to compute the line and column number
 static const char *begin = NULL;
 static int inited = 0;
+// Whether test mode is on. Under test mode, error reporting functions calls 
+// longjmp to jump to a previously set location
+static int testmode = 0;
+jmp_buf env;
 
 // This must be called in order for line number to work
 void error_init(const char *s) { begin = s; inited = 1; }
 void error_free() { inited = 0; }
+void error_testmode(int mode) { testmode = mode; }
 
 // Returns the row and column of a given pointer
 // Note:
