@@ -20,9 +20,9 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   token_t *token = token_get_next(cxt->token_cxt);
   int valid = 1;
   if(token == NULL || 
-     (parse_exp_isempty(cxt, OP_STACK) && (token->type == T_RPAREN || token->type == T_RSPAREN)))
+     (parse_exp_isempty(cxt, OP_STACK) && (token->type == T_RPAREN || token->type == T_RSPAREN))) {
     valid = 0;
-  else
+  } else {
     switch(token->type) {
       case T_LPAREN: {  // If the next symbol constitutes a base type then this is func call
         token_t *lookahead = token_lookahead(cxt->token_cxt, 1);
@@ -32,26 +32,26 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         break;
       }
       case T_RPAREN: {
-        int match_found = 0;
-        for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
-          token_type_t type = ((token_t *)stack_peek_at(cxt->stacks[OP_STACK], i))->type;
-          if(type == T_LPAREN || type == EXP_FUNC_CALL) { match_found = 1; break; }
-        }
-        if(match_found == 0) valid = 0;
-        else token->type = EXP_RPAREN;
-      } break;
+        if(parse_exp_hasmatch(cxt, token)) token->type = EXP_RPAREN;
+        else valid = 0;
+        break;
+      } 
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
-      case T_RSPAREN: token->type = EXP_RSPAREN; break;
+      case T_RSPAREN: {
+        if(parse_exp_hasmatch(cxt, token)) token->type = EXP_RSPAREN;
+        else valid = 0;
+        break;
+      } 
       case T_IDENT: break;
       default: // Only allow DECL_QUAL and identifier
         if(!(token->decl_prop & DECL_QUAL_MASK)) valid = 0;
     }
+  }
   if(!valid) {
     token_pushback(cxt->token_cxt, token);
     return NULL;
-  }
-  return token;
+  } else return token;
 }
 
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 

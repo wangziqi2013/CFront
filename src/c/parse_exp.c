@@ -35,7 +35,7 @@ int parse_exp_hasmatch(parse_exp_cxt_t *cxt, token_t *token) {
   if(token->type == T_RPAREN || token->type == T_RSPAREN) {
     int found = 0;
     for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
-      token_type_t type = (token_t *)stack_peek_at(cxt->stacks[OP_STACK], i)->type;
+      token_type_t type = parse_exp_peek_at(cxt, OP_STACK, i)->type;
       if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) { found = 1; break; }
     }
     return found;
@@ -46,9 +46,8 @@ int parse_exp_hasmatch(parse_exp_cxt_t *cxt, token_t *token) {
 // Literals (incl. ident), operators, and sizeof() could be part of an expression
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
   token_type_t type = token->type;
-  // For closing symbols, i.e. ) and ], they do not count as part of the current 
-  // expression if there is a stop sign at the top of the stack or it's empty
-  if(parse_exp_isempty(cxt, OP_STACK) && (type == T_RPAREN || type == T_RSPAREN)) return 0; 
+  // For closing symbols, i.e. ) and ], there must be a matching ( or [
+  if(!parse_exp_hasmatch(cxt, token)) return 0; 
   return ((type >= T_OP_BEGIN && type < T_OP_END) || 
           (type >= T_LITERALS_BEGIN && type < T_LITERALS_END) || 
           (type == T_SIZEOF));
