@@ -34,6 +34,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
       case T_RPAREN: {
         if(parse_exp_hasmatch(cxt, token)) token->type = EXP_RPAREN;
         else valid = 0;
+        printf("%d\n", parse_exp_hasmatch(cxt, token));
         break;
       } 
       case T_STAR: token->type = EXP_DEREF; break;
@@ -110,8 +111,27 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         else if(op_top != NULL) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
         parse_exp_shift(cxt, AST_STACK, token);
         break;
-      } //case T_
-      default: printf("%s\n", token_typestr(token->type)); assert(0);
+      } 
+      case EXP_ARRAY_SUB: {
+        parse_exp_shift(cxt, OP_STACK, token);
+        token_t *la = token_lookahead(cxt->token_cxt, 1);
+        token_t *index;
+        if(la != NULL && la->type == T_RSPAREN) {
+          index = token_alloc();
+          index->type = T_;
+        } else {
+          parse_exp_recurse(cxt);
+          index = parse_exp(cxt);
+          parse_exp_decurse(cxt);
+        }
+        parse_exp_shift(cxt, AST_STACK, index);
+        parse_exp_reduce(cxt, -1);
+        token_t *temp = token_get_next(cxt->token_cxt);
+        if(temp != NULL && temp->type == T_RSPAREN) token_free(temp);
+        else error_row_col_exit(temp->offset, "Array declaration expects \']\', not \'%s\'\n", token_typestr(token->type));
+        break;
+      }
+      default: printf("%s %s\n", token_typestr(token->type), token->offset); assert(0);
     }
   }
 }
