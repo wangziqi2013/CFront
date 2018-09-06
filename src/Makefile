@@ -1,7 +1,7 @@
 
 CC=gcc
 LD=ld
-CFLAGS=-O0 -g -Wall -Wextra
+CFLAGS=-O0 -g -Wall -Wextra -Werror
 LDFLAGS=
 
 ifeq ($(OPT), 1)
@@ -9,6 +9,9 @@ ifeq ($(OPT), 1)
 endif
 
 all: ./bin/test_parse_exp
+
+test: all
+	./bin/test_parse_exp
 
 ./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o
 	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
