@@ -204,14 +204,14 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
 // Return the next op at stack top; NULL if stack empty
 // If op stack is empty then do nothing, and return NULL to indicate this
 // If the override is -1 then we ignore it
-// If the override is -2 then allow reduction of [ and (, disable them otherwise
-token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override) {
+// If allow_paren is set then [ and ( can be reduced
+token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override, int allow_paren) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   if(parse_exp_isempty(cxt, OP_STACK)) return NULL;
   token_t *top_op = stack_pop(op);
   // Note that '[' and '(' are reduced manually, and this routine could not reduce them
   // Otherwise ( and [ may not be balanced, e.g. (a[0) would be a legal case
-  if(op_num_override != -2 && 
+  if(!allow_paren && 
      (top_op->type == EXP_FUNC_CALL || top_op->type == EXP_LPAREN || top_op->type == EXP_ARRAY_SUB)) 
     error_row_col_exit(top_op->offset, "Symbol \"%s\" unclosed\n", token_typestr(top_op->type));
   int op_num = op_num_override == -1 ? token_get_num_operand(top_op->type) : op_num_override;
@@ -242,7 +242,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
     token_get_property(op_stack_top->type, &top_preced, &top_assoc);
     if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
-    op_stack_top = parse_exp_reduce(cxt, -1);
+    op_stack_top = parse_exp_reduce(cxt, -1, 0);
   }
   return;
 }
@@ -252,7 +252,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
 // or any element on operator stack
 token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
-  while(parse_exp_reduce(cxt, -1) != NULL);
+  while(parse_exp_reduce(cxt, -1, 0) != NULL);
   if(!parse_exp_isempty(cxt, OP_STACK)) {
     error_row_col_exit(parse_exp_peek(cxt, OP_STACK)->offset,
                        "Did not find operand for operator %s\n", 
@@ -278,20 +278,20 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       // pushed immediately followed by ')'
       if(op_top != NULL && cxt->last_active_stack == OP_STACK && op_top->type == EXP_FUNC_CALL) {
         parse_exp_shift(cxt, AST_STACK, token_get_empty());
-        parse_exp_reduce(cxt, -2); // This reduces no argument EXP_FUNC_CALL
+        parse_exp_reduce(cxt, -1, 1); // This reduces no argument EXP_FUNC_CALL
       } else {
         while(op_top != NULL && op_top->type != EXP_FUNC_CALL && op_top->type != EXP_LPAREN) 
-          op_top = parse_exp_reduce(cxt, -1);
+          op_top = parse_exp_reduce(cxt, -1, 0);
         if(op_top == NULL) { error_row_col_exit(token->offset, "Did not find matching \'(\'\n"); }
         else if(op_top->type == EXP_LPAREN) { token_free(stack_pop(op)); } // Left paren is not used in AST
-        else { parse_exp_reduce(cxt, -2); } // This reduces EXP_FUNC_CALL
+        else { parse_exp_reduce(cxt, -1, 1); } // This reduces EXP_FUNC_CALL
       }
       token_free(token); // Right paren is always not used in AST
     } else if(token->type == EXP_RSPAREN) {
       token_t *op_top = parse_exp_peek(cxt, OP_STACK);
-      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1);
+      while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1, 0);
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
-      parse_exp_reduce(cxt, -2); // This reduces '['
+      parse_exp_reduce(cxt, -1, 1); // This reduces '['
       token_free(token);
     } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) {
       token->type = EXP_CAST;
@@ -309,7 +309,7 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       // parser to think an op has been pushed and all following are unary prefix op
       // We need to reduce immediately upon seeing them. This does not affect correctness
       // because these two have the highest priority
-      if(token->type == EXP_POST_DEC || token->type == EXP_POST_INC) parse_exp_reduce(cxt, -1);
+      if(token->type == EXP_POST_DEC || token->type == EXP_POST_INC) parse_exp_reduce(cxt, -1, 0);
     }
   }
 }
