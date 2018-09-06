@@ -1,539 +1,191 @@
 
-#pragma once
+#ifndef _TOKEN_H
+#define _TOKEN_H
 
-#include "common.h"
-#include "allocator.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include "error.h"
+#include "stack.h"
+#include "hashtable.h"
 
-namespace wangziqi2013 {
-namespace cfront {
+// Types of raw tokens. 
+// This enum type does not distinguish between different expression operators, i.e. both
+// unary "plus" and binary "add" is T_PLUS. Extra information such as operator property 
+// is derived
+typedef enum {
+  // Expression token types
+  T_OP_BEGIN = 0,
+  T_LPAREN = 0, T_RPAREN, T_LSPAREN, T_RSPAREN,       // ( ) [ ]
+  T_DOT, T_ARROW,                                     // . ->
+  T_INC, T_DEC, T_PLUS, T_MINUS,                      // ++ -- + -
+  T_LOGICAL_NOT = 10, T_BIT_NOT,                      // ! ~
+  T_STAR, T_AND,                                      // * &
+  T_DIV, T_MOD,                                       // / %
+  T_LSHIFT, T_RSHIFT,                                 // << >>
 
-enum class TokenType {
-  // This is a placeholder
-  T_INVALID = 0,
+  T_LESS, T_GREATER, T_LEQ = 20, T_GEQ, T_EQ, T_NEQ,  // < > <= >= == !=
+  T_BIT_XOR, T_BIT_OR,                                // ^ |
+  T_LOGICAL_AND, T_LOGICAL_OR,                        // && ||
+  T_QMARK, T_COLON,                                   // ? :
+  T_ASSIGN = 30,                                      // =
+  T_PLUS_ASSIGN, T_MINUS_ASSIGN, T_MUL_ASSIGN,        // = += -= *=
+  T_DIV_ASSIGN, T_MOD_ASSIGN,                         // /= %=
+  T_LSHIFT_ASSIGN, T_RSHIFT_ASSIGN,                   // <<= >>=
+  T_AND_ASSIGN, T_OR_ASSIGN, T_XOR_ASSIGN = 40,       // &= |= ^=
+  T_COMMA,                                            // ,
+  T_OP_END,
+
+  T_LCPAREN,            // {
+  T_RCPAREN,            // }
+  T_SEMICOLON,          // ;
+  T_ELLIPSIS,           // ...
   
-  // The following is keyword types
-  T_AUTO = 1,
-  
-  T_BREAK = 2,
-  
-  T_CASE = 3,
-	T_CHAR,
-	T_CONST,
-	T_CONTINUE,
-	
-	T_DEFAULT = 7,
-	T_DO,
-	T_DOUBLE,
-	
-	T_ELSE = 10,
-	T_ENUM,
-	T_EXTERN,
-	
-	T_FLOAT = 13,
-	T_FOR,
-	
-	T_GOTO = 15,
-	
-	T_IF = 16,
-	T_INT,
-	
-	T_LONG = 18,
-	
-	T_REGISTER = 19,
-	T_RETURN,
-	
-	T_SHORT = 21,
-	T_SIGNED,
-	// T_SIZEOF -> This is part of the expression system
-	T_STATIC,
-	T_STRUCT,
-	T_SWITCH,
-	
-	T_TYPEDEF = 26,
-	
-	T_UNION = 27,
-	T_UNSIGNED,
-	
-	T_VOID = 29,
-	T_VOLATILE,
-	
-	T_WHILE = 31,
-	
-	// The following are compound types
-	//
-	// unsigned char, unsigned short, unsigned int and unsigned long
-	// should be treated as one unit instead of two type structs
-	// Since they are represented as a single type rather than unsigned type
-	// of a known type
-  T_UCHAR = 40,
-  T_USHORT,
-  T_UINT,
-  T_ULONG,
-	
-	// The following are types with data (literal token type)
-	
-	T_IDENT = 80,   // Identifier
-  T_INT_CONST,    // Integer constant (should be of the same length as unsigned long)
-  T_STRING_CONST, // String literal
-  T_CHAR_CONST,   // Character literal
+  // Literal types (i.e. primary expressions)
+  T_LITERALS_BEGIN = 200,
+  T_DEC_INT_CONST = 200, T_HEX_INT_CONST, T_OCT_INT_CONST,
+  T_CHAR_CONST, T_STR_CONST,
+  T_FLOAT_CONST,
+  T_IDENT,
+  T_LITERALS_END,
 
-	// The following are primitive operator types
-	
-	T_INC = 100,
-	T_DEC,
-	T_LPAREN,
-	T_RPAREN,
-  T_RSPAREN,
-  T_LSPAREN,
-  T_RCPAREN,
-  T_LCPAREN,
-  T_DOT,
-  T_ARROW,
-  T_PLUS = 110,
-  T_MINUS,
-  T_NOT,
-  T_BITNOT,
-  T_STAR,
-  T_AMPERSAND,
-  T_DIV,
-  T_MOD,
-  T_LSHIFT,
-  T_RSHIFT,
-  T_LESS = 120,
-  T_LESSEQ,
-  T_GREATER,
-  T_GREATEREQ,
-  T_EQ,
-  T_NOTEQ,
-  T_BITXOR,
-  T_BITOR,
-  T_AND,
-  T_OR,
-  T_QMARK = 130,
-  T_COMMA,
-  T_COLON,
-  T_SEMICOLON,
-  T_SQUOTE,
-  T_DQUOTE,
-  T_ASSIGN,
-  T_PLUS_ASSIGN,
-  T_MINUS_ASSIGN,
-  T_STAR_ASSIGN,
-  T_DIV_ASSIGN = 140,
-  T_MOD_ASSIGN,
-  T_LSHIFT_ASSIGN,
-  T_RSHIFT_ASSIGN,
-  T_AMPERSAND_ASSIGN,
-  T_BITXOR_ASSIGN,
-  T_BITOR_ASSIGN,
-  T_SIZEOF = 147,
-  
-  // This is a primitive keyword that is used to indicate 
-  // varargs in C
-  // This is neither a keyword nor an operator, in a sense that
-  // on one hand it is not parsed as a keyword, and on the other hand
-  // it does not have operator attributes related to it
-  T_ELLIPSIS = 148,
-  
-  // The following are operator types for overloading in C
-  // e.g. ++ and -- have pre- and post-fix form
-  
-  // ++
-  T_POST_INC = 200,
-  T_PRE_INC = 201,
-  
-  // --
-  T_POST_DEC = 202,
-  T_PRE_DEC = 203,
+  // Add this to the index of keywords in the table
+  T_KEYWORDS_BEGIN = 1000,
+  T_AUTO = 1000, T_BREAK, T_CASE, T_CHAR, T_CONST, T_CONTINUE, T_DEFAULT, T_DO,
+  T_DOUBLE, T_ELSE, T_ENUM, T_EXTERN, T_FLOAT, T_FOR, T_GOTO, T_IF,
+  T_INT, T_LONG, T_REGISTER, T_RETURN, T_SHORT, T_SIGNED, T_SIZEOF, T_STATIC,
+  T_STRUCT, T_SWITCH, T_TYPEDEF, T_UNION, T_UNSIGNED, T_VOID, T_VOLATILE, T_WHILE,
+  T_KEYWORDS_END,
 
-  // *
-  T_MULT = 204,
-  T_DEREF = 205,
+  // AST type used within an expression (51 elements)
+  EXP_BEGIN = 2000,
+  EXP_FUNC_CALL = 2000, EXP_ARRAY_SUB,      // func() array[]
+  EXP_LPAREN, EXP_RPAREN,                   // ( and ) as parenthesis
+  EXP_RSPAREN,                              // ]
+  EXP_DOT, EXP_ARROW,                       // obj.field ptr->field
+  EXP_POST_INC, EXP_PRE_INC,                // x++ x++
+  EXP_POST_DEC, EXP_PRE_DEC,                // x-- --x
+  EXP_PLUS, EXP_MINUS,                      // +x -x
+  EXP_LOGICAL_NOT, EXP_BIT_NOT,             // !exp ~exp
+  EXP_CAST,                                 // (type)
+  EXP_DEREF, EXP_ADDR,                      // *ptr &x
+  EXP_SIZEOF,                               // sizeof(type/name)
+  EXP_MUL, EXP_DIV, EXP_MOD,                // binary * / %
+  EXP_ADD, EXP_SUB,                         // binary + -
+  EXP_LSHIFT, EXP_RSHIFT,                   // << >>
+  EXP_LESS, EXP_GREATER, EXP_LEQ, EXP_GEQ,  // < > <= >=
+  EXP_EQ, EXP_NEQ,                          // == !=
+  EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,     // binary & | ^
+  EXP_LOGICAL_AND, EXP_LOGICAL_OR,          // && ||
+  EXP_COND, EXP_COLON,                      // ? :
+  EXP_ASSIGN,                               // =
+  EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,           // += -=
+  EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
+  EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
+  EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,     // <<= >>=
+  EXP_COMMA,                                // ,
+  EXP_END,
 
-  // &
-  T_ADDR = 206,
-  T_BITAND = 207,
-  
-  // -
-  T_NEG = 208,
-  T_SUBTRACTION = 209,
-  
-  // +
-  T_POS = 210,
-  T_ADDITION = 211,
-  
-  // Prefix "(" is parsed as parenthesis, postfix ( is function call
-  // Though prefix ( could also be type cast, that requires some
-  // type checking.
-  T_PAREN = 212,
-  T_TYPECAST = 213,
-  T_FUNCCALL = 214,
-  
-  // []
-  T_ARRAYSUB = 215,
-  
-  // This one is artificial: function arguments
-  // Since T_FUNCCALL only has 2 parameters, we need to group all its
-  // arguments into one syntax node, otherwise the reduce functuon would not be
-  // able to know how many value node should it reduce
-  T_FUNCARG = 216,
-  
-};
+  T_UDEF,                         // User-defined type using type-def; they are not identifiers
+  T_DECL, T_ABS_DECL, T_BASETYPE, // Root node of a declaration
+  T_,                             // Placeholder
 
-/////////////////////////////////////////////////////////////////////
-// enum class TokenType ends
-/////////////////////////////////////////////////////////////////////
+  T_ILLEGAL = 10000,    // Mark a return value
+} token_type_t;
 
-// This defines the evaluation order of operators in the same
-// precedence level
-// i.e. associativity
-enum class EvalOrder {
-  LEFT_TO_RIGHT = 0,
-  RIGHT_TO_LEFT,
-};
+// Declaration properties, see below
+typedef uint32_t decl_prop_t;
+#define TOKEN_ISLOOKAHEAD  0x00000001 // Tracks whether the node is returned as a lookahead node
+#define DECL_NULL          0x00000000
+#define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
+// Type related bit mask (bit 4, 5, 6, 7); Note that these are signed, even for incompatible types
+#define DECL_TYPE_MASK     0x000000F0
+#define DECL_CHAR     0x00000010 // Make sure integer types are in a consecutive range
+#define DECL_SHORT    0x00000020
+#define DECL_INT      0x00000030
+#define DECL_LONG     0x00000040
+#define DECL_ENUM     0x00000050
+#define DECL_STRUCT   0x00000060
+#define DECL_UNION    0x00000070
+#define DECL_UDEF     0x00000080 // User defined using typedef
+#define DECL_FLOAT    0x00000090
+#define DECL_DOUBLE   0x000000A0
+#define DECL_VOID     0x000000B0
+// Storage class bit mask (bit 8, 9, 10, 11)
+#define DECL_STGCLS_MASK      0x00000F00
+#define DECL_TYPEDEF   0x00000100
+#define DECL_EXTERN    0x00000200
+#define DECL_AUTO      0x00000300
+#define DECL_REGISTER  0x00000400
+#define DECL_STATIC    0x00000500
+// Type qualifier bit mask (bit 12, 13); Note that these two are compatible
+#define DECL_QUAL_MASK     0x00003000
+#define DECL_VOLATILE_MASK 0x00001000
+#define DECL_CONST_MASK    0x00002000
+// Signed and unsigned mask (bit 14, 15); Both set means do not allow sign
+#define DECL_SIGN_MASK     0x0000C000
+#define DECL_UNSIGNED      0x00008000
+#define DECL_SIGNED        0x0000C000
+// All together, if any of these bits are present, then it is a declaration keyword
+#define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK | DECL_SIGN_MASK)
 
-/*
- * struct TokenTypeHasher - Hash function for enum class
- */
-struct TokenTypeHasher {
-  inline size_t operator()(const TokenType &tt) const {
-    return static_cast<size_t>(tt);
-  }
-};
-
-/*
- * struct TokenTypeEq - Comparison function for enum class
- */
-struct TokenTypeEq {
-  inline bool operator()(const TokenType &tt1, const TokenType &tt2) const {
-    return static_cast<int>(tt1) == static_cast<int>(tt2);
-  }
-};
-
-/////////////////////////////////////////////////////////////////////
-// struct OpInfo
-/////////////////////////////////////////////////////////////////////
-
-/*
- * struct OpInfo - Stores information about operators including
- *                 precedence, associativity and number of operands
- */
-struct OpInfo {
-  // The smaller the higher
-  int precedence;
-  
-  // -1 for parenthesis, positive number for all others
-  int operand_num;
-  
-  // Associativity is used to resolve shift-reduce conflict
-  // when the precedence is the same
-  EvalOrder associativity;
-  
-  // Whether the operator is postfix unary operator
-  // This is used to determine whether the operator after
-  // this one is postfix or prefix
-  bool is_postfix_unary;
-};
-
-/////////////////////////////////////////////////////////////////////
-// struct OpInfo ends
-/////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////
-// class TokenInfo
-/////////////////////////////////////////////////////////////////////
-
-/*
- * class TokenInfo - This is the helper class that facilitates tokenizer and
- *                   syntax analyzer
- */
-class TokenInfo {
- public:
-  using keyword_map_value_type = std::pair<std::string, TokenType>;
-  using keyword_map_type = std::unordered_map<std::string, TokenType>;
-
-  // The value type used in operator map
-  using op_map_value_type = \
-    std::pair<TokenType, OpInfo>;
-    
-  using op_map_type = \
-    std::unordered_map<TokenType,
-                       OpInfo,
-                       TokenTypeHasher,
-                       TokenTypeEq>;
-                       
-  // The next two are used in token name map that maps token to string name
-  using token_name_map_value_type = std::pair<TokenType, std::string>;
-  using token_name_map_type = \
-    std::unordered_map<TokenType,
-                       std::string,
-                       TokenTypeHasher,
-                       TokenTypeEq>;
-
-  static const keyword_map_type keyword_map;
-  static const op_map_type op_map;
-  // This is used for debugging and error reporting
-  static const token_name_map_type token_name_map;
-  
-  // This stored token types that represent built-in type
-  static const std::unordered_set<TokenType,
-                                  TokenTypeHasher,
-                                  TokenTypeEq> builtin_type_set;
-  
-  /*
-   * GetOpInfo() - Return the struct of (precedence, op count, associativity)
-   *               of a specific operator
-   *
-   * If the operator is not found then it implies the type is not part of
-   * an expression, and if we are parsing an expression then probably
-   * it is the end of an expression
-   *
-   * We return a constant pointer to the structure
-   */
-  static const OpInfo *GetOpInfo(TokenType type) {
-    auto it = TokenInfo::op_map.find(type);
-    
-    // If does not find then return nullptr to indicate this
-    // is not a valid operator type
-    //
-    // This branch is useful since
-    if(it == TokenInfo::op_map.end()) {
-      return nullptr;
-    }
-    
-    return &it->second;
-  }
-  
-  /*
-   * GetTokenName() - Given a token type, return the name of that type
-   *
-   * The name is returned in a constant string reference form
-   */
-  static const std::string &GetTokenName(TokenType type) {
-    auto it = TokenInfo::token_name_map.find(type);
-
-    // Just avoid using unseen tokens in the program
-    assert(it != TokenInfo::token_name_map.end());
-
-    return it->second;
-  }
-  
-};
-
-/////////////////////////////////////////////////////////////////////
-// class TokenInfo ends
-/////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////
-// class Token
-/////////////////////////////////////////////////////////////////////
-
-/*
- * class Token - Main class to represent lexicon
- */
-class Token {
-  friend class SlabAllocator<Token>;
- private:
-  TokenType type;
-  
+typedef struct token_t {
+  token_type_t type;
+  char *str;
+  struct token_t *child;
   union {
-    // Integer constant
-    unsigned long int_const;
-    
-    // char constant
-    char char_const;
-    
-    // String constant
-    std::string *string_const_p;
-    
-    // Identifier
-    std::string *ident_p;
-  } data;
+    struct token_t *sibling; // If token is in AST then use child-sibling representation
+    struct token_t *next;    // If token is in pushbacks queue then form a circular queue
+  };
   
-  // Static data member to allocate node from a slab allocator
-  static SlabAllocator<Token> allocator;
+  char *offset;              // The offset in source file, for debugging
+  decl_prop_t decl_prop;     // Property if the kwd is part of declaration; Set when a kwd is found
+} token_t;
 
-  /*
-   * Constructor() - Construct a token object with corresponding type
-   *
-   * We choose not to set data here since it is a union
-   */
-  Token(TokenType p_type) :
-    type{p_type} {
-    // This will also clear the pointer
-    data.int_const = 0;
-    
-    assert(data.ident_p == nullptr);
-    assert(data.string_const_p == nullptr);
-  }
-  
-  /*
-   * Destructor - Frees the pointer if there is one
-   *
-   * The ownership of the pointer stored as identifier or string constant
-   * belongs to Token object
-   *
-   * This is made private to prevent being deleted by something other than
-   * the SlabAllocator
-   */
-  ~Token() {
-    // In both case the target is a string pointer
-    // so we could just delete it without distinguishing
-    // further on its type
-    if(type == TokenType::T_IDENT || \
-       type == TokenType::T_STRING_CONST) {
-         
-      // If we destruct the string in exception handler
-      // then the pointer is nullptr since during construction
-      // we set it to nullptr and it has not been filled with anything
-      if(data.string_const_p != nullptr) {
-        delete data.string_const_p;
-      }
-    }
-    
-    return;
-  }
+typedef struct {
+  hashtable_t *udef_types;   // Auto detected when lexing T_IDENT
+  token_t *pushbacks;        // Unused look-ahead symbols
+  int pb_num;                // Number of pushbacks
+  int ignore_pb;             // Whether to ignore pushbacked tokens
+  char *s;                   // Current read position
+} token_cxt_t;
 
- public:
+typedef enum {
+  ASSOC_LR, ASSOC_RL,
+} assoc_t;
 
-  /*
-   * SetType() - Assigns a new type to the token
-   *
-   * This is necessary since we need to resolve ambiguity during parsing
-   * with operator types. e.g. "*" could either be used as multiplication
-   * or be used as pointer dereference operator
-   */
-  void SetType(TokenType p_type) {
-    type = p_type;
-    
-    return;
-  }
-  
-  /*
-   * GetType() - Returns the type of the token
-   */
-  TokenType GetType() const {
-    return type;
-  }
-  
-  /*
-   * SetIntConst() - Set a integer constant number to this object
-   *
-   * This function requires that the token type must be T_INT_CONST
-   */
-  void SetIntConst(unsigned long p_int_const) {
-    assert(type == TokenType::T_INT_CONST);
-    
-    data.int_const = p_int_const;
-    
-    return;
-  }
-  
-  /*
-   * GetIntConst() - Returns the integer constant
-   */
-  unsigned long GetIntConst() const {
-    assert(type == TokenType::T_INT_CONST);
-    
-    return data.int_const;
-  }
-  
-  /*
-   * SetCharConst() - Set a char constant to this object
-   *
-   * This function requires that the token must be of T_CHAR_CONST
-   */
-  void SetCharConst(char p_char_const) {
-    assert(type == TokenType::T_CHAR_CONST);
-    
-    data.char_const = p_char_const;
-    
-    return;
-  }
-  
-  /*
-   * GetCharConst() - Returns a char constant
-   */
-  char GetCharConst() const {
-    assert(type == TokenType::T_CHAR_CONST);
-    
-    return data.char_const;
-  }
-  
-  /*
-   * SetStringConst() - Set a string constant to this object
-   *
-   * This function requires that the token must be of T_STRING_CONST
-   */
-  void SetStringConst(std::string *p_string_const_p) {
-    assert(type == TokenType::T_STRING_CONST);
+extern const char *keywords[32];
+extern uint32_t kwd_props[32];
+extern int precedences[51];
 
-    data.string_const_p = p_string_const_p;
+token_cxt_t *token_cxt_init(char *input);
+void token_cxt_free(token_cxt_t *cxt);
+token_t *token_get_empty();
+void token_add_utype(token_cxt_t *cxt, token_t *token);
+int token_isutype(token_cxt_t *cxt, token_t *token);
+int token_decl_compatible(token_t *token, decl_prop_t decl_prop);
+decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop);
+char *token_decl_print(decl_prop_t decl_prop);
+void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
+int token_get_num_operand(token_type_t type);
+token_type_t token_get_keyword_type(const char *s);
+const char *token_typestr(token_type_t type);
+const char *token_symstr(token_type_t type);
+char *token_get_op(char *s, token_t *token);
+void token_copy_literal(token_t *token, const char *begin, const char *end);
+void token_free_literal(token_t *token);
+void token_free(token_t *token);
+token_t *token_alloc();
+token_t *token_alloc_type(token_type_t type);
+char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token);
+char *token_get_int(char *s, token_t *token);
+char *token_get_str(char *s, token_t *token, char closing);
+token_t *token_get_next(token_cxt_t *cxt);
+int token_consume_type(token_cxt_t *cxt, token_type_t type);
+void token_pushback(token_cxt_t *cxt, token_t *token);
+token_t *token_lookahead(token_cxt_t *cxt, int num);
 
-    return;
-  }
-  
-  /*
-   * GetStringConst() - Returns the string pointer
-   */
-  std::string *GetStringConst() const {
-    assert(type == TokenType::T_STRING_CONST);
-    
-    return data.string_const_p;
-  }
-  
-  /*
-   * SetIdentifier() - Set an identifier string to this object
-   *
-   * This function requires that the token must be of T_IDENT
-   */
-  void SetIdentifier(std::string *p_ident_p) {
-    assert(type == TokenType::T_IDENT);
-
-    data.ident_p = p_ident_p;
-
-    return;
-  }
-  
-  /*
-   * GetIdentifier() - Returns the identifier string object
-   */
-  std::string *GetIdentifier() const {
-    assert(type == TokenType::T_IDENT);
-
-    return data.ident_p;
-  }
-  
-  /*
-   * ToString() - Convert the token node to string representation
-   *
-   * There is no trailing '\n' attached with the string
-   */
-  std::string ToString() const {
-    const std::string &name = TokenInfo::GetTokenName(type);
-    
-    if(type == TokenType::T_IDENT) {
-      return name + ' ' + *GetIdentifier();
-    } else if(type == TokenType::T_STRING_CONST) {
-      return name + ' ' + *GetStringConst();
-    } else if(type == TokenType::T_INT_CONST) {
-      return name + ' ' + std::to_string(GetIntConst());
-    } else if(type == TokenType::T_CHAR_CONST) {
-      return name + ' ' + \
-             std::to_string(static_cast<int>(GetCharConst()));
-    } else {
-      return name;
-    }
-  }
-  
-  /*
-   * Get() - static function to construct a token node object
-   */
-  template <typename ...Args>
-  static Token *Get(Args&&... args) {
-    return Token::allocator.Get(args...);
-  }
-};
-
-} // namespace cfront
-} // namespace wangziqi2013
+#endif
