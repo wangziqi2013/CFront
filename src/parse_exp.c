@@ -29,17 +29,20 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
   return;
 }
 
+// Whether the current level is the outter most, i.e. not inside any ( or [
+int parse_exp_outermost(parse_exp_cxt_t *cxt) {
+  int found = 0;
+  for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
+    token_type_t type = parse_exp_peek_at(cxt, OP_STACK, i)->type;
+    if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) { found = 1; break; }
+  }
+  return !found;
+}
+
 // Whether a ) or ] belongs to the current level. If no matching ( or [ is found
 // then it is not a closing
 int parse_exp_hasmatch(parse_exp_cxt_t *cxt, token_t *token) {
-  if(token->type == T_RPAREN || token->type == T_RSPAREN) {
-    int found = 0;
-    for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
-      token_type_t type = parse_exp_peek_at(cxt, OP_STACK, i)->type;
-      if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) { found = 1; break; }
-    }
-    return found;
-  } else return 1;
+  return (token->type == T_RPAREN || token->type == T_RSPAREN) ? !parse_exp_outermost(cxt) : 1;
 }
 
 // Determine if a token could continue an expression currently being parsed

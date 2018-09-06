@@ -20,6 +20,7 @@ typedef struct {
 
 parse_exp_cxt_t *parse_exp_init(char *input);
 void parse_exp_free(parse_exp_cxt_t *cxt);
+int parse_exp_outermost(parse_exp_cxt_t *cxt);
 int parse_exp_hasmatch(parse_exp_cxt_t *cxt, token_t *token);
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token);
 int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token);
