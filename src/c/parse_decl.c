@@ -128,7 +128,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
           parse_exp_decurse(cxt);
         }
         parse_exp_shift(cxt, AST_STACK, index);
-        parse_exp_reduce(cxt, -1);
+        parse_exp_reduce(cxt, -1, 1); // This reduces array sub
         if(!token_consume_type(cxt->token_cxt, T_RSPAREN)) 
           error_row_col_exit(token->offset, "Array declaration expects \']\'\n");
         break;
@@ -149,13 +149,13 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
             else error_row_col_exit(token->offset, "Function declaration expects \")\" or \",\"");
           }
         }
-        parse_exp_reduce(cxt, 1);
+        parse_exp_reduce(cxt, 1, 1); // This reduces EXP_FUNC_CALL
         break;
       }
       case EXP_LPAREN: parse_exp_shift(cxt, OP_STACK, token); break;
       case EXP_RPAREN: {
         token_t *op_top = parse_exp_peek(cxt, OP_STACK);
-        while(op_top != NULL && op_top->type != EXP_LPAREN) op_top = parse_exp_reduce(cxt, -1);
+        while(op_top != NULL && op_top->type != EXP_LPAREN) op_top = parse_exp_reduce(cxt, -1, 0);
         if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'(\' in declaration\n");
         token_free(stack_pop(cxt->stacks[OP_STACK]));
         token_free(token);
