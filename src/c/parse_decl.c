@@ -163,7 +163,12 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         break;
       }
       case EXP_LPAREN: parse_exp_shift(cxt, OP_STACK, token); break;
-      case EXP_RPAREN: 
+      case EXP_RPAREN: {
+        token_t *op_top = parse_exp_peek(cxt, OP_STACK);
+        while(op_top != NULL && op_top->type != EXP_LPAREN) op_top = parse_exp_reduce(cxt, -1);
+        if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'(\' in declaration\n");
+        token_free(stack_pop(cxt->stacks[OP_STACK]));
+      }
       default: printf("%s %s\n", token_typestr(token->type), token->offset); assert(0);
     }
   }
