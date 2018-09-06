@@ -32,7 +32,13 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         break;
       }
       case T_RPAREN: {
-        token->type = EXP_RPAREN;
+        int match_found = 0;
+        for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
+          token_type_t type = ((token_t *)stack_peek_at(cxt->stacks[OP_STACK], i))->type;
+          if(type == T_LPAREN || type == EXP_FUNC_CALL) { match_found = 1; break; }
+        }
+        if(match_found == 0) valid = 0;
+        else token->type = EXP_RPAREN;
       } break;
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
