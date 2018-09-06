@@ -99,8 +99,9 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
                            token_symstr(token->type), token_decl_print(top->decl_prop));
       top->decl_prop = token_decl_apply(token, top->decl_prop);
-      // TODO: THIS DOES NOT WORK
-      ast_push_child(top, token);
+      // We have decl_prop, so just free const and volatile nodes
+      //ast_push_child(top, token);
+      token_free(token);
       continue;
     }
     switch(token->type) {

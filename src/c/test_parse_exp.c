@@ -6,6 +6,7 @@
 #include "error.h"
 #include "ast.h"
 #include "parse_exp.h"
+#include "parse_decl.h"
 #include "hashtable.h"
 
 void test_stack() {
@@ -325,6 +326,20 @@ void test_token_lookahead() {
   return;
 }
 
+void test_parse_decl() {
+  printf("=== Test parse_decl ===\n");
+  char test1[] = "(void const * const ( *const named_decl[16]) (void a, int *[]) )";
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  cxt = parse_exp_init(test1);
+  token = parse_decl(cxt);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -336,5 +351,6 @@ int main() {
   test_ht();
   test_decl_prop();
   test_token_lookahead();
+  test_parse_decl();
   return 0;
 }
