@@ -34,7 +34,6 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
       case T_RPAREN: {
         if(parse_exp_hasmatch(cxt, token)) token->type = EXP_RPAREN;
         else valid = 0;
-        printf("%d\n", parse_exp_hasmatch(cxt, token));
         break;
       } 
       case T_STAR: token->type = EXP_DEREF; break;
@@ -89,9 +88,14 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
   token_t *empty = token_alloc();
   empty->type = T_;
   parse_exp_shift(cxt, AST_STACK, empty);
+  token_t *decl_name = NULL;
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
-    if(token == NULL) return ast_append_child(decl, parse_exp_reduce_all(cxt));
+    if(token == NULL) {
+      ast_append_child(decl, parse_exp_reduce_all(cxt));
+      if(decl_name) ast_append_child(decl, decl_name);
+      return decl;
+    }
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
       token_t *top = parse_exp_peek(cxt, OP_STACK);
       if(top == NULL || top->type != EXP_DEREF || cxt->last_active_stack != OP_STACK) 
@@ -100,16 +104,21 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
                            token_symstr(token->type), token_decl_print(top->decl_prop));
       top->decl_prop = token_decl_apply(token, top->decl_prop);
+      // TODO: THIS DOES NOT WORK
       ast_push_child(top, token);
       continue;
     }
     switch(token->type) {
       case EXP_DEREF: parse_exp_shift(cxt, OP_STACK, token); break;
       case T_IDENT: {
-        token_t *op_top = parse_exp_peek(cxt, AST_STACK);
-        if(op_top != NULL && op_top->type == T_) token_free(stack_pop(cxt->stacks[AST_STACK]));
-        else if(op_top != NULL) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
+        if(decl_name) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
+        decl_name = token;
+        /* Is the above sufficient?
+        token_t *ast_top = parse_exp_peek(cxt, AST_STACK);
+        if(ast_top != NULL && ast_top->type == T_) token_free(stack_pop(cxt->stacks[AST_STACK]));
+        else if(ast_top != NULL) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
         parse_exp_shift(cxt, AST_STACK, token);
+        */
         break;
       } 
       case EXP_ARRAY_SUB: {
@@ -130,28 +139,31 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
           error_row_col_exit(token->offset, "Array declaration expects \']\'\n");
         break;
       }
-      case EXP_FUNC_CALL: { /*
+      case EXP_FUNC_CALL: {
         parse_exp_shift(cxt, OP_STACK, token);
         token_t *la = token_lookahead(cxt->token_cxt, 1);
-        token_t *args;
+        token_t *arg;
         if(la != NULL && la->type == T_RPAREN) {
-          index = token_alloc();
-          index->type = T_;
+          arg = token_alloc();
+          arg->type = T_;
+          ast_push_child(token, arg);
+          token_consume_type(cxt->token_cxt, T_RPAREN);
         } else {
-          parse_exp_recurse(cxt);
-          index = parse_decl(cxt);
-          parse_exp_decurse(cxt);
+          while(1) {
+            parse_exp_recurse(cxt);
+            arg = parse_decl(cxt);
+            parse_exp_decurse(cxt);
+            ast_append_child(token, arg);
+            if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
+            else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
+            else error_row_col_exit(token->offset, "Function declaration expects \")\" or \",\"");
+          }
         }
-        parse_exp_shift(cxt, AST_STACK, index);
-        parse_exp_reduce(cxt, -1);
-        token_t *temp = token_get_next(cxt->token_cxt);
-        if(temp != NULL && temp->type == T_RSPAREN) token_free(temp);
-        else { 
-          if(temp == NULL) { error_row_col_exit(token->offset, "Array declaration unclosed\n"); }
-          else { error_row_col_exit(temp->offset, "Array declaration expects \']\', not \'%s\'\n", token_typestr(temp->type)); }
-        }
-        break;*/
+        parse_exp_reduce(cxt, 1);
+        break;
       }
+      case EXP_LPAREN: parse_exp_shift(cxt, OP_STACK, token); break;
+      case EXP_RPAREN: 
       default: printf("%s %s\n", token_typestr(token->type), token->offset); assert(0);
     }
   }
