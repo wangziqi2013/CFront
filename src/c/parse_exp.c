@@ -297,7 +297,10 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       ast_append_child(token, decl);
       token_t *temp = token_get_next(cxt->token_cxt);
       if(temp != NULL && temp->type == T_RPAREN) token_free(temp);
-      else error_row_col_exit(temp->offset, "Type cast expects a right parenthesis, not %s\n", token_typestr(token->type)); 
+      else {
+        if(temp == NULL) { error_row_col_exit(token->offset, "Type cast unclosed\n"); }
+        else { error_row_col_exit(temp->offset, "Type cast expects \")\", not \"%s\"\n", token_typestr(temp->type)); }
+      }
     } else {
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);

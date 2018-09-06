@@ -50,7 +50,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
     }
   }
   if(!valid) {
-    token_pushback(cxt->token_cxt, token);
+    if(token != NULL) token_pushback(cxt->token_cxt, token);
     return NULL;
   } else return token;
 }
@@ -128,9 +128,13 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         parse_exp_reduce(cxt, -1);
         token_t *temp = token_get_next(cxt->token_cxt);
         if(temp != NULL && temp->type == T_RSPAREN) token_free(temp);
-        else error_row_col_exit(temp->offset, "Array declaration expects \']\', not \'%s\'\n", token_typestr(token->type));
+        else { 
+          if(temp == NULL) { error_row_col_exit(token->offset, "Array declaration unclosed\n"); }
+          else { error_row_col_exit(temp->offset, "Array declaration expects \']\', not \'%s\'\n", token_typestr(temp->type)); }
+        }
         break;
       }
+      case EXP_FUNC_CALL:
       default: printf("%s %s\n", token_typestr(token->type), token->offset); assert(0);
     }
   }
