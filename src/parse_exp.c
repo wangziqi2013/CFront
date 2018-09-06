@@ -82,8 +82,7 @@ token_t *parse_exp_peek_at(parse_exp_cxt_t *cxt, int stack_id, int index) {
   return parse_exp_isempty(cxt, stack_id) ? NULL : (token_t *)stack_peek_at(cxt->stacks[stack_id], index);
 }
 
-// Whether the stack is empty, either because it is empty, or the topmost element
-// is the stop token
+// Whether the stack is empty
 int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id) {
   return parse_exp_size(cxt, stack_id) == 0;
 }
@@ -184,18 +183,16 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
                                   token_symstr(token->type));
     }
   }
-
   return token;
 }
 
 void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   assert(stack_id == OP_STACK || stack_id == AST_STACK);
-  //printf("Shift %s into %d\n", token_typestr(token->type), stack_id);
   stack_push(cxt->stacks[stack_id], token);
   cxt->last_active_stack = stack_id;
   if(stack_id == AST_STACK) {
     switch(token->type) {
-      case EXP_FUNC_CALL: ast_collect_funcarg(token); break;
+      case EXP_FUNC_CALL: ast_collect_funcarg(token); break; // For decl this function does nothing
       case EXP_COND: ast_movecond(token); break;
       default: break;
     }
@@ -205,15 +202,15 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
 
 // One reduce step of the topmost operator
 // Return the next op at stack top; NULL if stack empty
-// If op stack is empty then do nothing, and return NULL to indicate this
+// If op stack is empty then do nothing, and return NULL
 // If the override is -1 then we ignore it
 // If allow_paren is set then [ and ( can be reduced
 token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override, int allow_paren) {
   stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   if(parse_exp_isempty(cxt, OP_STACK)) return NULL;
   token_t *top_op = stack_pop(op);
-  // Note that '[' and '(' are reduced manually, and this routine could not reduce them
-  // Otherwise ( and [ may not be balanced, e.g. (a[0) would be a legal case
+  // Note that '[' and '(' are reduced manually, and this function could not reduce them
+  // Otherwise ( and [ may not be balanced, e.g. (a[0) would be allowed
   if(!allow_paren && 
      (top_op->type == EXP_FUNC_CALL || top_op->type == EXP_LPAREN || top_op->type == EXP_ARRAY_SUB)) 
     error_row_col_exit(top_op->offset, "Symbol \"%s\" unclosed\n", token_typestr(top_op->type));
@@ -235,6 +232,9 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override, int allow_p
 // on the associativity) the given token, or the stack becomes empty
 // Note:
 //   1. Higher precedence has lower numerical number
+//   2. Precedence reduction must not cross array sub and function call, otherwise 
+//      expression a[b--] will reduce a[b first and then -- because they are both precedence 0
+//      and are left-associative
 void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
   int preced; assoc_t assoc;
   int top_preced; assoc_t top_assoc;
@@ -246,6 +246,7 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
     if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
     op_stack_top = parse_exp_reduce(cxt, -1, 0);
+    printf("Reduce %s\n", token_typestr(parse_exp_peek(cxt, AST_STACK)->type));
   }
   return;
 }
@@ -254,17 +255,16 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
 // Report error if in the final state there are more than one element on AST stack
 // or any element on operator stack
 token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
-  stack_t *ast = cxt->stacks[AST_STACK], *op = cxt->stacks[OP_STACK];
   while(parse_exp_reduce(cxt, -1, 0) != NULL);
   if(!parse_exp_isempty(cxt, OP_STACK)) {
     error_row_col_exit(parse_exp_peek(cxt, OP_STACK)->offset,
                        "Did not find operand for operator %s\n", 
-                       token_typestr(((token_t *)stack_peek(op))->type));
+                       token_typestr(parse_exp_peek(cxt, OP_STACK)->type));
   } else if(parse_exp_size(cxt, AST_STACK) != 1) {
     error_row_col_exit(parse_exp_peek(cxt, AST_STACK)->offset,
-                       "Missing operator for the entity\n"); // TODO: MAKE IT MORE MEANINGFUL
+                       "Missing operator for the entity\n");
   } 
-  return (token_t *)stack_pop(ast);
+  return (token_t *)stack_pop(cxt->stacks[AST_STACK]);
 }
 
 token_t *parse_exp(parse_exp_cxt_t *cxt) {

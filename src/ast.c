@@ -79,7 +79,7 @@ token_t *_ast_collect_funcarg(token_t *comma, token_t *token) {
 }
 
 // Transforms function argument from comma expression to flat structure
-// Three cases: argument less func; one argument func (must not be comma exp)
+// Three cases: argument-less func; one argument func (must not be comma exp)
 // and functions with >= 2 arguments
 void ast_collect_funcarg(token_t *token) {
   assert(token->type == EXP_FUNC_CALL);
