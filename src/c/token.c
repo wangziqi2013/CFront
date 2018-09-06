@@ -92,6 +92,12 @@ void token_cxt_free(token_cxt_t *cxt) {
   free(cxt);
 }
 
+token_t *token_get_empty() {
+  token_t *token = token_alloc();
+  token->type = T_;
+  return token;
+}
+
 // Adds a user-defined type
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
   ht_insert(cxt->udef_types, token->str, NULL);
