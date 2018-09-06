@@ -1,6 +1,5 @@
 
 #include "error.h"
-#include <setjmp.h>
 
 // This global pointer holds the begin of the text. We use this pointer and 
 // a given pointer to compute the line and column number
@@ -11,13 +10,11 @@ static int inited = 0;
 static int testmode = 0;
 jmp_buf env;
 
-#define ERROR_FIRSTTIME 0
-
 // This must be called in order for line number to work
 void error_init(const char *s) { begin = s; inited = 1; }
 void error_free() { inited = 0; }
 void error_testmode(int mode) { testmode = mode; }
-void error_exit_or_jump() { if(testmode) longjmp(1); else exit(1); }
+void error_exit_or_jump() { if(testmode) longjmp(env, 1); else exit(1); }
 
 // Returns the row and column of a given pointer
 // Note:
