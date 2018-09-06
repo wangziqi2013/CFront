@@ -271,7 +271,10 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       // Special case: function with no argument; must be the case that a FUNC_CALL '(' is 
       // pushed immediately followed by ')'
       if(cxt->last_active_stack == OP_STACK && op_top->type == EXP_FUNC_CALL) {
-        parse_exp_reduce(cxt, 1);
+        token_t *temp = token_alloc();
+        temp->type = T_;
+        parse_exp_shift(cxt, AST_STACK, temp);
+        parse_exp_reduce(cxt, -1);
       } else {
         while(op_top != NULL && 
               op_top->type != EXP_ARRAY_SUB && op_top->type != EXP_FUNC_CALL &&
@@ -293,8 +296,8 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       parse_exp_recurse(cxt);
       token_t *decl = parse_decl(cxt);
       parse_exp_decurse(cxt);
+      ast_push_child(token, decl);
       parse_exp_shift(cxt, OP_STACK, token);
-      ast_append_child(token, decl);
       if(!token_consume_type(cxt->token_cxt, T_RPAREN)) 
           error_row_col_exit(token->offset, "Type cast expects \')\'\n");
     } else {
