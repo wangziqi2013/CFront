@@ -35,9 +35,9 @@ token_t *ast_insert_after(token_t *token, token_t *child) {
 }
 
 void ast_print(token_t *token, int depth) {
-  for(int i = 0;i < depth * 2;i++) putchar(' ');
+  for(int i = 0;i < depth * 2;i++) if(i % 2 == 0) printf("|"); else printf(" ");
   const char *symstr = token_symstr(token->type);
-  printf("%d:%s %s\n", token->type, token_typestr(token->type), 
+  printf("%04d:%s %s\n", token->type, token_typestr(token->type), 
          symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr);
   for(token_t *child = token->child;child != NULL; child = child->sibling) 
     ast_print(child, depth + 1);
@@ -55,7 +55,7 @@ void ast_free(token_t *token) {
 }
 
 // Get n-th child; Return NULL if index is larger than the number of children
-token_t *ast_get_child(token_t *token, int index) {
+token_t *ast_getchild(token_t *token, int index) {
   assert(index >= 0 && token != NULL);
   token = token->child;
   while(token != NULL && index-- != 0) token = token->sibling;
@@ -64,7 +64,7 @@ token_t *ast_get_child(token_t *token, int index) {
 
 // Returns the last inserted node
 token_t *_ast_collect_funcarg(token_t *comma, token_t *token) {
-  assert(ast_get_child(comma, 0) != NULL && ast_get_child(comma, 1) != NULL);
+  assert(ast_getchild(comma, 0) != NULL && ast_getchild(comma, 1) != NULL);
   token_t *child1 = comma->child, *child2 = child1->sibling;
   if(child1->type != EXP_COMMA) {
     ast_insert_after(token, child2);
@@ -83,7 +83,7 @@ token_t *_ast_collect_funcarg(token_t *comma, token_t *token) {
 // and functions with >= 2 arguments
 void ast_collect_funcarg(token_t *token) {
   assert(token->type == EXP_FUNC_CALL);
-  token_t *comma = token->child->sibling;
+  token_t *comma = ast_getchild(token, 1);
   if(comma == NULL || comma->type != EXP_COMMA) return;
   // The comma node has been freed. The function returns the last node inserted
   token->child->sibling = _ast_collect_funcarg(comma, comma);
@@ -93,8 +93,8 @@ void ast_collect_funcarg(token_t *token) {
 // Transforms conditional expression from two 2-operand operators to
 // a signle cond operator
 void ast_movecond(token_t *token) {
-  assert(token->type == EXP_COND && token->child->sibling->type == EXP_COLON);
-  token_t *colon = token->child->sibling, *child2 = colon->child->sibling;
+  assert(token->type == EXP_COND && ast_getchild(token, 1)->type == EXP_COLON);
+  token_t *colon = ast_getchild(token, 1), *child2 = ast_getchild(colon, 1);
   ast_append_child(token, colon->child);
   ast_append_child(token, child2);
   token->child->sibling = colon->child;
