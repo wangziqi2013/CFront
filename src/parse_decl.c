@@ -6,26 +6,21 @@
 parse_decl_cxt_t *parse_decl_init(char *input) { return parse_exp_init(input); }
 void parse_decl_free(parse_decl_cxt_t *cxt) { parse_exp_free(cxt); }
 
-// Whether the token could start a declaration, i.e. being a type or modifier
-int parse_decl_isbasetype(parse_decl_cxt_t *cxt, token_t *token) {
-  if(token->decl_prop & DECL_MASK) return 1; // built-in type & modifier
-  else if(token->type == T_UDEF) return 1; // udef types
-  return 0; (void)cxt;
+// Whether the token could start a declaration, i.e. being a type, modifier, or udef type
+int parse_decl_isbasetype(parse_decl_cxt_t *cxt, token_t *token) { 
+  (void)cxt; return ((token->decl_prop & DECL_MASK) || token->type == T_UDEF) ? 1 : 0;
 }
 
 // Same rule as parse_exp_next_token()
 // Note: The following tokens are considered as part of a type expression:
 //   1. ( ) [ ] *  2. const volatile 3. identifier
 token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
-  token_t *token = token_get_next(cxt->token_cxt);
-  int valid = 1;
-  if(token == NULL || 
-     (parse_exp_isempty(cxt, OP_STACK) && (token->type == T_RPAREN || token->type == T_RSPAREN))) {
-    valid = 0;
-  } else {
+  token_t *token = token_lookahead(cxt->token_cxt, 1);
+  int valid; // Below are not "=="
+  if((valid = (token != NULL))) {
     switch(token->type) {
       case T_LPAREN: {  // If the next symbol constitutes a base type then this is func call
-        token_t *lookahead = token_lookahead(cxt->token_cxt, 1);
+        token_t *lookahead = token_lookahead(cxt->token_cxt, 2); // Note that we already looked ahead one token
         if(lookahead != NULL && (parse_decl_isbasetype(cxt, lookahead) || lookahead->type == T_RPAREN)) 
           token->type = EXP_FUNC_CALL;
         else token->type = EXP_LPAREN;
@@ -44,14 +39,10 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         break;
       } 
       case T_IDENT: break;
-      default: // Only allow DECL_QUAL and identifier
-        if(!(token->decl_prop & DECL_QUAL_MASK)) valid = 0;
+      default: if(!(token->decl_prop & DECL_QUAL_MASK)) valid = 0; // Only allow DECL_QUAL and identifier
     }
   }
-  if(!valid) {
-    if(token != NULL) token_pushback(cxt->token_cxt, token);
-    return NULL;
-  } else return token;
+  return valid ? token_get_next(cxt->token_cxt) : NULL;
 }
 
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 

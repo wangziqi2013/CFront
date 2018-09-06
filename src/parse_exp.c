@@ -246,7 +246,6 @@ void parse_exp_reduce_preced(parse_exp_cxt_t *cxt, token_t *token) {
     if(preced < top_preced || 
        ((preced == top_preced) && (assoc == ASSOC_RL))) break;
     op_stack_top = parse_exp_reduce(cxt, -1, 0);
-    printf("Reduce %s\n", token_typestr(parse_exp_peek(cxt, AST_STACK)->type));
   }
   return;
 }
@@ -290,13 +289,13 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
         else { parse_exp_reduce(cxt, -1, 1); } // This reduces EXP_FUNC_CALL
       }
       token_free(token); // Right paren is always not used in AST
-    } else if(token->type == EXP_RSPAREN) {
+    } else if(token->type == EXP_RSPAREN) { // Closing array sub
       token_t *op_top = parse_exp_peek(cxt, OP_STACK);
       while(op_top != NULL && op_top->type != EXP_ARRAY_SUB) op_top = parse_exp_reduce(cxt, -1, 0);
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
       parse_exp_reduce(cxt, -1, 1); // This reduces '['
       token_free(token);
-    } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) {
+    } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) { // Type cases
       token->type = EXP_CAST;
       parse_exp_recurse(cxt);
       token_t *decl = parse_decl(cxt);

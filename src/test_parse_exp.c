@@ -378,6 +378,6 @@ int main() {
   test_decl_prop();
   test_token_lookahead();
   test_parse_decl();
-  test_anomaly();
+  //test_anomaly();
   return 0;
 }
