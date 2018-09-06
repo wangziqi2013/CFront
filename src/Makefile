@@ -19,10 +19,10 @@ test: all
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h
+parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_decl.o: parse_decl.c parse_decl.h hashtable.h parse_exp.h
+parse_decl.o: parse_decl.c parse_decl.h hashtable.h parse_exp.h error.h
 	$(CC) parse_decl.c -c -o parse_decl.o $(CFLAGS) $(LDFLAGS)
 
 parse_comp.o: parse_comp.c parse_comp.h parse_exp.h
@@ -42,6 +42,8 @@ ast.o: ast.c ast.h
 
 hashtable.o: hashtable.c hashtable.h
 	$(CC) hashtable.c -c -o hashtable.o $(CFLAGS) $(LDFLAGS)
+
+parse_exp.h: stack.h token.h ast.h hashtable.h
 
 #queue.o: queue.c queue.h
 #	$(CC) queue.c -c -o queue.o $(CFLAGS) $(LDFLAGS)
