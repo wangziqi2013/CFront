@@ -271,9 +271,7 @@ token_t *parse_exp(parse_exp_cxt_t *cxt) {
       // Special case: function with no argument; must be the case that a FUNC_CALL '(' is 
       // pushed immediately followed by ')'
       if(cxt->last_active_stack == OP_STACK && op_top->type == EXP_FUNC_CALL) {
-        token_t *temp = token_alloc();
-        temp->type = T_;
-        parse_exp_shift(cxt, AST_STACK, temp);
+        parse_exp_shift(cxt, AST_STACK, token_get_empty());
         parse_exp_reduce(cxt, -1);
       } else {
         while(op_top != NULL && 
