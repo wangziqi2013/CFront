@@ -201,6 +201,13 @@ void test_simple_exp_parse() {
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
+  printf("=====================================\n");
+  char test4[] = "a[b++]";
+  cxt = parse_exp_init(test4);
+  token = parse_exp(cxt);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
   printf("Pass!\n");
   return;
 }
@@ -340,16 +347,21 @@ void test_parse_decl() {
   return;
 }
 
+// This test may introduce memory leak
 void test_anomaly() {
   printf("=== Test anomalies ===\n");
-  char test1[] = "d[++wzq--[1234]]";
+  error_testmode(1);
+  int err;  
   parse_exp_cxt_t *cxt;
-  token_t *token;
+  char test1[] = "d[++wzq--[1234]";  // Tests if [ and ( must be balanced
+  err = 0;
   cxt = parse_exp_init(test1);
-  token = parse_exp(cxt);
-  ast_print(token, 0);
+  if(error_trycatch()) parse_exp(cxt);
+  else err = 1;
+  assert(err == 1);
   parse_exp_free(cxt);
-  ast_free(token);
+  
+  error_testmode(0);
   printf("Pass!\n");
   return;
 }
