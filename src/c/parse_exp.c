@@ -29,6 +29,19 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
   return;
 }
 
+// Whether a ) or ] belongs to the current level. If no matching ( or [ is found
+// then it is not a closing
+int parse_exp_hasmatch(parse_exp_cxt_t *cxt, token_t *token) {
+  if(token->type == T_RPAREN || token->type == T_RSPAREN) {
+    int found = 0;
+    for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
+      token_type_t type = (token_t *)stack_peek_at(cxt->stacks[OP_STACK], i)->type;
+      if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) { found = 1; break; }
+    }
+    return found;
+  } else return 1;
+}
+
 // Determine if a token could continue an expression currently being parsed
 // Literals (incl. ident), operators, and sizeof() could be part of an expression
 int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
@@ -61,6 +74,10 @@ int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id) {
 // Returns NULL if stack empty, or stack top
 token_t *parse_exp_peek(parse_exp_cxt_t *cxt, int stack_id) {
   return parse_exp_isempty(cxt, stack_id) ? NULL : (token_t *)stack_peek(cxt->stacks[stack_id]);
+}
+
+token_t *parse_exp_peek_at(parse_exp_cxt_t *cxt, int stack_id, int index) {
+  return parse_exp_isempty(cxt, stack_id) ? NULL : (token_t *)stack_peek_at(cxt->stacks[stack_id], index);
 }
 
 // Whether the stack is empty, either because it is empty, or the topmost element
