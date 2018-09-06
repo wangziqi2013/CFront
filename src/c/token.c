@@ -726,11 +726,13 @@ token_t *token_get_next(token_cxt_t *cxt) {
   return token;
 }
 
-// Consume the next token if it is of the given type. Return 0 if there is no next token or type mismatch
+// Consume the next token if it is of the given type. 
+// Return 0 if there is no next token or type mismatch, and the token is not consumed
 int token_consume_type(token_cxt_t *cxt, token_type_t type) {
   token_t *token = token_get_next(cxt);
   if(token == NULL) return 0;
   if(token->type == type) { token_free(token); return 1; }
+  token_pushback(cxt, token);
   return 0;
 }
 
