@@ -1,7 +1,8 @@
 
-#ifndef _PARSE_DECL
-#define _PARSE_DECL
+#ifndef _PARSE_DECL_H
+#define _PARSE_DECL_H
 
+#include "parse_exp.h"
 #include "hashtable.h"
 
 typedef parse_exp_cxt_t parse_decl_cxt_t;

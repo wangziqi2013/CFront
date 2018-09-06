@@ -1,6 +1,5 @@
 
 
-#include "parse_exp.h"
 #include "parse_decl.h"
 
 parse_decl_cxt_t *parse_decl_init(char *input) { return parse_exp_init(input); }
@@ -137,7 +136,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
             parse_exp_decurse(cxt);
             if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
             else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
-            else error_row_col_exit(token->offset, "Function declaration expects \")\" or \",\"");
+            else error_row_col_exit(token->offset, "Function declaration expects \')\' or \',\'");
           }
         }
         parse_exp_reduce(cxt, 1, 1); // This reduces EXP_FUNC_CALL
