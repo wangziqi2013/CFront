@@ -361,10 +361,10 @@ void test_anomaly() {
   assert(err == 1);
   parse_exp_free(cxt);
 
-  char test2[] = "(a + (struct ? { int b; } )c)";  // Tests if struct is recognized
+  char test2[] = "(***a(b*)(void))";
   err = 0;
   cxt = parse_exp_init(test2);
-  if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  if(error_trycatch()) parse_decl(cxt, 1);
   else err = 1;
   assert(err == 1);
   parse_exp_free(cxt);

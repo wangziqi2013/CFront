@@ -72,14 +72,12 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   token_t *basetype = token_alloc_type(T_BASETYPE), *decl = token_alloc_type(T_DECL);
   ast_append_child(decl, basetype);
   if(hasbasetype == PARSE_DECL_HASBASETYPE) parse_basetype(cxt, basetype);
-  // Creates an empty node and shift it into OP stack
-  parse_exp_shift(cxt, AST_STACK, token_get_empty());
-  token_t *decl_name = token_get_empty();
+  parse_exp_shift(cxt, AST_STACK, token_get_empty()); // Placeholder operand for the innremost operator
+  token_t *decl_name = NULL; // = token_get_empty(); // If not an abstract declarator this is the name
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
-    if(token == NULL) {
-      return ast_append_child(ast_append_child(decl, parse_exp_reduce_all(cxt)), decl_name);
-    }
+    if(token == NULL) 
+      return ast_append_child(ast_append_child(decl, parse_exp_reduce_all(cxt)), decl_name ? decl_name : token_get_empty());
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
       token_t *top = parse_exp_peek(cxt, OP_STACK);
       if(top == NULL || top->type != EXP_DEREF || cxt->last_active_stack != OP_STACK) 
@@ -94,10 +92,12 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
       continue;
     }
     switch(token->type) {
-      case EXP_DEREF: parse_exp_shift(cxt, OP_STACK, token); break;
-      case T_IDENT: {
-        if(decl_name->type != T_) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
-        token_free(decl_name);
+      case EXP_DEREF: // To avoid int **a*; being legal, because identifiers are not pushed to AST stack
+        if(decl_name) error_row_col_exit(token->offset, "Pointers can only occur before declared name\n") 
+        else parse_exp_shift(cxt, OP_STACK, token); 
+        break;
+      case T_IDENT: { // Trick: Do not push it onto the stack
+        if(decl_name) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
         decl_name = token;
         /* Is the above sufficient?
         token_t *ast_top = parse_exp_peek(cxt, AST_STACK);
