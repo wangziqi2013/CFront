@@ -1,6 +1,6 @@
 
-
 #include "parse_decl.h"
+#include "parse_comp.h"
 
 parse_decl_cxt_t *parse_decl_init(char *input) { return parse_exp_init(input); }
 void parse_decl_free(parse_decl_cxt_t *cxt) { parse_exp_free(cxt); }
@@ -56,8 +56,8 @@ void parse_basetype(parse_decl_cxt_t *cxt, token_t *basetype) {
       token_symstr(token->type), token_decl_print(basetype->decl_prop));
     basetype->decl_prop = token_decl_apply(token, basetype->decl_prop);
     if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
-      assert(0); // TODO: PARSE STRUCT ENUM UNION
-      // token = parse_cmpsit(cxt, ...);
+      token_pushback(cxt->token_cxt, token);
+      token = parse_comp(cxt);
     }
     ast_append_child(basetype, token);
     token = token_get_next(cxt->token_cxt);
