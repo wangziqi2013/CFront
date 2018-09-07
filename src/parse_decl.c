@@ -50,7 +50,6 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
 token_t *parse_basetype(parse_decl_cxt_t *cxt) {
   token_t *token = token_lookahead(cxt->token_cxt, 1), *basetype = token_alloc_type(T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
-    printf("%s %08X %08X\n", token_typestr(token->type), basetype->decl_prop, token->decl_prop);
     if(!token_decl_compatible(token, basetype->decl_prop)) 
       error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
       token_symstr(token->type), token_decl_print(basetype->decl_prop));
@@ -59,6 +58,7 @@ token_t *parse_basetype(parse_decl_cxt_t *cxt) {
                      parse_comp(cxt) : token_get_next(cxt->token_cxt));
     token = token_lookahead(cxt->token_cxt, 1);
   }
+  if(basetype->child == NULL) error_row_col_exit(cxt->token_cxt->s, "Declaration lacks a base type\n");
   return basetype;
 }
 
