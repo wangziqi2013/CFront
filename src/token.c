@@ -84,7 +84,6 @@ void token_cxt_free(token_cxt_t *cxt) {
     cxt->pushbacks->next = NULL;
     while(curr != NULL) {
       cxt->pushbacks = curr->next;
-      curr->decl_prop &= ~TOKEN_ISLOOKAHEAD;  // Avoid the free lookahead node error
       token_free(curr);
       curr = cxt->pushbacks;
     }
@@ -606,7 +605,6 @@ void token_free_literal(token_t *token) {
 }
 
 void token_free(token_t *token) {
-  if(token->decl_prop & TOKEN_ISLOOKAHEAD) { error_exit("Internal error: Freeing a lookahead node\n"); }
   token_free_literal(token);
   free(token);
 }
@@ -711,7 +709,6 @@ token_t *token_get_next(token_cxt_t *cxt) {
     if(token == cxt->pushbacks) cxt->pushbacks = NULL;
     else cxt->pushbacks->next = token->next;
     cxt->pb_num--;
-    token->decl_prop &= ~TOKEN_ISLOOKAHEAD;
     return token;
   }
   token = token_alloc();
@@ -773,6 +770,5 @@ token_t *token_lookahead(token_cxt_t *cxt, int num) {
   }
   token_t *ret = cxt->pushbacks;
   if(cxt->pb_num != num) while(num--) ret = ret->next;
-  ret->decl_prop |= TOKEN_ISLOOKAHEAD; // Set this bit to avoid freeing a lookahead node
   return ret;
 }
