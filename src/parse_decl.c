@@ -26,14 +26,14 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         break;
       }
       case T_RPAREN: {
-        if(parse_exp_hasmatch(cxt, token)) token->type = EXP_RPAREN;
+        if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLGOOD)) token->type = EXP_RPAREN;
         else valid = 0;
         break;
       } 
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
       case T_RSPAREN: {
-        if(parse_exp_hasmatch(cxt, token)) token->type = EXP_RSPAREN;
+        if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLGOOD)) token->type = EXP_RSPAREN;
         else valid = 0;
         break;
       } 
@@ -114,7 +114,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         if(la != NULL && la->type == T_RSPAREN) { index = token_get_empty(); }
         else {
           parse_exp_recurse(cxt);
-          index = parse_exp(cxt);
+          index = parse_exp(cxt, PARSE_EXP_ALLGOOD);
           parse_exp_decurse(cxt);
         }
         parse_exp_shift(cxt, AST_STACK, index);
