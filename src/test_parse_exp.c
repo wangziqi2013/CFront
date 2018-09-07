@@ -339,7 +339,7 @@ void test_parse_decl() {
   parse_exp_cxt_t *cxt;
   token_t *token;
   cxt = parse_exp_init(test1);
-  token = parse_decl(cxt);
+  token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -361,12 +361,12 @@ void test_anomaly() {
   assert(err == 1);
   parse_exp_free(cxt);
 
-  char test2[] = "(a + (enum struct aa { int b; } )c)";  // Tests if struct is recognized
+  char test2[] = "(a + (struct ? { int b; } )c)";  // Tests if struct is recognized
   err = 0;
   cxt = parse_exp_init(test2);
-  //if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLGOOD);
-  //else err = 1;
-  //assert(err == 1);
+  if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  else err = 1;
+  assert(err == 1);
   parse_exp_free(cxt);
   
   error_testmode(0);

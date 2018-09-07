@@ -296,7 +296,7 @@ token_t *parse_exp(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
     } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) { // Type cases
       token->type = EXP_CAST;
       parse_exp_recurse(cxt);
-      token_t *decl = parse_decl(cxt);
+      token_t *decl = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
       parse_exp_decurse(cxt);
       ast_push_child(token, decl);
       parse_exp_shift(cxt, OP_STACK, token);

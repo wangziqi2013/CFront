@@ -66,12 +66,12 @@ void parse_basetype(parse_decl_cxt_t *cxt, token_t *basetype) {
   return;
 }
 
-token_t *parse_decl(parse_decl_cxt_t *cxt) {
+token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
   // Artificial node that is not in the token stream
   token_t *basetype = token_alloc_type(T_BASETYPE), *decl = token_alloc_type(T_DECL);
   ast_append_child(decl, basetype);
-  parse_basetype(cxt, basetype);
+  if(hasbasetype == PARSE_DECL_HASBASETYPE) parse_basetype(cxt, basetype);
   // Creates an empty node and shift it into OP stack
   parse_exp_shift(cxt, AST_STACK, token_get_empty());
   token_t *decl_name = token_get_empty();
@@ -132,7 +132,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt) {
         } else {
           while(1) {
             parse_exp_recurse(cxt);
-            ast_append_child(token, parse_decl(cxt));
+            ast_append_child(token, parse_decl(cxt, PARSE_DECL_HASBASETYPE));
             parse_exp_decurse(cxt);
             if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
             else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
