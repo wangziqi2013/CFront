@@ -30,27 +30,28 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
 }
 
 // Whether the current level is the outter most, i.e. not inside any ( or [
-int parse_exp_outermost(parse_exp_cxt_t *cxt) {
-  int found = 0;
+int parse_exp_isoutermost(parse_exp_cxt_t *cxt) {
   for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
     token_type_t type = parse_exp_peek_at(cxt, OP_STACK, i)->type;
-    if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) { found = 1; break; }
+    if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) return 1;
   }
-  return !found;
+  return 0;
 }
 
-// Whether a ) or ] belongs to the current level. If no matching ( or [ is found
-// then it is not a closing
-int parse_exp_hasmatch(parse_exp_cxt_t *cxt, token_t *token) {
-  return (token->type == T_RPAREN || token->type == T_RSPAREN) ? !parse_exp_outermost(cxt) : 1;
+// Whether certain symbols are allowed in the outermost context
+int parse_exp_isallowed(parse_exp_t *cxt, token_t *token, parse_exp_disallow_t disallow) {
+  return check_outermost ? ((token->type == T_COMMA && (disallow & PARSE_EXP_NOCOMMA)) || 
+                            (token->type == T_COLON && (disallow & PARSE_EXP_NOCOLON)) || 
+                            token->type == T_RPAREN || token->type == T_RSPAREN) : 1;
 }
 
 // Determine if a token could continue an expression currently being parsed
 // Literals (incl. ident), operators, and sizeof() could be part of an expression
-int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token) {
+int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token, parse_exp_disallow_t disallow) {
   token_type_t type = token->type;
   // For closing symbols, i.e. ) and ], there must be a matching ( or [
-  if(!parse_exp_hasmatch(cxt, token)) return 0; 
+  // For disallowed symbols, e.g. ':' in struct or ',' in initializer they must not be outermost
+  if(!parse_exp_isallowed(cxt, token, disallow)) return 0;
   return ((type >= T_OP_BEGIN && type < T_OP_END) || 
           (type >= T_LITERALS_BEGIN && type < T_LITERALS_END) || 
           (type == T_SIZEOF));
@@ -103,14 +104,16 @@ void parse_exp_decurse(parse_exp_cxt_t *cxt) {
 // Returned token is allocated from the heap, caller free
 // If the token does not belong to expressions, or we reached the end then 
 // return NULL
-token_t *parse_exp_next_token(parse_exp_cxt_t *cxt) {
+token_t *parse_exp_next_token(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
   token_t *token = token_lookahead(cxt->token_cxt, 1);
-  if(token == NULL || !parse_exp_isexp(cxt, token)) return NULL;
+  if(token == NULL || !parse_exp_isexp(cxt, token, disallow)) return NULL;
   else token = token_get_next(cxt->token_cxt);
-  // Initialize AST pointers before we use it to build AST
-  ast_make_node(token);
-  // Primary expressions are not considered for operator type deciding
-  if(parse_exp_isprimary(cxt, token)) return token;
+  ast_make_node(token); // Initialize AST pointers
+  if(parse_exp_isprimary(cxt, token)) return token; // identifier and literals
+  // Check if 
+  if(disallow != PARSE_EXP_ALLGOOD) {
+    switch
+  }
 
   if(cxt->last_active_stack == AST_STACK) {
     // If the last active stack is AST stack, then the op must be postfix (unary)
@@ -266,10 +269,10 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
   return (token_t *)stack_pop(cxt->stacks[AST_STACK]);
 }
 
-token_t *parse_exp(parse_exp_cxt_t *cxt) {
+token_t *parse_exp(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
   stack_t *op = cxt->stacks[OP_STACK];
   while(1) {
-    token_t *token = parse_exp_next_token(cxt);
+    token_t *token = parse_exp_next_token(cxt, disallow);
     if(token == NULL) {
       return parse_exp_reduce_all(cxt);
     } else if(parse_exp_isprimary(cxt, token)) {
