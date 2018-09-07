@@ -26,8 +26,8 @@ typedef struct {
 parse_exp_cxt_t *parse_exp_init(char *input);
 void parse_exp_free(parse_exp_cxt_t *cxt);
 int parse_exp_isoutermost(parse_exp_cxt_t *cxt);
-int parse_exp_isallowed(parse_exp_t *cxt, token_t *token, parse_exp_disallow_t disallow);
-int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token);
+int parse_exp_isallowed(parse_exp_cxt_t *cxt, token_t *token, parse_exp_disallow_t disallow);
+int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token, parse_exp_disallow_t disallow);
 int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token);
 int parse_exp_la_isdecl(parse_exp_cxt_t *cxt);
 int parse_exp_size(parse_exp_cxt_t *cxt, int stack_id);
