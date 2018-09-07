@@ -360,6 +360,14 @@ void test_anomaly() {
   else err = 1;
   assert(err == 1);
   parse_exp_free(cxt);
+
+  char test2[] = "(a + (enum struct aa { int b; } )c)";  // Tests if struct is recognized
+  err = 0;
+  cxt = parse_exp_init(test2);
+  if(error_trycatch()) parse_exp(cxt);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
   
   error_testmode(0);
   printf("Pass!\n");
@@ -378,6 +386,6 @@ int main() {
   test_decl_prop();
   test_token_lookahead();
   test_parse_decl();
-  //test_anomaly();
+  test_anomaly();
   return 0;
 }

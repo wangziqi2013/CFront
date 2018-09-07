@@ -14,7 +14,10 @@ jmp_buf env;
 void error_init(const char *s) { begin = s; inited = 1; }
 void error_free() { inited = 0; }
 void error_testmode(int mode) { testmode = mode; }
-void error_exit_or_jump() { if(testmode) longjmp(env, 1); else exit(1); }
+void error_exit_or_jump() { 
+  if(testmode) { fprintf(stderr, "*** Errors are redirected ***\n"); longjmp(env, 1); }
+  else { exit(1); }
+}
 
 // Returns the row and column of a given pointer
 // Note:
