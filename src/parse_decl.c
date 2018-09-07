@@ -48,20 +48,17 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
 // keywords with TOKEN_DECL set
 // The stack is not changed
 token_t *parse_basetype(parse_decl_cxt_t *cxt) {
-  token_t *token = token_get_next(cxt->token_cxt), *basetype = token_alloc_type(T_BASETYPE);
+  token_t *token = token_lookahead(cxt->token_cxt, 1), *basetype = token_alloc_type(T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
+    printf("%s %08X %08X\n", token_typestr(token->type), basetype->decl_prop, token->decl_prop);
     if(!token_decl_compatible(token, basetype->decl_prop)) 
       error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
       token_symstr(token->type), token_decl_print(basetype->decl_prop));
     basetype->decl_prop = token_decl_apply(token, basetype->decl_prop);
-    if(token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) {
-      token_pushback(cxt->token_cxt, token);
-      token = parse_comp(cxt);
-    }
-    ast_append_child(basetype, token);
-    token = token_get_next(cxt->token_cxt);
+    ast_append_child(basetype, (token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) ? 
+                     parse_comp(cxt) : token_get_next(cxt->token_cxt));
+    token = token_lookahead(cxt->token_cxt, 1);
   }
-  if(token != NULL) token_pushback(cxt->token_cxt, token);
   return basetype;
 }
 
