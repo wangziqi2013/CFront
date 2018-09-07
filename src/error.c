@@ -25,16 +25,15 @@ void error_exit_or_jump() {
 //   2. If the pointer is not in the string registerd during initialization
 //      then row and col will be set to -2
 void error_get_row_col(const char *s, int *row, int *col) {
-  if(inited == 0) {
-    *row = *col = -1;
-  } else {
+  if(inited == 0) { *row = *col = -1; }
+  else {
     *row = *col = 1;
     const char *p;
     for(p = begin; p != s && *p != '\0';p++) {
       if(*p == '\n') (*row)++, *col = 1;
       else (*col)++;
     }
-    if(*p == '\0') {
+    if(*p == '\0' && p != s) { // if p == s then still valid
       *row = *col = -2;
       fprintf(stderr, "Did you forget to register a new pointer with error module?\n");
     }
