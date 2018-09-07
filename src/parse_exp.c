@@ -33,9 +33,9 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
 int parse_exp_isoutermost(parse_exp_cxt_t *cxt) {
   for(int i = 0;i < parse_exp_size(cxt, OP_STACK);i++) {
     token_type_t type = parse_exp_peek_at(cxt, OP_STACK, i)->type;
-    if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) return 1;
+    if(type == EXP_FUNC_CALL || type == EXP_LPAREN || type == EXP_ARRAY_SUB) return 0;
   }
-  return 0;
+  return 1;
 }
 
 // Whether certain symbols are allowed in the outermost context
