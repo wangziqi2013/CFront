@@ -2,6 +2,7 @@
   "files.associations": {
     "ast.h": "c",
     "hashtable.h": "c",
-    "parse_decl.h": "c"
+    "parse_decl.h": "c",
+    "parse_exp.h": "c"
   }
 }
