@@ -11,9 +11,9 @@
 #define OP_STACK 1
 
 typedef uint32_t parse_exp_disallow_t; // A bit mask
-#define PARSE_EXP_ALLGOOD 0x00000000
-#define PARSE_EXP_NOCOMMA 0x00000001  // Do not allow outermost ','
-#define PARSE_EXP_NOCOLON 0x00000002  // Do not allow outermost ':'
+#define PARSE_EXP_ALLOWALL 0x00000000
+#define PARSE_EXP_NOCOMMA  0x00000001  // Do not allow outermost ','
+#define PARSE_EXP_NOCOLON  0x00000002  // Do not allow outermost ':'
 
 typedef struct {
   // Either AST_STACK or OP_STACK; do not need save because a shift will happen

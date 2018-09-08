@@ -26,14 +26,14 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         break;
       }
       case T_RPAREN: {
-        if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLGOOD)) token->type = EXP_RPAREN;
+        if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLOWALL)) token->type = EXP_RPAREN;
         else valid = 0;
         break;
       } 
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
       case T_RSPAREN: {
-        if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLGOOD)) token->type = EXP_RSPAREN;
+        if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLOWALL)) token->type = EXP_RSPAREN;
         else valid = 0;
         break;
       } 

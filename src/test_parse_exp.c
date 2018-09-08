@@ -305,7 +305,7 @@ void test_simple_exp_parse() {
   printf("=== Test Simple Expression Parsing ===\n");
   char test[] = " g(*a[0]++) + ((f(1,2,3,((wzq123 + 888)--)))) * (a++ >> b + ++c * ***d[++wzq--[1234]])";
   parse_exp_cxt_t *cxt = parse_exp_init(test);
-  token_t *token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  token_t *token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
@@ -313,7 +313,7 @@ void test_simple_exp_parse() {
   printf("=====================================\n");
   char test2[] = "x == x + 2 && qwe > rty ? (void const volatile *const volatile*const*volatile[*zaq + qwer--])y * 6 >> 3 : *z++ += 1000";
   cxt = parse_exp_init(test2);
-  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
@@ -321,7 +321,7 @@ void test_simple_exp_parse() {
   printf("=====================================\n");
   char test3[] = "(void **(int **, long, short))g + (void* (*named_decl[16]) (void a, int *[]) ) a()++ - sizeof(1) * sizeof **a++";
   cxt = parse_exp_init(test3);
-  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
@@ -329,7 +329,7 @@ void test_simple_exp_parse() {
   printf("=====================================\n");
   char test4[] = "a[b++]";
   cxt = parse_exp_init(test4);
-  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
@@ -417,7 +417,7 @@ void test_anomaly() {
   char test1[] = "d[++wzq--[1234]";  // Tests if [ and ( must be balanced
   err = 0;
   cxt = parse_exp_init(test1);
-  if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLOWALL);
   else err = 1;
   assert(err == 1);
   parse_exp_free(cxt);
