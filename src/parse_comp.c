@@ -23,7 +23,10 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
   if(!token_consume_type(cxt->token_cxt, T_LCPAREN)) 
     error_row_col_exit(root->offset, "Expecting identifier or \'{\' after struct/union\n");
   while(1) { // loop on lines
-    if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_RCPAREN) break; // Finish parsing on '}'
+    if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_RCPAREN) { // Finish parsing on '}'
+      token_consume_type(cxt->token_cxt, T_RCPAREN); 
+      break; 
+    }
     token_t *comp_decl = ast_append_child(token_alloc_type(T_COMP_DECL), parse_basetype(cxt));
     while(1) { // loop on fields
       token_t *field = token_alloc_type(T_COMP_FIELD);
