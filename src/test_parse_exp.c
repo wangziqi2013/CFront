@@ -386,6 +386,13 @@ void test_parse_comp() {
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
+  printf("=====================================\n");
+  char test4[] = "struct { struct{ int a; }; union { long b; }; }";
+  cxt = parse_exp_init(test4);
+  token = parse_comp(cxt);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
   printf("Pass!\n");
   return;
 }
