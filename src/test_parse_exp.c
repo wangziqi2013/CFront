@@ -7,6 +7,7 @@
 #include "ast.h"
 #include "parse_exp.h"
 #include "parse_decl.h"
+#include "parse_comp.h"
 #include "hashtable.h"
 
 void test_stack() {
@@ -335,11 +336,53 @@ void test_token_lookahead() {
 
 void test_parse_decl() {
   printf("=== Test parse_decl ===\n");
-  char test1[] = "(void const * const ( *const named_decl[16]) (void a, int *[]) )";
   parse_exp_cxt_t *cxt;
   token_t *token;
+  char test1[] = "void const * const ( *const named_decl[16]) (void a, int *[])";
   cxt = parse_exp_init(test1);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "void a ";
+  cxt = parse_exp_init(test2);
+  token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "a(void, int[16])";
+  cxt = parse_exp_init(test3);
+  token = parse_decl(cxt, 0);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
+  return;
+}
+
+void test_parse_comp() {
+  printf("=== Test parse_comp ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "struct a { int b; long c; volatile double d; }";
+  cxt = parse_exp_init(test1);
+  token = parse_comp(cxt);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
+  cxt = parse_exp_init(test2);
+  token = parse_comp(cxt);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "struct {}";
+  cxt = parse_exp_init(test3);
+  token = parse_comp(cxt);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -386,6 +429,7 @@ int main() {
   test_decl_prop();
   test_token_lookahead();
   test_parse_decl();
-  test_anomaly();
+  test_parse_comp();
+  //test_anomaly();
   return 0;
 }
