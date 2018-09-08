@@ -46,7 +46,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
 
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 
 // keywords with TOKEN_DECL set
-// The stack is not changed
+// The stack is not changed, calling this function does not need recurse
 token_t *parse_basetype(parse_decl_cxt_t *cxt) {
   token_t *token = token_lookahead(cxt->token_cxt, 1), *basetype = token_alloc_type(T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
