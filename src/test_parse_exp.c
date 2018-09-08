@@ -334,6 +334,14 @@ void test_simple_exp_parse() {
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
+  printf("=====================================\n");
+  char test5[] = "ARRAY[(a, b), c], d";  // Tests whether the outer most comma is rejected
+  cxt = parse_exp_init(test5);
+  token = parse_exp(cxt, PARSE_EXP_NOCOMMA);
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_COMMA);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
   printf("Pass!\n");
   return;
 }
@@ -442,10 +450,10 @@ int main() {
   test_bin_search();
   test_token_get_next();
   test_ast();
-  test_simple_exp_parse();
   test_ht();
   test_decl_prop();
   test_token_lookahead();
+  test_simple_exp_parse();
   test_parse_decl();
   test_parse_comp();
   //test_anomaly();

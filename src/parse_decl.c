@@ -108,7 +108,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
         if(la != NULL && la->type == T_RSPAREN) { index = token_get_empty(); }
         else {
           parse_exp_recurse(cxt);
-          index = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+          index = parse_exp(cxt, PARSE_EXP_ALLOWALL);
           parse_exp_decurse(cxt);
         }
         parse_exp_shift(cxt, AST_STACK, index);
