@@ -180,79 +180,6 @@ void test_ast() {
   return;
 }
 
-void test_simple_exp_parse() {
-  printf("=== Test Simple Expression Parsing ===\n");
-  char test[] = " g(*a[0]++) + ((f(1,2,3,((wzq123 + 888)--)))) * (a++ >> b + ++c * ***d[++wzq--[1234]])";
-  parse_exp_cxt_t *cxt = parse_exp_init(test);
-  token_t *token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
-  ast_print(token, 0);
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("=====================================\n");
-  char test2[] = "x == x + 2 && qwe > rty ? (void const volatile *const volatile*const*volatile[*zaq + qwer--])y * 6 >> 3 : *z++ += 1000";
-  cxt = parse_exp_init(test2);
-  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
-  ast_print(token, 0);
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("=====================================\n");
-  char test3[] = "(void **(int **, long, short))g + (void* (*named_decl[16]) (void a, int *[]) ) a()++ - sizeof(1) * sizeof **a++";
-  cxt = parse_exp_init(test3);
-  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
-  ast_print(token, 0);
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("=====================================\n");
-  char test4[] = "a[b++]";
-  cxt = parse_exp_init(test4);
-  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
-  ast_print(token, 0);
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("Pass!\n");
-  return;
-}
-
-void test_ht() {
-  printf("=== Test Hash Table ===\n");
-  const int test_size = HT_INIT_CAPACITY * 10 + 100;
-  const int test_len = 16;
-  const char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
-  for(int seed = 0;seed < 100;seed++) {
-    srand(seed);
-    char **tests = malloc(sizeof(char *) * test_size);
-    void **results = malloc(sizeof(void *) * test_size);
-    for(int i = 0;i < test_size;i++) {
-      tests[i] = malloc(sizeof(char) * test_len);
-      for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % sizeof(alphabet)];
-      tests[i][test_len - 1] = '\0';
-    }
-
-    hashtable_t *ht = ht_str_init();
-    for(int i = 0;i < test_size;i++) {
-      results[i] = ht_insert(ht, tests[i], tests[i]);
-    }
-    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
-    for(int i = test_size - 1;i >= 0;i--) {
-      void *ret = ht_find(ht, tests[i]);
-      assert(ret != HT_NOTFOUND);
-      assert(strcmp(ret, tests[i]) == 0);
-    }
-
-    assert(ht_find(ht, "wangziqi2013") == HT_NOTFOUND);
-    assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
-    assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
-    assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
-
-    for(int i = 0;i < test_size;i++) free(tests[i]);
-    free(tests);
-    free(results);
-    ht_free(ht);
-  }
-  printf("\nPass!\n");
-  return;
-}
-
 void test_decl_prop() {
   printf("=== Test Declaration Property ===\n");
   char test1[] = "extern volatile const int unsigned";
@@ -334,6 +261,83 @@ void test_token_lookahead() {
   return;
 }
 
+void test_ht() {
+  printf("=== Test Hash Table ===\n");
+  const int test_size = HT_INIT_CAPACITY * 10 + 100;
+  const int test_len = 16;
+  const char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
+  for(int seed = 0;seed < 100;seed++) {
+    srand(seed);
+    char **tests = malloc(sizeof(char *) * test_size);
+    void **results = malloc(sizeof(void *) * test_size);
+    for(int i = 0;i < test_size;i++) {
+      tests[i] = malloc(sizeof(char) * test_len);
+      for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % sizeof(alphabet)];
+      tests[i][test_len - 1] = '\0';
+    }
+
+    hashtable_t *ht = ht_str_init();
+    for(int i = 0;i < test_size;i++) {
+      results[i] = ht_insert(ht, tests[i], tests[i]);
+    }
+    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
+    for(int i = test_size - 1;i >= 0;i--) {
+      void *ret = ht_find(ht, tests[i]);
+      assert(ret != HT_NOTFOUND);
+      assert(strcmp(ret, tests[i]) == 0);
+    }
+
+    assert(ht_find(ht, "wangziqi2013") == HT_NOTFOUND);
+    assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
+    assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
+    assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
+
+    for(int i = 0;i < test_size;i++) free(tests[i]);
+    free(tests);
+    free(results);
+    ht_free(ht);
+  }
+  printf("\nPass!\n");
+  return;
+}
+
+void test_simple_exp_parse() {
+  printf("=== Test Simple Expression Parsing ===\n");
+  char test[] = " g(*a[0]++) + ((f(1,2,3,((wzq123 + 888)--)))) * (a++ >> b + ++c * ***d[++wzq--[1234]])";
+  parse_exp_cxt_t *cxt = parse_exp_init(test);
+  token_t *token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "x == x + 2 && qwe > rty ? (void const volatile *const volatile*const*volatile[*zaq + qwer--])y * 6 >> 3 : *z++ += 1000";
+  cxt = parse_exp_init(test2);
+  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "(void **(int **, long, short))g + (void* (*named_decl[16]) (void a, int *[]) ) a()++ - sizeof(1) * sizeof **a++";
+  cxt = parse_exp_init(test3);
+  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test4[] = "a[b++]";
+  cxt = parse_exp_init(test4);
+  token = parse_exp(cxt, PARSE_EXP_ALLGOOD);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
+  return;
+}
+
 void test_parse_decl() {
   printf("=== Test parse_decl ===\n");
   parse_exp_cxt_t *cxt;
@@ -341,6 +345,7 @@ void test_parse_decl() {
   char test1[] = "void const * const ( *const named_decl[16]) (void a, int *[])";
   cxt = parse_exp_init(test1);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -348,13 +353,15 @@ void test_parse_decl() {
   char test2[] = "void a ";
   cxt = parse_exp_init(test2);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
   char test3[] = "a(void, int[16])";
   cxt = parse_exp_init(test3);
-  token = parse_decl(cxt, 0);
+  token = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -369,6 +376,7 @@ void test_parse_comp() {
   char test1[] = "struct a { int b; long c; volatile double d; }";
   cxt = parse_exp_init(test1);
   token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -376,6 +384,7 @@ void test_parse_comp() {
   char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
   cxt = parse_exp_init(test2);
   token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -383,6 +392,7 @@ void test_parse_comp() {
   char test3[] = "struct {}";
   cxt = parse_exp_init(test3);
   token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
@@ -390,6 +400,7 @@ void test_parse_comp() {
   char test4[] = "struct { struct{ int a; }; union { long b; }; }";
   cxt = parse_exp_init(test4);
   token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
