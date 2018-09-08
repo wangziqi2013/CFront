@@ -188,5 +188,6 @@ token_t *token_get_next(token_cxt_t *cxt);
 int token_consume_type(token_cxt_t *cxt, token_type_t type);
 void token_pushback(token_cxt_t *cxt, token_t *token);
 token_t *token_lookahead(token_cxt_t *cxt, int num);
+token_t *token_lookahead_notnull(token_cxt_t *cxt, int num);
 
 #endif

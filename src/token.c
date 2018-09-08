@@ -773,3 +773,10 @@ token_t *token_lookahead(token_cxt_t *cxt, int num) {
   if(cxt->pb_num != num) while(num--) ret = ret->next;
   return ret;
 }
+
+// Same as the regular version except that it reports error if run out of tokens
+token_t *token_lookahead_notnull(token_cxt_t *cxt, int num) {
+  token_t *la = token_lookahead(cxt, num);
+  if(la == NULL) error_row_col_exit(cxt->s, "Unexpected end of file\n");
+  return la;
+}
