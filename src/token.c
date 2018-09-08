@@ -355,9 +355,10 @@ const char *token_typestr(token_type_t type) {
     case EXP_COMMA: return "EXP_COMMA";
     case T_UDEF: return "T_UDEF";
     case T_DECL: return "T_DECL"; 
-    case T_ABS_DECL: return "T_ABS_DECL"; 
     case T_BASETYPE: return "T_BASETYPE";
     case T_: return "T_";
+    case T_COMP_DECL: return "T_COMP_DECL"; 
+    case T_COMP_FIELD: return "T_COMP_FIELD";
     case T_ILLEGAL: return "T_ILLEGAL";
     default: return "(unknown)";
   }

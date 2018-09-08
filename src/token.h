@@ -90,8 +90,10 @@ typedef enum {
   EXP_END,
 
   T_UDEF,                         // User-defined type using type-def; they are not identifiers
-  T_DECL, T_ABS_DECL, T_BASETYPE, // Root node of a declaration
+  T_DECL, T_BASETYPE, // Root node of a declaration
   T_,                             // Placeholder
+  T_COMP_DECL,                    // structure or union declaration line, can contain one base and multiple declarator
+  T_COMP_FIELD,                   // Single field declaration; Its decl_prop records which properties it has
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
