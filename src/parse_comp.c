@@ -1,8 +1,6 @@
 
 #include "parse_comp.h"
 
-static char STR_UNEXPECTED_END[] = "Unexpected end of file in struct/union declaration"; // Common error message
-
 parse_decl_cxt_t *parse_comp_init(char *input) { return parse_exp_init(input); }
 void parse_comp_free(parse_comp_cxt_t *cxt) { parse_exp_free(cxt); }
 
@@ -17,6 +15,7 @@ token_t *parse_comp(parse_exp_cxt_t *cxt) {
   }
 }
 
+// Returns the same node which is either T_STRUCT or T_UNION
 token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
   token_t *name = token_lookahead_notnull(cxt->token_cxt, 1);
   // Name is either identifier or empty as field child
@@ -32,7 +31,7 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
       token_t *decl = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
       ast_append_child(field, decl); // Declarator body, can be named or unamed
       token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
-      else if(la->type == T_COLON) {
+      if(la->type == T_COLON) {
         token_consume_type(cxt->token_cxt, T_COLON);
         ast_append_child(field, parse_exp(cxt, PARSE_EXP_NOCOMMA));
         la = token_lookahead_notnull(cxt->token_cxt, 1);
@@ -43,7 +42,7 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
                                 token_typestr(la->type)); }
     }
   }
-  return NULL;
+  return root;
 }
 
 token_t *parse_enum(parse_comp_cxt_t *cxt, token_t *root) {
