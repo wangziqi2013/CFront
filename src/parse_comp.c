@@ -35,7 +35,6 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
       parse_exp_decurse(cxt);
        // Declarator body, can be named or unamed
       token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
-      
       if(la->type == T_COLON) {
         token_consume_type(cxt->token_cxt, T_COLON);
         parse_exp_recurse(cxt);
@@ -43,7 +42,6 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
         parse_exp_decurse(cxt);
         la = token_lookahead_notnull(cxt->token_cxt, 1);
       }
-      
       if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
       else if(la->type == T_SEMICOLON) { token_consume_type(cxt->token_cxt, T_SEMICOLON); break; } // Finish parsing the field on ';'
       else { error_row_col_exit(la->offset, "Unexpected symbol \"%s\" in struct/union field declaration\n", 

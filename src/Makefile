@@ -13,6 +13,9 @@ all: ./bin/test_parse_exp
 test: all
 	./bin/test_parse_exp
 
+mem-test: all
+	valgrind --leak-check=full ./bin/test_parse_exp
+
 ./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o
 	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
 
