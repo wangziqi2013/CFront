@@ -404,11 +404,19 @@ void test_parse_comp() {
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");
+  printf("=====================================\n"); // Tests nesting of struct and union
   char test4[] = "struct { struct{ int a; }; union { long b; }; }";
   cxt = parse_exp_init(test4);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
+  char test5[] = "struct name;";
+  cxt = parse_exp_init(test5);
+  token = parse_comp(cxt);
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
