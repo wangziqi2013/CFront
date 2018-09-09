@@ -50,10 +50,9 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
 token_t *parse_basetype(parse_decl_cxt_t *cxt) {
   token_t *token = token_lookahead(cxt->token_cxt, 1), *basetype = token_alloc_type(T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
-    if(!token_decl_compatible(token, basetype->decl_prop)) 
+    if(!token_decl_apply(token, basetype->decl_prop)) 
       error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
       token_symstr(token->type), token_decl_print(basetype->decl_prop));
-    basetype->decl_prop = token_decl_apply(token, basetype->decl_prop);
     ast_append_child(basetype, (token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) ? 
                      parse_comp(cxt) : token_get_next(cxt->token_cxt));
     token = token_lookahead(cxt->token_cxt, 1);
@@ -77,10 +76,9 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
       token_t *top = parse_exp_peek(cxt, OP_STACK);
       if(top == NULL || top->type != EXP_DEREF || cxt->last_active_stack != OP_STACK) 
         error_row_col_exit(token->offset, "Qualifier \"%s\" must modify pointer\n", token_symstr(token->type));
-      if(!token_decl_compatible(token, top->decl_prop))
+      if(!token_decl_apply(token, top->decl_prop))
         error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
                            token_symstr(token->type), token_decl_print(top->decl_prop));
-      top->decl_prop = token_decl_apply(token, top->decl_prop);
       // We have decl_prop, so just free const and volatile nodes
       //ast_push_child(top, token);
       token_free(token);
