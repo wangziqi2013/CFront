@@ -377,8 +377,8 @@ void test_parse_decl() {
   return;
 }
 
-void test_parse_comp() {
-  printf("=== Test parse_comp ===\n");
+void test_parse_struct_union() {
+  printf("=== Test parse_struct_union ===\n");
   parse_exp_cxt_t *cxt;
   token_t *token;
   char test1[] = "struct a { int b; long c; volatile double d; }";
@@ -414,6 +414,53 @@ void test_parse_comp() {
   ast_free(token);
   printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
   char test5[] = "struct name;";
+  cxt = parse_exp_init(test5);
+  token = parse_comp(cxt);
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
+  return;
+}
+
+void test_parse_enum() {
+  printf("=== Test parse_enum ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "enum abcdefg";
+  cxt = parse_exp_init(test1);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "enum {}";
+  cxt = parse_exp_init(test2);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "enum {a,b,c,d,}";
+  cxt = parse_exp_init(test3);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test4[] = "enum {a=1,b=2,c,d,e=5,}";
+  cxt = parse_exp_init(test4);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test5[] = "enum name {a = (0,1,2), b = a ? 100 : 200, c = b}";
   cxt = parse_exp_init(test5);
   token = parse_comp(cxt);
   assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
@@ -463,7 +510,8 @@ int main() {
   test_token_lookahead();
   test_simple_exp_parse();
   test_parse_decl();
-  test_parse_comp();
+  test_parse_struct_union();
+  test_parse_enum();
   //test_anomaly();
   return 0;
 }
