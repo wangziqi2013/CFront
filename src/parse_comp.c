@@ -64,9 +64,9 @@ token_t *parse_enum(parse_comp_cxt_t *cxt, token_t *root) {
   if(parse_name_body(cxt, root)) {
     while(1) { // loop on lines
       if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_RCPAREN) { 
-        
+        token_consume_type(cxt->token_cxt, T_RCPAREN); break;
       }
-      token_t *comp_decl = ast_append_child(token_alloc_type(T_COMP_DECL), parse_basetype(cxt));
+      token_t *comp_decl = token_alloc_type(T_COMP_DECL);
       ast_append_child(root, comp_decl);
       token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
       if(la->type == T_IDENT) ast_append_child(comp_decl, token_get_next(cxt->token_cxt));
