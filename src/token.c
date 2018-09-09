@@ -105,6 +105,7 @@ int token_isutype(token_cxt_t *cxt, token_t *token) {
 int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
   if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
   if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
+  if(token->decl_prop & DECL_TYPE_MASK) return (BASETYPE_GET(decl_prop) == BASETYPE_NONE);
   return 1;
 }
 

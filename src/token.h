@@ -133,6 +133,7 @@ typedef uint32_t decl_prop_t;
 // All together, if any of these bits are present, then it is a declaration keyword
 #define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK | DECL_SIGN_MASK)
 // The following defines complete set of supported types (bit 16 - 23)
+#define BASETYPE_NONE      0x00000000
 #define BASETYPE_CHAR       0X00010000
 #define BASETYPE_SHORT      0X00020000
 #define BASETYPE_INT        0X00030000
@@ -150,8 +151,8 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_UNION      0x000F0000
 #define BASETYPE_ENUM       0x00100000
 #define BASETYPE_UDEF       0x00110000
-#define BASETYPE_GET(token) (token->decl_prop & 0x00FF0000)
-#define BASETYPE_SET(token, type) (token->decl_prop |= (type & 0x00FF0000))
+#define BASETYPE_GET(decl_prop) (decl_prop & 0x00FF0000)
+#define BASETYPE_SET(decl_prop, type) (decl_prop | (type & 0x00FF0000))
 
 typedef struct token_t {
   token_type_t type;
