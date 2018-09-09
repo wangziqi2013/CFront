@@ -592,13 +592,8 @@ void token_copy_literal(token_t *token, const char *begin, const char *end) {
   return;
 }
 
-// Frees the literal buffer in the token. If not a literal then do nothing
-void token_free_literal(token_t *token) {
-  if(token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END) free(token->str);
-}
-
 void token_free(token_t *token) {
-  token_free_literal(token);
+  if(token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END) free(token->str);
   free(token);
 }
 
