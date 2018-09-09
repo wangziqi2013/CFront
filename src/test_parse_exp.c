@@ -463,7 +463,7 @@ void test_parse_enum() {
   char test5[] = "enum name {a = (0,1,2), b = a ? 100 : 200, c = b}";
   cxt = parse_exp_init(test5);
   token = parse_comp(cxt);
-  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
+  assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
