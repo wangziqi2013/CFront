@@ -44,17 +44,50 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   return valid ? token_get_next(cxt->token_cxt) : NULL;
 }
 
+// Parses the type specifier part of a base type declaration
+// Sets the decl_prop of the basetype node according to the type being parsed, and push child for udef, s/u/e
+void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
+  assert(BASETYOE_GET(basetype->decl_prop) == BASETYPE_NONE);
+  int usign = 0;
+  switch(token_lookahead_notnull(cxt->token_cxt, 1)->type) { // Basetype declaration cannot be the end of file
+    case T_UNSIGNED: usign = 1; // Fall through
+    case T_SIGNED: {
+      token_free(token_get_next(cxt->token_cxt));
+      token_t *token = token_get_next(cxt->token_cxt);
+      switch(token->type) {
+        case T_CHAR: BASETYPE_SET(basetype, usign ? BASETYPE_UCHAR : BASETYPE_CHAR); token_free(token); return;
+        case T_INT: BASETYPE_SET(basetype, usign ? BASETYPE_UINT : BASETYPE_INT); token_free(token); return;
+        case T_SHORT: // short int has the same effect as short, so we just try to consume an extra int
+          BASETYPE_SET(basetype, usign ? BASETYPE_USHORT : BASETYPE_SHORT); token_free(token); 
+          token_consume_type(cxt->token_cxt, T_INT); return;
+        case T_LONG: // long int / long long / long double
+        default: token_pushback(cxt->token_cxt, token); return;
+      }
+    }
+    case T_FLOAT: BASETYPE_SET(basetype, BASETYPE_FLOAT); token_free(token_get_next(cxt->token_cxt)); return;
+    case T_DOUBLE: BASETYPE_SET(basetype, BASETYPE_DOUBLE); token_free(token_get_next(cxt->token_cxt)); return;
+    case T_UDEF: BASETYPE_SET(basetype, BASETYPE_UDEF); token_free(token_get_next(cxt->token_cxt)); return;
+    case T_STRUCT: BASETYPE_SET(ast_append_child(basetype, parse_comp(cxt)), BASETYPE_STRUCT); return;
+    case T_UNION: BASETYPE_SET(ast_append_child(basetype, parse_comp(cxt)), BASETYPE_UNION); return;
+    case T_ENUM: BASETYPE_SET(ast_append_child(basetype, parse_comp(cxt)), BASETYPE_ENUM); return;
+    default: return;
+  }
+}
+
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 
 // keywords with TOKEN_DECL set
 // The stack is not changed, calling this function does not need recurse
 token_t *parse_basetype(parse_decl_cxt_t *cxt) {
   token_t *token = token_lookahead(cxt->token_cxt, 1), *basetype = token_alloc_type(T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
-    if(!token_decl_apply(token, basetype->decl_prop)) 
-      error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
-      token_symstr(token->type), token_decl_print(basetype->decl_prop));
-    ast_append_child(basetype, (token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) ? 
-                     parse_comp(cxt) : token_get_next(cxt->token_cxt));
+    if(!(token->decl_prop & DECL_TYPE_MASK)) {
+      if(!token_decl_apply(token, basetype->decl_prop)) 
+        error_row_col_exit(token->offset, "Incompatible type modifier \"%s\" with \"%s\"\n",
+        token_symstr(token->type), token_decl_print(basetype->decl_prop));
+    } else { // TODO: USE A STATE MACHINE
+      ast_append_child(basetype, (token->type == T_STRUCT || token->type == T_UNION || token->type == T_ENUM) ? 
+                      parse_comp(cxt) : token_get_next(cxt->token_cxt));
+    }
     token = token_lookahead(cxt->token_cxt, 1);
   }
   if(basetype->child == NULL) error_row_col_exit(cxt->token_cxt->s, "Declaration lacks a base type\n");
