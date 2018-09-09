@@ -91,12 +91,6 @@ void token_cxt_free(token_cxt_t *cxt) {
   free(cxt);
 }
 
-token_t *token_get_empty() {
-  token_t *token = token_alloc();
-  token->type = T_;
-  return token;
-}
-
 // Adds a user-defined type
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
   ht_insert(cxt->udef_types, token->str, NULL);
@@ -106,20 +100,17 @@ int token_isutype(token_cxt_t *cxt, token_t *token) {
   return token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND;
 }
 
-// Checks if a keyword token is compatible with a given property bit mask
-// Note: Only simple rules are enforced here, i.e. no duplicate, no conflicting type
+// Only checks STORAGE CLASS and QUALIFIER. At most one from the former is allowed.
+// No duplicates for the latter is allowed
 int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
-  //if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
   if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
   if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
-  //if(token->decl_prop & DECL_SIGN_MASK) return !(decl_prop & token->decl_prop);
-  assert(0); return 0;
+  return 1;
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
 // Return DECL_INVALID if incompatible
 int token_decl_apply(token_t *token, decl_prop_t decl_prop) {
-  //printf("%s 0x%X 0x%X\n", token_typestr(token->type), token->decl_prop, decl_prop);
   if(!token_decl_compatible(token, decl_prop)) return 0;
   token->decl_prop |= decl_prop;
   return 1;
@@ -627,6 +618,8 @@ token_t *token_alloc_type(token_type_t type) {
   token->type = type;
   return token;
 }
+
+token_t *token_get_empty() { return token_alloc_type(T_); }
 
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
