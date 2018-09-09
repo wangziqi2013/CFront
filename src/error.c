@@ -16,7 +16,11 @@ void error_free() { inited = 0; }
 void error_testmode(int mode) { testmode = mode; }
 void error_exit_or_jump() { 
   if(testmode) { fprintf(stderr, "*** Errors are redirected ***\n"); longjmp(env, 1); }
+#ifndef NDEBUG
+  else { assert(0); }
+#else
   else { exit(1); }
+#endif
 }
 
 // Returns the row and column of a given pointer

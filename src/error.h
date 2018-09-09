@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
+#include <assert.h>
 
 extern jmp_buf env;
 
