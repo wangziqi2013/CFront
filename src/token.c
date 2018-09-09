@@ -109,19 +109,20 @@ int token_isutype(token_cxt_t *cxt, token_t *token) {
 // Checks if a keyword token is compatible with a given property bit mask
 // Note: Only simple rules are enforced here, i.e. no duplicate, no conflicting type
 int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
-  if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
+  //if(token->decl_prop & DECL_TYPE_MASK) return !(decl_prop & DECL_TYPE_MASK);
   if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
   if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
-  if(token->decl_prop & DECL_SIGN_MASK) return !(decl_prop & token->decl_prop);
+  //if(token->decl_prop & DECL_SIGN_MASK) return !(decl_prop & token->decl_prop);
   assert(0); return 0;
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
 // Return DECL_INVALID if incompatible
-decl_prop_t token_decl_apply(token_t *token, decl_prop_t decl_prop) {
+int token_decl_apply(token_t *token, decl_prop_t decl_prop) {
   //printf("%s 0x%X 0x%X\n", token_typestr(token->type), token->decl_prop, decl_prop);
-  if(!token_decl_compatible(token, decl_prop)) return DECL_INVALID;
-  return decl_prop | token->decl_prop;
+  if(!token_decl_compatible(token, decl_prop)) return 0;
+  token->decl_prop |= decl_prop;
+  return 1;
 }
 
 // Returns a buffer that contains string representation of the property bit mask
