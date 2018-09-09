@@ -102,7 +102,7 @@ typedef enum {
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
 #define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
-// Type related bit mask (bit 4, 5, 6, 7); Note that these are signed, even for incompatible types
+// Type related bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
 #define DECL_CHAR     0x00000010 // Make sure integer types are in a consecutive range
 #define DECL_SHORT    0x00000020
@@ -126,12 +126,32 @@ typedef uint32_t decl_prop_t;
 #define DECL_QUAL_MASK     0x00003000
 #define DECL_VOLATILE_MASK 0x00001000
 #define DECL_CONST_MASK    0x00002000
-// Signed and unsigned mask (bit 14, 15); Both set means do not allow sign
+// Signed and unsigned mask (bit 14, 15);
 #define DECL_SIGN_MASK     0x0000C000
-#define DECL_UNSIGNED      0x00008000
-#define DECL_SIGNED        0x0000C000
+#define DECL_UNSIGNED      0x00004000
+#define DECL_SIGNED        0x00008000
 // All together, if any of these bits are present, then it is a declaration keyword
 #define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK | DECL_SIGN_MASK)
+// The following defines complete set of supported types (bit 16 - 23)
+#define BASETYPE_CHAR       0X00010000
+#define BASETYPE_SHORT      0X00020000
+#define BASETYPE_INT        0X00030000
+#define BASETYPE_LONG       0X00040000
+#define BASETYPE_UCHAR      0X00050000
+#define BASETYPE_USHORT     0X00060000
+#define BASETYPE_UINT       0X00070000
+#define BASETYPE_ULONG      0X00080000
+#define BASETYPE_LLONG      0x00090000
+#define BASETYPE_ULLONG     0x000A0000
+#define BASETYPE_FLOAT      0x000B0000
+#define BASETYPE_DOUBLE     0x000C0000
+#define BASETYPE_LDOUBLE    0x000D0000
+#define BASETYPE_STRUCT     0x000E0000
+#define BASETYPE_UNION      0x000F0000
+#define BASETYPE_ENUM       0x00100000
+#define BASETYPE_UDEF       0x00110000
+#define BASETYPE_GET(token) (token->decl_prop & 0x00FF0000)
+#define BASETYPE_SET(token, type) (token->decl_prop |= (type & 0x00FF0000))
 
 typedef struct token_t {
   token_type_t type;
