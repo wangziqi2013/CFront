@@ -196,18 +196,8 @@ void test_decl_prop() {
     printf("Iter #%d %s: \n", iter, s);
     error_init(s);
     int comp = 1;
-    token_t *token;
-    while((token = token_get_next(token_cxt)) != NULL) {
-      decl_prop_t new_decl_prop = token_decl_apply(token, decl_prop);
-      if(new_decl_prop == DECL_INVALID) {
-        printf("--> Incompatible: %s and %s\n", token_typestr(token->type), token_decl_print(decl_prop));
-        token_free(token);
-        comp = 0;
-        break;
-      }
-      else decl_prop = new_decl_prop;
-      token_free(token);
-    }
+    //token_t *token;
+    
     if(comp) printf("--> Reconstruct: %s\n", token_decl_print(decl_prop));
     token_cxt_free(token_cxt);
   }
