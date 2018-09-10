@@ -18,25 +18,23 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
   int valid; // Below are not "=="
   if((valid = (token != NULL))) {
     switch(token->type) {
-      case T_LPAREN: {  // If the next symbol constitutes a base type then this is func call
+      case T_LPAREN: { // If the next symbol constitutes a base type then this is func call
         token_t *lookahead = token_lookahead(cxt->token_cxt, 2); // Note that we already looked ahead one token
         if(lookahead != NULL && (parse_decl_isbasetype(cxt, lookahead) || lookahead->type == T_RPAREN)) 
           token->type = EXP_FUNC_CALL;
         else token->type = EXP_LPAREN;
         break;
       }
-      case T_RPAREN: {
+      case T_RPAREN:
         if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLOWALL)) token->type = EXP_RPAREN;
         else valid = 0;
         break;
-      } 
       case T_STAR: token->type = EXP_DEREF; break;
       case T_LSPAREN: token->type = EXP_ARRAY_SUB; break;
-      case T_RSPAREN: {
+      case T_RSPAREN: 
         if(parse_exp_isallowed(cxt, token, PARSE_EXP_ALLOWALL)) token->type = EXP_RSPAREN;
         else valid = 0;
         break;
-      } 
       case T_IDENT: break;
       default: if(!(token->decl_prop & DECL_QUAL_MASK)) valid = 0; // Only allow DECL_QUAL and identifier
     }
@@ -125,7 +123,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
       token_t *top = parse_exp_peek(cxt, OP_STACK);
       if(top == NULL || top->type != EXP_DEREF || cxt->last_active_stack != OP_STACK) 
-        error_row_col_exit(token->offset, "Qualifier \"%s\" must modify pointer\n", token_symstr(token->type));
+        error_row_col_exit(token->offset, "Qualifier \"%s\" must follow pointer\n", token_symstr(token->type));
       if(!token_decl_apply(top, token))
         error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
                            token_symstr(token->type), token_decl_print(top->decl_prop));

@@ -188,7 +188,8 @@ void test_decl_prop() {
   char test4[] = "extern unsigned long long const";   // unsigned long long
   char test5[] = "long double typedef";               // long double
   char test6[] = "volatile signed long int const";    // signed long int
-  char *tests[] = {test1, test2, test3, test4, test5, test6, };
+  char test7[] = "volatile struct {int a, b : 50; signed long long int c;} const";    // struct
+  char *tests[] = {test1, test2, test3, test4, test5, test6, test7, };
   for(int iter = 0;iter < (int)sizeof(tests) / (int)sizeof(char *);iter++) {
     char *s = tests[iter];
     parse_exp_cxt_t *cxt = parse_exp_init(s);
@@ -196,6 +197,7 @@ void test_decl_prop() {
     token_t *basetype = parse_decl_basetype(cxt);
     assert(token_get_next(cxt->token_cxt) == NULL);
     printf("--> Reconstruct: %s\n", token_decl_print(basetype->decl_prop));
+    if(iter == 6) ast_print(basetype, 0);
     ast_free(basetype);
     parse_exp_free(cxt);
   }
