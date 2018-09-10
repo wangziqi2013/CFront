@@ -113,7 +113,7 @@ int token_decl_compatible(token_t *dest, token_t *src) {
 // Return DECL_INVALID if incompatible
 int token_decl_apply(token_t *dest, token_t *src) {
   if(!token_decl_compatible(dest, src)) return 0;
-  dest->decl_prop |= src->deck_prop;
+  dest->decl_prop |= src->decl_prop;
   return 1;
 }
 
