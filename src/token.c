@@ -102,18 +102,18 @@ int token_isutype(token_cxt_t *cxt, token_t *token) {
 
 // Only checks STORAGE CLASS and QUALIFIER. At most one from the former is allowed.
 // No duplicates for the latter is allowed
-int token_decl_compatible(token_t *token, decl_prop_t decl_prop) {
-  if(token->decl_prop & DECL_STGCLS_MASK) return !(decl_prop & DECL_STGCLS_MASK);
-  if(token->decl_prop & DECL_QUAL_MASK) return !(decl_prop & token->decl_prop);
-  if(token->decl_prop & DECL_TYPE_MASK) return (BASETYPE_GET(decl_prop) == BASETYPE_NONE);
+int token_decl_compatible(token_t *dest, token_t *src) {
+  if(src->decl_prop & DECL_STGCLS_MASK) return !(dest->decl_prop & DECL_STGCLS_MASK);
+  if(src->decl_prop & DECL_QUAL_MASK) return !(dest->decl_prop & src->decl_prop);
+  if(src->decl_prop & DECL_TYPE_MASK) return (BASETYPE_GET(dest->decl_prop) == BASETYPE_NONE);
   return 1;
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
 // Return DECL_INVALID if incompatible
-int token_decl_apply(token_t *token, decl_prop_t decl_prop) {
-  if(!token_decl_compatible(token, decl_prop)) return 0;
-  token->decl_prop |= decl_prop;
+int token_decl_apply(token_t *dest, token_t *src) {
+  if(!token_decl_compatible(dest, src)) return 0;
+  dest->decl_prop |= src->deck_prop;
   return 1;
 }
 
