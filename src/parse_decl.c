@@ -62,16 +62,17 @@ void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
         case T_SHORT: // short int has the same effect as short, so we just try to consume an extra int
           BASETYPE_SET(basetype, usign ? BASETYPE_USHORT : BASETYPE_SHORT); token_free(token); 
           token_consume_type(cxt->token_cxt, T_INT); return;
-        case T_LONG: { // long long; long int; long
+        case T_LONG: { // long long; long long int; long int; long
           token_free(token);
           token_t *token = token_get_next(cxt->token_cxt);
           switch(token->type) {
-            case T_LONG: BASETYPE_SET(basetype, usign ? BASETYPE_ULLONG : BASETYPE_LLONG); token_free(token); return;
-            case T_DOUBLE: {
+            case T_LONG: // Same as short [int]
+              BASETYPE_SET(basetype, usign ? BASETYPE_ULLONG : BASETYPE_LLONG); token_free(token);
+              token_consume_type(cxt->token_cxt, T_INT); return;
+            case T_DOUBLE:
               if(type == T_SIGNED || type == T_UNSIGNED) 
                 error_row_col_exit(token->offset, "Type \"long double\" does not allow sign declaration\n");
               BASETYPE_SET(basetype, BASETYPE_LDOUBLE); token_free(token); return;
-            }
             case T_INT: BASETYPE_SET(basetype, usign ? BASETYPE_ULONG : BASETYPE_LONG); token_free(token); return;
             default: 
               BASETYPE_SET(basetype, usign ? BASETYPE_ULONG : BASETYPE_LONG);
@@ -95,7 +96,7 @@ void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
 // Base type = one of udef/builtin/enum/struct/union; In this stage only allows 
 // keywords with TOKEN_DECL set
 // The stack is not changed, calling this function does not need recurse
-token_t *parse_basetype(parse_decl_cxt_t *cxt) {
+token_t *parse_decl_basetype(parse_decl_cxt_t *cxt) {
   token_t *token = token_lookahead(cxt->token_cxt, 1), *basetype = token_alloc_type(T_BASETYPE);
   while(token != NULL && (token->decl_prop & DECL_MASK)) {
     if(!(token->decl_prop & DECL_TYPE_MASK)) {
@@ -114,7 +115,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
   token_t *decl = token_alloc_type(T_DECL);
   if(hasbasetype == PARSE_DECL_HASBASETYPE) // If this is off then the base type node is empty
-    ast_append_child(decl, parse_basetype(cxt)); 
+    ast_append_child(decl, parse_decl_basetype(cxt)); 
   parse_exp_shift(cxt, AST_STACK, token_get_empty()); // Placeholder operand for the innremost operator
   token_t *decl_name = NULL;  // If not an abstract declarator this is the name
   while(1) {
