@@ -185,9 +185,9 @@ void test_decl_prop() {
   char test1[] = "extern volatile unsigned const";    // unsigned
   char test2[] = "auto unsigned long long int const"; // unsigned long long int
   char test3[] = "signed short int extern";           // signed short int
-  char test4[] = "unsigned extern long long const";   // unsigned long long
+  char test4[] = "extern unsigned long long const";   // unsigned long long
   char test5[] = "long double typedef";               // long double
-  char test6[] = "volatile const const";              // signed long int
+  char test6[] = "volatile signed long int const";    // signed long int
   char *tests[] = {test1, test2, test3, test4, test5, test6, };
   for(int iter = 0;iter < (int)sizeof(tests) / (int)sizeof(char *);iter++) {
     char *s = tests[iter];
