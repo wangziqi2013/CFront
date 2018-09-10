@@ -182,24 +182,22 @@ void test_ast() {
 
 void test_decl_prop() {
   printf("=== Test Declaration Property ===\n");
-  char test1[] = "extern volatile const int unsigned";
-  char test2[] = "auto const unsigned float";
-  char test3[] = "signed char int";
-  char test4[] = "unsigned extern const long long"; // do not support long long type
-  char test5[] = "long double typedef"; // do not support long double type
-  char test6[] = "volatile const const";
+  char test1[] = "extern volatile unsigned const";    // unsigned
+  char test2[] = "auto unsigned long long int const"; // unsigned long long int
+  char test3[] = "signed short int extern";           // signed short int
+  char test4[] = "unsigned extern long long const";   // unsigned long long
+  char test5[] = "long double typedef";               // long double
+  char test6[] = "volatile const const";              // signed long int
   char *tests[] = {test1, test2, test3, test4, test5, test6, };
   for(int iter = 0;iter < (int)sizeof(tests) / (int)sizeof(char *);iter++) {
-    decl_prop_t decl_prop = DECL_NULL;
     char *s = tests[iter];
-    token_cxt_t *token_cxt = token_cxt_init(s);
+    parse_exp_cxt_t *cxt = parse_exp_init(s);
     printf("Iter #%d %s: \n", iter, s);
-    error_init(s);
-    int comp = 1;
-    //token_t *token;
-    
-    if(comp) printf("--> Reconstruct: %s\n", token_decl_print(decl_prop));
-    token_cxt_free(token_cxt);
+    token_t *basetype = parse_decl_basetype(cxt);
+    assert(token_get_next(cxt->token_cxt) == NULL);
+    printf("--> Reconstruct: %s\n", token_decl_print(basetype->decl_prop));
+    ast_free(basetype);
+    parse_exp_free(cxt);
   }
   
   printf("Pass!\n");
