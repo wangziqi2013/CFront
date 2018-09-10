@@ -131,27 +131,29 @@ char *token_decl_print(decl_prop_t decl_prop) {
   }
   if(decl_prop & DECL_VOLATILE_MASK) strcat(buffer, "volatile ");
   if(decl_prop & DECL_CONST_MASK) strcat(buffer, "const ");
-  if(decl_prop & DECL_SIGN_MASK) {
-    switch(decl_prop & DECL_SIGN_MASK) {
-      case DECL_SIGNED: strcat(buffer, "signed "); break;
-      case DECL_UNSIGNED: strcat(buffer, "unsigned "); break;
+  if(decl_prop & BASETYPE_MASK) {
+    switch(decl_prop & BASETYPE_MASK) {
+      case BASETYPE_CHAR:       strcat(buffer, "char "); break;
+      case BASETYPE_SHORT:      strcat(buffer, "short "); break;
+      case BASETYPE_INT:        strcat(buffer, "int "); break;
+      case BASETYPE_LONG:       strcat(buffer, "long "); break;
+      case BASETYPE_UCHAR:      strcat(buffer, "unsigned char "); break;
+      case BASETYPE_USHORT:     strcat(buffer, "unsigned short "); break;
+      case BASETYPE_UINT:       strcat(buffer, "unsigned int "); break;
+      case BASETYPE_ULONG:      strcat(buffer, "unsigned long "); break;
+      case BASETYPE_LLONG:      strcat(buffer, "long long "); break;
+      case BASETYPE_ULLONG:     strcat(buffer, "unsigned long long "); break;
+      case BASETYPE_FLOAT:      strcat(buffer, "float "); break;
+      case BASETYPE_DOUBLE:     strcat(buffer, "double "); break;
+      case BASETYPE_LDOUBLE:    strcat(buffer, "long double "); break;
+      case BASETYPE_STRUCT:     strcat(buffer, "struct "); break;
+      case BASETYPE_UNION:      strcat(buffer, "union "); break;
+      case BASETYPE_ENUM:       strcat(buffer, "enum "); break;
+      case BASETYPE_UDEF:       strcat(buffer, "<typedef'ed> "); break;
+      case BASETYPE_VOID:       strcat(buffer, "void "); break;
     }
   }
-  if(decl_prop & DECL_TYPE_MASK) {
-    switch(decl_prop & DECL_TYPE_MASK) {
-      case DECL_CHAR: strcat(buffer, "char "); break;
-      case DECL_SHORT: strcat(buffer, "short "); break;
-      case DECL_INT: strcat(buffer, "int "); break;
-      case DECL_LONG: strcat(buffer, "long "); break;
-      case DECL_ENUM: strcat(buffer, "enum "); break;
-      case DECL_STRUCT: strcat(buffer, "struct "); break;
-      case DECL_UNION: strcat(buffer, "union "); break;
-      case DECL_UDEF: strcat(buffer, "<typedef'ed> "); break;
-      case DECL_FLOAT: strcat(buffer, "float "); break;
-      case DECL_DOUBLE: strcat(buffer, "double "); break;
-      case DECL_VOID: strcat(buffer, "void "); break;
-    }
-  }
+  buffer[strlen(buffer) - 1] = '\0';
   return buffer;
 }
 
