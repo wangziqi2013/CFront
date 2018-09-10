@@ -14,7 +14,7 @@ void parse_decl_free(parse_decl_cxt_t *cxt);
 int parse_decl_isbasetype(parse_decl_cxt_t *cxt, token_t *token);
 token_t *parse_decl_next_token(parse_decl_cxt_t *cxt);
 void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype);
-token_t *parse_basetype(parse_decl_cxt_t *cxt);
+token_t *parse_decl_basetype(parse_decl_cxt_t *cxt);
 token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype);
 
 #endif

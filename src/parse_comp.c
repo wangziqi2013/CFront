@@ -34,7 +34,7 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
         token_consume_type(cxt->token_cxt, T_RCPAREN); 
         break; 
       }
-      token_t *comp_decl = ast_append_child(token_alloc_type(T_COMP_DECL), parse_basetype(cxt));
+      token_t *comp_decl = ast_append_child(token_alloc_type(T_COMP_DECL), parse_decl_basetype(cxt));
       while(1) { // loop on fields
         token_t *field = token_alloc_type(T_COMP_FIELD);
         parse_exp_recurse(cxt);
