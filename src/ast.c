@@ -38,9 +38,9 @@ void ast_print(token_t *token, int depth) {
   for(int i = 0;i < depth * 2;i++) if(i % 2 == 0) printf("|"); else printf(" ");
   const char *symstr = token_symstr(token->type);
   printf("%04d:%s %s\n", token->type, token_typestr(token->type), 
-         symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr);
-  for(token_t *child = token->child;child != NULL; child = child->sibling) 
-    ast_print(child, depth + 1);
+         token->type == T_BASETYPE ? token_decl_print(token->decl_prop) : 
+         (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr));
+  for(token_t *child = token->child;child != NULL; child = child->sibling) ast_print(child, depth + 1);
   return;
 }
 
