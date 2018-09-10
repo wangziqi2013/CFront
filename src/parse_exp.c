@@ -265,6 +265,7 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
 }
 
 token_t *parse_exp(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
+  assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0); // Must start on a new stack
   stack_t *op = cxt->stacks[OP_STACK];
   while(1) {
     token_t *token = parse_exp_next_token(cxt, disallow);

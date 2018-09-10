@@ -102,9 +102,9 @@ typedef enum {
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
 #define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
-// Type related bit mask (bit 4, 5, 6, 7)
+// Type specifier bit mask (bit 4, 5, 6, 7)
 #define DECL_TYPE_MASK     0x000000F0
-#define DECL_CHAR     0x00000010 // Make sure integer types are in a consecutive range
+#define DECL_CHAR     0x00000010
 #define DECL_SHORT    0x00000020
 #define DECL_INT      0x00000030
 #define DECL_LONG     0x00000040
@@ -162,7 +162,6 @@ typedef struct token_t {
     struct token_t *sibling; // If token is in AST then use child-sibling representation
     struct token_t *next;    // If token is in pushbacks queue then form a circular queue
   };
-  
   char *offset;              // The offset in source file, for debugging
   decl_prop_t decl_prop;     // Property if the kwd is part of declaration; Set when a kwd is found
 } token_t;

@@ -110,7 +110,7 @@ token_t *parse_decl_basetype(parse_decl_cxt_t *cxt) {
 }
 
 token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
-  assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0);
+  assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0); // Must start on a new stack
   token_t *decl = token_alloc_type(T_DECL);
   if(hasbasetype == PARSE_DECL_HASBASETYPE) // If this is off then the base type node is empty
     ast_append_child(decl, parse_decl_basetype(cxt)); 
