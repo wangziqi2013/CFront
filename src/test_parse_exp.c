@@ -601,6 +601,46 @@ void test_parse_comp_stmt() {
   return;
 }
 
+void test_parse_if_stmt() {
+  printf("=== Test parse_if_stmt ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "if(a == b) x = y; else { x != y; }"; // Test if else with comp stmt
+  cxt = parse_exp_init(test1);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "if(a == b) x; else if(c == d) { second_if; } else not_block;"; // nested if in else stmt
+  cxt = parse_exp_init(test2);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "if(a == b) if(c == d) inner_if; else inner_else; else outer_else;"; // nested if in if stmt
+  cxt = parse_exp_init(test3);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n"); /*
+  char test4[] = "{ a = b; c = d; return a == c; }"; // Test empty var decl
+  cxt = parse_exp_init(test4);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");*/
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -617,6 +657,7 @@ int main() {
   test_parse_enum();
   test_parse_stmt();
   test_parse_comp_stmt();
+  test_parse_if_stmt();
   //test_anomaly();
   return 0;
 }
