@@ -565,15 +565,15 @@ void test_parse_comp_stmt() {
   printf("=== Test parse_comp_stmt ===\n");
   parse_exp_cxt_t *cxt;
   token_t *token;
-  char test1[] = "{int a, b, c; void **d = NULL; }"; // First colon should be parsed as expression
+  char test1[] = "{int a, b, c; void **d = NULL, (*e)() = NULL; }"; // Test multiple variables
   cxt = parse_exp_init(test1);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");/*
-  char test2[] = "label_2: continue;";
+  printf("=====================================\n");
+  char test2[] = "{ int a[10][20] = {{1,2,3}, {4,}, {5, 6, 7}}; a[0][1] = 100; }"; // Test init list
   cxt = parse_exp_init(test2);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
@@ -581,22 +581,22 @@ void test_parse_comp_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test3[] = "default: break;";
+  char test3[] = "{}"; // Test empty block
   cxt = parse_exp_init(test3);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");
-  char test4[] = "return;";
+  printf("=====================================\n"); 
+  char test4[] = "{ a = b; c = d; return a == c; }"; // Test empty var decl
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");*/
+  printf("=====================================\n");
   printf("Pass!\n");
   return;
 }
