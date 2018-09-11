@@ -127,71 +127,67 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
       if(!token_decl_apply(top, token))
         error_row_col_exit(token->offset, "Qualifier \"%s\" not compatible with \"%s\"\n",
                            token_symstr(token->type), token_decl_print(top->decl_prop));
-      // We have decl_prop, so just free const and volatile nodes
-      //ast_push_child(top, token);
       token_free(token);
-      continue;
-    }
-    switch(token->type) {
-      case EXP_DEREF: // To avoid int **a*; being legal, because identifiers are not pushed to AST stack
-        if(decl_name) error_row_col_exit(token->offset, "Pointers can only occur before declared name\n") 
-        else parse_exp_shift(cxt, OP_STACK, token); 
-        break;
-      case T_IDENT:  // Trick: Do not push it onto the stack
-        if(decl_name) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
-        decl_name = token;
-        /* Is the above sufficient? - As long as parenthesis is not parsed recursively it is fine
-        token_t *ast_top = parse_exp_peek(cxt, AST_STACK);
-        if(ast_top != NULL && ast_top->type == T_) token_free(stack_pop(cxt->stacks[AST_STACK]));
-        else if(ast_top != NULL) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
-        parse_exp_shift(cxt, AST_STACK, token);
-        */
-        break;
-      case EXP_ARRAY_SUB: {
-        parse_exp_shift(cxt, OP_STACK, token);
-        token_t *la = token_lookahead(cxt->token_cxt, 1);
-        token_t *index;
-        if(la != NULL && la->type == T_RSPAREN) { index = token_get_empty(); }
-        else {
-          parse_exp_recurse(cxt);
-          index = parse_exp(cxt, PARSE_EXP_ALLOWALL);
-          parse_exp_decurse(cxt);
-        }
-        parse_exp_shift(cxt, AST_STACK, index);
-        parse_exp_reduce(cxt, -1, 1); // This reduces array sub
-        if(!token_consume_type(cxt->token_cxt, T_RSPAREN)) 
-          error_row_col_exit(token->offset, "Array declaration expects \']\'\n");
-        break;
-      }
-      case EXP_FUNC_CALL: {
-        parse_exp_shift(cxt, OP_STACK, token);
-        token_t *la = token_lookahead(cxt->token_cxt, 1);
-        if(la != NULL && la->type == T_RPAREN) {
-          ast_push_child(token, token_get_empty());
-          token_consume_type(cxt->token_cxt, T_RPAREN);
-        } else {
-          while(1) {
+    } else {
+      switch(token->type) {
+        case EXP_DEREF: // To avoid int **a*; being legal, because identifiers are not pushed to AST stack
+          if(decl_name) error_row_col_exit(token->offset, "Pointers can only occur before declared name\n") 
+          parse_exp_shift(cxt, OP_STACK, token); break;
+        case T_IDENT:  // Trick: Do not push it onto the stack
+          if(decl_name) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
+          decl_name = token; break;
+          /* Is the above sufficient? - As long as parenthesis is not parsed recursively it is fine
+          token_t *ast_top = parse_exp_peek(cxt, AST_STACK);
+          if(ast_top != NULL && ast_top->type == T_) token_free(stack_pop(cxt->stacks[AST_STACK]));
+          else if(ast_top != NULL) error_row_col_exit(token->offset, "Type declaration can have at most one identifier\n");
+          parse_exp_shift(cxt, AST_STACK, token);
+          */
+        case EXP_ARRAY_SUB: {
+          parse_exp_shift(cxt, OP_STACK, token);
+          token_t *la = token_lookahead(cxt->token_cxt, 1);
+          token_t *index;
+          if(la != NULL && la->type == T_RSPAREN) { index = token_get_empty(); }
+          else {
             parse_exp_recurse(cxt);
-            ast_append_child(token, parse_decl(cxt, PARSE_DECL_HASBASETYPE));
+            index = parse_exp(cxt, PARSE_EXP_ALLOWALL);
             parse_exp_decurse(cxt);
-            if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
-            else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
-            else error_row_col_exit(token->offset, "Function declaration expects \')\' or \',\'");
           }
+          parse_exp_shift(cxt, AST_STACK, index);
+          parse_exp_reduce(cxt, -1, 1); // This reduces array sub
+          if(!token_consume_type(cxt->token_cxt, T_RSPAREN)) 
+            error_row_col_exit(token->offset, "Array declaration expects \']\'\n");
+          break;
         }
-        parse_exp_reduce(cxt, 1, 1); // This reduces EXP_FUNC_CALL
-        break;
-      }
-      case EXP_LPAREN: parse_exp_shift(cxt, OP_STACK, token); break;
-      case EXP_RPAREN: {
-        token_t *op_top = parse_exp_peek(cxt, OP_STACK);
-        while(op_top != NULL && op_top->type != EXP_LPAREN) op_top = parse_exp_reduce(cxt, -1, 0);
-        if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'(\' in declaration\n");
-        token_free(stack_pop(cxt->stacks[OP_STACK]));
-        token_free(token);
-        break;
-      }
-      default: printf("%s %s\n", token_typestr(token->type), token->offset); assert(0);
-    }
-  }
+        case EXP_FUNC_CALL: {
+          parse_exp_shift(cxt, OP_STACK, token);
+          token_t *la = token_lookahead(cxt->token_cxt, 1);
+          if(la != NULL && la->type == T_RPAREN) {
+            ast_push_child(token, token_get_empty());
+            token_consume_type(cxt->token_cxt, T_RPAREN);
+          } else {
+            while(1) {
+              parse_exp_recurse(cxt);
+              ast_append_child(token, parse_decl(cxt, PARSE_DECL_HASBASETYPE));
+              parse_exp_decurse(cxt);
+              if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
+              else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
+              else error_row_col_exit(token->offset, "Function declaration expects \')\' or \',\'");
+            }
+          }
+          parse_exp_reduce(cxt, 1, 1); // This reduces EXP_FUNC_CALL
+          break;
+        }
+        case EXP_LPAREN: parse_exp_shift(cxt, OP_STACK, token); break;
+        case EXP_RPAREN: {
+          token_t *op_top = parse_exp_peek(cxt, OP_STACK);
+          while(op_top != NULL && op_top->type != EXP_LPAREN) op_top = parse_exp_reduce(cxt, -1, 0);
+          if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'(\' in declaration\n");
+          token_free(stack_pop(cxt->stacks[OP_STACK]));
+          token_free(token);
+          break;
+        } // Note that unrelated tokens are filtered
+        default: printf("%s %s\n", token_typestr(token->type), token->offset); assert(0);
+      } // switch(token->type)
+    } // if(token is qualifier)
+  } // while(1)
 }
