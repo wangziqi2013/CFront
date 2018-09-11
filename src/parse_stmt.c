@@ -60,11 +60,15 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
 token_t *parse_if_stmt(parse_stmt_cxt_t *cxt) {
   assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_IF);
   token_t *if_stmt = token_get_next(cxt->token_cxt);
-  if(token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \'(\' after \"if\"\n");
+  if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \'(\' after \"if\"\n");
   ast_append_child(if_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  if(token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \')\' after \"if\" expression\n");
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \')\' after \"if\" expression\n");
   ast_append_child(if_stmt, parse_stmt(cxt));
-  if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_ELSE) ast_append_child(if_stmt, parse_stmt(cxt));
+  if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_ELSE) {
+    token_t *else_stmt = token_get_next(cxt->token_cxt);
+    ast_append_child(if_stmt, else_stmt);
+    ast_append_child(else_stmt, parse_stmt(cxt));
+  }
   return if_stmt;
 }
 
