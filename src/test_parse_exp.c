@@ -601,8 +601,8 @@ void test_parse_comp_stmt() {
   return;
 }
 
-void test_parse_if_stmt() {
-  printf("=== Test parse_if_stmt ===\n");
+void test_parse_select_stmt() {
+  printf("=== Test parse_select_stmt ===\n");
   parse_exp_cxt_t *cxt;
   token_t *token;
   char test1[] = "if(a == b) x = y; else { x != y; }"; // Test if else with comp stmt
@@ -628,15 +628,15 @@ void test_parse_if_stmt() {
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n"); /*
-  char test4[] = "{ a = b; c = d; return a == c; }"; // Test empty var decl
+  printf("=====================================\n"); 
+  char test4[] = "switch(a == b) { a = b; switch(1) return; c = d; return a == c; }"; // Test empty var decl
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");*/
+  printf("=====================================\n");
   printf("Pass!\n");
   return;
 }
@@ -657,7 +657,7 @@ int main() {
   test_parse_enum();
   test_parse_stmt();
   test_parse_comp_stmt();
-  test_parse_if_stmt();
+  test_parse_select_stmt();
   //test_anomaly();
   return 0;
 }
