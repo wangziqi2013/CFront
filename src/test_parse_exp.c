@@ -549,7 +549,6 @@ void test_parse_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  printf("Pass!\n");
   char test8[] = "{1, 4, {5, {a + b ? c : d, (10, 11), }, 7, {} }, {}}"; // {,} is invalid
   cxt = parse_exp_init(test8);
   token = parse_init_list(cxt);
@@ -558,6 +557,47 @@ void test_parse_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
+  printf("Pass!\n");
+  return;
+}
+
+void test_parse_comp_stmt() {
+  printf("=== Test parse_comp_stmt ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "{int a, b, c; void **d = NULL; }"; // First colon should be parsed as expression
+  cxt = parse_exp_init(test1);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");/*
+  char test2[] = "label_2: continue;";
+  cxt = parse_exp_init(test2);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "default: break;";
+  cxt = parse_exp_init(test3);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test4[] = "return;";
+  cxt = parse_exp_init(test4);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");*/
+  printf("Pass!\n");
   return;
 }
 
@@ -576,6 +616,7 @@ int main() {
   test_parse_struct_union();
   test_parse_enum();
   test_parse_stmt();
+  test_parse_comp_stmt();
   //test_anomaly();
   return 0;
 }
