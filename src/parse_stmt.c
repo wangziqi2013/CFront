@@ -87,11 +87,12 @@ token_t *parse_init_list(parse_stmt_cxt_t *cxt) {
   token_t *list = token_alloc_type(T_INIT_LIST);
   while(1) {
     token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
-    if(la->type == T_RCPAREN) break;
-    else if(la->type == T_LCPAREN) ast_append_child(list, parse_init_list(cxt));
+    if(la->type == T_RCPAREN) { token_consume_type(cxt->token_cxt, T_RCPAREN); break; }
+    if(la->type == T_LCPAREN) ast_append_child(list, parse_init_list(cxt));
     else ast_append_child(list, parse_exp(cxt, PARSE_EXP_NOCOMMA));
-    if(!token_consume_type(cxt->token_cxt, T_COMMA)) 
-      error_row_col_exit("Expecting \',\' as initializer separator\n");
+    // Consume the comma, and if not a comma then let the loop continue
+    if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_COMMA)
+      token_consume_type(cxt->token_cxt, T_COMMA);
   }
   return list;
 }
