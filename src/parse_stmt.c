@@ -21,7 +21,10 @@ token_t *parse_lbl_stmt(parse_stmt_cxt_t *cxt, token_type_t type) {
 
 // Returns an expression statement
 token_t *parse_exp_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
+  token_t *token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
+  if(!token_consume_type(cxt->token_cxt, T_SEMICOLON))
+    error_row_col_exit(cxt->token_cxt->s, "Expecting \';\' after expression statement\n");
+  return token;
 }
 
 token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
