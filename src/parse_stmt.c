@@ -15,7 +15,7 @@ token_t *parse_lbl_stmt(parse_stmt_cxt_t *cxt, token_type_t type) {
   token_t *token = token_get_next(cxt->token_cxt);
   if(type == T_CASE) ast_append_child(token, parse_exp(cxt, PARSE_EXP_NOCOLON));
   if(!token_consume_type(cxt->token_cxt, T_COLON)) 
-    error_row_col_exit(token->offset, "Expecting \':\' after %s statement\n", token_symstr(token->type));
+    error_row_col_exit(token->offset, "Expecting \':\' after \"%s\" statement\n", token_symstr(token->type));
   return ast_append_child(token, parse_stmt(cxt));
 }
 
@@ -52,12 +52,12 @@ token_t *parse_goto_stmt(parse_stmt_cxt_t *cxt) {
   (void)cxt; return NULL;
 }
 
-token_t *parse_continue_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
-}
-
-token_t *parse_break_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
+token_t *parse_brk_cont_stmt(parse_stmt_cxt_t *cxt) {
+  token_t *token = token_get_next(cxt->token_cxt);
+  assert(token->type == T_BREAK || token->type == T_CONTINUE);
+  if(!token_consume_type(cxt->token_cxt, T_SEMICOLON))
+    error_row_col_exit(token->offset, "Expecting \';\' after \"%s\" statement\n", token_symstr(token->type));
+  return token;
 }
 
 token_t *parse_return_stmt(parse_stmt_cxt_t *cxt) {
@@ -79,8 +79,8 @@ token_t *parse_stmt(parse_stmt_cxt_t *cxt) {
     case T_DO: return parse_do_stmt(cxt);
     case T_FOR: return parse_for_stmt(cxt);
     case T_GOTO: return parse_goto_stmt(cxt);
-    case T_CONTINUE: return parse_continue_stmt(cxt);
-    case T_BREAK: return parse_break_stmt(cxt);
+    case T_CONTINUE: return parse_brk_cont_stmt(cxt);
+    case T_BREAK: return parse_brk_cont_stmt(cxt);
     case T_RETURN: return parse_return_stmt(cxt);
     default:
       parse_exp_stmt(cxt);

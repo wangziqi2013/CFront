@@ -16,8 +16,7 @@ token_t *parse_while_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_do_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_for_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_goto_stmt(parse_stmt_cxt_t *cxt);
-token_t *parse_continue_stmt(parse_stmt_cxt_t *cxt);
-token_t *parse_break_stmt(parse_stmt_cxt_t *cxt);
+token_t *parse_brk_cont_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_return_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_stmt(parse_stmt_cxt_t *cxt);
 
