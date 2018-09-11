@@ -37,16 +37,12 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
       token_t *comp_decl = ast_append_child(token_alloc_type(T_COMP_DECL), parse_decl_basetype(cxt));
       while(1) { // loop on fields
         token_t *field = token_alloc_type(T_COMP_FIELD);
-        parse_exp_recurse(cxt);
         ast_append_child(comp_decl, ast_append_child(field, parse_decl(cxt, PARSE_DECL_NOBASETYPE)));
-        parse_exp_decurse(cxt);
         // Declarator body, can be named or unamed
         token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
         if(la->type == T_COLON) {
           token_consume_type(cxt->token_cxt, T_COLON);
-          parse_exp_recurse(cxt);
           ast_append_child(field, parse_exp(cxt, PARSE_EXP_NOCOMMA));
-          parse_exp_decurse(cxt);
           la = token_lookahead_notnull(cxt->token_cxt, 1);
         }
         if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
@@ -74,9 +70,7 @@ token_t *parse_enum(parse_comp_cxt_t *cxt, token_t *root) {
       la = token_lookahead_notnull(cxt->token_cxt, 1);
       if(la->type == T_ASSIGN) {
         token_consume_type(cxt->token_cxt, T_ASSIGN);
-        parse_exp_recurse(cxt);
         ast_append_child(comp_decl, parse_exp(cxt, PARSE_EXP_NOCOMMA));
-        parse_exp_decurse(cxt);
         la = token_lookahead_notnull(cxt->token_cxt, 1);
       }
       // Last entry does not have to use comma

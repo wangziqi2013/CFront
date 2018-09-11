@@ -110,6 +110,7 @@ token_t *parse_decl_basetype(parse_decl_cxt_t *cxt) {
 }
 
 token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
+  parse_exp_recurse(cxt);
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0); // Must start on a new stack
   token_t *decl = token_alloc_type(T_DECL);
   if(hasbasetype == PARSE_DECL_HASBASETYPE) // If this is off then the base type node is empty
@@ -118,8 +119,11 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   token_t *decl_name = NULL;  // If not an abstract declarator this is the name
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
-    if(token == NULL) 
-      return ast_append_child(ast_append_child(decl, parse_exp_reduce_all(cxt)), decl_name ? decl_name : token_get_empty());
+    if(token == NULL) {
+      token_t *ret = ast_append_child(ast_append_child(decl, parse_exp_reduce_all(cxt)), decl_name ? decl_name : token_get_empty());
+      parse_exp_decurse(cxt);
+      return ret;
+    }
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
       token_t *top = parse_exp_peek(cxt, OP_STACK);
       if(top == NULL || top->type != EXP_DEREF || cxt->last_active_stack != OP_STACK) 
@@ -147,11 +151,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
           token_t *la = token_lookahead(cxt->token_cxt, 1);
           token_t *index;
           if(la != NULL && la->type == T_RSPAREN) { index = token_get_empty(); }
-          else {
-            parse_exp_recurse(cxt);
-            index = parse_exp(cxt, PARSE_EXP_ALLOWALL);
-            parse_exp_decurse(cxt);
-          }
+          else { index = parse_exp(cxt, PARSE_EXP_ALLOWALL); }
           parse_exp_shift(cxt, AST_STACK, index);
           parse_exp_reduce(cxt, -1, 1); // This reduces array sub
           if(!token_consume_type(cxt->token_cxt, T_RSPAREN)) 
@@ -166,9 +166,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
             token_consume_type(cxt->token_cxt, T_RPAREN);
           } else {
             while(1) {
-              parse_exp_recurse(cxt);
               ast_append_child(token, parse_decl(cxt, PARSE_DECL_HASBASETYPE));
-              parse_exp_decurse(cxt);
               if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
               else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
               else error_row_col_exit(token->offset, "Function declaration expects \')\' or \',\'");
