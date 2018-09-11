@@ -8,6 +8,7 @@
 #include "parse_exp.h"
 #include "parse_decl.h"
 #include "parse_comp.h"
+#include "parse_stmt.h"
 #include "hashtable.h"
 
 void test_stack() {
@@ -488,6 +489,39 @@ void test_anomaly() {
   return;
 }
 
+void test_parse_stmt() {
+  printf("=== Test parse_stmt ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "case (1 == 2 ? 2 : 4): break;"; // First colon should be parsed as expression
+  cxt = parse_exp_init(test1);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "label_2: continue;";
+  cxt = parse_exp_init(test2);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "default: break;";
+  cxt = parse_exp_init(test3);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -502,6 +536,7 @@ int main() {
   test_parse_decl();
   test_parse_struct_union();
   test_parse_enum();
+  test_parse_stmt();
   //test_anomaly();
   return 0;
 }
