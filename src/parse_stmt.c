@@ -73,7 +73,13 @@ token_t *parse_if_stmt(parse_stmt_cxt_t *cxt) {
 }
 
 token_t *parse_switch_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SWITCH);
+  token_t *switch_stmt = token_get_next(cxt->token_cxt);
+  if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(switch_stmt->offset, "Expecting \'(\' after \"switch\"\n");
+  ast_append_child(switch_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(switch_stmt->offset, "Expecting \')\' after \"switch\" expression\n");
+  ast_append_child(switch_stmt, parse_stmt(cxt));
+  return switch_stmt;
 }
 
 token_t *parse_while_stmt(parse_stmt_cxt_t *cxt) {
