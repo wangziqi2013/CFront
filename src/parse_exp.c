@@ -10,7 +10,7 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   cxt->stacks[1] = stack_init();
   cxt->tops[0] = stack_init();
   cxt->tops[1] = stack_init();
-  parse_exp_recurse(cxt);
+  cxt->prev_active = stack_init();
   // If the first token is an operator then it must be prefix operator
   cxt->last_active_stack = OP_STACK;
   cxt->token_cxt = token_cxt_init(input);
@@ -24,6 +24,7 @@ void parse_exp_free(parse_exp_cxt_t *cxt) {
   stack_free(cxt->stacks[1]);
   stack_free(cxt->tops[0]);
   stack_free(cxt->tops[1]);
+  stack_free(cxt->prev_active);
   token_cxt_free(cxt->token_cxt);
   free(cxt);
   return;
@@ -92,6 +93,7 @@ int parse_exp_isempty(parse_exp_cxt_t *cxt, int stack_id) {
 void parse_exp_recurse(parse_exp_cxt_t *cxt) {
   stack_push(cxt->tops[0], stack_topaddr(cxt->stacks[0]));
   stack_push(cxt->tops[1], stack_topaddr(cxt->stacks[1]));
+  stack_push(cxt->prev_active, (void *)(long)cxt->last_active_stack);
   return;
 }
 
@@ -99,6 +101,7 @@ void parse_exp_decurse(parse_exp_cxt_t *cxt) {
   assert((void **)stack_peek(cxt->tops[0]) == stack_topaddr(cxt->stacks[0]));
   assert((void **)stack_peek(cxt->tops[1]) == stack_topaddr(cxt->stacks[1]));
   stack_pop(cxt->tops[0]); stack_pop(cxt->tops[1]);
+  cxt->last_active_stack = (int)(long)stack_pop(cxt->prev_active);
 }
 
 // Returned token is allocated from the heap, caller free
@@ -257,6 +260,8 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
     error_row_col_exit(parse_exp_peek(cxt, OP_STACK)->offset,
                        "Did not find operand for operator %s\n", 
                        token_typestr(parse_exp_peek(cxt, OP_STACK)->type));
+  } else if(parse_exp_isempty(cxt, AST_STACK)) {
+    error_row_col_exit(cxt->token_cxt->s, "Expecting an expression, got empty\n");
   } else if(parse_exp_size(cxt, AST_STACK) != 1) {
     error_row_col_exit(parse_exp_peek(cxt, AST_STACK)->offset,
                        "Missing operator for the entity\n");
@@ -265,12 +270,16 @@ token_t *parse_exp_reduce_all(parse_exp_cxt_t *cxt) {
 }
 
 token_t *parse_exp(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
+  parse_exp_recurse(cxt);
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0); // Must start on a new stack
+  assert(cxt->last_active_stack == OP_STACK); // Must start on a fresh expression
   stack_t *op = cxt->stacks[OP_STACK];
   while(1) {
     token_t *token = parse_exp_next_token(cxt, disallow);
     if(token == NULL) {
-      return parse_exp_reduce_all(cxt);
+      token_t *ret = parse_exp_reduce_all(cxt);
+      parse_exp_decurse(cxt);
+      return ret;
     } else if(parse_exp_isprimary(cxt, token)) {
       parse_exp_shift(cxt, AST_STACK, token);
     } else if(token->type == EXP_RPAREN) {   // All tokens below this line are operators
@@ -296,9 +305,7 @@ token_t *parse_exp(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
       token_free(token);
     } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) { // Type cases
       token->type = EXP_CAST;
-      parse_exp_recurse(cxt);
       token_t *decl = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
-      parse_exp_decurse(cxt);
       ast_push_child(token, decl);
       parse_exp_shift(cxt, OP_STACK, token);
       if(!token_consume_type(cxt->token_cxt, T_RPAREN)) 

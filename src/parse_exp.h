@@ -20,6 +20,7 @@ typedef struct {
   int last_active_stack;
   stack_t *stacks[2];
   stack_t *tops[2];
+  stack_t *prev_active;
   token_cxt_t *token_cxt;
 } parse_exp_cxt_t;
 
