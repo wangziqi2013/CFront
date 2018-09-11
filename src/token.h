@@ -172,6 +172,7 @@ typedef struct {
   int pb_num;                // Number of pushbacks
   int ignore_pb;             // Whether to ignore pushbacked tokens
   char *s;                   // Current read position
+  char *begin;               // Begin of the current text
 } token_cxt_t;
 
 typedef enum {

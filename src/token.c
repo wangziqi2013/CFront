@@ -71,7 +71,7 @@ token_cxt_t *token_cxt_init(char *input) {
   if(cxt == NULL) perror(__func__);
   cxt->udef_types = ht_str_init();
   cxt->pushbacks = NULL;
-  cxt->s = input;
+  cxt->s = cxt->begin = input;
   cxt->pb_num = 0;
   cxt->ignore_pb = 0;
   return cxt;
