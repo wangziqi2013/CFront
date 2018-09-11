@@ -97,6 +97,7 @@ typedef enum {
   T_LBL_STMT,
   T_EXP_STMT,
   T_COMP_STMT,
+  T_INIT_LIST,
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
