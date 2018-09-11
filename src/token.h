@@ -90,7 +90,7 @@ typedef enum {
   EXP_END,
   // Internal nodes
   T_UDEF,                         // User-defined type using type-def; they are not identifiers
-  T_DECL, T_BASETYPE, // Root node of a declaration
+  T_DECL, T_BASETYPE,             // Root node of a declaration
   T_,                             // Placeholder
   T_COMP_DECL,                    // structure or union declaration line, can contain one base and multiple declarator
   T_COMP_FIELD,                   // Single field declaration; Contains a DECL and optional number for bitfield
@@ -98,6 +98,10 @@ typedef enum {
   T_EXP_STMT,
   T_COMP_STMT,
   T_INIT_LIST,
+  T_STMT_LIST,                    // Contains a list of statements
+  T_DECL_STMT_LIST,               // Contains a list of entries
+  T_DECL_STMT_ENTRY,              // Contains a base type and a list of vars
+  T_DECL_STMT_VAR,                // Contains a decl and optional initializer expression/list
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;

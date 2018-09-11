@@ -357,7 +357,11 @@ const char *token_typestr(token_type_t type) {
     case T_LBL_STMT: return "T_LBL_STMT"; 
     case T_EXP_STMT: return "T_EXP_STMT"; 
     case T_COMP_STMT: return "T_COMP_STMT";
-    case T_INIT_LIST: return "T_INIT_LIST"; 
+    case T_INIT_LIST: return "T_INIT_LIST";
+    case T_STMT_LIST: return "T_STMT_LIST";
+    case T_DECL_STMT_LIST: return "T_DECL_STMT_LIST";
+    case T_DECL_STMT_ENTRY: return "T_DECL_STMT_ENTRY";
+    case T_DECL_STMT_VAR: return "T_DECL_STMT_VAR";
     case T_ILLEGAL: return "T_ILLEGAL";
     default: return "(unknown)";
   }
