@@ -97,9 +97,6 @@ typedef enum {
   T_LBL_STMT,
   T_EXP_STMT,
   T_COMP_STMT,
-  T_IF_STMT, T_SWITCH_STMT,
-  T_WHILE_STMT, T_DO_STMT, T_FOR_STMT,
-  T_GOTO_STMT, T_CONTINUE_STMT, T_BREAK_STMT, T_RETURN_STMT,
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
