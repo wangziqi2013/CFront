@@ -18,6 +18,7 @@ token_t *parse_for_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_goto_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_brk_cont_stmt(parse_stmt_cxt_t *cxt);
 token_t *parse_return_stmt(parse_stmt_cxt_t *cxt);
+token_t *parse_init_list(parse_stmt_cxt_t *cxt);
 token_t *parse_stmt(parse_stmt_cxt_t *cxt);
 
 #endif

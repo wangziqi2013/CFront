@@ -21,7 +21,7 @@ token_t *parse_lbl_stmt(parse_stmt_cxt_t *cxt, token_type_t type) {
 
 // Returns an expression statement
 token_t *parse_exp_stmt(parse_stmt_cxt_t *cxt) {
-  token_t *token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
+  token_t *token = ast_append_child(token_alloc_type(T_EXP_STMT), parse_exp(cxt, PARSE_EXP_ALLOWALL));
   if(!token_consume_type(cxt->token_cxt, T_SEMICOLON))
     error_row_col_exit(cxt->token_cxt->s, "Expecting \';\' after expression statement\n");
   return token;
@@ -78,6 +78,22 @@ token_t *parse_return_stmt(parse_stmt_cxt_t *cxt) {
   if(!token_consume_type(cxt->token_cxt, T_SEMICOLON)) \
     error_row_col_exit(token->offset, "Expecting \';\' after \"return\" statement\n");
   return token;
+}
+
+// Returns a initializer list, { expr, expr, ..., expr } where expr could be nested initializer list
+token_t *parse_init_list(parse_stmt_cxt_t *cxt) {
+  if(!token_consume_type(cxt->token_cxt, T_LCPAREN)) 
+    error_row_col_exit(cxt->token_cxt->s, "Expecting \'{\' for initializer list\n");
+  token_t *list = token_alloc_type(T_INIT_LIST);
+  while(1) {
+    token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
+    if(la->type == T_RCPAREN) break;
+    else if(la->type == T_LCPAREN) ast_append_child(list, parse_init_list(cxt));
+    else ast_append_child(list, parse_exp(cxt, PARSE_EXP_NOCOMMA));
+    if(!token_consume_type(cxt->token_cxt, T_COMMA)) 
+      error_row_col_exit("Expecting \',\' as initializer separator\n");
+  }
+  return list;
 }
 
 token_t *parse_stmt(parse_stmt_cxt_t *cxt) {
