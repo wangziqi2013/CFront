@@ -517,7 +517,22 @@ void test_parse_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  
+  char test4[] = "return;";
+  cxt = parse_exp_init(test4);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test5[] = "return 1 ? 2 : 3 + 4 **5;";
+  cxt = parse_exp_init(test5);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
   printf("Pass!\n");
   return;
 }
