@@ -94,6 +94,12 @@ typedef enum {
   T_,                             // Placeholder
   T_COMP_DECL,                    // structure or union declaration line, can contain one base and multiple declarator
   T_COMP_FIELD,                   // Single field declaration; Contains a DECL and optional number for bitfield
+  T_LBL_STMT,
+  T_EXP_STMT,
+  T_COMP_STMT,
+  T_IF_STMT, T_SWITCH_STMT,
+  T_WHILE_STMT, T_DO_STMT, T_FOR_STMT,
+  T_GOTO_STMT, T_CONTINUE_STMT, T_BREAK_STMT, T_RETURN_STMT,
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
