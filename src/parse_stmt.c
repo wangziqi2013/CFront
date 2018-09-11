@@ -1,5 +1,6 @@
 
 #include "parse_stmt.h"
+#include "parse_decl.h"
 
 parse_stmt_cxt_t *parse_stmt_init(char *input) { return parse_exp_init(input); }
 void parse_stmt_free(parse_stmt_cxt_t *cxt) { parse_exp_free(cxt); }
@@ -31,13 +32,16 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
   token_t *decl_list = token_alloc_type(T_DECL_STMT_LIST);
   token_t *stmt_list = token_alloc_type(T_STMT_LIST);
   token_t *root = ast_append_child(ast_append_child(token_alloc_type(T_COMP_STMT), decl_list), stmt_list);
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_LCPAREN);
+  token_consume_type(cxt->token_cxt, T_LCPAREN);
   while(parse_decl_isbasetype(cxt, token_lookahead_notnull(cxt->token_cxt, 1))) { // Loop through lines
     token_t *decl_entry = ast_append_child(token_alloc_type(T_DECL_STMT_ENTRY), parse_decl_basetype(cxt));
+    ast_append_child(decl_list, decl_entry);
     while(1) { // Loop through variables
       token_t *var = ast_append_child(token_alloc_type(T_DECL_STMT_VAR), parse_decl(cxt, PARSE_DECL_NOBASETYPE));
       ast_append_child(decl_entry, var);
       token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
-      if(next->type == T_ASSIGN) {
+      if(la->type == T_ASSIGN) {
         token_consume_type(cxt->token_cxt, T_ASSIGN);
         if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_LCPAREN) ast_append_child(var, parse_init_list(cxt));
         else ast_append_child(var, parse_exp(cxt, PARSE_EXP_NOCOMMA));
