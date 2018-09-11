@@ -550,6 +550,14 @@ void test_parse_stmt() {
   ast_free(token);
   printf("=====================================\n");
   printf("Pass!\n");
+  char test8[] = "{1, 4, {5, {a + b ? c : d, (10, 11), }, 7, {} }, {}}"; // {,} is invalid
+  cxt = parse_exp_init(test8);
+  token = parse_init_list(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
   return;
 }
 
