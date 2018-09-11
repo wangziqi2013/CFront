@@ -533,6 +533,14 @@ void test_parse_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
+  char test6[] = "goto label1;";
+  cxt = parse_exp_init(test6);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
   printf("Pass!\n");
   return;
 }

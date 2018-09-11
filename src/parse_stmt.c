@@ -14,8 +14,8 @@ token_t *parse_lbl_stmt(parse_stmt_cxt_t *cxt, token_type_t type) {
   }  
   token_t *token = token_get_next(cxt->token_cxt);
   if(type == T_CASE) ast_append_child(token, parse_exp(cxt, PARSE_EXP_NOCOLON));
-  if(!token_consume_type(cxt->token_cxt, T_COLON)) 
-    error_row_col_exit(token->offset, "Expecting \':\' after \"%s\" statement\n", token_symstr(token->type));
+  if(!token_consume_type(cxt->token_cxt, T_COLON))
+    error_row_col_exit(token->offset, "Expecting \':\' for \"%s\" statement\n", token_symstr(token->type));
   return ast_append_child(token, parse_stmt(cxt));
 }
 
@@ -49,7 +49,14 @@ token_t *parse_for_stmt(parse_stmt_cxt_t *cxt) {
 }
 
 token_t *parse_goto_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
+  token_t *token = token_get_next(cxt->token_cxt);
+  assert(token->type == T_GOTO);
+  if(token_lookahead_notnull(cxt->token_cxt, 1)->type != T_IDENT)
+    error_row_col_exit(token->offset, "Expecting a label for \"goto\" statement\n");
+  ast_append_child(token, token_get_next(cxt->token_cxt));
+  if(!token_consume_type(cxt->token_cxt, T_SEMICOLON))
+    error_row_col_exit(token->offset, "Expecting \';\' after \"goto\" statement\n");
+  return token;
 }
 
 token_t *parse_brk_cont_stmt(parse_stmt_cxt_t *cxt) {
