@@ -46,6 +46,7 @@ token_t *parse(parse_cxt_t *cxt) {
       else if(la->type == T_COMMA) {
         token_consume_type(cxt->token_cxt, T_COMMA);
         decl = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
+        la = token_lookahead_notnull(cxt->token_cxt, 1);
         continue;
       } else error_row_col_exit(la->offset, "Expecting \',\', \'=\' or \';\' for global declaration\n");
     }
