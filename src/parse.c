@@ -24,8 +24,9 @@ token_t *parse(parse_cxt_t *cxt) {
     token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
     if(la->type == T_LCPAREN) { // Case 5
       assert(ast_getchild(decl, 0) != NULL);
-      if(ast_getchild(decl, 0)->type != EXP_FUNC_CALL) // Only function type could have a body
-        error_row_col_exit(cxt->token_cxt->s, "Only function definition can have a body\n");
+      //ast_print(decl, 0);
+      //if(ast_getchild(decl, 0)->type != EXP_FUNC_CALL) // Only function type could have a body
+      //  error_row_col_exit(cxt->token_cxt->s, "Only function definition can have a body\n");
       token_t *comp_stmt = parse_comp_stmt(cxt);
       ast_push_child(decl, basetype);
       ast_append_child(root, ast_append_child(ast_append_child(token_alloc_type(T_GLOBAL_FUNC), decl), comp_stmt));
