@@ -190,5 +190,4 @@ token_t *parse_stmt(parse_stmt_cxt_t *cxt) {
       default: return parse_exp_stmt(cxt);
     }
   }
-  (void)cxt; return NULL;
 }
