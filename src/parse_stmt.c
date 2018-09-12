@@ -168,25 +168,27 @@ token_t *parse_init_list(parse_stmt_cxt_t *cxt) {
 }
 
 token_t *parse_stmt(parse_stmt_cxt_t *cxt) {
-  token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
-  switch(la->type) {
-    case T_DEFAULT: // Fall through
-    case T_CASE: return parse_lbl_stmt(cxt, la->type);
-    case T_IDENT: 
-      if(token_lookahead_notnull(cxt->token_cxt, 2)->type == T_COLON) return parse_lbl_stmt(cxt, la->type);
-      else return parse_exp_stmt(cxt);
-    case T_LCPAREN: return parse_comp_stmt(cxt);
-    case T_IF: return parse_if_stmt(cxt);
-    case T_SWITCH: return parse_switch_stmt(cxt);
-    case T_WHILE: return parse_while_stmt(cxt);
-    case T_DO: return parse_do_stmt(cxt);
-    case T_FOR: return parse_for_stmt(cxt);
-    case T_GOTO: return parse_goto_stmt(cxt);
-    case T_CONTINUE: return parse_brk_cont_stmt(cxt);
-    case T_BREAK: return parse_brk_cont_stmt(cxt);
-    case T_RETURN: return parse_return_stmt(cxt);
-    default:
-      parse_exp_stmt(cxt);
+  while(1) {
+    token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
+    switch(la->type) {
+      case T_DEFAULT: // Fall through
+      case T_CASE: return parse_lbl_stmt(cxt, la->type);
+      case T_IDENT: 
+        if(token_lookahead_notnull(cxt->token_cxt, 2)->type == T_COLON) return parse_lbl_stmt(cxt, la->type);
+        else return parse_exp_stmt(cxt);
+      case T_LCPAREN: return parse_comp_stmt(cxt);
+      case T_IF: return parse_if_stmt(cxt);
+      case T_SWITCH: return parse_switch_stmt(cxt);
+      case T_WHILE: return parse_while_stmt(cxt);
+      case T_DO: return parse_do_stmt(cxt);
+      case T_FOR: return parse_for_stmt(cxt);
+      case T_GOTO: return parse_goto_stmt(cxt);
+      case T_CONTINUE: return parse_brk_cont_stmt(cxt);
+      case T_BREAK: return parse_brk_cont_stmt(cxt);
+      case T_RETURN: return parse_return_stmt(cxt);
+      case T_SEMICOLON: token_consume_type(cxt->token_cxt, T_SEMICOLON); return token_get_empty();
+      default: return parse_exp_stmt(cxt);
+    }
   }
   (void)cxt; return NULL;
 }

@@ -709,8 +709,16 @@ void test_parse_loop_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test9[] = "for(i = 0;;i++) return;"; 
+  char test9[] = "for(i = 0;;i++) ;"; 
   cxt = parse_exp_init(test9);
+  token = parse_stmt(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test10[] = "for(;;i++) {;;;;}"; 
+  cxt = parse_exp_init(test10);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
