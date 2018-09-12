@@ -16,8 +16,8 @@ test: all
 mem-test: all
 	valgrind --leak-check=full ./bin/test_parse_exp
 
-./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o
-	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
+./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o
+	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
 
 test_parse_exp.o: test_parse_exp.c
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
@@ -33,6 +33,9 @@ parse_comp.o: parse_comp.c parse_comp.h parse_exp.h parse_decl.h
 
 parse_stmt.o: parse_stmt.c parse_stmt.h parse_exp.h parse_decl.h parse_comp.h
 	$(CC) parse_stmt.c -c -o parse_stmt.o $(CFLAGS) $(LDFLAGS)
+
+parse.o: parse.c parse.h parse_exp.h parse_decl.h parse_comp.h parse_stmt.h
+	$(CC) parse.c -c -o parse.o $(CFLAGS) $(LDFLAGS)
 
 stack.o: stack.c stack.h
 	$(CC) stack.c -c -o stack.o $(CFLAGS) $(LDFLAGS)
