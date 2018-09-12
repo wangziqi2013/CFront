@@ -62,7 +62,7 @@ token_t *parse_if_stmt(parse_stmt_cxt_t *cxt) {
   token_t *if_stmt = token_get_next(cxt->token_cxt);
   if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \'(\' after \"if\"\n");
   ast_append_child(if_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \')\' after \"if\" expression\n");
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(if_stmt->offset, "Expecting \')\' after \"if\"\n");
   ast_append_child(if_stmt, parse_stmt(cxt));
   if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_ELSE) {
     token_t *else_stmt = token_get_next(cxt->token_cxt);
@@ -77,7 +77,7 @@ token_t *parse_switch_stmt(parse_stmt_cxt_t *cxt) {
   token_t *switch_stmt = token_get_next(cxt->token_cxt);
   if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(switch_stmt->offset, "Expecting \'(\' after \"switch\"\n");
   ast_append_child(switch_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(switch_stmt->offset, "Expecting \')\' after \"switch\" expression\n");
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(switch_stmt->offset, "Expecting \')\' after \"switch\"\n");
   ast_append_child(switch_stmt, parse_stmt(cxt));
   return switch_stmt;
 }
@@ -87,7 +87,7 @@ token_t *parse_while_stmt(parse_stmt_cxt_t *cxt) {
   token_t *while_stmt = token_get_next(cxt->token_cxt);
   if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(while_stmt->offset, "Expecting \'(\' after \"while\"\n");
   ast_append_child(while_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(while_stmt->offset, "Expecting \')\' after \"while\" expression\n");
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(while_stmt->offset, "Expecting \')\' after \"while\"\n");
   ast_append_child(while_stmt, parse_stmt(cxt));
   return while_stmt;
 }
@@ -99,13 +99,26 @@ token_t *parse_do_stmt(parse_stmt_cxt_t *cxt) {
   if(!token_consume_type(cxt->token_cxt, T_WHILE)) error_row_col_exit(do_stmt->offset, "Expecting \"while\" for \"do\" statement\n");
   if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(do_stmt->offset, "Expecting \'(\' after \"while\"\n");
   ast_append_child(do_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(do_stmt->offset, "Expecting \')\' after \"while\" expression\n");
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(do_stmt->offset, "Expecting \')\' after \"while\"\n");
   if(!token_consume_type(cxt->token_cxt, T_SEMICOLON)) error_row_col_exit(do_stmt->offset, "Expecting \';\' for \"do\" statement\n");
   return do_stmt;
 }
 
 token_t *parse_for_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_FOR);
+  token_t *for_stmt = token_get_next(cxt->token_cxt);
+  if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(for_stmt->offset, "Expecting \'(\' after \"for\"\n");
+  if(token_lookahead_notnull(cxt->token_cxt, 1)->type != T_SEMICOLON) ast_append_child(for_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else ast_append_child(for_stmt, token_get_empty());
+  if(!token_consume_type(cxt->token_cxt, T_SEMICOLON)) error_row_col_exit(for_stmt->offset, "Expecting \';\' after first \"for\" expression\n");
+  if(token_lookahead_notnull(cxt->token_cxt, 1)->type != T_SEMICOLON) ast_append_child(for_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else ast_append_child(for_stmt, token_get_empty());
+  if(!token_consume_type(cxt->token_cxt, T_SEMICOLON)) error_row_col_exit(for_stmt->offset, "Expecting \';\' after second \"for\" expression\n");
+  if(token_lookahead_notnull(cxt->token_cxt, 1)->type != T_RPAREN) ast_append_child(for_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else ast_append_child(for_stmt, token_get_empty());
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(for_stmt->offset, "Expecting \')\' after \"for\"\n");
+  ast_append_child(for_stmt, parse_stmt(cxt));
+  return for_stmt;
 }
 
 token_t *parse_goto_stmt(parse_stmt_cxt_t *cxt) {
