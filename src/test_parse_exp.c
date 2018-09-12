@@ -729,6 +729,21 @@ void test_parse_loop_stmt() {
   return;
 }
 
+void test_vararg_func() {
+  printf("=== Test parse_decl with varadic argument ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "int main(int argc, char argv[], ...)"; // func(...) should be illegal
+  cxt = parse_exp_init(test1);
+  token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -747,6 +762,7 @@ int main() {
   test_parse_comp_stmt();
   test_parse_select_stmt();
   test_parse_loop_stmt();
+  test_vararg_func();
   //test_anomaly();
   return 0;
 }
