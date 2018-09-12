@@ -690,15 +690,15 @@ char *token_get_int(char *s, token_t *token) {
 }
 
 char *token_get_str(char *s, token_t *token, char closing) {
-  token->offset = s;
+  token->offset = s - 1; // Note that s is the pointer to the first literal byte
   if(s == NULL || *s == '\0') return NULL;
-  if(closing == '\'') token->type = T_CHAR_CONST;
-  else token->type = T_STR_CONST;
+  token->type = closing == '\'' ? T_CHAR_CONST : T_STR_CONST;
   char *end = s;
   do {
+    printf("%c %c\n", *end, closing);
     while(*end != '\0' && *end != closing) end++;
     if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
-  } while(end[-1] == '\\');
+  } while(end[-1] == '\\' && end++); // If the first is true then we increment the end ptr
   token_copy_literal(token, s, end);
 
   return end + 1;
