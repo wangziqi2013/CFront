@@ -102,6 +102,10 @@ typedef enum {
   T_DECL_STMT_LIST,               // Contains a list of entries
   T_DECL_STMT_ENTRY,              // Contains a base type and a list of vars
   T_DECL_STMT_VAR,                // Contains a decl and optional initializer expression/list
+  T_ROOT,
+  T_GLOBAL_FUNC,                  // Global function definition
+  T_GLOBAL_DECL_ENTRY,            // Global declaration (same layout as T_DECL_STMT_ENTRY)
+  T_GLOBAL_DECL_VAR,              // Single entry that contains name and initializer
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;
