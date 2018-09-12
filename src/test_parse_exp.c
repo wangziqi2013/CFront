@@ -660,8 +660,8 @@ void test_parse_loop_stmt() {
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");/*
-  char test3[] = "if(a == b) if(c == d) inner_if; else inner_else; else outer_else;"; // nested if in if stmt
+  printf("=====================================\n");
+  char test3[] = "do a = b; while(1 == 2);"; 
   cxt = parse_exp_init(test3);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
@@ -669,14 +669,14 @@ void test_parse_loop_stmt() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n"); 
-  char test4[] = "switch(a == b) { a = b; switch(1) return; c = d; return a == c; }"; // Test empty var decl
+  char test4[] = "do { int a = b, c; return; } while(d ? e : f);"; 
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
-  printf("=====================================\n");*/
+  printf("=====================================\n");
   printf("Pass!\n");
   return;
 }
