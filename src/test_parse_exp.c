@@ -819,7 +819,7 @@ int main() {
   test_parse_loop_stmt();
   test_vararg_func();
   test_parse();
-  //final_test();
+  final_test();
   //test_anomaly();
   return 0;
 }
