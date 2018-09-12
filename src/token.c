@@ -364,7 +364,8 @@ const char *token_typestr(token_type_t type) {
     case T_DECL_STMT_VAR: return "T_DECL_STMT_VAR";
     case T_ROOT: return "T_ROOT";
     case T_GLOBAL_FUNC: return "T_GLOBAL_FUNC";
-    case T_GLOBAL_DECL: return "T_GLOBAL_DECL";
+    case T_GLOBAL_DECL_ENTRY: return "T_GLOBAL_DECL_ENTRY";
+    case T_GLOBAL_DECL_VAR: return "T_GLOBAL_DECL_VAR";
     case T_ILLEGAL: return "T_ILLEGAL";
     default: return "(unknown)";
   }
