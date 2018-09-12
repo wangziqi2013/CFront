@@ -36,6 +36,7 @@ token_t *parse_decl_next_token(parse_decl_cxt_t *cxt) {
         else valid = 0;
         break;
       case T_IDENT: break;
+      //case T_ELLIPSIS: break; // Ellipsis is processed only in function decl and does not go through this function
       default: if(!(token->decl_prop & DECL_QUAL_MASK)) valid = 0; // Only allow DECL_QUAL and identifier
     }
   }
@@ -167,9 +168,16 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
           } else {
             while(1) {
               ast_append_child(token, parse_decl(cxt, PARSE_DECL_HASBASETYPE));
-              if(token_consume_type(cxt->token_cxt, T_COMMA)) { continue; }
+              if(token_consume_type(cxt->token_cxt, T_COMMA)) { // Special: check "..." after ","
+                if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_ELLIPSIS) { // after '...' there can only be ')'
+                  ast_append_child(token, token_get_next(cxt->token_cxt));
+                  if(!token_consume_type(cxt->token_cxt, T_RPAREN))
+                    error_row_col_exit(cxt->token_cxt->s, "\"...\" could only be the last function argument\n");
+                  break;
+                }
+              }
               else if(token_consume_type(cxt->token_cxt, T_RPAREN)) { break; }
-              else error_row_col_exit(token->offset, "Function declaration expects \')\' or \',\'");
+              else error_row_col_exit(token->offset, "Function declaration expects \')\' or \',\' or \"...\"\n");
             }
           }
           parse_exp_reduce(cxt, 1, 1); // This reduces EXP_FUNC_CALL

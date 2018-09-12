@@ -214,7 +214,8 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override, int allow_p
   // Otherwise ( and [ may not be balanced, e.g. (a[0) would be allowed
   if(!allow_paren && 
      (top_op->type == EXP_FUNC_CALL || top_op->type == EXP_LPAREN || top_op->type == EXP_ARRAY_SUB)) 
-    error_row_col_exit(top_op->offset, "Symbol \"%s\" unclosed\n", token_typestr(top_op->type));
+    error_row_col_exit(top_op->offset, "Symbol \"%s\" unclosed before \"%s\"\n", token_typestr(top_op->type),
+                       token_typestr(token_lookahead_notnull(cxt->token_cxt, 1)->type));
   int op_num = op_num_override == -1 ? token_get_num_operand(top_op->type) : op_num_override;
   for(int i = 0;i < op_num;i++) {
     if(parse_exp_isempty(cxt, AST_STACK))
