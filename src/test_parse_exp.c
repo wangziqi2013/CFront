@@ -5,10 +5,7 @@
 #include "token.h"
 #include "error.h"
 #include "ast.h"
-#include "parse_exp.h"
-#include "parse_decl.h"
-#include "parse_comp.h"
-#include "parse_stmt.h"
+#include "parse.h"
 #include "hashtable.h"
 
 void test_stack() {
@@ -744,6 +741,37 @@ void test_vararg_func() {
   return;
 }
 
+void test_parse() {
+  printf("=== Test parse ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "struct {int bb;};"; 
+  cxt = parse_exp_init(test1);
+  token = parse(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "struct aa {int bb;}; int () { return 0; }"; 
+  cxt = parse_exp_init(test2);
+  token = parse(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "typedef struct {int bb;} aa, *cc; int main() { return 0; } int a = 0, c, b = {1,2,3,{4},{}}; long efg;"; 
+  cxt = parse_exp_init(test3);
+  token = parse(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -763,6 +791,7 @@ int main() {
   test_parse_select_stmt();
   test_parse_loop_stmt();
   test_vararg_func();
+  test_parse();
   //test_anomaly();
   return 0;
 }
