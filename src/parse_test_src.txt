@@ -116,3 +116,44 @@ token_t *parse_return_stmt(parse_stmt_cxt_t *cxt) {
   return token;
 }
 
+// Returns a initializer list, { expr, expr, ..., expr } where expr could be nested initializer list
+token_t *parse_init_list(parse_stmt_cxt_t *cxt) {
+  if(!token_consume_type(cxt->token_cxt, T_LCPAREN)) 
+    error_row_col_exit(cxt->token_cxt->s, "Expecting \'{\' for initializer list\n");
+  //token_t *list = token_alloc_type(T_INIT_LIST);
+  while(1) {
+    token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
+    if(la->type == T_RCPAREN) { token_consume_type(cxt->token_cxt, T_RCPAREN); break; }
+    if(la->type == T_LCPAREN) ast_append_child(list, parse_init_list(cxt));
+    else ast_append_child(list, parse_exp(cxt, PARSE_EXP_NOCOMMA));
+    // Consume the comma, and if not a comma then let the loop continue
+    if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_COMMA)
+      token_consume_type(cxt->token_cxt, T_COMMA);
+  }
+  return list;
+}
+
+token_t *parse_stmt(parse_stmt_cxt_t *cxt) {
+  while(1) {
+    token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
+    switch(la->type) {
+      case T_DEFAULT: // Fall through
+      case T_CASE: return parse_lbl_stmt(cxt, la->type);
+      case T_IDENT: 
+        if(token_lookahead_notnull(cxt->token_cxt, 2)->type == T_COLON) return parse_lbl_stmt(cxt, la->type);
+        else return parse_exp_stmt(cxt);
+      case T_LCPAREN: return parse_comp_stmt(cxt);
+      case T_IF: return parse_if_stmt(cxt);
+      case T_SWITCH: return parse_switch_stmt(cxt);
+      case T_WHILE: return parse_while_stmt(cxt);
+      case T_DO: return parse_do_stmt(cxt);
+      case T_FOR: return parse_for_stmt(cxt);
+      case T_GOTO: return parse_goto_stmt(cxt);
+      case T_CONTINUE: return parse_brk_cont_stmt(cxt);
+      case T_BREAK: return parse_brk_cont_stmt(cxt);
+      case T_RETURN: return parse_return_stmt(cxt);
+      case T_SEMICOLON: token_consume_type(cxt->token_cxt, T_SEMICOLON); return token_get_empty();
+      default: return parse_exp_stmt(cxt);
+    }
+  }
+}
