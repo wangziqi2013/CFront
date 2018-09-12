@@ -100,7 +100,7 @@ int token_isutype(token_cxt_t *cxt, token_t *token) {
   return token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND;
 }
 
-// Only checks STORAGE CLASS and QUALIFIER. At most one from the former is allowed.
+// Only checks STORAGE CLASS, QUALIFIER and TYPE SPEC. At most one from the former is allowed.
 // No duplicates for the latter is allowed
 int token_decl_compatible(token_t *dest, token_t *src) {
   if(src->decl_prop & DECL_STGCLS_MASK) return !(dest->decl_prop & DECL_STGCLS_MASK);
@@ -176,12 +176,8 @@ int token_get_num_operand(token_type_t type) {
   // Only case in precedence 1 and has 1 operand
   if(type == EXP_DOT || type == EXP_ARROW || 
      type == EXP_ARRAY_SUB || type == EXP_FUNC_CALL) return 2;
-  int preced = precedences[type - EXP_BEGIN];
-  assert(preced != 0 && preced != 999);
-  if(preced > 2)
-    if(preced == 13) return 2;
-    else return 2;
-  else return 1;
+  assert(precedences[type - EXP_BEGIN] != 0 && precedences[type - EXP_BEGIN] != 999);
+  return precedences[type - EXP_BEGIN] > 2 ? 2 : 1;  
 }
 
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
@@ -702,8 +698,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
   return end + 1;
 }
 
-// Returns the next token, or illegal
-// token must be allocated on the heap, not stack
+// Returns the next token, or NULL if EOF
 token_t *token_get_next(token_cxt_t *cxt) {
   token_t *token;
   if(cxt->pushbacks && !cxt->ignore_pb) {
