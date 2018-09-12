@@ -772,6 +772,33 @@ void test_parse() {
   return;
 }
 
+void final_test() {
+  FILE *fp = fopen("parse_test_src.txt", "r");
+  if(fp == NULL) perror(__func__);
+  fseek(fp, 0, SEEK_END);
+  int sz = ftell(fp);
+  printf("File size: %d bytes\n", sz);
+  fseek(fp, 0, SEEK_SET);
+  char *s = (char *)malloc(sz + 1);
+  fread(s, sz, 1, fp);
+  s[sz] = '\0';
+  // Begin test
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  cxt = parse_exp_init(s);
+  // Insert these two to make them udef types
+  ht_insert(cxt->token_cxt->udef_types, "token_t", NULL);
+  ht_insert(cxt->token_cxt->udef_types, "parse_stmt_cxt_t", NULL);
+  ht_insert(cxt->token_cxt->udef_types, "token_type_t", NULL);
+  token = parse(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  free(s);
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -792,6 +819,7 @@ int main() {
   test_parse_loop_stmt();
   test_vararg_func();
   test_parse();
+  //final_test();
   //test_anomaly();
   return 0;
 }
