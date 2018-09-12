@@ -93,7 +93,15 @@ token_t *parse_while_stmt(parse_stmt_cxt_t *cxt) {
 }
 
 token_t *parse_do_stmt(parse_stmt_cxt_t *cxt) {
-  (void)cxt; return NULL;
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_DO);
+  token_t *do_stmt = token_get_next(cxt->token_cxt);
+  ast_append_child(do_stmt, parse_stmt(cxt));
+  if(!token_consume_type(cxt->token_cxt, T_WHILE)) error_row_col_exit(do_stmt->offset, "Expecting \"while\" for \"do\" statement\n");
+  if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(do_stmt->offset, "Expecting \'(\' after \"while\"\n");
+  ast_append_child(do_stmt, parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(do_stmt->offset, "Expecting \')\' after \"while\" expression\n");
+  if(!token_consume_type(cxt->token_cxt, T_SEMICOLON)) error_row_col_exit(do_stmt->offset, "Expecting \';\' for \"do\" statement\n");
+  return do_stmt;
 }
 
 token_t *parse_for_stmt(parse_stmt_cxt_t *cxt) {
