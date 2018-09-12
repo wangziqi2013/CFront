@@ -695,12 +695,10 @@ char *token_get_str(char *s, token_t *token, char closing) {
   token->type = closing == '\'' ? T_CHAR_CONST : T_STR_CONST;
   char *end = s;
   do {
-    printf("%c %c\n", *end, closing);
     while(*end != '\0' && *end != closing) end++;
     if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
   } while(end[-1] == '\\' && end++); // If the first is true then we increment the end ptr
   token_copy_literal(token, s, end);
-
   return end + 1;
 }
 
