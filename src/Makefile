@@ -2,31 +2,35 @@
 CC=gcc
 LD=ld
 CFLAGS=-O0 -g -Wall -Wextra -Werror
+PWD=$(CURDIR)
+TESTFLAGS=-I$(PWD)
 LDFLAGS=
 
 ifeq ($(OPT), 1)
 	CFLAGS=-O3
 endif
 
-all: ./bin/test_parse
+all: ./bin/test_parse ./bin/test_lex
 
 test: all
 	./bin/test_parse
+	./bin/test_lex
 
 mem-test: all
 	valgrind --leak-check=full ./bin/test_parse
+	valgrind --leak-check=full ./bin/test_lex
 
 ./bin/test_parse: test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o
-	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o -o ./bin/test_parse $(CFLAGS) $(LDFLAGS)
+	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o -o ./bin/test_parse $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_lex: test_lex.o stack.o token.o error.o
-	$(CC) test_parse.o stack.o token.o error.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS)
+./bin/test_lex: test_lex.o stack.o token.o error.o ast.o hashtable.o
+	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_parse.o: ./test/test_parse.c token.h
-	$(CC) ./test/test_parse.c -c -o test_parse.o $(CFLAGS) $(LDFLAGS)
+	$(CC) ./test/test_parse.c -c -o $(PWD)/test_parse.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
-	$(CC) ./test/test_lex.c -c -o test_lex.o $(CFLAGS) $(LDFLAGS)
+	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h token.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
