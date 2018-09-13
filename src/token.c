@@ -611,7 +611,7 @@ void token_free(token_t *token) {
 token_t *token_alloc() {
   token_t *token = (token_t *)malloc(sizeof(token_t));
   if(token == NULL) perror(__func__);
-  token->child = token->sibling = NULL;
+  token->child = token->sibling = token->parent = NULL;
   token->str = NULL;
   token->type = T_ILLEGAL;
   token->offset = NULL;
