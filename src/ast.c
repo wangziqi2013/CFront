@@ -3,7 +3,7 @@
 
 // Initialize a token to be an AST node. Return the node given to it
 token_t *ast_make_node(token_t *token) {
-  token->child = token->sibling = NULL;
+  token->child = token->sibling = token->parent = NULL;
   return token;
 }
 
@@ -17,6 +17,7 @@ token_t *ast_append_child(token_t *token, token_t *child) {
     last->sibling = child;
   }
   child->sibling = NULL;
+  child->parent = token;
   return token;
 }
 
@@ -24,6 +25,7 @@ token_t *ast_append_child(token_t *token, token_t *child) {
 token_t *ast_push_child(token_t *token, token_t *child) {
   child->sibling = token->child;
   token->child = child;
+  child->parent = token;
   return token;
 }
 
@@ -31,6 +33,19 @@ token_t *ast_push_child(token_t *token, token_t *child) {
 token_t *ast_insert_after(token_t *token, token_t *child) {
   child->sibling = token->sibling;
   token->sibling = child;
+  child->parent = token->parent;
+  return token;
+}
+
+// Remove from parent node. Assume there is a parent node. Returns the node itself
+token_t *remove(token_t *token) {
+  token_t *parent = token->parent;
+  if(parent->child == token) parent->child = token->sibling;
+  else {
+    token_t curr = parent->child; // Assumes that the tree is correctly formed, so curr will not be NULL
+    while(curr->sibling != token) curr = curr->sibling; 
+    curr->sibling = token->sibling;
+  }
   return token;
 }
 
