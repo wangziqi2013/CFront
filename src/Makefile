@@ -19,19 +19,19 @@ mem-test: all
 ./bin/test_parse_exp: test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o
 	$(CC) test_parse_exp.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o -o ./bin/test_parse_exp $(CFLAGS) $(LDFLAGS)
 
-test_parse_exp.o: test_parse_exp.c
+test_parse_exp.o: test_parse_exp.c token.h
 	$(CC) test_parse_exp.c -c -o test_parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h
+parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h token.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
 
-parse_decl.o: parse_decl.c parse_decl.h hashtable.h parse_exp.h error.h
+parse_decl.o: parse_decl.c parse_decl.h hashtable.h parse_exp.h error.h token.h
 	$(CC) parse_decl.c -c -o parse_decl.o $(CFLAGS) $(LDFLAGS)
 
-parse_comp.o: parse_comp.c parse_comp.h parse_exp.h parse_decl.h
+parse_comp.o: parse_comp.c parse_comp.h parse_exp.h parse_decl.h token.h
 	$(CC) parse_comp.c -c -o parse_comp.o $(CFLAGS) $(LDFLAGS)
 
-parse_stmt.o: parse_stmt.c parse_stmt.h parse_exp.h parse_decl.h parse_comp.h
+parse_stmt.o: parse_stmt.c parse_stmt.h parse_exp.h parse_decl.h parse_comp.h token.h
 	$(CC) parse_stmt.c -c -o parse_stmt.o $(CFLAGS) $(LDFLAGS)
 
 parse.o: parse.c parse.h parse_exp.h parse_decl.h parse_comp.h parse_stmt.h
