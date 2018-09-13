@@ -174,7 +174,7 @@ typedef struct token_t {
     struct token_t *sibling; // If token is in AST then use child-sibling representation
     struct token_t *next;    // If token is in pushbacks queue then form a circular queue
   };
-  struct token *parent;      // Empty for root node
+  struct token_t *parent;      // Empty for root node
   char *offset;              // The offset in source file, for debugging
   decl_prop_t decl_prop;     // Property if the kwd is part of declaration; Set when a kwd is found
 } token_t;

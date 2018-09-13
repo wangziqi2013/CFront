@@ -38,11 +38,11 @@ token_t *ast_insert_after(token_t *token, token_t *child) {
 }
 
 // Remove from parent node. Assume there is a parent node. Returns the node itself
-token_t *remove(token_t *token) {
+token_t *ast_remove(token_t *token) {
   token_t *parent = token->parent;
   if(parent->child == token) parent->child = token->sibling;
   else {
-    token_t curr = parent->child; // Assumes that the tree is correctly formed, so curr will not be NULL
+    token_t *curr = parent->child; // Assumes that the tree is correctly formed, so curr will not be NULL
     while(curr->sibling != token) curr = curr->sibling; 
     curr->sibling = token->sibling;
   }
