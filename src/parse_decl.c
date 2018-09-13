@@ -116,13 +116,15 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   token_t *decl = token_alloc_type(T_DECL);
   if(hasbasetype == PARSE_DECL_HASBASETYPE) // If this is off then the base type node is empty
     ast_append_child(decl, parse_decl_basetype(cxt)); 
-  parse_exp_shift(cxt, AST_STACK, token_get_empty()); // Placeholder operand for the innremost operator
+  token_t *placeholder = token_get_empty();
+  parse_exp_shift(cxt, AST_STACK, placeholder); // Placeholder operand for the innremost operator
   token_t *decl_name = NULL;  // If not an abstract declarator this is the name
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) {
       token_t *ret = ast_append_child(ast_append_child(decl, parse_exp_reduce_all(cxt)), decl_name ? decl_name : token_get_empty());
       parse_exp_decurse(cxt);
+      token_free(ast_remove(placeholder)); // Remove the empty operand
       return ret;
     }
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
