@@ -681,7 +681,29 @@ char *token_get_int(char *s, token_t *token) {
   else while(*end >= '0' && *end < '8') end++;
   assert(end != s);
   token_copy_literal(token, s, end);
-
+  decl_prop_t inttype;
+  switch(*end) {
+    case 'u': case 'U': 
+      switch(end[1]) {
+        case 'l': case 'L':
+          if(end[2] == 'l' || end[2] == 'L') { end += 3; inttype = BASETYPE_ULLONG; } // ULL
+          else { end += 2; inttype = BASETYPE_ULONG; }                                // UL
+          break;
+        default: end++; inttype = BASETYPE_UINT; break;                               // U
+      }
+    case 'l': case 'L': {
+      switch(end[1]) {
+        case 'l': case 'L':
+          if(end[2] == 'u' || end[2] == 'U') { end += 3; inttype = BASETYPE_ULLONG; } // LLU
+          else { end += 2; inttype = BASETYPE_LLONG; }                                // LL
+          break;
+        case 'u': case 'U': end += 2; inttype = BASETYPE_ULONG;                       // LU
+        default: end++; inttype = BASETYPE_UINT; break;                               // L
+      }
+    }
+    default: inttype = BASETYPE_INT; break;
+  }
+  token->decl_prop = inttype; // Make integer constant the declared size
   return end;
 }
 
