@@ -50,6 +50,7 @@ typedef enum {
   T_CHAR_CONST, T_STR_CONST,
   T_FLOAT_CONST,
   T_IDENT,
+  T_UDEF,                         // User-defined type using type-def; they are not identifiers
   T_LITERALS_END,
 
   // Add this to the index of keywords in the table
@@ -89,7 +90,7 @@ typedef enum {
   EXP_COMMA,                                // ,
   EXP_END,
   // Internal nodes
-  T_UDEF,                         // User-defined type using type-def; they are not identifiers
+  
   T_DECL, T_BASETYPE,             // Root node of a declaration
   T_,                             // Placeholder
   T_COMP_DECL,                    // structure or union declaration line, can contain one base and multiple declarator
