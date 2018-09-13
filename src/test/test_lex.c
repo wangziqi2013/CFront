@@ -128,11 +128,25 @@ void test_token_get_next() {
   return;
 }
 
+void test_int_size() {
+  printf("=== Test Integer Size ===\n");
+  char test[] = "12 23l 34ll 45llu 56lu 67u 78ul 89ull";
+  token_cxt_t *cxt = token_cxt_init(test);
+  token_t *token;
+  while((token = token_get_next(cxt)) != NULL) {
+    printf("%s %s\n", token->str, token_decl_print(token->decl_prop));
+  }
+  token_cxt_free(cxt);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_get_op();
   test_bin_search();
   test_token_get_next();
+  test_int_size();
   return 0;
 }
   
