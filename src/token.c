@@ -691,7 +691,8 @@ char *token_get_int(char *s, token_t *token) {
           break;
         default: end++; inttype = BASETYPE_UINT; break;                               // U
       }
-    case 'l': case 'L': {
+    break;
+    case 'l': case 'L':
       switch(end[1]) {
         case 'l': case 'L':
           if(end[2] == 'u' || end[2] == 'U') { end += 3; inttype = BASETYPE_ULLONG; } // LLU
@@ -700,7 +701,7 @@ char *token_get_int(char *s, token_t *token) {
         case 'u': case 'U': end += 2; inttype = BASETYPE_ULONG;                       // LU
         default: end++; inttype = BASETYPE_UINT; break;                               // L
       }
-    }
+    break;
     default: inttype = BASETYPE_INT; break;
   }
   token->decl_prop = inttype; // Make integer constant the declared size
