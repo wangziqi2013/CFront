@@ -69,12 +69,14 @@ void ht_resize(hashtable_t *ht) {
 
 // Returns value, or HT_NOTFOUND if not found
 void *ht_find(hashtable_t *ht, void *key) {
+  assert(key != NULL);
   int slot = ht_find_slot(ht, ht->keys, key);
   return ht->keys[slot] == NULL ? HT_NOTFOUND : ht->values[slot];
 }
 
 // Returns the value just inserted; return current value otherwise
 void *ht_insert(hashtable_t *ht, void *key, void *value) {
+  assert(key != NULL);
   if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) ht_resize(ht);
   int slot = ht_find_slot(ht, ht->keys, key);
   if(ht->keys[slot]) return ht->values[slot];
@@ -82,6 +84,21 @@ void *ht_insert(hashtable_t *ht, void *key, void *value) {
   ht->values[slot] = value;
   ht->size++;
   return value;
+}
+
+// Removes the key and return if it exists; return HT_NOTFOUND otherwise
+void *ht_remove(hastable_t *ht, void *key) {
+  assert(key != NULL);
+  int slot = ht_find_slot(ht, ht->keys, key), curr = slot;
+  void *ret = HT_NOTFOUND;
+  if(ht->keys[slot]) {
+    ret = ht->keys[slot];
+    while(keys[(curr + 1) & ht->mask]) curr = (curr + 1) & ht->mask; // Find the last valid element in the current streak
+    ht->keys[slot] = ht->keys[curr];
+    ht->values[slot] = ht->values[curr];
+    ht->size--;
+  }
+  return ret;
 }
 
 int ht_size(hashtable_t *ht) { return ht->size; }
