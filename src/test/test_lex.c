@@ -130,7 +130,7 @@ void test_token_get_next() {
 
 void test_int_size() {
   printf("=== Test Integer Size ===\n");
-  char test[] = "12 23l 34ll 45llu 56lu 67u 78ul 89ull";
+  char test[] = "12 23l 34ll 45llu 56lu 67u 78ul 89ull 0x123LU 056ULL";
   token_cxt_t *cxt = token_cxt_init(test);
   token_t *token;
   while((token = token_get_next(cxt)) != NULL) {

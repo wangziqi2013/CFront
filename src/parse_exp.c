@@ -5,7 +5,7 @@
 
 parse_exp_cxt_t *parse_exp_init(char *input) {
   parse_exp_cxt_t *cxt = (parse_exp_cxt_t *)malloc(sizeof(parse_exp_cxt_t));
-  if(cxt == NULL) perror(__func__);
+  if(cxt == NULL) syserror(__func__);
   cxt->stacks[0] = stack_init();
   cxt->stacks[1] = stack_init();
   cxt->tops[0] = stack_init();
