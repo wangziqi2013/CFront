@@ -1,5 +1,6 @@
 
 #include "hashtable.h"
+#include "error.h"
 
 int streq_cb(void *a, void *b) { return strcmp(a, b) == 0; }
 // Credits: K&R C Second Edition Page 144

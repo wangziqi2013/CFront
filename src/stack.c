@@ -1,5 +1,6 @@
 
 #include "stack.h"
+#include "error.h"
 
 stack_t *stack_init() {
   stack_t *stack = (stack_t *)malloc(sizeof(stack_t));
