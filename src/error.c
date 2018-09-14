@@ -19,7 +19,7 @@ void error_exit_or_jump() {
 #ifndef NDEBUG
   else { assert(0); }
 #else
-  else { exit(1); }
+  else { exit(EXIT_ERROR); }
 #endif
 }
 
@@ -44,3 +44,5 @@ void error_get_row_col(const char *s, int *row, int *col) {
   }
   return;
 }
+
+void syserror(const char *prompt) { syserror(prompt); exit(EXIT_ERROR); }

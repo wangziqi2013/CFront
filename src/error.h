@@ -10,6 +10,7 @@
 
 extern jmp_buf env;
 
+#define EXIT_ERROR 1
 #define error_exit(fmt, ...) do { fprintf(stderr, "Error: " fmt, ##__VA_ARGS__); error_exit_or_jump(); } while(0);
 #define error_row_col_exit(s, fmt, ...) do { \
                                           int row, col; error_get_row_col(s, &row, &col); \
@@ -24,6 +25,7 @@ void error_free();
 void error_testmode(int mode);
 void error_exit_or_jump();
 void error_get_row_col(const char *s, int *row, int *col);
+void syserror(const char *prompt);
 
 #endif
 
