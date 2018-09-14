@@ -37,6 +37,8 @@ void ht_free(hashtable_t *ht) {
   return;
 }
 
+int ht_size(hashtable_t *ht) { return ht->size; }
+
 // Returns an existing slot for key, if it already exists, or an empty one
 int ht_find_slot(hashtable_t *ht, void **keys, void *key) {
   hashval_t begin = ht->hash(key) & ht->mask;
@@ -86,19 +88,3 @@ void *ht_insert(hashtable_t *ht, void *key, void *value) {
   return value;
 }
 
-// Removes the key and return if it exists; return HT_NOTFOUND otherwise
-void *ht_remove(hastable_t *ht, void *key) {
-  assert(key != NULL);
-  int slot = ht_find_slot(ht, ht->keys, key), curr = slot;
-  void *ret = HT_NOTFOUND;
-  if(ht->keys[slot]) {
-    ret = ht->keys[slot];
-    while(keys[(curr + 1) & ht->mask]) curr = (curr + 1) & ht->mask; // Find the last valid element in the current streak
-    ht->keys[slot] = ht->keys[curr];
-    ht->values[slot] = ht->values[curr];
-    ht->size--;
-  }
-  return ret;
-}
-
-int ht_size(hashtable_t *ht) { return ht->size; }

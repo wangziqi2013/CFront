@@ -140,7 +140,7 @@ void test_ht() {
     void **results = malloc(sizeof(void *) * test_size);
     for(int i = 0;i < test_size;i++) {
       tests[i] = malloc(sizeof(char) * test_len);
-      for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % sizeof(alphabet)];
+      for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % (sizeof(alphabet) - 1)]; // Do not allow '\0'
       tests[i][test_len - 1] = '\0';
     }
 
@@ -148,7 +148,7 @@ void test_ht() {
     for(int i = 0;i < test_size;i++) {
       results[i] = ht_insert(ht, tests[i], tests[i]);
     }
-    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
+    
     for(int i = test_size - 1;i >= 0;i--) {
       void *ret = ht_find(ht, tests[i]);
       assert(ret != HT_NOTFOUND);
@@ -164,6 +164,7 @@ void test_ht() {
     free(tests);
     free(results);
     ht_free(ht);
+    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
   }
   printf("\nPass!\n");
   return;
