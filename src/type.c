@@ -20,7 +20,7 @@ type_cxt_t *type_init() {
   type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
   if(cxt == NULL) syserror(__func__);
   cxt->scopes = stack_init();
-  stack_push(scope_init(SCOPE_LEVEL_GLOBAL));
+  stack_push(cxt->scopes, scope_init(SCOPE_LEVEL_GLOBAL));
   // TODO: TYPE HASH & COMPARISON
   // cxt->types = ht_init(..., ...);
   return cxt;
@@ -33,18 +33,20 @@ void type_free(type_cxt_t *cxt) {
 }
 
 // Level 0 means global level
-scope_t *scope_getlevel(type_cxt_t *cxt, int level) { 
+scope_t *scope_atlevel(type_cxt_t *cxt, int level) { 
   return (scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level); 
 }
 
-hashtable_t *name_getlevel(type_cxt_t *cxt, int level, scope_type_t type) {
+hashtable_t *name_atlevel(type_cxt_t *cxt, int level, scope_type_t type) {
   return scope_getlevel(cxt, level)->names[type];
 }
+
+int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
 void *scope_search(type_cxt_t *cxt, scope_type_t type, void *name) {
   assert(type >=0 && type < SCOPE_TYPE_COUNT && stack_size(cxt->scopes) > 0);
-  for(int level = stack_size(cxt->scope) - 1;level >= 0;level--) {
+  for(int level = stack_size(cxt->scopes) - 1;level >= 0;level--) {
     void *value = ht_find(name_getlevel(cxt, level, type), name);
     if(value != HT_NOTFOUND) return value;
   }
