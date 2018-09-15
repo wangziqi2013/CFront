@@ -6,12 +6,12 @@ scope_t *scope_init(int level) {
   scope_t *scope = (scope_t *)malloc(sizeof(scope_t));
   if(scope == NULL) syserror(__func__);
   scope->level = level;
-  for(scope_type_t i = 0;i < SCOPE_TYPE_COUNT;i++) scope->names[i] = ht_str_init();
+  for(int i = 0;i < SCOPE_TYPE_COUNT;i++) scope->names[i] = ht_str_init();
   return scope;
 }
 
 void scope_free(scope_t *scope) {
-  for(scope_type_t i = 0;i < SCOPE_TYPE_COUNT;i++) ht_free(scope->names[i]);
+  for(int i = 0;i < SCOPE_TYPE_COUNT;i++) ht_free(scope->names[i]);
   free(scope);
   return;
 }
@@ -32,22 +32,17 @@ void type_free(type_cxt_t *cxt) {
   free(cxt);
 }
 
-// Level 0 means global level
-scope_t *scope_atlevel(type_cxt_t *cxt, int level) { 
-  return (scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level); 
-}
-
-hashtable_t *name_atlevel(type_cxt_t *cxt, int level, scope_type_t type) {
-  return scope_getlevel(cxt, level)->names[type];
+hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type) {
+  return ((scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level))->names[type];
 }
 
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
-void *scope_search(type_cxt_t *cxt, scope_type_t type, void *name) {
-  assert(type >=0 && type < SCOPE_TYPE_COUNT && stack_size(cxt->scopes) > 0);
-  for(int level = stack_size(cxt->scopes) - 1;level >= 0;level--) {
-    void *value = ht_find(name_getlevel(cxt, level, type), name);
+void *scope_search(type_cxt_t *cxt, int type, void *name) {
+  assert(type >=0 && type < SCOPE_TYPE_COUNT && scope_numlevel(cxt) > 0);
+  for(int level = scope_numlevel(cxt) - 1;level >= 0;level--) {
+    void *value = ht_find(scope_atlevel(cxt, level, type), name);
     if(value != HT_NOTFOUND) return value;
   }
   return NULL;
