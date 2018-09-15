@@ -36,6 +36,10 @@ hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type) {
   return ((scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level))->names[type];
 }
 
+hashtable_t *scope_top(type_cxt_t *cxt, int type) {
+  return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[type];
+}
+
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
