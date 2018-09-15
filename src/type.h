@@ -5,6 +5,8 @@
 #include "hashtable.h"
 #include "token.h"
 
+#define SCOPE_LEVEL_GLOBAL 0
+
 typedef enum {
  SCOPE_ENUM   = 0,
  SCOPE_VAR    = 1,

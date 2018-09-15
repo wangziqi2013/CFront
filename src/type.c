@@ -20,6 +20,7 @@ type_cxt_t *type_init() {
   type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
   if(cxt == NULL) syserror(__func__);
   cxt->scopes = stack_init();
+  stack_push(scope_init(SCOPE_LEVEL_GLOBAL));
   // TODO: TYPE HASH & COMPARISON
   // cxt->types = ht_init(..., ...);
   return cxt;
@@ -30,6 +31,17 @@ void type_free(type_cxt_t *cxt) {
   ht_free(cxt->types);
   free(cxt);
 }
+
+// Level 0 means global level
+scope_t *scope_getlevel(type_cxt_t *cxt, int level) { 
+  return (scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level); 
+}
+
+hashtable_t *name_getlevel(type_cxt_t *cxt, int level, scope_type_t type) {
+  return scope_getlevel(cxt, level)->names[type];
+}
+
+
 
 // Make a copy of the type AST in standard format
 token_t *clone_type_ast(token_t *basetype, token_t *decl, int bflen) {
