@@ -1,7 +1,7 @@
 
 CC=gcc
 LD=ld
-CFLAGS=-O0 -g -Wall -Wextra -Werror
+CFLAGS=-O0 -g -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 PWD=$(CURDIR)
 TESTFLAGS=-I$(PWD)
 LDFLAGS=
@@ -61,6 +61,9 @@ ast.o: ast.c ast.h
 
 hashtable.o: hashtable.c hashtable.h
 	$(CC) hashtable.c -c -o hashtable.o $(CFLAGS) $(LDFLAGS)
+
+type.o: type.c type.h
+	$(CC) type.c -c -o type.o $(CFLAGS) $(LDFLAGS)
 
 parse_exp.h: stack.h token.h ast.h hashtable.h
 
