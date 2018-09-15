@@ -29,7 +29,7 @@ mem-test: all
 	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 ./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o
-	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
@@ -70,7 +70,7 @@ ast.o: ast.c ast.h
 hashtable.o: hashtable.c hashtable.h
 	$(CC) hashtable.c -c -o hashtable.o $(CFLAGS) $(LDFLAGS)
 
-type.o: type.c type.h
+type.o: type.c type.h token.h ast.h hashtable.h stack.h error.h
 	$(CC) type.c -c -o type.o $(CFLAGS) $(LDFLAGS)
 
 parse_exp.h: stack.h token.h ast.h hashtable.h
