@@ -11,6 +11,20 @@
 
 void test_scope_init() {
   printf("=== Test Scope Init ===\n");
+  type_cxt_t *cxt = type_init();
+  scope_top_insert(cxt, SCOPE_STRUCT, "wangziqi2013", (void *)0x12345UL);
+  scope_top_insert(cxt, SCOPE_UNION, "wangziqi2016", (void *)0x23456UL);
+  assert(scope_top_find(cxt, SCOPE_STRUCT, "wangziqi2013") == (void *)0x12345UL);
+  assert(scope_top_find(cxt, SCOPE_UNION, "wangziqi2016") == (void *)0x23456UL);
+  scope_recurse(cxt); // 2 levels
+  scope_recurse(cxt); // 3 levels
+  scope_decurse(cxt); // 2 levels
+  scope_recurse(cxt); // 3 levels
+  scope_top_insert(cxt, SCOPE_STRUCT, "wangziqi2013", (void *)0x34567UL);
+  scope_top_insert(cxt, SCOPE_STRUCT, "wangziqi2018", (void *)0x45678UL);
+  scope_recurse(cxt);
+  scope_top_insert(cxt, SCOPE_STRUCT, "wangziqi2013", (void *)0x56789UL);
+  type_free(cxt);
   printf("Pass!\n");
   return;
 }
