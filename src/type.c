@@ -29,7 +29,7 @@ type_cxt_t *type_init() {
 void type_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
-  ht_free(cxt->types);
+  //ht_free(cxt->types);
   free(cxt);
 }
 
