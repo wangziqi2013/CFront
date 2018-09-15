@@ -42,5 +42,8 @@ scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
 type_cxt_t *type_init();
 void type_free(type_cxt_t *cxt); 
+scope_t *scope_getlevel(type_cxt_t *cxt, int level);
+hashtable_t *name_getlevel(type_cxt_t *cxt, int level, scope_type_t type);
+void *scope_search(type_cxt_t *cxt, scope_type_t type, void *name);
 
 #endif
