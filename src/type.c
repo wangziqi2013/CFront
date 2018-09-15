@@ -40,6 +40,8 @@ hashtable_t *scope_top(type_cxt_t *cxt, int type) { return ((scope_t *)stack_pee
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_numlevel(cxt))); }
 void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
+void *scope_top_find(type_cxt_t *cxt, int type, void *key) { return ht_find(scope_top(cxt, type), key); }
+void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value) { return ht_insert(scope_top(cxt, type), key, value); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
 void *scope_search(type_cxt_t *cxt, int type, void *name) {

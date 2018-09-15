@@ -47,6 +47,8 @@ hashtable_t *scope_top(type_cxt_t *cxt, int type);
 int scope_numlevel(type_cxt_t *cxt);
 void scope_recurse(type_cxt_t *cxt);
 void scope_decurse(type_cxt_t *cxt);
+void *scope_top_find(type_cxt_t *cxt, int type, void *key);
+void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
 
 #endif
