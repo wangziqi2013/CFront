@@ -41,7 +41,15 @@ hashtable_t *name_getlevel(type_cxt_t *cxt, int level, scope_type_t type) {
   return scope_getlevel(cxt, level)->names[type];
 }
 
-
+// Searches all levels of scopes and return the first one; return NULL if not found
+void *scope_search(type_cxt_t *cxt, scope_type_t type, void *name) {
+  assert(type >=0 && type < SCOPE_TYPE_COUNT && stack_size(cxt->scopes) > 0);
+  for(int level = stack_size(cxt->scope) - 1;level >= 0;level--) {
+    void *value = ht_find(name_getlevel(cxt, level, type), name);
+    if(value != HT_NOTFOUND) return value;
+  }
+  return NULL;
+}
 
 // Make a copy of the type AST in standard format
 token_t *clone_type_ast(token_t *basetype, token_t *decl, int bflen) {
