@@ -20,7 +20,7 @@ type_cxt_t *type_init() {
   type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
   if(cxt == NULL) syserror(__func__);
   cxt->scopes = stack_init();
-  stack_push(cxt->scopes, scope_init(SCOPE_LEVEL_GLOBAL));
+  scope_recurse(cxt);
   // TODO: TYPE HASH & COMPARISON
   // cxt->types = ht_init(..., ...);
   return cxt;
@@ -35,12 +35,10 @@ void type_free(type_cxt_t *cxt) {
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type) {
   return ((scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level))->names[type];
 }
-
-hashtable_t *scope_top(type_cxt_t *cxt, int type) {
-  return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[type];
-}
-
+hashtable_t *scope_top(type_cxt_t *cxt, int type) { return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[type]; }
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
+void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_numlevel(cxt))); }
+void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
 void *scope_search(type_cxt_t *cxt, int type, void *name) {

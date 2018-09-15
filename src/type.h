@@ -45,6 +45,8 @@ void type_free(type_cxt_t *cxt);
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type);
 hashtable_t *scope_top(type_cxt_t *cxt, int type);
 int scope_numlevel(type_cxt_t *cxt);
+void scope_recurse(type_cxt_t *cxt);
+void scope_decurse(type_cxt_t *cxt);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
 
 #endif
