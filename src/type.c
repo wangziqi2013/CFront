@@ -15,7 +15,13 @@ scope_t *scope_init(int level) {
 }
 
 void scope_free(scope_t *scope) {
-
+  ht_free(scope->enums);
+  ht_free(scope->vars);
+  ht_free(scope->structs);
+  ht_free(scope->unions);
+  ht_free(scope->udefs);
+  free(scope);
+  return;
 }
 
 type_cxt_t *type_init() {

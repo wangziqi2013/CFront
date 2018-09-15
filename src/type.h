@@ -31,6 +31,8 @@ typedef struct {
   unsigned char size;
 } type_t;
 
+scope_t *scope_init(int level);
+void scope_free(scope_t *scope);
 type_cxt_t *type_init();
 void type_free(type_cxt_t *cxt); 
 
