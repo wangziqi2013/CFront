@@ -25,11 +25,18 @@ void scope_free(scope_t *scope) {
 }
 
 type_cxt_t *type_init() {
-
+  type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
+  if(cxt == NULL) syserror(__func__);
+  cxt->scopes = stack_init();
+  // TODO: TYPE HASH & COMPARISON
+  // cxt->types = ht_init(..., ...);
+  return cxt;
 }
 
 void type_free(type_cxt_t *cxt) {
-  
+  stack_free(cxt->scopes);
+  ht_free(cxt->types);
+  free(cxt);
 }
 
 // Make a copy of the type AST in standard format
