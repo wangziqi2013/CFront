@@ -35,7 +35,7 @@ typedef struct {
 typedef struct {
   typeid_t typeid;
   token_t *decl;
-  unsigned char size;
+  size_t size;
 } type_t;
 
 scope_t *scope_init(int level);

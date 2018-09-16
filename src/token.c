@@ -717,6 +717,7 @@ char *token_get_str(char *s, token_t *token, char closing) {
     while(*end != '\0' && *end != closing) end++;
     if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
   } while(end[-1] == '\\' && end++); // If the first is true then we increment the end ptr
+  if(closing == '\'') token->decl_prop = BASETYPE_CHAR; // If the closing is char then add type
   token_copy_literal(token, s, end);
   return end + 1;
 }
