@@ -38,3 +38,6 @@ build
 ## Ignore python byte code
 *.pyc
 *.table
+
+# Specific files
+test_parse.txt
