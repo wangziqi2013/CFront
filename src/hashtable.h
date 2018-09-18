@@ -14,8 +14,9 @@
 #define HT_DELETED  ((void *)-2) // The slot is deleted. Insertion treats it as empty while lookup does the opposite
 
 typedef unsigned long hashval_t;
-typedef int (*eq_cb_t)(void *, void *);
-typedef hashval_t (*hash_cb_t)(void *);
+typedef int (*eq_cb_t)(void *, void *);    // Equality comparison function
+typedef int (*cmp_cb_t)(void *, void *);   // Comparison comparison function
+typedef hashval_t (*hash_cb_t)(void *);    // Hash value function
 
 typedef struct {
   eq_cb_t eq;
