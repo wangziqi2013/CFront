@@ -30,5 +30,8 @@ void *bt_insert(bintree_t *bt, void *key, void *value);
 btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btnode_t **found);
 void *bt_find(bintree_t *bt, void *key);
 void *_bt_find(bintree_t *bt, btnode_t *node, void *key);
+void *bt_remove(bintree_t *bt, void *key);
+void *_bt_remove(bintree_t *bt, btnode_t *node, void *key, void **found);
+void *_bt_remove_node(bintree_t *bt, btnode_t *node, void *key);
 
 #endif
