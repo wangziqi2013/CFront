@@ -3,6 +3,7 @@
 #include "error.h"
 
 int streq_cb(void *a, void *b) { return strcmp(a, b) == 0; }
+int strcmp_cb(void *a, void *b) { return strcmp(a, b); }
 // Credits: K&R C Second Edition Page 144
 hashval_t strhash_cb(void *a) { 
   char *s = (char *)a;

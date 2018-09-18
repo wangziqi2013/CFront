@@ -29,6 +29,7 @@ typedef struct {
 } hashtable_t;
 
 int streq_cb(void *a, void *b);
+int strcmp_cb(void *a, void *b);
 hashval_t strhash_cb(void *a);
 hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash);
 hashtable_t *ht_str_init();
