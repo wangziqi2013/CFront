@@ -21,5 +21,6 @@ btnode_t *btnode_alloc(void *key, void *value);
 void btnode_free(btnode_t *node);
 bintree_t *bt_alloc(cmp_cb_t cmp, eq_cb_t eq);
 void bt_free(bintree_t *bt);
+bintree_t *bt_str_alloc();
 
 #endif
