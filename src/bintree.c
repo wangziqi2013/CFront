@@ -19,7 +19,14 @@ bintree_t *bt_init(cmp_cb_t cmp) {
   bt->size = 0;
   return bt;
 }
-void bt_free(bintree_t *bt) { free(bt); } // TODO: ADD RECURSIVE FREE
+void bt_free(bintree_t *bt) { _bt_free(bt->root); free(bt); }
+void _bt_free(btnode_t *node) {
+  if(node == NULL) return;
+  _bt_free(node->left);
+  _bt_free(node->right);
+  btnode_free(node);
+  return;
+}
 bintree_t *bt_str_init() { return bt_init(strcmp_cb); }
 
 // Insert the key, or return an existing key
