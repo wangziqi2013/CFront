@@ -36,3 +36,13 @@ btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btno
   else node->right = _bt_insert(bt, node->right, key, value, found);
   return node;
 }
+
+// Return BT_NOTFOUND if not found, otherwise return the value
+void *bt_find(bintree_t *bt, void *key) { return _bt_find(bt, bt->root, key); }
+void *_bt_find(bintree_t *bt, btnode_t *node, void *key) {
+  if(node == NULL) return BT_NOTFOUND;
+  int cmp = bt->cmp(key, node->key);
+  if(cmp == 0) return node->value;
+  else if(cmp < 0) return _bt_find(bt, node->left, key);
+  else return _bt_find(bt, node->right, key);
+}

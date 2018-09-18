@@ -4,6 +4,8 @@
 
 #include "hashtable.h"
 
+#define BT_NOTFOUND ((void *)-1)
+
 // Binary tree node type
 typedef struct btnode {
   void *key, *value;
@@ -26,5 +28,7 @@ void bt_free(bintree_t *bt);
 bintree_t *bt_str_alloc();
 void *bt_insert(bintree_t *bt, void *key, void *value);
 btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btnode_t **found);
+void *bt_find(bintree_t *bt, void *key);
+void *_bt_find(bintree_t *bt, btnode_t *node, void *key);
 
 #endif
