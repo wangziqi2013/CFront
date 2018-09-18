@@ -46,3 +46,19 @@ void *_bt_find(bintree_t *bt, btnode_t *node, void *key) {
   else if(cmp < 0) return _bt_find(bt, node->left, key);
   else return _bt_find(bt, node->right, key);
 }
+
+// Removes the given key, and returns the value if the key exists; otherwise return BT_NOTFOUND
+void *bt_remove(bintree_t *bt, void *key) { return _bt_remove(bt, bt->root, key); }
+void *_bt_remove(bintree_t *bt, btnode_t *node, void *key) {
+  if(node == NULL) return BT_NOTFOUND;
+  int cmp = bt->cmp(key, node->key);
+  if(cmp == 0) return _bt_remove_node(bt, node);
+  else if(cmp < 0) return _bt_remove(bt, node->left, key);
+  else return _bt_remove(bt, node->right, key);
+}
+
+// Internal function only called by bt_remove()
+void *_bt_remove_node(bintree_t *bt, btnode_t *node, void *key) {
+  void *ret = node->value;
+  if(node->left == NULL && node->right == NULL) 
+}
