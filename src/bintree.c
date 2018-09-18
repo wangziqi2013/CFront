@@ -48,17 +48,35 @@ void *_bt_find(bintree_t *bt, btnode_t *node, void *key) {
 }
 
 // Removes the given key, and returns the value if the key exists; otherwise return BT_NOTFOUND
-void *bt_remove(bintree_t *bt, void *key) { return _bt_remove(bt, bt->root, key); }
-void *_bt_remove(bintree_t *bt, btnode_t *node, void *key) {
+void *bt_remove(bintree_t *bt, void *key) { 
+  void *found = BT_NOTFOUND;
+  bt->root = _bt_remove(bt, bt->root, key, &found); 
+  return found;
+}
+
+// Returns the child after performing remove
+void *_bt_remove(bintree_t *bt, btnode_t *node, void *key, void **found) {
   if(node == NULL) return BT_NOTFOUND;
   int cmp = bt->cmp(key, node->key);
-  if(cmp == 0) return _bt_remove_node(bt, node);
-  else if(cmp < 0) return _bt_remove(bt, node->left, key);
-  else return _bt_remove(bt, node->right, key);
+  if(cmp == 0) { *found = node->value; bt->size--; return _bt_remove_node(bt, node); }
+  else if(cmp < 0) node->left = _bt_remove(bt, node->left, key);
+  else node->right = _bt_remove(bt, node->right, key);
+  return node;
 }
 
 // Internal function only called by bt_remove()
 void *_bt_remove_node(bintree_t *bt, btnode_t *node, void *key) {
-  void *ret = node->value;
-  if(node->left == NULL && node->right == NULL) 
+  btnode_t *left = node->left, *right = node->right;
+  if(left == NULL) return right; // This also covers the leaf node case
+  else if(right == NULL) return left;
+  if(right->left == NULL) {
+    btnode_free(node);
+    right->left = left;
+    return right;
+  }
+  do { left = right; right = right->left; } while(right->left);
+  node->key = right->key; node->value = right->value;
+  left->left = right->right;
+  btnode_free(right);
+  return node;
 }
