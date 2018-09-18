@@ -5,6 +5,7 @@
     "parse_decl.h": "c",
     "parse_exp.h": "c",
     "parse_stmt.h": "c",
-    "bintree.h": "c"
+    "bintree.h": "c",
+    "error.h": "c"
   }
 }

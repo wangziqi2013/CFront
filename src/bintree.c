@@ -20,3 +20,4 @@ bintree_t *bt_alloc(cmp_cb_t cmp, eq_cb_t eq) {
   return bt;
 }
 
+void bt_free(bintree_t *bt) { free(bt); }
