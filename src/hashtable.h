@@ -11,7 +11,6 @@
 #define HT_INIT_MASK 0x7F
 #define HT_RESIZE_THRESHOLD(capacity) (capacity / 8 * 7)
 #define HT_NOTFOUND ((void *)-1)
-#define HT_DELETED  ((void *)-2) // The slot is deleted. Insertion treats it as empty while lookup does the opposite
 
 typedef unsigned long hashval_t;
 typedef int (*eq_cb_t)(void *, void *);    // Equality comparison function
