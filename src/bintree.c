@@ -20,19 +20,19 @@ bintree_t *bt_alloc(cmp_cb_t cmp) {
   return bt;
 }
 void bt_free(bintree_t *bt) { free(bt); }
-bintree_t *bt_str_alloc() { return bt_alloc(strcmp_cb, streq_cb); }
+bintree_t *bt_str_alloc() { return bt_alloc(strcmp_cb); }
 
 // Insert the key, or return an existing key
-btnode_t *bt_insert(bintree_t *bt, void *key, void *value) {
-  btnode_t *found = NULL;
+void *bt_insert(bintree_t *bt, void *key, void *value) {
+  btnode_t *found = NULL; // Set to new node if inserted, otherwise set to 
   bt->root = _bt_insert(bt, bt->root, key, value, &found);
-  return found;
+  return found->value;
 }
 btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btnode_t **found) {
   if(node == NULL) { bt->size++; *found = btnode_alloc(key, value); return *found; } // Creates a new node
   int cmp = bt->cmp(key, node->key);
   if(cmp == 0) *found = node;
-  else if(cmp < 0) node->left = _bt_insert(bt, node->left, key, value);
-  else node->right = _bt_insert(bt, node->right, key, value);
+  else if(cmp < 0) node->left = _bt_insert(bt, node->left, key, value, found);
+  else node->right = _bt_insert(bt, node->right, key, value, found);
   return node;
 }

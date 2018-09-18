@@ -24,5 +24,7 @@ void btnode_free(btnode_t *node);
 bintree_t *bt_alloc(cmp_cb_t cmp);
 void bt_free(bintree_t *bt);
 bintree_t *bt_str_alloc();
+void *bt_insert(bintree_t *bt, void *key, void *value);
+btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btnode_t **found);
 
 #endif
