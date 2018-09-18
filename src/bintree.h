@@ -18,5 +18,7 @@ typedef struct {
 } bintree_t;
 
 btnode_t *btnode_alloc(void *key, void *value);
+void btnode_free(btnode_t *node);
+bintree_t *bt_alloc(cmp_cb_t cmp, eq_cb_t eq);
 
 #endif
