@@ -74,12 +74,24 @@ void test_bintree() {
     assert(bt_find(bt, "+_1234567890") == HT_NOTFOUND);
     assert(bt_find(bt, "!@#$") == HT_NOTFOUND);
     assert(bt_find(bt, "QWERT[]{}") == HT_NOTFOUND);
+    printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
+
+    for(int i = 0;i < test_size / 2;i++) {
+      assert(bt_remove(bt, tests[i]) == tests[i]);
+      assert(bt_find(bt, tests[i]) == BT_NOTFOUND);
+      assert(bt_remove(bt, tests[i]) == BT_NOTFOUND);
+    }
+    for(int i = test_size - 1;i >= test_size / 2;i--) {
+      assert(bt_remove(bt, tests[i]) == tests[i]);
+      assert(bt_find(bt, tests[i]) == BT_NOTFOUND);
+      assert(bt_remove(bt, tests[i]) == BT_NOTFOUND);
+    }
+    assert(bt->size == 0);
 
     for(int i = 0;i < test_size;i++) free(tests[i]);
     free(tests);
     free(results);
     bt_free(bt);
-    printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
   }
   printf("\nPass!\n");
   return;
