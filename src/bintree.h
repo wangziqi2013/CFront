@@ -23,15 +23,15 @@ typedef struct {
 
 btnode_t *btnode_alloc(void *key, void *value);
 void btnode_free(btnode_t *node);
-bintree_t *bt_alloc(cmp_cb_t cmp);
+bintree_t *bt_init(cmp_cb_t cmp);
 void bt_free(bintree_t *bt);
-bintree_t *bt_str_alloc();
+bintree_t *bt_str_init();
 void *bt_insert(bintree_t *bt, void *key, void *value);
 btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btnode_t **found);
 void *bt_find(bintree_t *bt, void *key);
 void *_bt_find(bintree_t *bt, btnode_t *node, void *key);
 void *bt_remove(bintree_t *bt, void *key);
 void *_bt_remove(bintree_t *bt, btnode_t *node, void *key, void **found);
-void *_bt_remove_node(bintree_t *bt, btnode_t *node, void *key);
+void *_bt_remove_node(bintree_t *bt, btnode_t *node);
 
 #endif

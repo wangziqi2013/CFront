@@ -11,7 +11,7 @@ btnode_t *btnode_alloc(void *key, void *value) {
 }
 void btnode_free(btnode_t *node) { free(node); }
 
-bintree_t *bt_alloc(cmp_cb_t cmp) {
+bintree_t *bt_init(cmp_cb_t cmp) {
   bintree_t *bt = (bintree_t *)malloc(sizeof(bintree_t));
   if(bt == NULL) syserror(__func__);
   bt->cmp = cmp;
@@ -19,8 +19,8 @@ bintree_t *bt_alloc(cmp_cb_t cmp) {
   bt->size = 0;
   return bt;
 }
-void bt_free(bintree_t *bt) { free(bt); }
-bintree_t *bt_str_alloc() { return bt_alloc(strcmp_cb); }
+void bt_free(bintree_t *bt) { free(bt); } // TODO: ADD RECURSIVE FREE
+bintree_t *bt_str_init() { return bt_init(strcmp_cb); }
 
 // Insert the key, or return an existing key
 void *bt_insert(bintree_t *bt, void *key, void *value) {
@@ -56,19 +56,19 @@ void *bt_remove(bintree_t *bt, void *key) {
 
 // Returns the child after performing remove
 void *_bt_remove(bintree_t *bt, btnode_t *node, void *key, void **found) {
-  if(node == NULL) return BT_NOTFOUND;
+  if(node == NULL) { *found = BT_NOTFOUND; return NULL; }
   int cmp = bt->cmp(key, node->key);
   if(cmp == 0) { *found = node->value; bt->size--; return _bt_remove_node(bt, node); }
-  else if(cmp < 0) node->left = _bt_remove(bt, node->left, key);
-  else node->right = _bt_remove(bt, node->right, key);
+  else if(cmp < 0) node->left = _bt_remove(bt, node->left, key, found);
+  else node->right = _bt_remove(bt, node->right, key, found);
   return node;
 }
 
 // Internal function only called by bt_remove()
-void *_bt_remove_node(bintree_t *bt, btnode_t *node, void *key) {
+void *_bt_remove_node(bintree_t *bt, btnode_t *node) {
   btnode_t *left = node->left, *right = node->right;
-  if(left == NULL) return right; // This also covers the leaf node case
-  else if(right == NULL) return left;
+  if(left == NULL) { btnode_free(node); return right; } // This also covers the leaf node case
+  else if(right == NULL) { btnode_free(node); return left; }
   if(right->left == NULL) {
     btnode_free(node);
     right->left = left;
