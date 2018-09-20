@@ -47,15 +47,15 @@ void *list_insert(list_t *list, void *key, void *value) {
 }
 
 void *list_insert_nodup(list_t *list, void *key, void *value) {
-  void *value = list_find(list, key);
-  if(value == LIST_NOTFOUND) value = list_insert(list, key, value);
-  return value;
+  void *ret = list_find(list, key);
+  if(ret == LIST_NOTFOUND) value = list_insert(list, key, value);
+  return ret;
 }
 
 // Search for the given key, and return value; Return LIST_NOTFOUND if not found
 void *list_find(list_t *list, void *key) {
   listnode_t *curr = list->head;
-  while(curr) if(list->eq(key, curr->key)) return curr->value;
+  while(curr) if(list->eq(key, curr->key)) return curr->value; else curr = curr->next;
   return LIST_NOTFOUND;
 }
 
@@ -74,7 +74,7 @@ void *list_remove(list_t *list, void *key) {
   }
   do {
     curr = curr->next;
-    if(list->eq(curr->key, key)) {
+    if(curr && list->eq(curr->key, key)) {
       prev->next = curr->next;
       ret = curr->value;
       listnode_free(curr);
