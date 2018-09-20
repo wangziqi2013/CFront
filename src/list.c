@@ -32,3 +32,14 @@ listnode_t *listnode_alloc() {
 }
 void listnode_free(listnode_t *node) { free(node); }
 
+// Always insert to the end of the list; do not check for duplicate
+void list_insert(list_t *list, void *key, void *value) {
+  listnode_t *node = listnode_alloc();
+  node->key = key;
+  node->value = value;
+  node->next = NULL;
+  assert(list->head || !list->tail);  // If head is NULL then tail must also be NULL
+  if(list->head == NULL) list->head = list->tail = node;
+  else list->tail = (list->tail->next = node);
+  return;
+}
