@@ -8,6 +8,7 @@
 #include "parse.h"
 #include "hashtable.h"
 #include "bintree.h"
+#include "list.h"
 #include "type.h"
 
 void test_scope_init() {
@@ -66,14 +67,14 @@ void test_bintree() {
     
     for(int i = test_size - 1;i >= 0;i--) {
       void *ret = bt_find(bt, tests[i]);
-      assert(ret != HT_NOTFOUND);
+      assert(ret != BT_NOTFOUND);
       assert(strcmp(ret, tests[i]) == 0);
     }
 
-    assert(bt_find(bt, "wangziqi2013") == HT_NOTFOUND);
-    assert(bt_find(bt, "+_1234567890") == HT_NOTFOUND);
-    assert(bt_find(bt, "!@#$") == HT_NOTFOUND);
-    assert(bt_find(bt, "QWERT[]{}") == HT_NOTFOUND);
+    assert(bt_find(bt, "wangziqi2013") == BT_NOTFOUND);
+    assert(bt_find(bt, "+_1234567890") == BT_NOTFOUND);
+    assert(bt_find(bt, "!@#$") == BT_NOTFOUND);
+    assert(bt_find(bt, "QWERT[]{}") == BT_NOTFOUND);
     printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
 
     for(int i = 0;i < test_size / 2;i++) {
@@ -98,10 +99,65 @@ void test_bintree() {
   return;
 }
 
+void test_list() {
+  printf("=== Test Linked List ===\n");
+  const int test_size = 128 * 10 + 100;
+  const int test_len = 16;
+  const char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
+  for(int seed = 0;seed < 100;seed++) {
+    srand(seed);
+    char **tests = malloc(sizeof(char *) * test_size);
+    void **results = malloc(sizeof(void *) * test_size);
+    for(int i = 0;i < test_size;i++) {
+      tests[i] = malloc(sizeof(char) * test_len);
+      for(int j = 0;j < test_len - 1;j++) tests[i][j] = alphabet[rand() % (sizeof(alphabet) - 1)]; // Do not allow '\0'
+      tests[i][test_len - 1] = '\0';
+    }
+
+    list_t *list = list_str_init();
+    for(int i = 0;i < test_size;i++) {
+      results[i] = list_insert_nodup(list, tests[i], tests[i]);
+    }
+    
+    for(int i = test_size - 1;i >= 0;i--) {
+      void *ret = list_find(list, tests[i]);
+      assert(ret != HT_NOTFOUND);
+      assert(strcmp(ret, tests[i]) == 0);
+    }
+
+    assert(bt_find(list, "wangziqi2013") == HT_NOTFOUND);
+    assert(bt_find(list, "+_1234567890") == HT_NOTFOUND);
+    assert(bt_find(list, "!@#$") == HT_NOTFOUND);
+    assert(bt_find(list, "QWERT[]{}") == HT_NOTFOUND);
+    printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
+
+    for(int i = 0;i < test_size / 2;i++) {
+      assert(bt_remove(list, tests[i]) == tests[i]);
+      assert(bt_find(list, tests[i]) == BT_NOTFOUND);
+      assert(bt_remove(list, tests[i]) == BT_NOTFOUND);
+    }
+    for(int i = test_size - 1;i >= test_size / 2;i--) {
+      assert(bt_remove(list, tests[i]) == tests[i]);
+      assert(bt_find(list, tests[i]) == BT_NOTFOUND);
+      assert(bt_remove(list, tests[i]) == BT_NOTFOUND);
+    }
+    assert(list->size == 0);
+    assert(list->root == NULL);
+
+    for(int i = 0;i < test_size;i++) free(tests[i]);
+    free(tests);
+    free(results);
+    bt_free(list);
+  }
+  printf("\nPass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_scope_init();
   test_bintree();
+  test_list();
   return 0;
 }
   
