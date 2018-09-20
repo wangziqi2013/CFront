@@ -28,6 +28,8 @@ void _bt_free(btnode_t *node) {
 }
 bintree_t *bt_str_init() { return bt_init(strcmp_cb); }
 
+int bt_size(bintree_t *bt) { return bt->size; }
+
 // Insert the key, or return an existing key
 void *bt_insert(bintree_t *bt, void *key, void *value) {
   btnode_t *found = NULL; // Set to new node if inserted, otherwise set to 

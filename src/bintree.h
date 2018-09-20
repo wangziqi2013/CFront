@@ -27,6 +27,7 @@ bintree_t *bt_init(cmp_cb_t cmp);
 void bt_free(bintree_t *bt);
 void _bt_free(btnode_t *node);
 bintree_t *bt_str_init();
+int bt_size(bintree_t *bt);
 void *bt_insert(bintree_t *bt, void *key, void *value);
 btnode_t *_bt_insert(bintree_t *bt, btnode_t *node, void *key, void *value, btnode_t **found);
 void *bt_find(bintree_t *bt, void *key);
