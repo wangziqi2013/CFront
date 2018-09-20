@@ -1,16 +1,15 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "error.h"
 #include "list.h"
 
-list_t *list_init() {
+list_t *list_init(eq_cb_t eq) {
   list_t *list = (list_t *)malloc(sizeof(list_t));
   if(list == NULL) syserror(__func__);
   list->size = 0;
   list->head = list->tail = NULL;
+  list->eq = eq;
   return list;
 }
+list_t *list_str_init() { return list_init(streq_cb); }
 
 void list_free(list_t *list) {
   assert(list->head || !list->tail);
@@ -42,4 +41,11 @@ void list_insert(list_t *list, void *key, void *value) {
   if(list->head == NULL) list->head = list->tail = node;
   else list->tail = (list->tail->next = node);
   return;
+}
+
+// Search for the given key, and return value; Return LIST_NOTFOUND if not found
+void *list_find(list_t *list, void *key) {
+  listnode_t *curr = list->head;
+  while(curr) if(list->eq(key, curr->key)) return curr->value;
+  return LIST_NOTFOUND;
 }

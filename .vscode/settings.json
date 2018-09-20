@@ -6,6 +6,7 @@
     "parse_exp.h": "c",
     "parse_stmt.h": "c",
     "bintree.h": "c",
-    "error.h": "c"
+    "error.h": "c",
+    "list.h": "c"
   }
 }
