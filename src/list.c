@@ -11,3 +11,18 @@ list_t *list_init() {
   list->head = NULL;
   return list;
 }
+
+list_t *list_free(list_t *list) {
+  listnode_t *node = list->head, *prev = node;
+  if(node != NULL)  {
+    node = node->next;
+    while(node != NULL) {
+      listnode_free(prev);
+      prev = node;
+      node = node->next;
+    }
+    listnode_free(prev); // The last node is freed here
+  }
+  free(list);
+  return;
+}
