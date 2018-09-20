@@ -44,6 +44,10 @@ void list_insert(list_t *list, void *key, void *value) {
   return;
 }
 
+void list_insert_nodup(list_t *list, void *key, void *value) {
+  if(list_find(list, key) == LIST_NOTFOUND) list_insert(list, key, value);
+}
+
 // Search for the given key, and return value; Return LIST_NOTFOUND if not found
 void *list_find(list_t *list, void *key) {
   listnode_t *curr = list->head;
