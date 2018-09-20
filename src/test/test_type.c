@@ -87,7 +87,7 @@ void test_bintree() {
       assert(bt_find(bt, tests[i]) == BT_NOTFOUND);
       assert(bt_remove(bt, tests[i]) == BT_NOTFOUND);
     }
-    assert(bt->size == 0);
+    assert(bt_size(bt) == 0);
     assert(bt->root == NULL);
 
     for(int i = 0;i < test_size;i++) free(tests[i]);
@@ -125,29 +125,29 @@ void test_list() {
       assert(strcmp(ret, tests[i]) == 0);
     }
 
-    assert(bt_find(list, "wangziqi2013") == HT_NOTFOUND);
-    assert(bt_find(list, "+_1234567890") == HT_NOTFOUND);
-    assert(bt_find(list, "!@#$") == HT_NOTFOUND);
-    assert(bt_find(list, "QWERT[]{}") == HT_NOTFOUND);
+    assert(list_find(list, "wangziqi2013") == HT_NOTFOUND);
+    assert(list_find(list, "+_1234567890") == HT_NOTFOUND);
+    assert(list_find(list, "!@#$") == HT_NOTFOUND);
+    assert(list_find(list, "QWERT[]{}") == HT_NOTFOUND);
     printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
 
     for(int i = 0;i < test_size / 2;i++) {
-      assert(bt_remove(list, tests[i]) == tests[i]);
-      assert(bt_find(list, tests[i]) == BT_NOTFOUND);
-      assert(bt_remove(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i]) == tests[i]);
+      assert(list_find(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
     }
     for(int i = test_size - 1;i >= test_size / 2;i--) {
-      assert(bt_remove(list, tests[i]) == tests[i]);
-      assert(bt_find(list, tests[i]) == BT_NOTFOUND);
-      assert(bt_remove(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i]) == tests[i]);
+      assert(list_find(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
     }
-    assert(list->size == 0);
-    assert(list->root == NULL);
+    assert(list_size(list) == 0);
+    assert(list->head == list->tail && list->head == NULL);
 
     for(int i = 0;i < test_size;i++) free(tests[i]);
     free(tests);
     free(results);
-    bt_free(list);
+    list_free(list);
   }
   printf("\nPass!\n");
   return;
