@@ -20,6 +20,7 @@ typedef struct {
 list_t *list_init(eq_cb_t eq);
 list_t *list_str_init();
 void list_free(list_t *list);
+int list_size(list_t *list)
 listnode_t *listnode_alloc();
 void listnode_free(listnode_t *node);
 void list_insert(list_t *list, void *key, void *value);
