@@ -87,6 +87,7 @@ void test_bintree() {
       assert(bt_remove(bt, tests[i]) == BT_NOTFOUND);
     }
     assert(bt->size == 0);
+    assert(bt->root == NULL);
 
     for(int i = 0;i < test_size;i++) free(tests[i]);
     free(tests);
