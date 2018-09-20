@@ -40,6 +40,7 @@ void list_insert(list_t *list, void *key, void *value) {
   assert(list->head || !list->tail);  // If head is NULL then tail must also be NULL
   if(list->head == NULL) list->head = list->tail = node;
   else list->tail = (list->tail->next = node);
+  list->size++;
   return;
 }
 
@@ -47,5 +48,33 @@ void list_insert(list_t *list, void *key, void *value) {
 void *list_find(list_t *list, void *key) {
   listnode_t *curr = list->head;
   while(curr) if(list->eq(key, curr->key)) return curr->value;
+  return LIST_NOTFOUND;
+}
+
+// Removes the key from the list. Return value if key exists; LIST_NOTFOUND otherwise
+void *list_remove(list_t *list, void *key) {
+  listnode_t *curr = list->head, *prev = curr;
+  if(curr == NULL) return LIST_NOTFOUND;
+  void *ret = NULL;
+  if(list->eq(curr->key, key)) {
+    list->head = curr->next;  // Could be NULL
+    ret = curr->value;
+    listnode_free(curr);
+    list->size--;
+    if(curr == list->tail) list->tail = NULL;
+    return ret;
+  }
+  do {
+    curr = curr->next;
+    if(list->eq(curr->key, key)) {
+      prev->next = curr->next;
+      ret = curr->value;
+      listnode_free(curr);
+      list->size--;
+      if(curr == list->tail) list->tail = prev; // If deleting the last element then adjust tail
+      return ret;
+    }
+    prev = curr;
+  } while(curr);
   return LIST_NOTFOUND;
 }

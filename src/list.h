@@ -24,5 +24,6 @@ listnode_t *listnode_alloc();
 void listnode_free(listnode_t *node);
 void list_insert(list_t *list, void *key, void *value);
 void *list_find(list_t *list, void *key);
+void *list_remove(list_t *list, void *key);
 
 #endif
