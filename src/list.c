@@ -8,21 +8,18 @@ list_t *list_init() {
   list_t *list = (list_t *)malloc(sizeof(list_t));
   if(list == NULL) syserror(__func__);
   list->size = 0;
-  list->head = NULL;
+  list->head = list->tail = NULL;
   return list;
 }
 
-list_t *list_free(list_t *list) {
+void list_free(list_t *list) {
+  assert(list->head || !list->tail);
   listnode_t *node = list->head, *prev = node;
-  if(node != NULL)  {
+  if(node) do {
     node = node->next;
-    while(node != NULL) {
-      listnode_free(prev);
-      prev = node;
-      node = node->next;
-    }
-    listnode_free(prev); // The last node is freed here
-  }
+    listnode_free(prev);
+    prev = node;
+  } while(node);
   free(list);
   return;
 }
@@ -34,3 +31,4 @@ listnode_t *listnode_alloc() {
   return node;
 }
 void listnode_free(listnode_t *node) { free(node); }
+
