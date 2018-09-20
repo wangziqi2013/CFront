@@ -26,3 +26,11 @@ list_t *list_free(list_t *list) {
   free(list);
   return;
 }
+
+// Allocate a node. All fields are uninitialized
+listnode_t *listnode_alloc() {
+  listnode_t *node = (listnode_t *)malloc(sizeof(listnode_t));
+  if(node == NULL) syserror(__func__);
+  return node;
+}
+void listnode_free(listnode_t *node) { free(node); }
