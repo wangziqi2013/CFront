@@ -75,7 +75,7 @@ void test_bintree() {
     assert(bt_find(bt, "+_1234567890") == BT_NOTFOUND);
     assert(bt_find(bt, "!@#$") == BT_NOTFOUND);
     assert(bt_find(bt, "QWERT[]{}") == BT_NOTFOUND);
-    printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
+    printf("Finished: %06d [ Size: %d ]\r", seed, bt_size(bt));
 
     for(int i = 0;i < test_size / 2;i++) {
       assert(bt_remove(bt, tests[i]) == tests[i]);
@@ -101,7 +101,7 @@ void test_bintree() {
 
 void test_list() {
   printf("=== Test Linked List ===\n");
-  const int test_size = 128 * 10 + 100;
+  const int test_size = 128 * 2;  // Make it smaller since linked list is slow
   const int test_len = 16;
   const char alphabet[] = {"qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM_"};
   for(int seed = 0;seed < 100;seed++) {
@@ -129,14 +129,27 @@ void test_list() {
     assert(list_find(list, "+_1234567890") == HT_NOTFOUND);
     assert(list_find(list, "!@#$") == HT_NOTFOUND);
     assert(list_find(list, "QWERT[]{}") == HT_NOTFOUND);
-    printf("Finished: %06d [ Size: %d ]\r", seed, bt->size);
-
-    for(int i = 0;i < test_size / 2;i++) {
+    printf("Finished: %06d [ Size: %d ]\r", seed, list_size(list));
+    //assert(list_size(list) == test_size);
+    int mid1 = test_size / 4;
+    int mid2 = mid1 * 2;
+    int mid3 = mid1 * 3;
+    for(int i = mid1;i < mid2;i++) {  // Ascending removal from middle
       assert(list_remove(list, tests[i]) == tests[i]);
       assert(list_find(list, tests[i]) == BT_NOTFOUND);
       assert(list_remove(list, tests[i]) == BT_NOTFOUND);
     }
-    for(int i = test_size - 1;i >= test_size / 2;i--) {
+    for(int i = mid3 - 1;i >= mid2;i--) {  // Decending removal from middle
+      assert(list_remove(list, tests[i]) == tests[i]);
+      assert(list_find(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
+    }
+    for(int i = 0;i < mid1;i++) { // Remove from beginning
+      assert(list_remove(list, tests[i]) == tests[i]);
+      assert(list_find(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
+    }
+    for(int i = test_size - 1;i >= mid3;i--) { // Remove from end
       assert(list_remove(list, tests[i]) == tests[i]);
       assert(list_find(list, tests[i]) == BT_NOTFOUND);
       assert(list_remove(list, tests[i]) == BT_NOTFOUND);
