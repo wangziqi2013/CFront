@@ -12,4 +12,9 @@ typedef struct {
   int size;
 } list_t;
 
+list_t *list_init();
+list_t *list_free(list_t *list);
+listnode_t *listnode_alloc();
+void listnode_free(listnode_t *node);
+
 #endif
