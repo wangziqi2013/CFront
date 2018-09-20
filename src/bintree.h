@@ -2,7 +2,7 @@
 #ifndef _BIN_TREE_H
 #define _BIN_TREE_H
 
-#include "hashtable.h"
+#include "hashtable.h" // Need its def for call back functions
 
 #define BT_NOTFOUND ((void *)-1)
 

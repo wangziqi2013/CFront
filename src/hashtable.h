@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include "error.h"
+
 // Must be a power of two
 #define HT_INIT_CAPACITY 128
 #define HT_INIT_MASK 0x7F
