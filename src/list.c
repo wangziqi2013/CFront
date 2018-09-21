@@ -51,6 +51,7 @@ listnode_t *list_insertat(list_t *list, void *key, void *value, int index) {
   assert(index <= list->size && index >= 0);
   if(index == list->size) return list_insert(list, key, value); // Empty insert will be caught here
   assert(list->size > 0);
+  list->size++;
   listnode_t *node = listnode_alloc();
   node->key = key;
   node->value = value;
