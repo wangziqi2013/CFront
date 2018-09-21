@@ -46,6 +46,28 @@ void *list_insert(list_t *list, void *key, void *value) {
   return value;
 }
 
+// Inserts before the node specified by index; if index == list size then insert at the end
+listnode_t *list_insertat(list_t *list, void *key, void *value, int index) {
+  assert(index <= list->size && index >= 0);
+  if(index == list->size) return list_insert(list, key, value); // Empty insert will be caught here
+  assert(list->size > 0);
+  listnode_t *node = listnode_alloc();
+  node->key = key;
+  node->value = value;
+  if(index == 0) {
+    node->next = list->head;
+    list->head = node;
+    assert(list->tail);
+  } else {
+    listnode_t *curr = list->head;
+    while(--index != 0) curr = curr->next;
+    node->next = curr->next;
+    curr->next = node;
+    assert(curr->next);
+  }
+  return value;
+}
+
 void *list_insert_nodup(list_t *list, void *key, void *value) {
   void *ret = list_find(list, key);
   if(ret == LIST_NOTFOUND) value = list_insert(list, key, value);
