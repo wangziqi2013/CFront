@@ -162,6 +162,21 @@ void test_list() {
     free(results);
     list_free(list);
   }
+  putchar('\n');
+  list_t *list = list_str_init();
+  list_insertat(list, "a", NULL, 0); // size 1  a   
+  list_insertat(list, "b", NULL, 0); // size 2  b a
+  list_insertat(list, "c", NULL, 1); // size 3  b c a
+  list_insertat(list, "d", NULL, 2); // size 4  b c d a
+  list_insertat(list, "e", NULL, 4); // size 5  b c d a e
+  list_insertat(list, "f", NULL, 2); // size 6  b c f d a e
+  list_insertat(list, "g", NULL, 5); // size 7  b c f d a g e
+  // Should print: b c f d a g e
+  char expected[] = "bcfdage", *p = expected;
+  for(listnode_t *curr = list->head;curr;curr = curr->next) {
+    printf("%s ", (char *)curr->key);
+    assert(*(char *)curr->key == *p++);
+  }
   printf("\nPass!\n");
   return;
 }
