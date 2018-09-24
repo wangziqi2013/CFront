@@ -3,7 +3,7 @@
 
 list_t *list_init(eq_cb_t eq) {
   list_t *list = (list_t *)malloc(sizeof(list_t));
-  if(list == NULL) syserror(__func__);
+  SYSEXPECT(list != NULL);
   list->size = 0;
   list->head = list->tail = NULL;
   list->eq = eq;
@@ -28,7 +28,7 @@ int list_size(list_t *list) { return list->size; }
 // Allocate a node. All fields are uninitialized
 listnode_t *listnode_alloc() {
   listnode_t *node = (listnode_t *)malloc(sizeof(listnode_t));
-  if(node == NULL) syserror(__func__);
+  SYSEXPECT(node != NULL);
   return node;
 }
 void listnode_free(listnode_t *node) { free(node); }
