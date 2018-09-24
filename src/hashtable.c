@@ -13,7 +13,7 @@ hashval_t strhash_cb(void *a) {
 
 hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash) {
   hashtable_t *ht = (hashtable_t *)malloc(sizeof(hashtable_t));
-  if(ht == NULL) syserror(__func__);
+  SYSEXPECT(ht != NULL);
   ht->eq = eq;
   ht->hash = hash;
   ht->mask = HT_INIT_MASK;
@@ -21,7 +21,7 @@ hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash) {
   ht->capacity = HT_INIT_CAPACITY;
   ht->keys = (void **)malloc(sizeof(void *) * HT_INIT_CAPACITY);
   ht->values = (void **)malloc(sizeof(void *) * HT_INIT_CAPACITY);
-  if(ht->keys == NULL || ht->values == NULL) syserror(__func__);
+  SYSEXPECT(ht->keys != NULL && ht->values != NULL);
   memset(ht->keys, 0x00, sizeof(void *) * ht->capacity);
   return ht;
 }
@@ -52,7 +52,7 @@ void ht_resize(hashtable_t *ht) {
   ht->mask |= (ht->mask << 1);
   void **new_keys = (void **)malloc(sizeof(void *) * ht->capacity);
   void **new_values = (void **)malloc(sizeof(void *) * ht->capacity);
-  if(new_keys == NULL || new_values == NULL) syserror(__func__);
+  SYSEXPECT(new_keys != NULL && new_values != NULL);
   memset(new_keys, 0x00, sizeof(void *) * ht->capacity);
   for(int i = 0;i < ht->capacity / 2;i++) {
     if(ht->keys[i]) {
