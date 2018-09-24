@@ -4,7 +4,7 @@
 
 scope_t *scope_init(int level) {
   scope_t *scope = (scope_t *)malloc(sizeof(scope_t));
-  if(scope == NULL) syserror(__func__);
+  SYSEXPECT(scope != NULL);
   scope->level = level;
   for(int i = 0;i < SCOPE_TYPE_COUNT;i++) scope->names[i] = ht_str_init();
   return scope;
@@ -18,7 +18,7 @@ void scope_free(scope_t *scope) {
 
 type_cxt_t *type_init() {
   type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
-  if(cxt == NULL) syserror(__func__);
+  SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
   scope_recurse(cxt);
   // TODO: TYPE HASH & COMPARISON
