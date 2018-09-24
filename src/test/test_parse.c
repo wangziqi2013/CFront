@@ -655,7 +655,7 @@ void test_parse() {
 
 void final_test() {
   FILE *fp = fopen("parse_test_src.txt", "r");
-  if(fp == NULL) syserror(__func__);
+  SYSEXPECT(fp != NULL);
   fseek(fp, 0, SEEK_END);
   int sz = ftell(fp);
   printf("File size: %d bytes\n", sz);
