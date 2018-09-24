@@ -68,7 +68,7 @@ int precedences[51] = {
 
 token_cxt_t *token_cxt_init(char *input) {
   token_cxt_t *cxt = (token_cxt_t *)malloc(sizeof(token_cxt_t));
-  if(cxt == NULL) syserror(__func__);
+  SYSEXPECT(cxt != NULL);
   cxt->udef_types = ht_str_init();
   cxt->pushbacks = NULL;
   cxt->s = cxt->begin = input;
@@ -597,7 +597,7 @@ char *token_get_op(char *s, token_t *token) {
 // Argument end is the first character after the literal
 void token_copy_literal(token_t *token, const char *begin, const char *end) {
   token->str = malloc(sizeof(char) * (end - begin + 1));
-  if(token->str == NULL) syserror(__func__);
+  SYSEXPECT(token->str != NULL);
   memcpy(token->str, begin, end - begin);
   token->str[end - begin] = '\0';
   return;
@@ -610,7 +610,7 @@ void token_free(token_t *token) {
 
 token_t *token_alloc() {
   token_t *token = (token_t *)malloc(sizeof(token_t));
-  if(token == NULL) syserror(__func__);
+  SYSEXPECT(token != NULL);
   token->child = token->sibling = token->parent = NULL;
   token->str = NULL;
   token->type = T_ILLEGAL;
