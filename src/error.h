@@ -19,6 +19,7 @@ extern jmp_buf env;
 // Usage: if(error_trycatch()) { ...code goes here } else { ... error happens } ... error did not happen
 #define error_trycatch() (setjmp(env) == ERROR_FIRSTTIME)
 #define ERROR_FIRSTTIME 0
+#define SYSEXPECT(expr) do { if(!(expr)) syserror(__func__); } while(0) // Assertion for system calls; Valid under all modes
 
 void error_init(const char *s);
 void error_free();
