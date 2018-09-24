@@ -3,7 +3,7 @@
 
 btnode_t *btnode_alloc(void *key, void *value) {
   btnode_t *node = (btnode_t *)malloc(sizeof(btnode_t));
-  if(node == NULL) syserror(__func__);
+  SYSEXPECT(node != NULL);
   node->key = key, node->value = value;
   node->left = node->right = NULL;
   return node;
@@ -12,7 +12,7 @@ void btnode_free(btnode_t *node) { free(node); }
 
 bintree_t *bt_init(cmp_cb_t cmp) {
   bintree_t *bt = (bintree_t *)malloc(sizeof(bintree_t));
-  if(bt == NULL) syserror(__func__);
+  SYSEXPECT(bt != NULL);
   bt->cmp = cmp;
   bt->root = NULL;
   bt->size = 0;
