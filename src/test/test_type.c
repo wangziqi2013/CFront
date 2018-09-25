@@ -178,6 +178,7 @@ void test_list() {
     printf("%s ", (char *)curr->key);
     assert(*(char *)curr->key == *p++);
   }
+  list_free(list);
   printf("\nPass!\n");
   return;
 }
