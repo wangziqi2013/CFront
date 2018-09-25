@@ -45,7 +45,7 @@ typedef struct {
   size_t size;
 } type_t;
 
-typedef struct {
+typedef struct value_t_struct {
   type_t *type;
   addrtype_t addrtype;
   union {
