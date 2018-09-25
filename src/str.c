@@ -31,3 +31,5 @@ void str_append(str_t *str, char ch) {
   str->s[str->size++] = ch;
   str->s[str->size] = '\0';
 }
+
+void str_concat(str_t *str, const char *s) { while(*s) str_append(*s++); }
