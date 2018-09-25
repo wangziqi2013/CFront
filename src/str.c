@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "str.h"
+#include "error.h"
 
 str_t *str_init() {
   str_t *str = (str_t *)malloc(sizeof(str_t));
@@ -14,11 +15,12 @@ str_t *str_init() {
   return str;
 }
 void str_free(str_t *str) { free(str->s); free(str); }
+int str_size(str_t *str) { return str->size; }
 
 // Realloc the buffer to hold at least size + 1 bytes
 void str_extend(str_t *str, int size) {
   if(size > str->capacity) {
-    str->s = realloc(size + 1);
+    str->s = realloc(str->s, size + 1);
     SYSEXPECT(str->s != NULL);
     str->capacity = size;
   }

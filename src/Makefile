@@ -28,8 +28,8 @@ mem-test: all
 ./bin/test_lex: test_lex.o stack.o token.o error.o ast.o hashtable.o
 	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o string.o
-	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o string.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o
+	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
@@ -73,8 +73,8 @@ hashtable.o: hashtable.c hashtable.h
 bintree.o: bintree.c bintree.h
 	$(CC) bintree.c -c -o bintree.o $(CFLAGS) $(LDFLAGS)
 
-string.o: string.c string.h
-	$(CC) string.c -c -o string.o $(CFLAGS) $(LDFLAGS)
+str.o: str.c str.h
+	$(CC) str.c -c -o str.o $(CFLAGS) $(LDFLAGS)
 
 list.o: list.c list.h
 	$(CC) list.c -c -o list.o $(CFLAGS) $(LDFLAGS)
