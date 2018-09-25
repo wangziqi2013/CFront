@@ -166,6 +166,7 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_VOID       0x00120000
 #define BASETYPE_GET(decl_prop) (decl_prop & 0x00FF0000)
 #define BASETYPE_SET(token, type) (token->decl_prop |= (type & 0x00FF0000))
+#define BASETYPE_INDEX(decl_prop) (decl_prop >> 16)   // Returns the index into the integer size table
 
 typedef struct token_t {
   token_type_t type;
