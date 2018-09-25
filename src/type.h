@@ -8,12 +8,7 @@
 #include <ctype.h>
 
 #define SCOPE_LEVEL_GLOBAL 0
-
-#define TYPE_CHAR_SIZE      1
-#define TYPE_SHORT_SIZE     2
-#define TYPE_INT_SIZE       4
-#define TYPE_LONG_SIZE      8
-#define TYPE_VALUE_SIZE_MAX 8
+typedef uint64_t type_maxint_t;  // Maximum integer type we support
 
 enum {
  SCOPE_ENUM   = 0,
@@ -54,10 +49,10 @@ typedef struct {
   type_t *type;
   addrtype_t addrtype;
   union {
-    char charval;
-    short shortval;
-    int intval;
-    long longval;
+    uint8_t ucharval;
+    uint16_t ushortval;
+    uint32_t uintval;
+    uint64_t ulongval;
     offset_t offset;    // If it represents an address then this is the offset
   };
 } value_t;

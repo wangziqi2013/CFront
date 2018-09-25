@@ -660,6 +660,8 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
   return s;
 }
 
+// Clips an integer literal, including oct hex and dec. There is no preceding 0 or 0x
+// The digits are guaranteed to be consistent with the base. Plus/Minus signs are not included.
 char *token_get_int(char *s, token_t *token) {
   token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
