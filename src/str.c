@@ -28,7 +28,8 @@ void str_extend(str_t *str, int size) {
 }
 
 void str_append(str_t *str, char ch) {
-  if(str->size == str->capacity) str_extend(str, str->size * 2);
+  if(str->size == str->capacity) str_extend(str, str->capacity * 2);
+  assert(str->size < str->capacity);
   str->s[str->size++] = ch;
   str->s[str->size] = '\0';
 }

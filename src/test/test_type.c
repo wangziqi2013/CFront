@@ -9,6 +9,7 @@
 #include "hashtable.h"
 #include "bintree.h"
 #include "list.h"
+#include "str.h"
 #include "type.h"
 
 void test_scope_init() {
@@ -181,11 +182,36 @@ void test_list() {
   return;
 }
 
+void test_str() {
+  printf("=== Test str_t ===\n");
+  str_t *s = str_init();
+  char ch = 'a';
+  while(ch != 'z') str_append(s, ch++);
+  ch = 'A';
+  while(ch != 'Z') str_append(s, ch++);
+  for(int i = 0;i < 20;i++) str_concat(s, "wangziqi2013");
+  char *s2 = str_copy(s);
+  assert(strcmp(s2, s->s) == 0);
+  str_free(s);
+  free(s2);
+  printf("Pass!\n");
+  return;
+}
+
+void test_getimm() {
+  printf("=== Test eval_get[type]imm() ===\n");
+
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_scope_init();
   test_bintree();
   test_list();
+  test_str();
+  test_getimm();
   return 0;
 }
   
