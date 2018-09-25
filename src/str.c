@@ -6,11 +6,26 @@
 str_t *str_init() {
   str_t *str = (str_t *)malloc(sizeof(str_t));
   SYSEXPECT(str != NULL);
-  str->s = (char *)malloc(STR_INIT_SIZE);
+  str->s = (char *)malloc(STR_INIT_SIZE + 1);
   SYSEXPECT(str->s != NULL);
   str->capacity = STR_INIT_SIZE;
   str->size = 0;
+  str->s[0] = '\0';
   return str;
 }
-
 void str_free(str_t *str) { free(str->s); free(str); }
+
+// Realloc the buffer to hold at least size + 1 bytes
+void str_extend(str_t *str, int size) {
+  if(size > str->capacity) {
+    str->s = realloc(size + 1);
+    SYSEXPECT(str->s != NULL);
+    str->capacity = size;
+  }
+}
+
+void str_append(str_t *str, char ch) {
+  if(str->size == str->capacity) str_extend(str, str->size * 2);
+  str->s[str->size++] = ch;
+  str->s[str->size] = '\0';
+}
