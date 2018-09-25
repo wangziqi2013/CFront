@@ -1,6 +1,22 @@
 
 #include "token.h"
 #include "type.h"
+#include "eval.h"
+
+// The size of base types; Right shift 16 bits and index into the table. Only integers are applicable
+int type_intsizes[11] = {
+  -1,         // Illegal
+  1, 2, 4, 8, // char short int long
+  1, 2, 4, 8, // uchar ushort uint ulong
+  16, 16,     // llong ullong
+};
+
+// Given a decl_prop, return the integer size. The decl prop must be an integer type
+int type_getintsize(decl_prop_t decl_prop) {
+  assert(BASETYPE_GET(decl_prop) == decl_prop); // Make sure there is no other bits set
+  assert(BASETYPE_INDEX(decl_prop) > 0 && BASETYPE_INDEX(decl_prop) < sizeof(type_intsizes) / sizeof(*type_intsizes));
+  return type_intsizes[BASETYPE_INDEX(decl_prop)];
+}
 
 scope_t *scope_init(int level) {
   scope_t *scope = (scope_t *)malloc(sizeof(scope_t));
