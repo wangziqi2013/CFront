@@ -16,5 +16,6 @@ int str_size(str_t *str);
 void str_extend(str_t *str, int size);
 void str_append(str_t *str, char ch);
 void str_concat(str_t *str, const char *s);
+char *str_copy(const str_t *str);
 
 #endif

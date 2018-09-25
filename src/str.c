@@ -31,5 +31,11 @@ void str_append(str_t *str, char ch) {
   str->s[str->size++] = ch;
   str->s[str->size] = '\0';
 }
-
 void str_concat(str_t *str, const char *s) { while(*s) str_append(*s++); }
+
+char *str_copy(const str_t *str) { // Returns a string allocated from heap. The str is not changed
+  char *s = (char *)malloc(str->size + 1);
+  SYSEXPECT(s != NULL);
+  memcpy(s, str->s, str->size + 1);
+  return s;
+}
