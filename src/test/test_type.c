@@ -193,6 +193,7 @@ void test_str() {
   for(int i = 0;i < 20;i++) str_concat(s, "wangziqi2013");
   char *s2 = str_copy(s);
   assert(strcmp(s2, s->s) == 0);
+  puts(s2);
   str_free(s);
   free(s2);
   printf("Pass!\n");
