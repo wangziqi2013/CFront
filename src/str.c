@@ -33,7 +33,14 @@ void str_append(str_t *str, char ch) {
   str->s[str->size++] = ch;
   str->s[str->size] = '\0';
 }
-void str_concat(str_t *str, const char *s) { while(*s) str_append(str, *s++); }
+
+void str_concat(str_t *str, const char *s) {
+  int copylen = strlen(s);
+  if(str->size + copylen >= str->capacity) str_extend(str, str->capacity * 2);
+  memcpy(str->s + str->size, s, copylen + 1); // Includes the '\0'
+  str->size += copylen;
+  return;
+}
 
 char *str_copy(const str_t *str) { // Returns a string allocated from heap. The str is not changed
   char *s = (char *)malloc(str->size + 1);
