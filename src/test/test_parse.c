@@ -696,9 +696,9 @@ void final_test() {
   token_t *token;
   cxt = parse_exp_init(s);
   // Insert these two to make them udef types
-  ht_insert(cxt->token_cxt->udef_types, "token_t", NULL);
-  ht_insert(cxt->token_cxt->udef_types, "parse_stmt_cxt_t", NULL);
-  ht_insert(cxt->token_cxt->udef_types, "token_type_t", NULL);
+  ht_insert(stack_peek(cxt->token_cxt->udef_types), "token_t", NULL);
+  ht_insert(stack_peek(cxt->token_cxt->udef_types), "parse_stmt_cxt_t", NULL);
+  ht_insert(stack_peek(cxt->token_cxt->udef_types), "token_type_t", NULL);
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
