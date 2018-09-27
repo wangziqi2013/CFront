@@ -41,6 +41,7 @@ int ht_size(hashtable_t *ht) { return ht->size; }
 
 // Returns an existing slot for key, if it already exists, or an empty one
 int ht_find_slot(hashtable_t *ht, void **keys, void *key, int op) {
+  assert(key != NULL && key != HT_REMOVED);
   hashval_t begin = ht->hash(key) & ht->mask;
   if(op == HT_OP_INSERT) 
     while(keys[begin] != NULL && keys[begin] != HT_REMOVED && !ht->eq(keys[begin], key)) begin = (begin + 1) & ht->mask;
@@ -78,7 +79,7 @@ void *ht_find(hashtable_t *ht, void *key) {
   assert(key != NULL);
   int slot = ht_find_slot(ht, ht->keys, key, HT_OP_FIND);  // Note that this will not return removed slot
   assert(ht->keys[slot] != HT_REMOVED);
-  return ht->keys[slot] ? HT_NOTFOUND : ht->values[slot];
+  return ht->keys[slot] ? ht->values[slot] : HT_NOTFOUND;
 }
 
 // Returns the value just inserted; return current value otherwise
