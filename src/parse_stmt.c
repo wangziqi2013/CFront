@@ -54,7 +54,7 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
       if(la->type == T_ASSIGN) {
         token_consume_type(cxt->token_cxt, T_ASSIGN);
         if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_LCPAREN) ast_append_child(var, parse_init_list(cxt));
-        else ast_append_child(var, parse_exp(cxt, PARSE_EXP_NOCOMMA));
+        else ast_append_child(var, ast_append_child(token_alloc_type(T_INIT), parse_exp(cxt, PARSE_EXP_NOCOMMA)));
         la = token_lookahead_notnull(cxt->token_cxt, 1);
       }
       if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); continue; }

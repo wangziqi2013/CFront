@@ -42,7 +42,7 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
         token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
         if(la->type == T_COLON) {
           token_consume_type(cxt->token_cxt, T_COLON);
-          ast_append_child(field, parse_exp(cxt, PARSE_EXP_NOCOMMA));
+          ast_append_child(field, ast_append_child(token_alloc_type(T_BITFIELD), parse_exp(cxt, PARSE_EXP_NOCOMMA)));
           la = token_lookahead_notnull(cxt->token_cxt, 1);
         }
         if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
