@@ -200,6 +200,19 @@ void test_str() {
   return;
 }
 
+void test_vector() {
+  printf("=== Test vector ===\n");
+  vector_t *vector = vector_init();
+  for(int i = 0;i < VECTOR_INIT_SIZE * 10 + 13;i++) {
+    vector_append(vector, (void *)(unsigned long)i);
+  }
+  for(int i = 0;i < VECTOR_INIT_SIZE * 10 + 13;i++) {
+    assert(vector_at(vector, i) == (void *)(unsigned long)i);
+  }
+  vector_free(vector);
+  printf("Pass!\n");
+}
+
 void test_getimm() {
   printf("=== Test eval_get[type]imm() ===\n");
 
@@ -213,6 +226,7 @@ int main() {
   test_bintree();
   test_list();
   test_str();
+  test_vector();
   test_getimm();
   return 0;
 }
