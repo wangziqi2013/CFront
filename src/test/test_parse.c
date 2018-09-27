@@ -648,6 +648,7 @@ void test_vararg_func() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
+  printf("Pass!\n");
   return;
 }
 
@@ -679,7 +680,24 @@ void test_parse() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
+  printf("Pass!\n");
   return;
+}
+
+void test_udef() {
+  printf("=== Test typedef ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "typedef int *A; A * b; int f() { {typedef long B; B * x;} B * x; A * y; }"; 
+  cxt = parse_exp_init(test1);
+  token = parse(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  puts(test1);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  printf("Pass!\n");
 }
 
 void final_test() {
@@ -728,6 +746,7 @@ int main() {
   test_parse_loop_stmt();
   test_vararg_func();
   test_parse();
+  test_udef();
   //test_anomaly();
   return 0;
 }
