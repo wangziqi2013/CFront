@@ -145,35 +145,48 @@ void test_ht() {
     }
 
     hashtable_t *ht = ht_str_init();
+    set_t *set = set_str_init();
     for(int i = 0;i < test_size;i++) {
       results[i] = ht_insert(ht, tests[i], tests[i]);
+      assert(set_insert(set, tests[i]) == SET_SUCCESS);
     }
     
     for(int i = test_size - 1;i >= 0;i--) {
       void *ret = ht_find(ht, tests[i]);
       assert(ret != HT_NOTFOUND);
       assert(strcmp(ret, tests[i]) == 0);
+      assert(set_find(set, tests[i]) == SET_SUCCESS);
     }
 
     assert(ht_find(ht, "wangziqi2013") == HT_NOTFOUND);
     assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
     assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
     assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
+    assert(set_find(set, "wangziqi2013") == SET_SUCCESS);
+    assert(set_find(set, "+_1234567890") == SET_SUCCESS);
+    assert(set_find(set, "!@#$") == SET_SUCCESS);
+    assert(set_find(set, "QWERT[]{}") == SET_SUCCESS);
 
     for(int i = 0;i < test_size / 2;i++) {
       void *ret = ht_remove(ht, tests[i]);
       assert(ret != HT_NOTFOUND);
       assert(strcmp(ret, tests[i]) == 0);
       assert(ht_remove(ht, tests[i]) == HT_NOTFOUND);
+      assert(set_remove(set, tests[i]) == SET_SUCCESS);
+      assert(set_remove(set, tests[i]) != SET_SUCCESS);
     }
     assert(ht_size(ht) == test_size / 2);
+    assert(set_size(ht) == test_size / 2);
     for(int i = test_size - 1;i >= test_size / 2;i--) {
       void *ret = ht_remove(ht, tests[i]);
       assert(ret != HT_NOTFOUND);
       assert(strcmp(ret, tests[i]) == 0);
       assert(ht_remove(ht, tests[i]) == HT_NOTFOUND);
+      assert(set_remove(set, tests[i]) == SET_SUCCESS);
+      assert(set_remove(set, tests[i]) != SET_SUCCESS);
     }
     assert(ht_size(ht) == 0);
+    assert(set_size(ht) == 0);
 
     for(int i = 0;i < test_size;i++) free(tests[i]);
     free(tests);

@@ -83,9 +83,9 @@ void *ht_find(hashtable_t *ht, void *key) {
   return ht->keys[slot] ? ht->values[slot] : HT_NOTFOUND;
 }
 
-// Returns the value just inserted; return current value otherwise
+// Returns the value just inserted; return current value otherwise;
 void *ht_insert(hashtable_t *ht, void *key, void *value) {
-  assert(key != NULL && value != HT_NOTFOUND);
+  assert(key != NULL);
   if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) ht_resize(ht);
   int slot = ht_find_slot(ht, ht->keys, key, HT_OP_INSERT);
   if(ht->keys[slot] && ht->keys[slot] != HT_REMOVED) return ht->values[slot];
@@ -106,9 +106,7 @@ void *ht_remove(hashtable_t *ht, void *key) {
   return ht->values[slot];
 }
 
-// Returns 1 means operation is successful, 0 otherwise
+// The following return 1 means operation is successful, 0 otherwise
 int set_find(set_t *set, void *key) { return ht_find(set, key) != HT_NOTFOUND; }
-// Always returns 1
-int set_insert(set_t *set, void *key, void *value) { ht_insert(set, key, value); return 1; }
-// Returns 1 means operation is successful, 0 otherwise
+int set_insert(set_t *set, void *key) { return ht_insert(set, key, HT_NOTFOUND) != HT_NOTFOUND; }
 int set_remove(set_t *set, void *key) { return ht_remove(set, key) != HT_NOTFOUND; }
