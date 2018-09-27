@@ -122,7 +122,8 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) {
-      token_t *ret = ast_append_child(ast_append_child(decl, parse_exp_reduce_all(cxt)), decl_name ? decl_name : token_get_empty());
+      token_t *ret = ast_append_child(decl, parse_exp_reduce_all(cxt));
+      if(decl_name) ast_append_child(decl, decl_name); // Only appends the name if there is one
       parse_exp_decurse(cxt);
       token_free(ast_remove(placeholder)); // Remove the empty operand
       return ret;
