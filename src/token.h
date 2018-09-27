@@ -107,6 +107,8 @@ typedef enum {
   T_GLOBAL_FUNC,                  // Global function definition
   T_GLOBAL_DECL_ENTRY,            // Global declaration (same layout as T_DECL_STMT_ENTRY)
   T_GLOBAL_DECL_VAR,              // Single entry that contains name and initializer
+  T_BITFIELD,                     // Bit field in struct/union; Contains an expression
+  T_INIT,                         // Single value init, only has one child
 
   T_ILLEGAL = 10000,    // Mark a return value
 } token_type_t;

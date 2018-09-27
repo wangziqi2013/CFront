@@ -378,6 +378,8 @@ const char *token_typestr(token_type_t type) {
     case T_GLOBAL_FUNC: return "T_GLOBAL_FUNC";
     case T_GLOBAL_DECL_ENTRY: return "T_GLOBAL_DECL_ENTRY";
     case T_GLOBAL_DECL_VAR: return "T_GLOBAL_DECL_VAR";
+    case T_BITFIELD: return "T_BITFIELD";
+    case T_INIT: return "T_INIT";
     case T_ILLEGAL: return "T_ILLEGAL";
     default: return "(unknown)";
   }
