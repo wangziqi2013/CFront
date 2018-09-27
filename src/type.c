@@ -58,7 +58,7 @@ type_cxt_t *type_init() {
   scope_recurse(cxt);
   cxt->types = vector_init();
   int type_count = (int)sizeof(builtin_types) / (int)sizeof(type_t);
-  vector_extend(cxt->types, type_count);   // Make it at least this size
+  for(int i = 0;i < type_count;i++) vector_append(cxt->types, NULL); // Make space and let size grow
   for(int i = 0;i < type_count;i++) {
     type_t *type = (type_t *)malloc(sizeof(type_t));
     SYSEXPECT(type != NULL);
