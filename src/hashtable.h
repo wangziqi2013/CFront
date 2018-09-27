@@ -45,4 +45,13 @@ void *ht_find(hashtable_t *ht, void *key);
 void *ht_insert(hashtable_t *ht, void *key, void *value);
 void *ht_remove(hashtable_t *ht, void *key);
 
+typedef hashtable_t set_t; // Set is just a hash table (we waste some space)
+#define set_init(a, b) ht_init(a, b)
+#define set_str_init() ht_str_init()
+#define set_free(a) ht_free(a)
+#define set_size(a) ht_size(a)
+int set_find(set_t *set, void *key);
+int set_insert(set_t *set, void *key, void *value);
+int set_remove(set_t *set, void *key);
+
 #endif
