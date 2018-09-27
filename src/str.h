@@ -26,8 +26,10 @@ typedef struct {
 
 vector_t *vector_init();
 void vector_free(vector_t *vector);
+int vector_size(vector_t *vector);
 void vector_extend(vector_t *vector, int size);
 void vector_append(vector_t *vector, void *value);
 void *vector_at(vector_t *vector, int index);
+void **vector_addrat(vector_t *vector, int index);
 
 #endif
