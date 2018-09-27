@@ -59,3 +59,12 @@ vector_t *vector_init() {
   return vector;
 }
 void vector_free(vector_t *vector) { free(vector->data); free(vector); }
+
+void vector_extend(vector_t *vector, int size) {
+  if(size > vector->capacity) {
+    vector->capacity = size;
+    vector->data = realloc(vector->data, size * sizeof(void *));
+    SYSEXPECT(vector->data != NULL);
+  }
+  return;
+}
