@@ -59,6 +59,7 @@ void ht_resize(hashtable_t *ht) {
   void **new_values = (void **)malloc(sizeof(void *) * ht->capacity);
   SYSEXPECT(new_keys != NULL && new_values != NULL);
   memset(new_keys, 0x00, sizeof(void *) * ht->capacity);
+  memset(new_values, 0x00, sizeof(void *) * ht->capacity);  // Avoid values having HT_NOTFOUND
   for(int i = 0;i < ht->capacity / 2;i++) {
     if(ht->keys[i] && ht->keys[i] != HT_REMOVED) {
       int slot = ht_find_slot(ht, new_keys, ht->keys[i], HT_OP_INSERT);
@@ -84,7 +85,7 @@ void *ht_find(hashtable_t *ht, void *key) {
 
 // Returns the value just inserted; return current value otherwise
 void *ht_insert(hashtable_t *ht, void *key, void *value) {
-  assert(key != NULL);
+  assert(key != NULL && value != HT_NOTFOUND);
   if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) ht_resize(ht);
   int slot = ht_find_slot(ht, ht->keys, key, HT_OP_INSERT);
   if(ht->keys[slot] && ht->keys[slot] != HT_REMOVED) return ht->values[slot];
@@ -104,3 +105,10 @@ void *ht_remove(hashtable_t *ht, void *key) {
   ht->size--;
   return ht->values[slot];
 }
+
+// Returns 1 means operation is successful, 0 otherwise
+int set_find(set_t *set, void *key) { return ht_find(set, key) != HT_NOTFOUND; }
+// Always returns 1
+int set_insert(set_t *set, void *key, void *value) { ht_insert(set, key, value); return 1; }
+// Returns 1 means operation is successful, 0 otherwise
+int set_remove(set_t *set, void *key) { return ht_remove(set, key) != HT_NOTFOUND; }
