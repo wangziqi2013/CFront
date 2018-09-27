@@ -182,7 +182,7 @@ typedef struct token_t {
 } token_t;
 
 typedef struct {
-  hashtable_t *udef_types;   // Auto detected when lexing T_IDENT
+  stack_t *udef_types;       // Auto detected when lexing T_IDENT
   token_t *pushbacks;        // Unused look-ahead symbols
   int pb_num;                // Number of pushbacks
   int ignore_pb;             // Whether to ignore pushbacked tokens

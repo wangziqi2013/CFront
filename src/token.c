@@ -69,7 +69,8 @@ int precedences[51] = {
 token_cxt_t *token_cxt_init(char *input) {
   token_cxt_t *cxt = (token_cxt_t *)malloc(sizeof(token_cxt_t));
   SYSEXPECT(cxt != NULL);
-  cxt->udef_types = ht_str_init();
+  cxt->udef_types = stack_init();
+  stack_push(cxt->udef_types, ht_str_init());
   cxt->pushbacks = NULL;
   cxt->s = cxt->begin = input;
   cxt->pb_num = 0;
@@ -78,7 +79,8 @@ token_cxt_t *token_cxt_init(char *input) {
 }
 
 void token_cxt_free(token_cxt_t *cxt) {
-  ht_free(cxt->udef_types);
+  while(stack_size(cxt->udef_types)) ht_free(stack_pop(cxt->udef_types));
+  stack_free(cxt->udef_types);
   if(cxt->pushbacks) {
     token_t *curr = cxt->pushbacks->next;
     cxt->pushbacks->next = NULL;
@@ -93,6 +95,10 @@ void token_cxt_free(token_cxt_t *cxt) {
 
 // Adds a user-defined type
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
+  assert(token->type == T_IDENT && stack_size(cxt->udef_types));
+  if(set_find((set_t *)stack_peek(cxt->udef_types), token->str) == SET_SUCCESS) {
+    error_row_col_exit(token->offset, "The name \"%s\" for typedef has already been defined\n");
+  }
   ht_insert(cxt->udef_types, token->str, NULL);
 }
 
