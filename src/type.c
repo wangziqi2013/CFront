@@ -57,12 +57,21 @@ type_cxt_t *type_init() {
   cxt->scopes = stack_init();
   scope_recurse(cxt);
   cxt->types = vector_init();
+  int type_count = (int)sizeof(builtin_types) / (int)sizeof(type_t);
+  vector_extend(cxt->types, type_count);   // Make it at least this size
+  for(int i = 0;i < type_count;i++) {
+    type_t *type = (type_t *)malloc(sizeof(type_t));
+    SYSEXPECT(type != NULL);
+    memcpy(type, builtin_types + i, sizeof(type_t));
+    *vector_addrat(cxt->types, type->typeid) = type;
+  }
   return cxt;
 }
 
 void type_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
+  for(int i = 0;i < vector_size(cxt->types);i++) free(vector_at(cxt->types, i));
   vector_free(cxt->types);
   free(cxt);
 }

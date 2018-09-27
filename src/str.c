@@ -81,3 +81,8 @@ void *vector_at(vector_t *vector, int index) {
   assert(index < vector->size && index >= 0);
   return vector->data[index];
 }
+
+void **vector_addrat(vector_t *vector, int index) {
+  assert(index < vector->capacity && index >= 0);  // Since we only take address, use capacity here
+  return vector->data + index;
+}
