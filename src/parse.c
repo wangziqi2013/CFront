@@ -35,16 +35,23 @@ token_t *parse(parse_cxt_t *cxt) {
     token_t *entry = ast_append_child(token_alloc_type(T_GLOBAL_DECL_ENTRY), basetype);
     ast_append_child(root, entry);
     while(1) {
+      // Check decl's name here; If it is typedef then add the name into the token cxt
+      if(basetype->decl_prop & DECL_TYPEDEF) {
+        token_t *name = ast_getdeclname(decl);
+        if(name->type == T_) error_row_col_exit(cxt->token_cxt->s, "Expecting a name for typedef\n");
+        assert(name->type == T_IDENT);
+        token_add_utype(cxt->token_cxt, name);
+      }
       token_t *var = ast_append_child(token_alloc_type(T_GLOBAL_DECL_VAR), decl);
       ast_append_child(entry, var);
-      if(la->type == T_ASSIGN) {
+      if(la->type == T_ASSIGN) { // case 3
         token_consume_type(cxt->token_cxt, T_ASSIGN);
         if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_LCPAREN) ast_append_child(var, parse_init_list(cxt));
         else ast_append_child(var, parse_exp(cxt, PARSE_EXP_NOCOMMA));
         la = token_lookahead_notnull(cxt->token_cxt, 1);
       }
-      if(la->type == T_SEMICOLON) { token_consume_type(cxt->token_cxt, T_SEMICOLON); break; }
-      else if(la->type == T_COMMA) {
+      if(la->type == T_SEMICOLON) { token_consume_type(cxt->token_cxt, T_SEMICOLON); break; } // case 4
+      else if(la->type == T_COMMA) { // case 2
         token_consume_type(cxt->token_cxt, T_COMMA);
         decl = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
         la = token_lookahead_notnull(cxt->token_cxt, 1);

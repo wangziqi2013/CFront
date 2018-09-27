@@ -36,10 +36,19 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
   token_consume_type(cxt->token_cxt, T_LCPAREN); // After this line we enter a new scope
   token_enter_scope(cxt->token_cxt);
   while(parse_decl_isbasetype(cxt, token_lookahead_notnull(cxt->token_cxt, 1))) { // Loop through lines
-    token_t *decl_entry = ast_append_child(token_alloc_type(T_DECL_STMT_ENTRY), parse_decl_basetype(cxt));
+    token_t *basetype = parse_decl_basetype(cxt);
+    token_t *decl_entry = ast_append_child(token_alloc_type(T_DECL_STMT_ENTRY), basetype);
     ast_append_child(decl_list, decl_entry);
     while(1) { // Loop through variables
-      token_t *var = ast_append_child(token_alloc_type(T_DECL_STMT_VAR), parse_decl(cxt, PARSE_DECL_NOBASETYPE));
+    token_t *decl = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
+      // Check decl's name here; If it is typedef then add the name into the token cxt
+      if(basetype->decl_prop & DECL_TYPEDEF) {
+        token_t *name = ast_getdeclname(decl);
+        if(name->type == T_) error_row_col_exit(cxt->token_cxt->s, "Expecting a name for typedef\n");
+        assert(name->type == T_IDENT);
+        token_add_utype(cxt->token_cxt, name);
+      }
+      token_t *var = ast_append_child(token_alloc_type(T_DECL_STMT_VAR), decl);
       ast_append_child(decl_entry, var);
       token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
       if(la->type == T_ASSIGN) {
