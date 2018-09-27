@@ -200,6 +200,8 @@ extern int precedences[51];
 
 token_cxt_t *token_cxt_init(char *input);
 void token_cxt_free(token_cxt_t *cxt);
+void token_enter_scope(token_cxt_t *cxt);
+void token_exit_scope(token_cxt_t *cxt);
 void token_add_utype(token_cxt_t *cxt, token_t *token);
 int token_isutype(token_cxt_t *cxt, token_t *token);
 int token_decl_compatible(token_t *dest, token_t *src);

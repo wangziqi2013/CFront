@@ -93,6 +93,9 @@ void token_cxt_free(token_cxt_t *cxt) {
   free(cxt);
 }
 
+void token_enter_scope(token_cxt_t *cxt) { stack_push(cxt->udef_types, ht_str_init()); }
+void token_exit_scope(token_cxt_t *cxt) { ht_free((hashtable_t *)stack_pop(cxt->udef_types)); }
+
 // Adds a user-defined type
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
   assert(token->type == T_IDENT && stack_size(cxt->udef_types));
