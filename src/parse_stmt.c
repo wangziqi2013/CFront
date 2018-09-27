@@ -44,7 +44,7 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
       // Check decl's name here; If it is typedef then add the name into the token cxt
       if(basetype->decl_prop & DECL_TYPEDEF) {
         token_t *name = ast_getdeclname(decl);
-        if(name->type == T_) error_row_col_exit(cxt->token_cxt->s, "Expecting a name for typedef\n");
+        if(!name) error_row_col_exit(cxt->token_cxt->s, "Expecting a name for typedef\n");
         assert(name->type == T_IDENT);
         token_add_utype(cxt->token_cxt, name);
       }
