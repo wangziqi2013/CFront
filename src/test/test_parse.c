@@ -162,10 +162,10 @@ void test_ht() {
     assert(ht_find(ht, "+_1234567890") == HT_NOTFOUND);
     assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
     assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
-    assert(set_find(set, "wangziqi2013") == SET_SUCCESS);
-    assert(set_find(set, "+_1234567890") == SET_SUCCESS);
-    assert(set_find(set, "!@#$") == SET_SUCCESS);
-    assert(set_find(set, "QWERT[]{}") == SET_SUCCESS);
+    assert(set_find(set, "wangziqi2013") == SET_FAIL);
+    assert(set_find(set, "+_1234567890") == SET_FAIL);
+    assert(set_find(set, "!@#$") == SET_FAIL);
+    assert(set_find(set, "QWERT[]{}") == SET_FAIL);
 
     for(int i = 0;i < test_size / 2;i++) {
       void *ret = ht_remove(ht, tests[i]);
