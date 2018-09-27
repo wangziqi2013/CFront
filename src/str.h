@@ -2,7 +2,8 @@
 #ifndef _STR_H
 #define _STR_H
 
-#define STR_INIT_SIZE 32 // Excluding the terminating 0
+#define STR_INIT_SIZE 32     // Excluding the terminating 0
+#define VECTOR_INIT_SIZE 32
 
 typedef struct {
   int size;
@@ -17,5 +18,12 @@ void str_extend(str_t *str, int size);
 void str_append(str_t *str, char ch);
 void str_concat(str_t *str, const char *s);
 char *str_copy(const str_t *str);
+
+typedef struct {
+  int size, capacity;
+  void **data;
+} vector_t;
+
+vector_t *vector_init();
 
 #endif

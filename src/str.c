@@ -48,3 +48,13 @@ char *str_copy(const str_t *str) { // Returns a string allocated from heap. The 
   memcpy(s, str->s, str->size + 1);
   return s;
 }
+
+vector_t *vector_init() {
+  vector_t *vector = (vector_t *)malloc(sizeof(vector_t));
+  SYSEXPECT(vector != NULL);
+  vector->data = (void **)malloc(VECTOR_INIT_SIZE * sizeof(void *));
+  SYSEXPECT(vector->data != NULL);
+  vector->size = 0;
+  vector->capacity = VECTOR_INIT_SIZE;
+  return vector;
+}
