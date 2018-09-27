@@ -34,6 +34,7 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
   token_t *root = ast_append_child(ast_append_child(token_alloc_type(T_COMP_STMT), decl_list), stmt_list);
   assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_LCPAREN);
   token_consume_type(cxt->token_cxt, T_LCPAREN); // After this line we enter a new scope
+  token_enter_scope(cxt->token_cxt);
   while(parse_decl_isbasetype(cxt, token_lookahead_notnull(cxt->token_cxt, 1))) { // Loop through lines
     token_t *decl_entry = ast_append_child(token_alloc_type(T_DECL_STMT_ENTRY), parse_decl_basetype(cxt));
     ast_append_child(decl_list, decl_entry);
@@ -54,6 +55,7 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
   } // Then parse statement list
   while(token_lookahead_notnull(cxt->token_cxt, 1)->type != T_RCPAREN) ast_append_child(stmt_list, parse_stmt(cxt));
   token_consume_type(cxt->token_cxt, T_RCPAREN); // After this line we exit new scope
+  token_exit_scope(cxt->token_cxt);
   return root;
 }
 
