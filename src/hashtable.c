@@ -40,9 +40,13 @@ void ht_free(hashtable_t *ht) {
 int ht_size(hashtable_t *ht) { return ht->size; }
 
 // Returns an existing slot for key, if it already exists, or an empty one
-int ht_find_slot(hashtable_t *ht, void **keys, void *key) {
+int ht_find_slot(hashtable_t *ht, void **keys, void *key, int op) {
   hashval_t begin = ht->hash(key) & ht->mask;
-  while(keys[begin] && !ht->eq(keys[begin], key)) begin = (begin + 1) & ht->mask;
+  if(op == HT_OP_INSERT) 
+    while(keys[begin] != NULL && keys[begin] != HT_REMOVED && !ht->eq(keys[begin], key)) begin = (begin + 1) & ht->mask;
+  else if(op == HT_OP_FIND) 
+    while(keys[begin] && (keys[begin] == HT_REMOVED || !ht->eq(keys[begin], key))) begin = (begin + 1) & ht->mask;
+  else assert(0);
   return begin;
 }
 
@@ -55,7 +59,7 @@ void ht_resize(hashtable_t *ht) {
   SYSEXPECT(new_keys != NULL && new_values != NULL);
   memset(new_keys, 0x00, sizeof(void *) * ht->capacity);
   for(int i = 0;i < ht->capacity / 2;i++) {
-    if(ht->keys[i]) {
+    if(ht->keys[i] && ht->keys[i] != HT_REMOVED) {
       int slot = ht_find_slot(ht, new_keys, ht->keys[i]);
       assert(new_keys[slot] == NULL);
       new_keys[slot] = ht->keys[i];

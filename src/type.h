@@ -2,10 +2,11 @@
 #ifndef _TYPE_H
 #define _TYPE_H
 
+#include <ctype.h>
 #include "list.h"
 #include "bintree.h"
 #include "token.h"
-#include <ctype.h>
+#include "str.h"
 
 #define SCOPE_LEVEL_GLOBAL 0
 typedef uint64_t type_maxint_t;  // Maximum integer type we support
@@ -27,7 +28,7 @@ typedef struct {
 
 typedef struct {
   stack_t *scopes;
-  hashtable_t *types;    // Maps type id to type object
+  hashtable_t *types;    // Maps type id to type object; The hash table owns both key and value
 } type_cxt_t;
 
 typedef uint64_t typeid_t;
@@ -83,4 +84,5 @@ void *scope_top_find(type_cxt_t *cxt, int type, void *key);
 void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
 
+void type_serialize_decl(token_t *decl, str_t *str);
 #endif

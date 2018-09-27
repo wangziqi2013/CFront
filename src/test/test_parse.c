@@ -687,6 +687,7 @@ int main() {
   test_ht();
   test_decl_prop();
   test_token_lookahead();
+  final_test();   // Put it here to avoid long output
   test_simple_exp_parse();
   test_parse_decl();
   test_parse_struct_union();
@@ -697,7 +698,6 @@ int main() {
   test_parse_loop_stmt();
   test_vararg_func();
   test_parse();
-  final_test();
   //test_anomaly();
   return 0;
 }

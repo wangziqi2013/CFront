@@ -14,6 +14,7 @@ void eval_getintimm(value_t *val, token_t *token) {
     default: assert(0);
   }
   int sz = type_getintsize(token->decl_prop);  // Number of bytes in the type
+  //val->size = sz; // TODO: ADD SIZE
   if(sz > (int)sizeof(type_maxint_t)) 
     error_row_col_exit(token->offset, "Sorry, do not support integer literal \"%s\" larger than %lu bytes\n", 
                        token->str, sizeof(type_maxint_t));

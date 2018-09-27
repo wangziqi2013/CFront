@@ -2,6 +2,8 @@
 #include "token.h"
 #include "type.h"
 #include "eval.h"
+#include "ast.h"
+#include "str.h"
 
 // The size of base types; Right shift 16 bits and index into the table. Only integers are applicable
 int type_intsizes[11] = {
@@ -16,6 +18,11 @@ int type_getintsize(decl_prop_t decl_prop) {
   assert(BASETYPE_GET(decl_prop) == decl_prop); // Make sure there is no other bits set
   assert(BASETYPE_INDEX(decl_prop) > 0 && BASETYPE_INDEX(decl_prop) < sizeof(type_intsizes) / sizeof(*type_intsizes));
   return type_intsizes[BASETYPE_INDEX(decl_prop)];
+}
+
+// Returns a int type object, which is allocated on the heap
+type_t *type_getinttype() {
+  return NULL;
 }
 
 scope_t *scope_init(int level) {
@@ -67,6 +74,38 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
     if(value != HT_NOTFOUND) return value;
   }
   return NULL;
+}
+
+// Serializes a decl recursively
+void type_serialize_decl(token_t *decl, str_t *str) {
+  switch(decl->type) {
+    case EXP_DEREF:
+    case EXP_ARRAY_SUB:
+    case EXP_FUNC_CALL:
+    default: break;
+  }
+  return;
+}
+
+// Serializes a decl recursively
+void type_serialize_base(token_t *decl, str_t *str) {
+  char ch;
+  switch(decl->type) {
+    default: break;
+  }
+  return;
+}
+
+// Serialize the type specified by base type and decl; If decl has a basetype child we ignore basetype
+char *type_serialize(token_t *basetype, token_t *decl) {
+  if((decl = ast_getchild(decl, 0))->type == T_BASETYPE) basetype = decl; decl = decl->sibling; // Adjust both accordingly
+  assert(basetype->type == T_BASETYPE && decl->type != T_BASETYPE);
+  str_t *str = str_init();
+  type_serialize_decl(decl, str);     // Output decl into str
+  type_serialize_base(basetype, str); // Output base type into str
+  char *ret = str_copy(str);
+  str_free(str);
+  return ret; 
 }
 
 // Make a copy of the type AST in standard format

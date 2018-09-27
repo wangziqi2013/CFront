@@ -12,6 +12,10 @@
 #define HT_INIT_MASK 0x7F
 #define HT_RESIZE_THRESHOLD(capacity) (capacity / 8 * 7)
 #define HT_NOTFOUND ((void *)-1)
+#define HT_REMOVED  ((void *)-2)
+
+#define HT_OP_INSERT 0
+#define HT_OP_FIND   1
 
 typedef unsigned long hashval_t;
 typedef int (*eq_cb_t)(void *, void *);    // Equality comparison function
