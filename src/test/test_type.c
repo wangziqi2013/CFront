@@ -203,12 +203,14 @@ void test_str() {
 void test_vector() {
   printf("=== Test vector ===\n");
   vector_t *vector = vector_init();
-  for(int i = 0;i < VECTOR_INIT_SIZE * 10 + 13;i++) {
+  const int test_size = VECTOR_INIT_SIZE * 10 + 13;
+  for(int i = 0;i < test_size;i++) {
     vector_append(vector, (void *)(unsigned long)i);
   }
-  for(int i = 0;i < VECTOR_INIT_SIZE * 10 + 13;i++) {
+  for(int i = 0;i < test_size;i++) {
     assert(vector_at(vector, i) == (void *)(unsigned long)i);
   }
+  assert(vector_size(vector) == test_size);
   vector_free(vector);
   printf("Pass!\n");
 }
