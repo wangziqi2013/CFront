@@ -94,4 +94,13 @@ void *ht_insert(hashtable_t *ht, void *key, void *value) {
   return value;
 }
 
-//void *ht_remove(hashtable_t *ht)
+// Removes the key, and returns value before removal. If key does not exist return NOTFOUND
+void *ht_remove(hashtable_t *ht, void *key) {
+  assert(key != NULL);
+  int slot = ht_find_slot(ht, ht->keys, key, HT_OP_FIND);
+  assert(ht->keys[slot] != HT_REMOVED);
+  if(ht->keys[slot] == NULL) return HT_NOTFOUND;
+  ht->keys[slot] = HT_REMOVED;
+  ht->size--;
+  return ht->values[slot];
+}

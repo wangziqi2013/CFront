@@ -43,5 +43,6 @@ int ht_find_slot(hashtable_t *ht, void **keys, void *key, int op);
 void ht_resize(hashtable_t *ht);
 void *ht_find(hashtable_t *ht, void *key);
 void *ht_insert(hashtable_t *ht, void *key, void *value);
+void *ht_remove(hashtable_t *ht, void *key);
 
 #endif
