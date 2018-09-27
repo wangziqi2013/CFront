@@ -688,7 +688,7 @@ void test_udef() {
   printf("=== Test typedef ===\n");
   parse_exp_cxt_t *cxt;
   token_t *token;
-  char test1[] = "typedef int *A; A * b; int f() { {typedef long B; B * x;} B * x; A * y; }"; 
+  char test1[] = "typedef int *A; A * b; int f() { A * y; {typedef long B; B * x;} B * x; }"; 
   cxt = parse_exp_init(test1);
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
