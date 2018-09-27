@@ -116,3 +116,10 @@ void ast_movecond(token_t *token) {
   token_free(colon);
   return;
 }
+
+// DECL can have 1 or 2 children. The first (optional) is type exp. The second is either name or T_
+token_t *ast_getdeclname(token_t *decl) {
+  assert(decl->type == T_DECL);
+  if(decl->child->type == T_IDENT) return decl->child;
+  else return decl->child->sibling;
+}
