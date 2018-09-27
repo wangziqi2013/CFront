@@ -60,7 +60,8 @@ int parse_exp_isexp(parse_exp_cxt_t *cxt, token_t *token, parse_exp_disallow_t d
 
 // Returns whether a token is primary token
 int parse_exp_isprimary(parse_exp_cxt_t *cxt, token_t *token) {
-  return token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END; (void)cxt;
+  if(token->type == T_UDEF) return 0;  // Special case: UDEF is literal type but is not valid
+  return token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END;
 }
 
 // Returns whether the next lookahead token is a type

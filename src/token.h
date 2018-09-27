@@ -50,8 +50,8 @@ typedef enum {
   T_CHAR_CONST, T_STR_CONST,
   T_FLOAT_CONST,
   T_IDENT,
-  T_LITERALS_END,
   T_UDEF, // User-defined type using type-def; they are not literals
+  T_LITERALS_END,
 
   // Add this to the index of keywords in the table
   T_KEYWORDS_BEGIN = 1000,
