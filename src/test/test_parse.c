@@ -160,6 +160,21 @@ void test_ht() {
     assert(ht_find(ht, "!@#$") == HT_NOTFOUND);
     assert(ht_find(ht, "QWERT[]{}") == HT_NOTFOUND);
 
+    for(int i = 0;i < test_size / 2;i++) {
+      void *ret = ht_remove(ht, tests[i]);
+      assert(ret != HT_NOTFOUND);
+      assert(strcmp(ret, tests[i]) == 0);
+      assert(ht_remove(ht, tests[i]) == HT_NOTFOUND);
+    }
+    assert(ht_size(ht) == test_size / 2);
+    for(int i = test_size - 1;i >= test_size / 2;i--) {
+      void *ret = ht_remove(ht, tests[i]);
+      assert(ret != HT_NOTFOUND);
+      assert(strcmp(ret, tests[i]) == 0);
+      assert(ht_remove(ht, tests[i]) == HT_NOTFOUND);
+    }
+    assert(ht_size(ht) == 0);
+
     for(int i = 0;i < test_size;i++) free(tests[i]);
     free(tests);
     free(results);
