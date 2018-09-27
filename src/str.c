@@ -59,6 +59,7 @@ vector_t *vector_init() {
   return vector;
 }
 void vector_free(vector_t *vector) { free(vector->data); free(vector); }
+int vector_size(vector_t *vector) { return vector->size; }
 
 void vector_extend(vector_t *vector, int size) {
   if(size > vector->capacity) {
@@ -67,4 +68,16 @@ void vector_extend(vector_t *vector, int size) {
     SYSEXPECT(vector->data != NULL);
   }
   return;
+}
+
+void vector_append(vector_t *vector, void *value) {
+  if(vector->size == vector->capacity) vector_extend(vector, vector->size * 2);
+  assert(vector->size < vector->capacity);
+  vector->data[vector->size++] = value;
+  return;
+}
+
+void *vector_at(vector_t *vector, int index) {
+  assert(index < vector->size && index >= 0);
+  return vector->data[index];
 }
