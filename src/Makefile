@@ -64,7 +64,7 @@ token.o: token.c token.h error.h hashtable.h stack.h
 error.o: error.c error.h
 	$(CC) error.c -c -o error.o $(CFLAGS) $(LDFLAGS)
 
-ast.o: ast.c ast.h
+ast.o: ast.c ast.h token.h
 	$(CC) ast.c -c -o ast.o $(CFLAGS) $(LDFLAGS)
 
 hashtable.o: hashtable.c hashtable.h
