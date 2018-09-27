@@ -13,6 +13,18 @@ int type_intsizes[11] = {
   16, 16,     // llong ullong
 };
 
+type_t builtin_types[] = {
+  {TYPE_INDEX_VOID, BASETYPE_VOID, NULL, -1},
+  {TYPE_INDEX_CHAR, BASETYPE_CHAR, NULL, 1},
+  {TYPE_INDEX_SHORT, BASETYPE_SHORT, NULL,  2},
+  {TYPE_INDEX_INT, BASETYPE_INT, NULL,  4},
+  {TYPE_INDEX_LONG, BASETYPE_LONG, NULL,  8},
+  {TYPE_INDEX_UCHAR, BASETYPE_UCHAR, NULL,  1},
+  {TYPE_INDEX_USHORT, BASETYPE_USHORT, NULL,  2},
+  {TYPE_INDEX_UINT, BASETYPE_UINT, NULL,  4},
+  {TYPE_INDEX_ULONG, BASETYPE_ULONG, NULL,  8},
+};
+
 // Given a decl_prop, return the integer size. The decl prop must be an integer type
 int type_getintsize(decl_prop_t decl_prop) {
   assert(BASETYPE_GET(decl_prop) == decl_prop); // Make sure there is no other bits set
@@ -44,15 +56,14 @@ type_cxt_t *type_init() {
   SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
   scope_recurse(cxt);
-  // TODO: TYPE HASH & COMPARISON
-  // cxt->types = ht_init(..., ...);
+  cxt->types = vector_init();
   return cxt;
 }
 
 void type_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
-  //ht_free(cxt->types);
+  vector_free(cxt->types);
   free(cxt);
 }
 

@@ -28,23 +28,39 @@ typedef struct {
 
 typedef struct {
   stack_t *scopes;
-  hashtable_t *types;    // Maps type id to type object; The hash table owns both key and value
+  vector_t *types;    // A list of types. Type objects belong to this list and must be freed upon exit
 } type_cxt_t;
 
 typedef uint64_t typeid_t;
 typedef uint64_t offset_t;
 
-typedef enum { // How a value is allocated
-  ADDR_STACK, ADDR_HEAP, ADDR_GLOBAL, 
+typedef enum {
+  LVALUES_BEGIN = 1, 
+  ADDR_STACK, ADDR_HEAP, ADDR_GLOBAL,
+  LVALUES_END, RVALUES_BEGIN = 10,
   ADDR_TEMP, // Unnamed variable (intermediate node of an expression)
   ADDR_IMM,  // Immediate value (constants)
+  RVALUES_END,
 } addrtype_t;
 
 typedef struct {
-  typeid_t typeid;
-  token_t *decl;
+  typeid_t typeid;        // Index in the list
+  decl_prop_t basetype;   // Uses token decl_prop constants
+  token_t *decl;          // Uses token tree
   size_t size;
 } type_t;
+
+extern type_t builtin_types[]; // Builtin types
+
+#define TYPE_INDEX_VOID   0
+#define TYPE_INDEX_CHAR   1
+#define TYPE_INDEX_SHORT  2
+#define TYPE_INDEX_INT    3
+#define TYPE_INDEX_LONG   4
+#define TYPE_INDEX_UCHAR  5
+#define TYPE_INDEX_USHORT 6
+#define TYPE_INDEX_UINT   7
+#define TYPE_INDEX_ULONG  8
 
 typedef struct value_t_struct {
   type_t *type;
