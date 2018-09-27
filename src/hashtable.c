@@ -23,6 +23,7 @@ hashtable_t *ht_init(eq_cb_t eq, hash_cb_t hash) {
   ht->values = (void **)malloc(sizeof(void *) * HT_INIT_CAPACITY);
   SYSEXPECT(ht->keys != NULL && ht->values != NULL);
   memset(ht->keys, 0x00, sizeof(void *) * ht->capacity);
+  memset(ht->values, 0x00, sizeof(void *) * ht->capacity);
   return ht;
 }
 
@@ -83,7 +84,7 @@ void *ht_find(hashtable_t *ht, void *key) {
   return ht->keys[slot] ? ht->values[slot] : HT_NOTFOUND;
 }
 
-// Returns the value just inserted; return current value otherwise;
+// Inserts if key does not exist, and returns value. Returns current value otherwise;
 void *ht_insert(hashtable_t *ht, void *key, void *value) {
   assert(key != NULL);
   if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) ht_resize(ht);
@@ -106,7 +107,7 @@ void *ht_remove(hashtable_t *ht, void *key) {
   return ht->values[slot];
 }
 
-// The following return 1 means operation is successful, 0 otherwise
+// The following return 1 means operation is successful, 0 otherwise. Note that insert always succeeds
 int set_find(set_t *set, void *key) { return ht_find(set, key) != HT_NOTFOUND; }
-int set_insert(set_t *set, void *key) { return ht_insert(set, key, HT_NOTFOUND) != HT_NOTFOUND; }
+int set_insert(set_t *set, void *key) { ht_insert(set, key, NULL); return SET_SUCCESS; }
 int set_remove(set_t *set, void *key) { return ht_remove(set, key) != HT_NOTFOUND; }
