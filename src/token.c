@@ -96,14 +96,20 @@ void token_cxt_free(token_cxt_t *cxt) {
 // Adds a user-defined type
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
   assert(token->type == T_IDENT && stack_size(cxt->udef_types));
-  if(set_find((set_t *)stack_peek(cxt->udef_types), token->str) == SET_SUCCESS) {
-    error_row_col_exit(token->offset, "The name \"%s\" for typedef has already been defined\n");
+  token_t *prev = (token_t *)ht_find((hashtable_t *)stack_peek(cxt->udef_types), token->str);
+  if(prev != HT_NOTFOUND) {
+    int row, col;
+    error_get_row_col(cxt->begin, &row, &col);
+    error_row_col_exit(token->offset, "The name \"%s\" for typedef has already been defined @ row %d col %d\n", row, col);
   }
-  ht_insert(cxt->udef_types, token->str, NULL);
+  ht_insert((hashtable_t *)stack_peek(cxt->udef_types), token->str, token);
 }
 
 int token_isutype(token_cxt_t *cxt, token_t *token) {
-  return token->type == T_IDENT && ht_find(cxt->udef_types, token->str) != HT_NOTFOUND;
+  if(token->type != T_IDENT) return 0;
+  for(int i = 0;i < stack_size(cxt->udef_types);i++) 
+    if(ht_find((hashtable_t *)stack_peek_at(cxt->udef_types, i), token->str) != HT_NOTFOUND) return 1;
+  return 0;
 }
 
 // Only checks STORAGE CLASS, QUALIFIER and TYPE SPEC. At most one from the former is allowed.
