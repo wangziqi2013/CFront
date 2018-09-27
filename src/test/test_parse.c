@@ -187,12 +187,13 @@ void test_ht() {
     }
     assert(ht_size(ht) == 0);
     assert(set_size(ht) == 0);
+    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
 
     for(int i = 0;i < test_size;i++) free(tests[i]);
     free(tests);
     free(results);
     ht_free(ht);
-    printf("Finished: %06d [ Size: %d; Capacity: %d ]\r", seed, ht->size, ht->capacity);
+    set_free(set);
   }
   printf("\nPass!\n");
   return;
@@ -705,6 +706,7 @@ void final_test() {
   parse_exp_free(cxt);
   ast_free(token);
   free(s);
+  fclose(fp);
   return;
 }
 
