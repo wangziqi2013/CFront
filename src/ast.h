@@ -15,8 +15,6 @@ void ast_free(token_t *token);
 token_t *ast_getchild(token_t *token, int index);
 void ast_collect_funcarg(token_t *token);
 void ast_movecond(token_t *token);
-
-// The following deals with the structure of ASTs
-token_t *ast_getdeclname(token_t *decl);
+token_t *ast_gettype(token_t *token, token_type_t type);
 
 #endif
