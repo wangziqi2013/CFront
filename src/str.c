@@ -58,3 +58,4 @@ vector_t *vector_init() {
   vector->capacity = VECTOR_INIT_SIZE;
   return vector;
 }
+void vector_free(vector_t *vector) { free(vector->data); free(vector); }

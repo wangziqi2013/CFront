@@ -25,5 +25,6 @@ typedef struct {
 } vector_t;
 
 vector_t *vector_init();
+void vector_free(vector_t *vector);
 
 #endif
