@@ -60,7 +60,7 @@ void ht_resize(hashtable_t *ht) {
   memset(new_keys, 0x00, sizeof(void *) * ht->capacity);
   for(int i = 0;i < ht->capacity / 2;i++) {
     if(ht->keys[i] && ht->keys[i] != HT_REMOVED) {
-      int slot = ht_find_slot(ht, new_keys, ht->keys[i]);
+      int slot = ht_find_slot(ht, new_keys, ht->keys[i], HT_OP_INSERT);
       assert(new_keys[slot] == NULL);
       new_keys[slot] = ht->keys[i];
       new_values[slot] = ht->values[i];
@@ -76,19 +76,21 @@ void ht_resize(hashtable_t *ht) {
 // Returns value, or HT_NOTFOUND if not found
 void *ht_find(hashtable_t *ht, void *key) {
   assert(key != NULL);
-  int slot = ht_find_slot(ht, ht->keys, key);
-  return ht->keys[slot] == NULL ? HT_NOTFOUND : ht->values[slot];
+  int slot = ht_find_slot(ht, ht->keys, key, HT_OP_FIND);  // Note that this will not return removed slot
+  assert(ht->keys[slot] != HT_REMOVED);
+  return ht->keys[slot] ? HT_NOTFOUND : ht->values[slot];
 }
 
 // Returns the value just inserted; return current value otherwise
 void *ht_insert(hashtable_t *ht, void *key, void *value) {
   assert(key != NULL);
   if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) ht_resize(ht);
-  int slot = ht_find_slot(ht, ht->keys, key);
-  if(ht->keys[slot]) return ht->values[slot];
+  int slot = ht_find_slot(ht, ht->keys, key, HT_OP_INSERT);
+  if(ht->keys[slot] && ht->keys[slot] != HT_REMOVED) return ht->values[slot];
   ht->keys[slot] = key;
   ht->values[slot] = value;
   ht->size++;
   return value;
 }
 
+//void *ht_remove(hashtable_t *ht)
