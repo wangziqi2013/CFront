@@ -85,11 +85,11 @@ void *list_find(list_t *list, void *key) {
 // Returns the node specified by the index; If index is too large then return LIST_NOTFOUND. 
 // Index must be positive
 const listnode_t *list_findat(list_t *list, int index) {
-  assert(index > 0);
+  assert(index >= 0);
   if(index >= list->size) return LIST_NOTFOUND;
   listnode_t *curr = list->head;
-  while(index-- && curr) curr = curr->next;
-  return curr ? curr->value : LIST_NOTFOUND;
+  while(index--) curr = curr->next;
+  return curr;
 }
 
 // Removes the key from the list. Return value if key exists; LIST_NOTFOUND otherwise

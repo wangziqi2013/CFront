@@ -178,8 +178,17 @@ void test_list() {
     printf("%s ", (char *)curr->key);
     assert(*(char *)curr->key == *p++);
   }
+  putchar('\n');
+  // Should print the same thing
+  for(int i = 0;i < list_size(list);i++) {
+    const listnode_t *curr = list_findat(list, i);
+    printf("%s ", (char *)curr->key);
+    assert(*(char *)curr->key == expected[i]);
+  }
+  assert(list_findat(list, list_size(list)) == LIST_NOTFOUND);
+  putchar('\n');
   list_free(list);
-  printf("\nPass!\n");
+  printf("Pass!\n");
   return;
 }
 
