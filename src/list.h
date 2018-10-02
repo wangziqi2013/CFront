@@ -27,6 +27,7 @@ void *list_insert(list_t *list, void *key, void *value);
 listnode_t *list_insertat(list_t *list, void *key, void *value, int index);
 void *list_insert_nodup(list_t *list, void *key, void *value);
 void *list_find(list_t *list, void *key);
+void *list_findat(list_t *list, int index);
 void *list_remove(list_t *list, void *key);
 
 #endif

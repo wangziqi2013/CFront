@@ -82,6 +82,15 @@ void *list_find(list_t *list, void *key) {
   return LIST_NOTFOUND;
 }
 
+// Returns the element specified by the index; If index is too large then return LIST_NOTFOUND. Index should be positive
+void *list_findat(list_t *list, int index) {
+  assert(index > 0);
+  if(index >= list->size) return LIST_NOTFOUND;
+  listnode_t *curr = list->head;
+  while(index-- && curr) curr = curr->next;
+  return curr ? curr->value : LIST_NOTFOUND;
+}
+
 // Removes the key from the list. Return value if key exists; LIST_NOTFOUND otherwise
 void *list_remove(list_t *list, void *key) {
   listnode_t *curr = list->head, *prev = curr;
