@@ -187,6 +187,18 @@ void test_list() {
   }
   assert(list_findat(list, list_size(list)) == LIST_NOTFOUND);
   putchar('\n');
+  // Then test remove at
+  void *key;
+  list_removeat(list, 5, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'g');
+  list_removeat(list, 2, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'f'); 
+  list_removeat(list, 4, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'e');
+  list_removeat(list, 2, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'd');
+  list_removeat(list, 1, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'c');
+  list_removeat(list, 0, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'b');
+  list_removeat(list, 0, &key); printf("%c ", *(char *)key); assert(*(char *)key == 'a');
+  assert(list_size(list) == 0);
+  assert(list->head == NULL && list->tail == NULL);
+  putchar('\n');
   list_free(list);
   printf("Pass!\n");
   return;
