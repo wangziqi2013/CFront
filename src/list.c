@@ -119,3 +119,31 @@ void *list_remove(list_t *list, void *key) {
   } while(curr);
   return LIST_NOTFOUND;
 }
+
+// Value is returned, and the second argument holds the key
+void *list_removeat(list_t *list, int index, void **key) {
+  assert(index >= 0);
+  if(index >= list->size) return LIST_NOTFOUND;
+  listnode_t *curr = list->head, *prev = curr;
+  void *ret = NULL;
+  if(index == 0) {
+    list->head = curr->next;  // Could be NULL
+    ret = curr->value;
+    *key = curr->key;
+    listnode_free(curr);
+    list->size--;
+    if(curr == list->tail) list->tail = NULL;
+    return ret;
+  }
+  while(index--) {
+    curr = curr->next;
+    prev = curr;
+  }
+  prev->next = curr->next;
+  ret = curr->value;
+  *key = curr->key;
+  listnode_free(curr);
+  list->size--;
+  if(curr == list->tail) list->tail = prev; // If deleting the last element then adjust tail
+  return ret;
+}
