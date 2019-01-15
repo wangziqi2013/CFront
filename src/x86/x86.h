@@ -2,11 +2,12 @@
 #ifndef _X86_H
 #define _X86_H
 
+#include <stdint.h>
+
 // Group 1
 #define PREFIX_LOCK          0xF0
 #define PREFIX_REPNE         0xF2
 #define PREFIX_REP           0xF3
-#define PREFIX_LOCK          0xF0
 // Group 2
 #define PREFIX_CS            0x2E
 #define PREFIX_SS            0x36
@@ -27,7 +28,6 @@
 #define PREFIX_MASK_LOCK          0x00000001U
 #define PREFIX_MASK_REPNE         0x00000002U
 #define PREFIX_MASK_REP           0x00000004U
-#define PREFIX_MASK_LOCK          0x00000008U
 // Group 2 mask
 #define PREFIX_MASK_CS            0x00000010U
 #define PREFIX_MASK_SS            0x00000020U
@@ -40,7 +40,7 @@
 // Group 3 mask
 #define PREFIX_MASK_SIZE_OVERRIDE 0x00001000U
 // Group 4 mask
-#define PREFIX_MASK_ADDR_OVERRIDE 0x00002000U
+#define PREFIX_MASK_ADDR_OVERRIDE 0x00010000U
 
 typedef uint32_t prefix_mask_t;
 prefix_mask_t get_prefix_mask(uint8_t byte); 
