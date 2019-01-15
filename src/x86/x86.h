@@ -29,18 +29,20 @@
 #define PREFIX_MASK_REPNE         0x00000002U
 #define PREFIX_MASK_REP           0x00000004U
 // Group 2 mask
-#define PREFIX_MASK_CS            0x00000010U
-#define PREFIX_MASK_SS            0x00000020U
-#define PREFIX_MASK_DS            0x00000040U
-#define PREFIX_MASK_ES            0x00000080U
-#define PREFIX_MASK_FS            0x00000100U
-#define PREFIX_MASK_GS            0x00000200U
-#define PREFIX_MASK_TAKEN         0x00000400U
-#define PREFIX_MASK_NOT_TAKEN     0x00000800U
+#define PREFIX_MASK_CS            0x00000008U
+#define PREFIX_MASK_SS            0x00000010U
+#define PREFIX_MASK_DS            0x00000020U
+#define PREFIX_MASK_ES            0x00000040U
+#define PREFIX_MASK_FS            0x00000080U
+#define PREFIX_MASK_GS            0x00000100U
+#define PREFIX_MASK_TAKEN         0x00000200U
+#define PREFIX_MASK_NOT_TAKEN     0x00000400U
 // Group 3 mask
-#define PREFIX_MASK_SIZE_OVERRIDE 0x00001000U
+#define PREFIX_MASK_SIZE_OVERRIDE 0x00000800U
 // Group 4 mask
-#define PREFIX_MASK_ADDR_OVERRIDE 0x00010000U
+#define PREFIX_MASK_ADDR_OVERRIDE 0x00001000U
+
+extern uint8_t prefix_code_table[];
 
 typedef uint32_t prefix_mask_t;
 prefix_mask_t get_prefix_mask(uint8_t byte); 
