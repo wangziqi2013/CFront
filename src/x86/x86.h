@@ -43,6 +43,11 @@
 #define PREFIX_MASK_ADDR_OVERRIDE 0x00000400U
 #define PREFIX_MASK_LAST          PREFIX_MASK_ADDR_OVERRIDE
 
+typedef struct {
+  uint8_t *p;      // Current read position
+  uint8_t *old_p;  // Previous read position; Set by functions that change p
+} x86_cxt_t;
+
 extern uint8_t prefix_code_table[];
 
 typedef uint32_t prefix_mask_t;
