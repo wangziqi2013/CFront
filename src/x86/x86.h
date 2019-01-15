@@ -42,4 +42,7 @@
 // Group 4 mask
 #define PREFIX_MASK_ADDR_OVERRIDE 0x00002000U
 
+typedef uint32_t prefix_mask_t;
+prefix_mask_t get_prefix_mask(uint8_t byte); 
+
 #endif
