@@ -21,6 +21,8 @@
 // Group 4
 #define PREFIX_ADDR_OVERRIDE 0x67
 
+// This represents no mask
+#define PREFIX_MASK_NONE          0x00000000U
 // Group 1 mask
 #define PREFIX_MASK_LOCK          0x00000001U
 #define PREFIX_MASK_REPNE         0x00000002U
