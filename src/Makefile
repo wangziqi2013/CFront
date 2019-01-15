@@ -10,12 +10,13 @@ ifeq ($(OPT), 1)
 	CFLAGS=-O3
 endif
 
-all: ./bin/test_lex ./bin/test_parse ./bin/test_type
+all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_x86
 
 test: all
 	./bin/test_lex
 	./bin/test_parse
 	./bin/test_type
+	./bin/test_x86
 
 mem-test: all
 	valgrind --leak-check=full ./bin/test_lex
@@ -31,6 +32,9 @@ mem-test: all
 ./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o
 	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
+./bin/test_x86: test_x86.o x86.o
+	$(CC) test_x86.o x86.o -o ./bin/test_x86 $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
@@ -39,6 +43,9 @@ test_parse.o: ./test/test_parse.c token.h
 
 test_type.o: ./test/test_type.c token.h
 	$(CC) ./test/test_type.c -c -o $(PWD)/test_type.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+
+test_x86.o: ./test/test_x86.c ./x86/x86.h
+	$(CC) ./test/test_x86.c -c -o $(PWD)/test_x86.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h token.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
@@ -84,6 +91,9 @@ type.o: type.c type.h token.h ast.h hashtable.h stack.h error.h bintree.h list.h
 
 eval.o: eval.c eval.h token.h type.h
 	$(CC) eval.c -c -o eval.o $(CFLAGS) $(LDFLAGS)
+
+x86.o: ./x86/x86.h ./x86/x86.c
+	$(CC) x86.c -c -o x86.o $(CFLAGS) $(LDFLAGS)
 
 parse_exp.h: stack.h token.h ast.h hashtable.h
 
