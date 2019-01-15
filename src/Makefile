@@ -3,7 +3,8 @@ CC=gcc
 LD=ld
 CFLAGS=-O0 -g -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 PWD=$(CURDIR)
-TESTFLAGS=-I$(PWD)
+X86DIR=$(PWD)/x86
+TESTFLAGS=-I$(PWD) -I$(X86DIR)
 LDFLAGS=
 
 ifeq ($(OPT), 1)
@@ -93,7 +94,7 @@ eval.o: eval.c eval.h token.h type.h
 	$(CC) eval.c -c -o eval.o $(CFLAGS) $(LDFLAGS)
 
 x86.o: ./x86/x86.h ./x86/x86.c
-	$(CC) x86.c -c -o x86.o $(CFLAGS) $(LDFLAGS)
+	$(CC) $(X86DIR)/x86.c -c -o x86.o $(CFLAGS) $(LDFLAGS)
 
 parse_exp.h: stack.h token.h ast.h hashtable.h
 
