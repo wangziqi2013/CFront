@@ -2,6 +2,7 @@
 #include "x86.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 void test_prefix_mask() {
   printf("=== Test Prefix Mask ===\n");
@@ -9,6 +10,7 @@ void test_prefix_mask() {
   for(uint16_t word = 0x00;word != 0x100;word++) {
     prefix_mask_t m = get_prefix_mask((uint8_t)word);
     assert(!(mask & m)); // The same mask cannot be set twice
+    mask |= m;
   }
   assert(mask == ((PREFIX_MASK_LAST << 1) - 1));
   printf("Pass!\n");
