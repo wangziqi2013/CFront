@@ -21,4 +21,23 @@
 // Group 4
 #define PREFIX_ADDR_OVERRIDE 0x67
 
+// Group 1 mask
+#define PREFIX_MASK_LOCK          0x00000001U
+#define PREFIX_MASK_REPNE         0x00000002U
+#define PREFIX_MASK_REP           0x00000004U
+#define PREFIX_MASK_LOCK          0x00000008U
+// Group 2 mask
+#define PREFIX_MASK_CS            0x00000010U
+#define PREFIX_MASK_SS            0x00000020U
+#define PREFIX_MASK_DS            0x00000040U
+#define PREFIX_MASK_ES            0x00000080U
+#define PREFIX_MASK_FS            0x00000100U
+#define PREFIX_MASK_GS            0x00000200U
+#define PREFIX_MASK_TAKEN         0x00000400U
+#define PREFIX_MASK_NOT_TAKEN     0x00000800U
+// Group 3 mask
+#define PREFIX_MASK_SIZE_OVERRIDE 0x00001000U
+// Group 4 mask
+#define PREFIX_MASK_ADDR_OVERRIDE 0x00002000U
+
 #endif
