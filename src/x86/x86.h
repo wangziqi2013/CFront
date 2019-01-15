@@ -15,8 +15,8 @@
 #define PREFIX_ES            0x26
 #define PREFIX_FS            0x64
 #define PREFIX_GS            0x65
-#define PREFIX_TAKEN         0x2E
-#define PREFIX_NOT_TAKEN     0x3E
+//#define PREFIX_TAKEN         0x2E
+//#define PREFIX_NOT_TAKEN     0x3E
 // Group 3
 #define PREFIX_SIZE_OVERRIDE 0x66
 // Group 4
@@ -35,12 +35,12 @@
 #define PREFIX_MASK_ES            0x00000040U
 #define PREFIX_MASK_FS            0x00000080U
 #define PREFIX_MASK_GS            0x00000100U
-#define PREFIX_MASK_TAKEN         0x00000200U
-#define PREFIX_MASK_NOT_TAKEN     0x00000400U
+//#define PREFIX_MASK_TAKEN         0x00000200U
+//#define PREFIX_MASK_NOT_TAKEN     0x00000400U
 // Group 3 mask
-#define PREFIX_MASK_SIZE_OVERRIDE 0x00000800U
+#define PREFIX_MASK_SIZE_OVERRIDE 0x00000200U
 // Group 4 mask
-#define PREFIX_MASK_ADDR_OVERRIDE 0x00001000U
+#define PREFIX_MASK_ADDR_OVERRIDE 0x00000400U
 #define PREFIX_MASK_LAST          PREFIX_MASK_ADDR_OVERRIDE
 
 extern uint8_t prefix_code_table[];
