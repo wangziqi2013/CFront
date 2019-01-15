@@ -41,6 +41,7 @@
 #define PREFIX_MASK_SIZE_OVERRIDE 0x00000800U
 // Group 4 mask
 #define PREFIX_MASK_ADDR_OVERRIDE 0x00001000U
+#define PREFIX_MASK_LAST          PREFIX_MASK_ADDR_OVERRIDE
 
 extern uint8_t prefix_code_table[];
 
