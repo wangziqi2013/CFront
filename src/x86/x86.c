@@ -1,13 +1,12 @@
 
 #include "x86.h"
-#include "error.h"
 
 //== Global functions ==//
 
 x86_cxt_t *x86_cxt_alloc(uint8_t *p, size_t size) {
   x86_cxt_t *cxt = malloc(sizeof(x86_cxt_t));
   if(cxt == NULL) error_exit("Cannot allocate x86_cxt_t\n");
-  cxt->p = cxt_old_p = p;
+  cxt->p = cxt->old_p = p;
   cxt->end_p = p + size;
   return cxt;
 }
