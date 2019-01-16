@@ -34,7 +34,7 @@ mem-test: all
 	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 ./bin/test_x86: test_x86.o x86.o
-	$(CC) test_x86.o x86.o -o ./bin/test_x86 $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+	$(CC) test_x86.o x86.o error.o -o ./bin/test_x86 $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
@@ -93,7 +93,7 @@ type.o: type.c type.h token.h ast.h hashtable.h stack.h error.h bintree.h list.h
 eval.o: eval.c eval.h token.h type.h
 	$(CC) eval.c -c -o eval.o $(CFLAGS) $(LDFLAGS)
 
-x86.o: ./x86/x86.h ./x86/x86.c
+x86.o: ./x86/x86.h ./x86/x86.c error.h
 	$(CC) $(X86DIR)/x86.c -c -o x86.o $(CFLAGS) $(LDFLAGS)
 
 parse_exp.h: stack.h token.h ast.h hashtable.h
