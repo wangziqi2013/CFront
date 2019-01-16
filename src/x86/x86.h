@@ -3,7 +3,12 @@
 #define _X86_H
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+
+#define EXIT_ERROR 1
+#define error_exit(fmt, ...) \
+  do { fprintf(stderr, "Error: " fmt, ##__VA_ARGS__); exit(EXIT_ERROR); } while(0);
 
 // Group 1
 #define PREFIX_LOCK          0xF0
@@ -16,8 +21,8 @@
 #define PREFIX_ES            0x26
 #define PREFIX_FS            0x64
 #define PREFIX_GS            0x65
-//#define PREFIX_TAKEN         0x2E
-//#define PREFIX_NOT_TAKEN     0x3E
+#define PREFIX_TAKEN         0x2E
+#define PREFIX_NOT_TAKEN     0x3E
 // Group 3
 #define PREFIX_SIZE_OVERRIDE 0x66
 // Group 4
@@ -36,8 +41,8 @@
 #define PREFIX_MASK_ES            0x00000040U
 #define PREFIX_MASK_FS            0x00000080U
 #define PREFIX_MASK_GS            0x00000100U
-//#define PREFIX_MASK_TAKEN         0x00000200U
-//#define PREFIX_MASK_NOT_TAKEN     0x00000400U
+#define PREFIX_MASK_TAKEN         0x00000008U // This has the same mask as PREFIX_MASK_CS
+#define PREFIX_MASK_NOT_TAKEN     0x00000020U // This has the same mask as PREFIX_MASK_DS
 // Group 3 mask
 #define PREFIX_MASK_SIZE_OVERRIDE 0x00000200U
 // Group 4 mask
@@ -53,16 +58,15 @@ typedef struct {
 x86_cxt_t *x86_cxt_alloc(uint8_t *p, size_t size);
 void x86_cxt_free(x86_cxt_t *cxt);
 
+inline int iseof(x86_cxt_t *cxt) { return cxt->p == cxt->end_p; } // Whether reaches EOF
 // Raise error if reaches the end; Used when not expecting EOF
 inline uint8_t get_next_byte(x86_cxt_t *cxt) {       
   if(iseof(cxt)) error_exit("Unexpected end of stream\n");
   return *cxt->p++;
 }
 inline uint8_t get_next_byte_noerr(x86_cxt_t *cxt) { return *cxt->p++; } // Returns the next byte but does not check for EOF
-inline int iseof(x86_cxt_t *cxt) { return cxt->p == cxt->end_p; } // Whether reaches EOF
 
 extern uint8_t prefix_code_table[];
-
 typedef uint32_t prefix_mask_t;
 prefix_mask_t get_prefix_mask(uint8_t byte); 
 prefix_mask_t get_all_prefix_masks(x86_cxt_t *cxt);
