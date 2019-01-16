@@ -46,11 +46,17 @@
 typedef struct {
   uint8_t *p;      // Current read position
   uint8_t *old_p;  // Previous read position; Set by functions that change p
+  uint8_t *end_p;  // Points to the next byte of end
 } x86_cxt_t;
+
+#define BYTE_EOF
+uint8_t get_next_byte(x86_cxt_t *cxt);  // Raise error if reaches the end; Used when not expecting EOF
+inline int iseof(x86_cxt_t *cxt);              // Whether reaches EOF
 
 extern uint8_t prefix_code_table[];
 
 typedef uint32_t prefix_mask_t;
 prefix_mask_t get_prefix_mask(uint8_t byte); 
+prefix_mask_t get_all_prefix_masks(x86_cxt_t *cxt);
 
 #endif

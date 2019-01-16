@@ -1,5 +1,15 @@
 
 #include "x86.h"
+#include "error.h"
+
+// Stream related functions
+
+uint8_t get_next_byte(x86_cxt_t *cxt) {
+  if(iseof(cxt)) error_exit("Unexpected end of stream\n");
+  return *cxt->p++;
+}
+
+int iseof(x86_cxt_t *cxt) { return cxt->p == cxt->end_p; }
 
 // Prefix related functions
 
@@ -15,4 +25,9 @@ prefix_mask_t get_prefix_mask(uint8_t byte) {
   for(unsigned int i = 0;i < sizeof(prefix_code_table) / sizeof(prefix_code_table[0]);i++) 
     if(byte == prefix_code_table[i]) return (prefix_mask_t)0x1 << i;
   return PREFIX_MASK_NONE;
+}
+
+prefix_mask_t get_all_prefix_masks(x86_cxt_t *cxt) {
+  prefix_mask_t ret, mask = PREFIX_MASK_NONE;
+  while((ret = get_prefix_mask()) != PREFIX_MASK_NONE) mask |= ret;
 }
