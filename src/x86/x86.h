@@ -3,6 +3,7 @@
 #define _X86_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 // Group 1
 #define PREFIX_LOCK          0xF0
