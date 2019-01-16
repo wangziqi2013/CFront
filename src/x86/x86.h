@@ -50,9 +50,16 @@ typedef struct {
   uint8_t *end_p;  // Points to the next byte of end
 } x86_cxt_t;
 
-inline uint8_t get_next_byte(x86_cxt_t *cxt);       // Raise error if reaches the end; Used when not expecting EOF
-inline uint8_t get_next_byte_noerr(x86_cxt_t *cxt); // Returns the next byte but does not check for EOF
-inline int iseof(x86_cxt_t *cxt);            // Whether reaches EOF
+x86_cxt_t *x86_cxt_alloc(uint8_t *p, size_t size);
+void x86_cxt_free(x86_cxt_t *cxt);
+
+// Raise error if reaches the end; Used when not expecting EOF
+inline uint8_t get_next_byte(x86_cxt_t *cxt) {       
+  if(iseof(cxt)) error_exit("Unexpected end of stream\n");
+  return *cxt->p++;
+}
+inline uint8_t get_next_byte_noerr(x86_cxt_t *cxt) { return *cxt->p++; } // Returns the next byte but does not check for EOF
+inline int iseof(x86_cxt_t *cxt) { return cxt->p == cxt->end_p; } // Whether reaches EOF
 
 extern uint8_t prefix_code_table[];
 

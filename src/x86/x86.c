@@ -2,7 +2,7 @@
 #include "x86.h"
 #include "error.h"
 
-// Global functions
+//== Global functions ==//
 
 x86_cxt_t *x86_cxt_alloc(uint8_t *p, size_t size) {
   x86_cxt_t *cxt = malloc(sizeof(x86_cxt_t));
@@ -16,17 +16,7 @@ void x86_cxt_free(x86_cxt_t *cxt) {
   free(cxt);
 }
 
-// Stream related functions
-
-// Returns the next byte in the stream. Reports error and exit if stream reaches to the end
-uint8_t get_next_byte(x86_cxt_t *cxt) {
-  if(iseof(cxt)) error_exit("Unexpected end of stream\n");
-  return *cxt->p++;
-}
-uint8_t get_next_byte_noerr(x86_cxt_t *cxt) { return *cxt->p++; }
-int iseof(x86_cxt_t *cxt) { return cxt->p == cxt->end_p; }
-
-// Prefix related functions
+//== Prefix related functions ==//
 
 // The prefix mask is implied by the index of the entry in the table: (0x1 << index)
 uint8_t prefix_code_table[] = {
