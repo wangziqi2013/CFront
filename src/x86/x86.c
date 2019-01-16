@@ -4,11 +4,12 @@
 
 // Stream related functions
 
+// Returns the next byte in the stream. Reports error and exit if stream reaches to the end
 uint8_t get_next_byte(x86_cxt_t *cxt) {
   if(iseof(cxt)) error_exit("Unexpected end of stream\n");
   return *cxt->p++;
 }
-
+uint8_t get_next_byte_noerr(x86_cxt_t *cxt) { return *cxt->p++; }
 int iseof(x86_cxt_t *cxt) { return cxt->p == cxt->end_p; }
 
 // Prefix related functions
@@ -27,7 +28,9 @@ prefix_mask_t get_prefix_mask(uint8_t byte) {
   return PREFIX_MASK_NONE;
 }
 
+// Return all prefixes in the stream. This function does not expect EOF
 prefix_mask_t get_all_prefix_masks(x86_cxt_t *cxt) {
   prefix_mask_t ret, mask = PREFIX_MASK_NONE;
-  while((ret = get_prefix_mask()) != PREFIX_MASK_NONE) mask |= ret;
+  while((ret = get_prefix_mask(get_next_byte(cxt))) != PREFIX_MASK_NONE) mask |= ret;
+  return mask;
 }

@@ -49,9 +49,9 @@ typedef struct {
   uint8_t *end_p;  // Points to the next byte of end
 } x86_cxt_t;
 
-#define BYTE_EOF
-uint8_t get_next_byte(x86_cxt_t *cxt);  // Raise error if reaches the end; Used when not expecting EOF
-inline int iseof(x86_cxt_t *cxt);              // Whether reaches EOF
+inline uint8_t get_next_byte(x86_cxt_t *cxt);       // Raise error if reaches the end; Used when not expecting EOF
+inline uint8_t get_next_byte_noerr(x86_cxt_t *cxt); // Returns the next byte but does not check for EOF
+inline int iseof(x86_cxt_t *cxt);            // Whether reaches EOF
 
 extern uint8_t prefix_code_table[];
 
