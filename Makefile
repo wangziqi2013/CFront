@@ -9,7 +9,7 @@ OBJ3=$(patsubst ./src/%,./build/%,$(OBJ2))
 OBJ=$(patsubst ./test/%,./build/%,$(OBJ3))
 ALL_FILES=$(SRC) $(HDR) $(wildcard ./test/*.h) $(wildcard ./test/*.cpp)
   
-all:
+all: 
 	@echo "*"
 	@echo "* Please run make + test name to build a specific test!"
 	@echo "* OBJ = $(OBJ)"
