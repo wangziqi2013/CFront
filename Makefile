@@ -4,7 +4,7 @@ OPT_FLAGS=
 CXX_FLAGS=-g -std=c++11
 SRC=$(wildcard ./src/*.cpp) ./test/test_suite.cpp
 HDR=$(wildcard ./src/*.h) 
-OBJ2=$(patsubst %.cpp,%.o,$(SRC))   
+OBJ2=$(patsubst %.cpp,%.o,$(SRC))    
 OBJ3=$(patsubst ./src/%,./build/%,$(OBJ2))  
 OBJ=$(patsubst ./test/%,./build/%,$(OBJ3))
 ALL_FILES=$(SRC) $(HDR) $(wildcard ./test/*.h) $(wildcard ./test/*.cpp)
@@ -36,7 +36,7 @@ all:
 
 ./build/test_suite.o: ./test/test_suite.cpp ./test/test_suite.h
 	$(CXX) ./test/test_suite.cpp -c -o ./build/test_suite.o $(CXX_FLAGS)
-    
+     
 lex_test: $(OBJ) ./test/lex_test.cpp
 	$(CXX) ./test/lex_test.cpp -c -o ./build/lex_test.o $(CXX_FLAGS)
 	$(CXX) $(OBJ) ./build/lex_test.o -o ./bin/lex_test $(CXX_FLAGS)
