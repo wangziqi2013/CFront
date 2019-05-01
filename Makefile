@@ -4,7 +4,7 @@ OPT_FLAGS=
 CXX_FLAGS=-g -std=c++11
 SRC=$(wildcard ./src/*.cpp) ./test/test_suite.cpp
 HDR=$(wildcard ./src/*.h) 
-OBJ2=$(patsubst %.cpp,%.o,$(SRC))    
+OBJ2=$(patsubst %.cpp,%.o,$(SRC))     
 OBJ3=$(patsubst ./src/%,./build/%,$(OBJ2))  
 OBJ=$(patsubst ./test/%,./build/%,$(OBJ3))
 ALL_FILES=$(SRC) $(HDR) $(wildcard ./test/*.h) $(wildcard ./test/*.cpp)
