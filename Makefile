@@ -2,7 +2,7 @@
 CXX=g++
 OPT_FLAGS= 
 CXX_FLAGS=-g -std=c++11
-SRC=$(wildcard ./src/*.cpp) ./test/test_suite.cpp
+SRC=$(wildcard ./src/*.cpp) ./test/test_suite.cpp 
 HDR=$(wildcard ./src/*.h) 
 OBJ2=$(patsubst %.cpp,%.o,$(SRC))     
 OBJ3=$(patsubst ./src/%,./build/%,$(OBJ2))   
