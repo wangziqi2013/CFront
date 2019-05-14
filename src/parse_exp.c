@@ -197,9 +197,10 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
       // For decl parsing, we maintain the stack manually and this func will not be called
       case EXP_FUNC_CALL: ast_collect_funcarg(token); break;
       case EXP_COND: ast_movecond(token); break;
-      // Operator ':' cannot be shifted as the first element in the stack
+      // Operator ':' cannot be shifted as the first element on the stack
       case EXP_COLON: if(stack_size(cxt->stacks[AST_STACK]) == 1)
         error_row_col_exit(token->offset, "Operator \':\' must be used with operator \'?\'\n");
+        break;
       default: break;
     }
   }
