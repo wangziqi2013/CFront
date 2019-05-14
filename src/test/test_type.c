@@ -236,6 +236,20 @@ void test_vector() {
   printf("Pass!\n");
 }
 
+void test_eval_const() {
+  printf("=== Test eval_const() ===\n");
+  char test1[] = "1 + 2 * 3 + 6 / 2";
+  cxt = parse_exp_init(test1);
+  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  printf("Eval = %d\n", eval_const(token));
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  printf("Pass!\n");
+}
+
 void test_getimm() {
   printf("=== Test eval_get[type]imm() ===\n");
 
@@ -251,6 +265,7 @@ int main() {
   test_str();
   test_vector();
   test_getimm();
+  test_eval_const();
   return 0;
 }
   
