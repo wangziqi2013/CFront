@@ -369,33 +369,6 @@ void test_parse_enum() {
   return;
 }
 
-// This test may introduce memory leak
-void test_anomaly() {
-  printf("=== Test anomalies ===\n");
-  error_testmode(1);
-  int err;  
-  parse_exp_cxt_t *cxt;
-  char test1[] = "d[++wzq--[1234]";  // Tests if [ and ( must be balanced
-  err = 0;
-  cxt = parse_exp_init(test1);
-  if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLOWALL);
-  else err = 1;
-  assert(err == 1);
-  parse_exp_free(cxt);
-
-  char test2[] = "(***a(b*)(void))";
-  err = 0;
-  cxt = parse_exp_init(test2);
-  if(error_trycatch()) parse_decl(cxt, 1);
-  else err = 1;
-  assert(err == 1);
-  parse_exp_free(cxt);
-  
-  error_testmode(0);
-  printf("Pass!\n");
-  return;
-}
-
 void test_parse_stmt() {
   printf("=== Test parse_stmt ===\n");
   parse_exp_cxt_t *cxt;
@@ -737,6 +710,42 @@ void final_test() {
   return;
 }
 
+
+// This test may introduce memory leak
+void test_anomaly() {
+  printf("=== Test anomalies ===\n");
+  error_testmode(1);
+  int err;  
+  parse_exp_cxt_t *cxt;
+  char test1[] = "d[++wzq--[1234]";  // Tests if [ and ( must be balanced
+  err = 0;
+  cxt = parse_exp_init(test1);
+  if(error_trycatch()) parse_exp(cxt, PARSE_EXP_ALLOWALL);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  char test2[] = "(***a(b*)(void))";
+  err = 0;
+  cxt = parse_exp_init(test2);
+  if(error_trycatch()) parse_decl(cxt, 1);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+  
+  char test3[] = "123 ? a";
+  err = 0;
+  cxt = parse_exp_init(test3);
+  if(error_trycatch()) parse_exp(cxt, 1);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  error_testmode(0);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_stack();
@@ -756,6 +765,6 @@ int main() {
   test_vararg_func();
   test_parse();
   test_udef();
-  //test_anomaly();
+  test_anomaly();
   return 0;
 }
