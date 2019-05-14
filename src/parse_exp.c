@@ -197,6 +197,9 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
       // For decl parsing, we maintain the stack manually and this func will not be called
       case EXP_FUNC_CALL: ast_collect_funcarg(token); break;
       case EXP_COND: ast_movecond(token); break;
+      // Operator ':' cannot be shifted as the first element in the stack
+      case EXP_COLON: if(stack_size(cxt->stacks[AST_STACK]) == 1)
+        error_row_col_exit(token->offset, "Operator \':\' must be used with operator \'?\'\n");
       default: break;
     }
   }
@@ -204,7 +207,7 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
 }
 
 // One reduce step of the topmost operator
-// Return the next op at stack top; NULL if stack empty
+// Return the next op at operator stack top; NULL if stack empty
 // If op stack is empty then do nothing, and return NULL
 // If the override is -1 then we ignore it
 // If allow_paren is set then [ and ( can be reduced
@@ -226,6 +229,9 @@ token_t *parse_exp_reduce(parse_exp_cxt_t *cxt, int op_num_override, int allow_p
     token_t *operand = stack_pop(ast);
     // Note that nodes are poped in reverse order
     ast_push_child(top_op, operand);
+    // If we reduce an operator that contains ':' as operand, check whether it is "?" because we parse them separately
+    if(operand->type == EXP_COLON && top_op->type != EXP_COND) 
+      error_row_col_exit(operand->offset, "Operator \':\' must be used with operator \'?\'\n");
   }
 
   parse_exp_shift(cxt, AST_STACK, top_op);
