@@ -236,8 +236,8 @@ void test_vector() {
   printf("Pass!\n");
 }
 
-void test_eval_const() {
-  printf("=== Test eval_const() ===\n");
+void test_eval_const_int() {
+  printf("=== Test eval_const_int() ===\n");
   parse_exp_cxt_t *cxt;
   token_t *token;
   char test1[] = "1 + 2 * 3 + 6 / 2";
@@ -245,7 +245,7 @@ void test_eval_const() {
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  printf("Eval = %d\n", eval_const(token));
+  printf("Eval = %d\n", eval_const_int(token));
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -254,7 +254,7 @@ void test_eval_const() {
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  printf("Eval = %d (%X)\n", eval_const(token), eval_const(token));
+  printf("Eval = %d (%X)\n", eval_const_int(token), eval_const_int(token));
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -263,7 +263,7 @@ void test_eval_const() {
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  printf("Eval = %d (%X)\n", eval_const(token), eval_const(token));
+  printf("Eval = %d (%X)\n", eval_const_int(token), eval_const_int(token));
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -285,7 +285,7 @@ int main() {
   test_str();
   test_vector();
   test_getimm();
-  test_eval_const();
+  test_eval_const_int();
   return 0;
 }
   
