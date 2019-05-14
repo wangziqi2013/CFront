@@ -14,7 +14,7 @@ int eval_const_getintimm(token_t *token) {
   }
   int ret = 0;
   do { ret = ret * base + \
-             (*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0');
+             ((*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0'));
   } while(*++s);
   return ret;
 }
@@ -89,7 +89,7 @@ void eval_getintimm(value_t *val, token_t *token) {
                        token->str, sizeof(type_maxint_t));
   type_maxint_t scratch = (type_maxint_t)0;
   do { scratch = scratch * base + \
-                 (*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0');
+                 ((*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0'));
   } while(*++s);
   switch(sz) {
     case 1: val->ucharval = (uint8_t)scratch; break;
