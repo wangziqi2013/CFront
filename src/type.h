@@ -47,7 +47,10 @@ typedef enum {
 typedef struct {
   typeid_t typeid;        // Index in the list
   decl_prop_t basetype;   // Uses token decl_prop constants
-  token_t *decl;          // Uses token tree
+  union {
+    token_t *decl;        // If it is a non-composite type, just use decl; The type_t node owns memory
+    comp_t *comp;         // If composite type, use comp pointer
+  }
   size_t size;
 } type_t;
 
@@ -79,8 +82,17 @@ typedef struct value_t_struct {
 typedef struct {
   list_t *fields;    // A list of type * representing the type of the field
   bintree_t *index;  // These two provides both fast named access, and ordered storage
-  char *name;
+  char *name;        // NULL if no name
 } comp_t;
+
+// Single field within the composite type
+typedef struct {
+  char *name;       // NULL if anonymous field
+  int bits;         // Set if bit field; -1 if not
+  int offset;       // Offset within the composite structure
+  int length;       // Number of bytes occupied by the actual storage including padding
+  type_t *type;     // Type of this field
+} comp_field_t;
 
 int type_intsizes[11];
 
