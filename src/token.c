@@ -219,6 +219,7 @@ token_type_t token_get_keyword_type(const char *s) {
 // Note that all types except the illegal has a string representation
 const char *token_typestr(token_type_t type) {
   switch(type) {
+    // Raw tokens (Invalid for expression trees)
     case T_LPAREN: return "T_LPAREN";
     case T_RPAREN: return "T_RPAREN";
     case T_LSPAREN: return "T_LSPAREN";
@@ -275,7 +276,7 @@ const char *token_typestr(token_type_t type) {
     case T_FLOAT_CONST: return "T_FLOAT_CONST";
     // User defined identifier
     case T_IDENT: return "T_IDENT";
-    // Keywords
+    // Keywords (statements and types)
     case T_AUTO: return "T_AUTO"; 
     case T_BREAK: return "T_BREAK"; 
     case T_CASE: return "T_CASE"; 
@@ -360,6 +361,7 @@ const char *token_typestr(token_type_t type) {
     case EXP_LSHIFT_ASSIGN: return "EXP_LSHIFT_ASSIGN";
     case EXP_RSHIFT_ASSIGN: return "EXP_RSHIFT_ASSIGN";
     case EXP_COMMA: return "EXP_COMMA";
+    // Internal nodes for declaration and statements
     case T_UDEF: return "T_UDEF";
     case T_DECL: return "T_DECL"; 
     case T_BASETYPE: return "T_BASETYPE";

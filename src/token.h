@@ -171,8 +171,9 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_INDEX(decl_prop) (decl_prop >> 16)   // Returns the index into the integer size table
 
 typedef struct token_t {
-  token_type_t type;
-  char *str;
+  token_type_t token_type;   // This remains raw token type during parsing
+  token_type_t type;         // This will be written during parsing to AST type
+  char *str;                 // Only valid for literals and identifiers; Owned by the token object
   struct token_t *child;
   union {
     struct token_t *sibling; // If token is in AST then use child-sibling representation
