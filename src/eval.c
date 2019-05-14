@@ -30,10 +30,32 @@ int eval_const(token_t *token) {
     case EXP_MUL: ret = eval_const(ast_getchild(token, 0)) * eval_const(ast_getchild(token, 1)); break;
     case EXP_DIV: { 
       int rhs = eval_const(ast_getchild(token, 1));
-      if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression is zero\n");
-      ret = eval_const(ast_getchild(token, 0)) * eval_const(ast_getchild(token, 1));
+      if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression \"%s\" is zero\n", token_typestr(token->type));
+      ret = eval_const(ast_getchild(token, 0)) * rhs;
+      break;
     }
-    case EXP_MOD: ret = eval_const(ast_getchild(token, 0)) % eval_const(ast_getchild(token, 1));
+    case EXP_MOD: { 
+      int rhs = eval_const(ast_getchild(token, 1));
+      if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression \"%s\" is zero\n", token_typestr(token->type));
+      ret = eval_const(ast_getchild(token, 0)) % rhs;
+      break;
+    }
+    case EXP_ADD: ret = eval_const(ast_getchild(token, 0)) + eval_const(ast_getchild(token, 1)); break;
+    case EXP_SUB: ret = eval_const(ast_getchild(token, 0)) - eval_const(ast_getchild(token, 1)); break;
+    case EXP_LSHIFT: ret = eval_const(ast_getchild(token, 0)) << eval_const(ast_getchild(token, 1)); break;
+    case EXP_RSHIFT: ret = eval_const(ast_getchild(token, 0)) >> eval_const(ast_getchild(token, 1)); break;
+    case EXP_LESS: ret = eval_const(ast_getchild(token, 0)) < eval_const(ast_getchild(token, 1)); break;
+    case EXP_GREATER: ret = eval_const(ast_getchild(token, 0)) > eval_const(ast_getchild(token, 1)); break;
+    case EXP_LEQ: ret = eval_const(ast_getchild(token, 0)) <= eval_const(ast_getchild(token, 1)); break;
+    case EXP_GEQ: ret = eval_const(ast_getchild(token, 0)) >= eval_const(ast_getchild(token, 1)); break;
+    case EXP_EQ: ret = eval_const(ast_getchild(token, 0)) == eval_const(ast_getchild(token, 1)); break;
+    case EXP_NEQ: ret = eval_const(ast_getchild(token, 0)) != eval_const(ast_getchild(token, 1)); break;
+    case EXP_BIT_AND: ret = eval_const(ast_getchild(token, 0)) & eval_const(ast_getchild(token, 1)); break;
+    case EXP_BIT_OR: ret = eval_const(ast_getchild(token, 0)) | eval_const(ast_getchild(token, 1)); break;
+    case EXP_BIT_XOR: ret = eval_const(ast_getchild(token, 0)) ^ eval_const(ast_getchild(token, 1)); break;
+    case EXP_LOGICAL_AND: ret = eval_const(ast_getchild(token, 0)) && eval_const(ast_getchild(token, 1)); break;
+    case EXP_LOGICAL_OR: ret = eval_const(ast_getchild(token, 0)) || eval_const(ast_getchild(token, 1)); break;
+    case EXP_COND: 
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 

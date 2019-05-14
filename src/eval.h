@@ -3,6 +3,7 @@
 #define _EVAL_H
 
 #include "token.h"
+#include "ast.h"
 
 struct value_t_struct;
 typedef struct value_t_struct value_t;
