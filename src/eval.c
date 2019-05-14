@@ -31,7 +31,7 @@ int eval_const(token_t *token) {
     case EXP_DIV: { 
       int rhs = eval_const(ast_getchild(token, 1));
       if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression \"%s\" is zero\n", token_typestr(token->type));
-      ret = eval_const(ast_getchild(token, 0)) * rhs;
+      ret = eval_const(ast_getchild(token, 0)) / rhs;
       break;
     }
     case EXP_MOD: { 
@@ -55,9 +55,14 @@ int eval_const(token_t *token) {
     case EXP_BIT_XOR: ret = eval_const(ast_getchild(token, 0)) ^ eval_const(ast_getchild(token, 1)); break;
     case EXP_LOGICAL_AND: ret = eval_const(ast_getchild(token, 0)) && eval_const(ast_getchild(token, 1)); break;
     case EXP_LOGICAL_OR: ret = eval_const(ast_getchild(token, 0)) || eval_const(ast_getchild(token, 1)); break;
+    case EXP_COMMA: ret = eval_const(ast_getchild(token, 0)), eval_const(ast_getchild(token, 1)); break;
+    // Tenary operator
     case EXP_COND: ret = \
       eval_const(ast_getchild(token, 0)) ? eval_const(ast_getchild(token, 1)) : eval_const(ast_getchild(token, 2)); break;
-    case EXP_COMMA: ret = eval_const(ast_getchild(token, 0)), eval_const(ast_getchild(token, 1)); break;
+    // Immediate values (integer, char expanded into integers)
+    case T_HEX_INT_CONST:
+    case T_OCT_INT_CONST:
+    case T_DEC_INT_CONST: ret = eval_const_getintimm(token); break;
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 
