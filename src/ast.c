@@ -108,7 +108,9 @@ void ast_collect_funcarg(token_t *token) {
 // Transforms conditional expression from two 2-operand operators to
 // a signle cond operator
 void ast_movecond(token_t *token) {
-  assert(token->type == EXP_COND && ast_getchild(token, 1)->type == EXP_COLON);
+  assert(token->type == EXP_COND);
+  if(ast_getchild(token, 1)->type != EXP_COLON) 
+    error_row_col_exit(token->offset, "Operator \'?\' must be followed by operator \':\'\n");
   token_t *colon = ast_getchild(token, 1), *child2 = ast_getchild(colon, 1);
   ast_append_child(token, colon->child);
   ast_append_child(token, child2);
