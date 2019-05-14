@@ -633,7 +633,7 @@ token_t *token_alloc() {
   SYSEXPECT(token != NULL);
   token->child = token->sibling = token->parent = NULL;
   token->str = NULL;
-  token->type = T_ILLEGAL;
+  token->type = token->raw_type = T_ILLEGAL;
   token->offset = NULL;
   token->decl_prop = DECL_NULL;
   return token;
@@ -642,6 +642,7 @@ token_t *token_alloc() {
 token_t *token_alloc_type(token_type_t type) {
   token_t *token = token_alloc();
   token->type = type;
+  token->raw_type = T_ILLEGAL;
   return token;
 }
 
@@ -776,6 +777,7 @@ token_t *token_get_next(token_cxt_t *cxt) {
       break;
     }
   }
+  token->raw_type = token->type; // Make a copy of the raw type
   return token;
 }
 
