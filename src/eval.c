@@ -55,7 +55,9 @@ int eval_const(token_t *token) {
     case EXP_BIT_XOR: ret = eval_const(ast_getchild(token, 0)) ^ eval_const(ast_getchild(token, 1)); break;
     case EXP_LOGICAL_AND: ret = eval_const(ast_getchild(token, 0)) && eval_const(ast_getchild(token, 1)); break;
     case EXP_LOGICAL_OR: ret = eval_const(ast_getchild(token, 0)) || eval_const(ast_getchild(token, 1)); break;
-    case EXP_COND: 
+    case EXP_COND: ret = \
+      eval_const(ast_getchild(token, 0)) ? eval_const(ast_getchild(token, 1)) : eval_const(ast_getchild(token, 2)); break;
+    case EXP_COMMA: ret = eval_const(ast_getchild(token, 0)), eval_const(ast_getchild(token, 1)); break;
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 

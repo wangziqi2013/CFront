@@ -194,7 +194,8 @@ void parse_exp_shift(parse_exp_cxt_t *cxt, int stack_id, token_t *token) {
   cxt->last_active_stack = stack_id;
   if(stack_id == AST_STACK) {
     switch(token->type) {
-      case EXP_FUNC_CALL: ast_collect_funcarg(token); break; // For decl this function does nothing
+      // For decl parsing, we maintain the stack manually and this func will not be called
+      case EXP_FUNC_CALL: ast_collect_funcarg(token); break;
       case EXP_COND: ast_movecond(token); break;
       default: break;
     }
