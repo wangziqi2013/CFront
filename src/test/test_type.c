@@ -238,6 +238,8 @@ void test_vector() {
 
 void test_eval_const() {
   printf("=== Test eval_const() ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
   char test1[] = "1 + 2 * 3 + 6 / 2";
   cxt = parse_exp_init(test1);
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);

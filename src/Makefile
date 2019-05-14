@@ -28,8 +28,8 @@ mem-test: all
 ./bin/test_lex: test_lex.o stack.o token.o error.o ast.o hashtable.o
 	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o
-	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
+	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)

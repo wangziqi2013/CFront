@@ -7,6 +7,7 @@
 #include "bintree.h"
 #include "token.h"
 #include "str.h"
+#include "eval.h"
 
 #define SCOPE_LEVEL_GLOBAL 0
 typedef uint64_t type_maxint_t;  // Maximum integer type we support
