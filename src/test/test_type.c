@@ -249,6 +249,24 @@ void test_eval_const() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
+  char test2[] = "((0x10 << 10) >> 4) | 0x2345";
+  cxt = parse_exp_init(test2);
+  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  printf("Eval = %d (%X)\n", eval_const(token), eval_const(token));
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "0x2345ABCD";
+  cxt = parse_exp_init(test3);
+  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  printf("Eval = %d (%X)\n", eval_const(token), eval_const(token));
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
   printf("Pass!\n");
 }
 
