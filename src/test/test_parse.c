@@ -741,6 +741,22 @@ void test_anomaly() {
   assert(err == 1);
   parse_exp_free(cxt);
 
+  char test4[] = "a + (123 : a)";
+  err = 0;
+  cxt = parse_exp_init(test4);
+  if(error_trycatch()) parse_exp(cxt, 1);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  char test5[] = "123 : a";
+  err = 0;
+  cxt = parse_exp_init(test5);
+  if(error_trycatch()) parse_exp(cxt, 1);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
   error_testmode(0);
   printf("Pass!\n");
   return;
