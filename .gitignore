@@ -41,3 +41,4 @@ build
 
 # Specific files
 test_parse.txt
+.vscode/*
