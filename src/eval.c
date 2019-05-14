@@ -3,6 +3,22 @@
 #include "eval.h"
 #include "type.h"
 
+int eval_const_getintimm(token_t *token) {
+  char *s = token->str;
+  int base;
+  switch(token->type) {
+    case T_HEX_INT_CONST: base = 16; break;
+    case T_OCT_INT_CONST: base = 8; break;
+    case T_DEC_INT_CONST: base = 10; break;
+    default: assert(0);
+  }
+  int ret = 0;
+  do { ret = ret * base + \
+             (*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0');
+  } while(*++s);
+  return ret;
+}
+
 // Writes the number of given base into the data area of the token
 void eval_getintimm(value_t *val, token_t *token) {
   char *s = token->str;
