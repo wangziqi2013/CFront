@@ -62,6 +62,8 @@ typedef enum {
   T_KEYWORDS_END,
 
   // AST type used within an expression (51 elements)
+  // Note that some are only used internally and will never occur in the AST,
+  // specifically they are EXP_LPAREN, EXP_RPAREN, EXP_LSPAREN
   EXP_BEGIN = 2000,
   EXP_FUNC_CALL = 2000, EXP_ARRAY_SUB,      // func() array[]
   EXP_LPAREN, EXP_RPAREN,                   // ( and ) as parenthesis

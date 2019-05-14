@@ -389,9 +389,9 @@ const char *token_typestr(token_type_t type) {
   return NULL;
 }
 
-// Return the actual symbol of the token type
-// For identifier and literal types and non-token types (e.g. expressions) this 
-// function returns NULL
+// Return the actual symbol of the raw token type; do not work for some AST nodes
+// For identifier and literal types and non-token types (i.e. not raw token types) 
+// this function returns NULL
 const char *token_symstr(token_type_t type) {
   assert(type != T_ILLEGAL);
   switch(type) {
