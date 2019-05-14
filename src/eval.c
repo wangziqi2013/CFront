@@ -19,6 +19,30 @@ int eval_const_getintimm(token_t *token) {
   return ret;
 }
 
+int eval_const(token_t *token) {
+  int ret = 0;
+  switch(token->type) {
+    // Unary operators
+    case EXP_PLUS: ret = eval_const(ast_getchild(token, 0)); break;
+    case EXP_LOGICAL_NOT: ret = !eval_const(ast_getchild(token, 0)); break;
+    case EXP_BIT_NOT: ret = ~eval_const(ast_getchild(token, 0)); break;
+    // Binary operators
+    case EXP_MUL: ret = eval_const(ast_getchild(token, 0)) * eval_const(ast_getchild(token, 1)); break;
+    case EXP_DIV: { 
+      int rhs = eval_const(ast_getchild(token, 1));
+      if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression is zero\n");
+      ret = eval_const(ast_getchild(token, 0)) * eval_const(ast_getchild(token, 1));
+    }
+    case EXP_MOD: ret = eval_const(ast_getchild(token, 0)) % eval_const(ast_getchild(token, 1));
+    // sizeof operator (queries the type system)
+    case EXP_SIZEOF: // Temporarily disable this
+    default: error_row_col_exit(token->offset, 
+      "Unsupported token for constant integer expression: \"%s\"", token_typestr(token->type));
+      break;
+  }
+  return ret;
+}
+
 // Writes the number of given base into the data area of the token
 void eval_getintimm(value_t *val, token_t *token) {
   char *s = token->str;
