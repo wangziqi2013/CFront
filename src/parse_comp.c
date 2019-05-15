@@ -52,7 +52,7 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
       }
       ast_append_child(root, comp_decl);
     }
-  }
+  } else { ast_append_child(root, token_get_empty()); } // Otherwise append an empty child to indicate there is no body
   return root;
 }
 
