@@ -114,7 +114,7 @@ void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
 
 // Returns a type * object given a T_DECL node and optionally base type
-type_t *type_gettype(token_t *decl, token_t *basetype); 
-comp_t *type_getcomp(token_t *comp);
+type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype); 
+comp_t *type_getcomp(type_cxt_t *cxt, token_t *comp);
 void type_freecomp(comp_t *comp);
 #endif

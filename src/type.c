@@ -108,7 +108,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
-    type->comp = type_getcomp(su);
+    type->comp = type_getcomp(cxt, su);
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
@@ -116,6 +116,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   } else {
 
   }
+
+  // TODO: SET SIZE
 
   return type;
 }
