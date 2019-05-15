@@ -256,7 +256,7 @@ void test_parse_decl() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "void a ";
+  char test2[] = "void [10] "; // Allow unnamed declaration here
   cxt = parse_exp_init(test2);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);

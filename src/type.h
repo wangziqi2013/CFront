@@ -44,13 +44,14 @@ typedef enum {
   RVALUES_END,
 } addrtype_t;
 
+struct comp_t_struct;
 typedef struct {
   typeid_t typeid;        // Index in the list
   decl_prop_t basetype;   // Uses token decl_prop constants
   union {
     token_t *decl;        // If it is a non-composite type, just use decl; The type_t node owns memory
-    comp_t *comp;         // If composite type, use comp pointer
-  }
+    struct comp_t_struct *comp;  // If composite type, use comp pointer
+  };
   size_t size;
 } type_t;
 
@@ -79,7 +80,7 @@ typedef struct value_t_struct {
 } value_t;
 
 // Represents composite type
-typedef struct {
+typedef struct comp_t_struct {
   list_t *fields;    // A list of type * representing the type of the field
   bintree_t *index;  // These two provides both fast named access, and ordered storage
   char *name;        // NULL if no name
