@@ -103,7 +103,19 @@ type_t *type_gettype(token_t *decl, token_t *basetype) {
 }
 
 // Input must be T_STRUCT or T_UNION; Caller must free memory
-comp_t *type_getcomp(token_t *comp) {
-  assert(comp->type == T_STRUCT || comp->type == T_UNION);
-  
+comp_t *type_getcomp(token_t *token) {
+  assert(token->type == T_STRUCT || token->type == T_UNION);
+  comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
+  SYSEXPECT(comp != NULL);
+  memset(comp, 0x00, sizeof(comp_t));
+  comp->fields = list_str_init();
+  comp->index = ht_str_init();
+  token_t *name = ast_getchild(token, 0);
+  if(name->type == T_IDENT) comp->name = name->str;
+  token_t *entry = ast_getchild(token, 1);
+  return NULL;
+}
+
+void type_freecomp(comp_t *comp) {
+
 }

@@ -79,7 +79,7 @@ typedef struct value_t_struct {
 
 // Represents composite type
 typedef struct comp_t_struct {
-  char *name;        // NULL if no name
+  char *name;        // NULL if no name; Does not own memory
   list_t *fields;    // A list of type * representing the type of the field
   bintree_t *index;  // These two provides both fast named access, and ordered storage
   size_t size;
@@ -87,7 +87,7 @@ typedef struct comp_t_struct {
 
 // Single field within the composite type
 typedef struct {
-  char *name;          // NULL if anonymous field
+  char *name;          // NULL if anonymous field; Does not own memory
   int bits;            // Set if bit field; -1 if not
   int offset;          // Offset within the composite structure
   size_t size;         // Number of bytes occupied by the actual storage including padding
