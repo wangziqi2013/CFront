@@ -113,6 +113,7 @@ comp_t *type_getcomp(token_t *token) {
   token_t *name = ast_getchild(token, 0);
   if(name->type == T_IDENT) comp->name = name->str;
   token_t *entry = ast_getchild(token, 1);
+  int curr_offset = 0;
   while(entry) {
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
@@ -135,6 +136,11 @@ comp_t *type_getcomp(token_t *token) {
         if((f->bitfield = eval_const_int(ast_getchild(bf, 0))) < 0) 
           error_row_col_exit(bf->offset, "Bit field length must be greater than zero\n");
       } else { f->bitfield = -1; }
+      // TODO: ADD BIT FIELD PADDING AND COALESCE
+      f->size = f->offset = curr_offset; // Set size and offset (currently no alignment)
+      curr_offset += f->type->size;
+      if(f->name) bt_insert(comp->index, f->name, f); // Only insert if there is a name
+      list_insert(comp->fields, f->name, f); // Always insert into the ordered list
     }
     entry = entry->sibling;
   }
