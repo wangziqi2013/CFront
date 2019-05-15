@@ -54,7 +54,7 @@ void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
     case T_UNSIGNED: usign = 1;                                // Fall through
     case T_SIGNED: token_free(token_get_next(cxt->token_cxt)); // Fall through again
     case T_CHAR: case T_SHORT: case T_INT: case T_LONG: {      // Note: Do not get_next_token() on these types
-      token_t *token = token_get_next(cxt->token_cxt);
+      token_t *token = token_get_next(cxt->token_cxt);         // unsigned and signed have been processed before this line
       switch(token->type) {
         case T_CHAR: BASETYPE_SET(basetype, usign ? BASETYPE_UCHAR : BASETYPE_CHAR); token_free(token); return;
         case T_INT: BASETYPE_SET(basetype, usign ? BASETYPE_UINT : BASETYPE_INT); token_free(token); return;
@@ -77,7 +77,7 @@ void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
               BASETYPE_SET(basetype, usign ? BASETYPE_ULONG : BASETYPE_LONG);
               token_pushback(cxt->token_cxt, token); return;
           }
-        } // unsigned / signed implies int type
+        } // unsigned / signed without other base type implies int type
         default: BASETYPE_SET(basetype, usign ? BASETYPE_UINT : BASETYPE_INT); token_pushback(cxt->token_cxt, token); return;
       }
     }
@@ -105,7 +105,7 @@ token_t *parse_decl_basetype(parse_decl_cxt_t *cxt) {
       token_consume_type(cxt->token_cxt, token->type); // Consume whatever it is
     } else { parse_typespec(cxt, basetype); }
     token = token_lookahead(cxt->token_cxt, 1);
-  } // Must have some type
+  } // Must have some type, cannot be just qualifiers and modifiers
   if(BASETYPE_GET(basetype->decl_prop) == BASETYPE_NONE) error_row_col_exit(cxt->token_cxt->s, "Declaration lacks a type specifier\n");
   return basetype;
 }
@@ -114,19 +114,23 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
   parse_exp_recurse(cxt);
   assert(parse_exp_size(cxt, OP_STACK) == 0 && parse_exp_size(cxt, AST_STACK) == 0); // Must start on a new stack
   token_t *decl = token_alloc_type(T_DECL);
-  if(hasbasetype == PARSE_DECL_HASBASETYPE) // If this is off then the base type node is empty
-    ast_append_child(decl, parse_decl_basetype(cxt)); 
+  // Append base type node if the flag indicates so, or empty node as placeholder
+  ast_append_child(decl, hasbasetype == PARSE_DECL_HASBASETYPE ? parse_decl_basetype(cxt) : token_get_empty()); 
   token_t *placeholder = token_get_empty();
-  parse_exp_shift(cxt, AST_STACK, placeholder); // Placeholder operand for the innremost operator
+  // Placeholder operand for the innremost operator because we do not push ident to AST stack
+  parse_exp_shift(cxt, AST_STACK, placeholder); 
   token_t *decl_name = NULL;  // If not an abstract declarator this is the name
   while(1) {
     token_t *token = parse_decl_next_token(cxt);
     if(token == NULL) {
-      token_t *ret = ast_append_child(decl, parse_exp_reduce_all(cxt));
-      if(decl_name) ast_append_child(decl, decl_name); // Only appends the name if there is one
+      ast_append_child(decl, parse_exp_reduce_all(cxt)); // This may directly put the placeholder node as a expression
+      ast_append_child(decl, decl_name ? decl_name : token_get_empty()); // Only appends the name if there is one, or empty node
       parse_exp_decurse(cxt);
-      token_free(ast_remove(placeholder)); // Remove the empty operand
-      return ret;
+      // Two cases: (1) If the parent of placeholder node is T_DECL then there is no expression, in which 
+      // case we retain the empty node to indicate no expression; (2) Otherwise there is an expression
+      // and we just remove the empty node (the exp has no concrete operand at leaf level) and free it
+      if(placeholder->parent->type != T_DECL) token_free(ast_remove(placeholder)); 
+      return decl;
     }
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
       token_t *top = parse_exp_peek(cxt, OP_STACK);

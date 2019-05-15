@@ -171,6 +171,11 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_GET(decl_prop) (decl_prop & 0x00FF0000)
 #define BASETYPE_SET(token, type) (token->decl_prop |= (type & 0x00FF0000))
 #define BASETYPE_INDEX(decl_prop) (decl_prop >> 16)   // Returns the index into the integer size table
+// The following only apply to T_DECL node, and indicate whether the node has base type (as first child)
+// or has ident (as last child), or has expression AST as declaration body
+#define DECL_HASBASETYPE    0x10000000
+#define DECL_HASIDENT       0x20000000
+#define DECL_HASEXP         0x40000000
 
 typedef struct token_t {
   token_type_t raw_type;     // This remains as raw token type during parsing
