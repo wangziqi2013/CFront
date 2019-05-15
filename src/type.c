@@ -113,7 +113,12 @@ comp_t *type_getcomp(token_t *token) {
   token_t *name = ast_getchild(token, 0);
   if(name->type == T_IDENT) comp->name = name->str;
   token_t *entry = ast_getchild(token, 1);
-  return NULL;
+  while(entry) {
+    assert(entry->type == T_COMP_DECL);
+    token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
+    entry = entry->sibling;
+  }
+  return comp;
 }
 
 void type_freecomp(comp_t *comp) {
