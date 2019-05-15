@@ -109,7 +109,7 @@ comp_t *type_getcomp(token_t *token) {
   SYSEXPECT(comp != NULL);
   memset(comp, 0x00, sizeof(comp_t));
   comp->fields = list_str_init();
-  comp->index = ht_str_init();
+  comp->index = bt_str_init();
   token_t *name = ast_getchild(token, 0);
   if(name->type == T_IDENT) comp->name = name->str;
   token_t *entry = ast_getchild(token, 1);
@@ -117,5 +117,6 @@ comp_t *type_getcomp(token_t *token) {
 }
 
 void type_freecomp(comp_t *comp) {
-
+  list_free(comp->fields);
+  bt_free(comp->index);
 }
