@@ -272,6 +272,15 @@ void test_parse_decl() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("Pass!\n");
+  printf("=====================================\n");
+  char test4[] = "struct this_is_a_struct {} x"; // Tests whether struct name can be parsed
+  cxt = parse_exp_init(test4);
+  token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
   return;
 }
 
