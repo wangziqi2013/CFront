@@ -88,11 +88,11 @@ typedef struct comp_t_struct {
 // Single field within the composite type
 typedef struct {
   char *name;          // NULL if anonymous field; Does not own memory
-  int bits;            // Set if bit field; -1 if not
+  int bitfield;        // Set if bit field; -1 if not
   int offset;          // Offset within the composite structure
   size_t size;         // Number of bytes occupied by the actual storage including padding
   type_t *type;        // Type of this field (actual size in this pointer)
-} comp_field_t;
+} field_t;
 
 int type_intsizes[11];
 

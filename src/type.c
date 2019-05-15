@@ -122,11 +122,19 @@ comp_t *type_getcomp(token_t *token) {
       assert(field->type == T_COMP_FIELD);
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
-      type_t *type = type_gettype(decl, basetype);
+      field_t *f = (field_t *)malloc(sizeof(field_t));
+      SYSEXPECT(f != NULL);
+      memset(f, 0x00, sizeof(field_t));
+      f->type = type_gettype(decl, basetype); // Set field type
       token_t *field_name = ast_getchild(decl, 2);
-      if(field_name == T_IDENT) { // There is a name for the field
-
-      }
+      if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
+      token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
+      if(bf != NULL) {
+        assert(bf->type == T_BITFIELD);
+        assert(ast_getchild(bf, 0) != NULL);
+        if((f->bitfield = eval_const_int(ast_getchild(bf, 0))) < 0) 
+          error_row_col_exit(bf->offset, "Bit field length must be greater than zero\n");
+      } else { f->bitfield = -1; }
     }
     entry = entry->sibling;
   }
