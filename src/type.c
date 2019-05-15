@@ -116,6 +116,18 @@ comp_t *type_getcomp(token_t *token) {
   while(entry) {
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
+    assert(basetype->type == T_BASETYPE);
+    token_t *field = ast_getchild(entry, 1);
+    while(field) {
+      assert(field->type == T_COMP_FIELD);
+      token_t *decl = ast_getchild(field, 0);
+      assert(decl->type == T_DECL);
+      type_t *type = type_gettype(decl, basetype);
+      token_t *field_name = ast_getchild(decl, 2);
+      if(field_name == T_IDENT) { // There is a name for the field
+
+      }
+    }
     entry = entry->sibling;
   }
   return comp;
