@@ -277,6 +277,53 @@ void test_getimm() {
   return;
 }
 
+void test_type_getcomp() {
+  printf("=== Test type_getcomp ===\n");
+  parse_exp_cxt_t *cxt;
+  token_t *token;
+  char test1[] = "struct a { int b; long c; volatile double d; }";
+  cxt = parse_exp_init(test1);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
+  cxt = parse_exp_init(test2);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n");
+  char test3[] = "struct {}";
+  cxt = parse_exp_init(test3);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n"); // Tests nesting of struct and union
+  char test4[] = "struct { struct{ int a; }; union { long b; }; }";
+  cxt = parse_exp_init(test4);
+  token = parse_comp(cxt);
+  assert(token_get_next(cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
+  char test5[] = "struct name;";
+  cxt = parse_exp_init(test5);
+  token = parse_comp(cxt);
+  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
+  ast_print(token, 0);
+  parse_exp_free(cxt);
+  ast_free(token);
+  printf("Pass!\n");
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_scope_init();
@@ -286,6 +333,7 @@ int main() {
   test_vector();
   test_getimm();
   test_eval_const_int();
+  test_type_getcomp();
   return 0;
 }
   

@@ -47,7 +47,7 @@ typedef enum {
 struct comp_t_struct;
 typedef struct {
   typeid_t typeid;        // Index in the list
-  decl_prop_t basetype;   // Uses token decl_prop constants
+  decl_prop_t decl_prop;   // Uses token decl_prop constants
   struct comp_t_struct *comp; // If base type indicates s/u/e this is a pointer to it
   token_t *decl;          // If it is a non-composite type, just use decl; The type_t node owns memory
   size_t size;

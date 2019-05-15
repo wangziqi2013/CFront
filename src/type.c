@@ -99,7 +99,22 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child NULL)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(token_t *decl, token_t *basetype) {
-  return NULL;
+  type_t *type = (type_t *)malloc(sizeof(type_t));
+  SYSEXPECT(type != NULL);
+  memset(type, 0x00, sizeof(type_t));
+  type->decl_prop = basetype->decl_prop;
+  decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
+  if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
+    token_t *su = ast_getchild(basetype, 0);
+    assert(su && (su->type == T_STRUCT || su->type == T_UNION));
+    type->comp = type_getcomp(su);
+  } else if(basetype_type == BASETYPE_ENUM) {
+
+  } else {
+
+  }
+
+  return type;
 }
 
 // Input must be T_STRUCT or T_UNION; Caller must free memory
