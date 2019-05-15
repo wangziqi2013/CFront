@@ -48,10 +48,8 @@ struct comp_t_struct;
 typedef struct {
   typeid_t typeid;        // Index in the list
   decl_prop_t basetype;   // Uses token decl_prop constants
-  union {
-    token_t *decl;        // If it is a non-composite type, just use decl; The type_t node owns memory
-    struct comp_t_struct *comp;  // If composite type, use comp pointer
-  };
+  struct comp_t_struct *comp; // If base type indicates s/u/e this is a pointer to it
+  token_t *decl;          // If it is a non-composite type, just use decl; The type_t node owns memory
   size_t size;
 } type_t;
 
@@ -81,18 +79,19 @@ typedef struct value_t_struct {
 
 // Represents composite type
 typedef struct comp_t_struct {
+  char *name;        // NULL if no name
   list_t *fields;    // A list of type * representing the type of the field
   bintree_t *index;  // These two provides both fast named access, and ordered storage
-  char *name;        // NULL if no name
+  size_t size;
 } comp_t;
 
 // Single field within the composite type
 typedef struct {
-  char *name;       // NULL if anonymous field
-  int bits;         // Set if bit field; -1 if not
-  int offset;       // Offset within the composite structure
-  int length;       // Number of bytes occupied by the actual storage including padding
-  type_t *type;     // Type of this field
+  char *name;          // NULL if anonymous field
+  int bits;            // Set if bit field; -1 if not
+  int offset;          // Offset within the composite structure
+  size_t size;         // Number of bytes occupied by the actual storage including padding
+  type_t *type;        // Type of this field (actual size in this pointer)
 } comp_field_t;
 
 int type_intsizes[11];
@@ -114,5 +113,7 @@ void *scope_top_find(type_cxt_t *cxt, int type, void *key);
 void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
 
-void type_serialize_decl(token_t *decl, str_t *str);
+// Returns a type * object given a T_DECL node and optionally base type
+type_t *type_gettype(token_t *decl, token_t *basetype); 
+comp_t *type_getcomp(token_t *comp);
 #endif
