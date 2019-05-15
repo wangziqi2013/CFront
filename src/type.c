@@ -14,15 +14,15 @@ int type_intsizes[11] = {
 };
 
 type_t builtin_types[] = {
-  {TYPE_INDEX_VOID, BASETYPE_VOID, {NULL}, -1},
-  {TYPE_INDEX_CHAR, BASETYPE_CHAR, {NULL}, 1},
-  {TYPE_INDEX_SHORT, BASETYPE_SHORT, {NULL},  2},
-  {TYPE_INDEX_INT, BASETYPE_INT, {NULL}, 4},
-  {TYPE_INDEX_LONG, BASETYPE_LONG, {NULL},  8},
-  {TYPE_INDEX_UCHAR, BASETYPE_UCHAR, {NULL},  1},
-  {TYPE_INDEX_USHORT, BASETYPE_USHORT, {NULL},  2},
-  {TYPE_INDEX_UINT, BASETYPE_UINT, {NULL}, 4},
-  {TYPE_INDEX_ULONG, BASETYPE_ULONG, {NULL},  8},
+  {TYPE_INDEX_VOID, BASETYPE_VOID, NULL, NULL, -1},
+  {TYPE_INDEX_CHAR, BASETYPE_CHAR, NULL, NULL, 1},
+  {TYPE_INDEX_SHORT, BASETYPE_SHORT, NULL, NULL, 2},
+  {TYPE_INDEX_INT, BASETYPE_INT, NULL, NULL, 4},
+  {TYPE_INDEX_LONG, BASETYPE_LONG, NULL, NULL, 8},
+  {TYPE_INDEX_UCHAR, BASETYPE_UCHAR, NULL, NULL, 1},
+  {TYPE_INDEX_USHORT, BASETYPE_USHORT, NULL, NULL, 2},
+  {TYPE_INDEX_UINT, BASETYPE_UINT, NULL, NULL, 4},
+  {TYPE_INDEX_ULONG, BASETYPE_ULONG, NULL, NULL, 8},
 };
 
 // Given a decl_prop, return the integer size. The decl prop must be an integer type
@@ -96,39 +96,14 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
   return NULL;
 }
 
-// Serializes a decl recursively
-void type_serialize_decl(token_t *decl, str_t *str) {
-  switch(decl->type) {
-    case EXP_DEREF:
-    case EXP_ARRAY_SUB:
-    case EXP_FUNC_CALL:
-    default: break;
-  }
-  return;
-}
-
-// Serializes a decl recursively
-void type_serialize_base(token_t *decl, str_t *str) {
-  char ch;
-  switch(decl->type) {
-    default: break;
-  }
-  return;
-}
-
-// Serialize the type specified by base type and decl; If decl has a basetype child we ignore basetype
-char *type_serialize(token_t *basetype, token_t *decl) {
-  if((decl = ast_getchild(decl, 0))->type == T_BASETYPE) basetype = decl; decl = decl->sibling; // Adjust both accordingly
-  assert(basetype->type == T_BASETYPE && decl->type != T_BASETYPE);
-  str_t *str = str_init();
-  type_serialize_decl(decl, str);     // Output decl into str
-  type_serialize_base(basetype, str); // Output base type into str
-  char *ret = str_copy(str);
-  str_free(str);
-  return ret; 
-}
-
-// Make a copy of the type AST in standard format
-token_t *clone_type_ast(token_t *basetype, token_t *decl, int bflen) {
+// If the decl node does not have a T_BASETYPE node as first child (i.e. first child NULL)
+// then the additional basetype node may provide the base type; Caller must free memory
+type_t *type_gettype(token_t *decl, token_t *basetype) {
   return NULL;
+}
+
+// Input must be T_STRUCT or T_UNION; Caller must free memory
+comp_t *type_getcomp(token_t *comp) {
+  assert(comp->type == T_STRUCT || comp->type == T_UNION);
+  
 }
