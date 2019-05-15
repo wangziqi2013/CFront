@@ -98,18 +98,21 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
 
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child NULL)
 // then the additional basetype node may provide the base type; Caller must free memory
-type_t *type_gettype(token_t *decl, token_t *basetype) {
+type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
   type->decl_prop = basetype->decl_prop;
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
+  // TODO: PROCESS THE CASE THAT WE ONLY SEE A NAME OF THE STRUCT
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     type->comp = type_getcomp(su);
   } else if(basetype_type == BASETYPE_ENUM) {
-
+    // TODO: ADD PROCESSING FOR ENUM
+  } else if(basetype_type == BASETYPE_UDEF) {
+    // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
   } else {
 
   }
@@ -117,17 +120,34 @@ type_t *type_gettype(token_t *decl, token_t *basetype) {
   return type;
 }
 
-// Input must be T_STRUCT or T_UNION; Caller must free memory
-comp_t *type_getcomp(token_t *token) {
+// Input must be T_STRUCT or T_UNION
+// This function may add new symbol to the current scope
+// TODO: PROCESS FORWARD DECL
+comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
   assert(token->type == T_STRUCT || token->type == T_UNION);
+  token_t *name = ast_getchild(token, 0);
+  token_t *entry = ast_getchild(token, 1);
+  assert(name && entry); // Both must be there
+  int has_name = name->type != T_;
+  int has_body = entry->type != T_;
+  assert(has_name || has_body); 
+  int domain = (token->type == T_STRUCT) ? SCOPE_STRUCT : SCOPE_UNION;
+  if(has_name && !has_body) { // There is no body but a name - must be referencing an already defined struct or union
+    comp_t *comp = (comp_t *)scope_search(cxt, domain, name->str);
+    if(comp == HT_NOTFOUND) error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str);
+    return comp;
+  }
   comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
   SYSEXPECT(comp != NULL);
   memset(comp, 0x00, sizeof(comp_t));
+  if(has_name && has_body) { // Add the comp to the current scope if there is both name and body
+    if(scope_top_find(cxt, domain, name->str) != HT_NOTFOUND) // Check name conflict
+      error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
+    scope_top_insert(cxt, domain, name->str, comp);
+  }
   comp->fields = list_str_init();
   comp->index = bt_str_init();
-  token_t *name = ast_getchild(token, 0);
   if(name->type == T_IDENT) comp->name = name->str;
-  token_t *entry = ast_getchild(token, 1);
   int curr_offset = 0;
   while(entry) {
     assert(entry->type == T_COMP_DECL);
