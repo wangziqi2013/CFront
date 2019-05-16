@@ -14,13 +14,15 @@ jmp_buf env;
 void error_init(const char *s) { begin = s; inited = 1; }
 void error_free() { inited = 0; }
 void error_testmode(int mode) { testmode = mode; }
-void error_exit_or_jump() { 
+void error_exit_or_jump(int need_exit) { 
   if(testmode) { fprintf(stderr, "*** Errors are redirected ***\n"); longjmp(env, 1); }
+  if(need_exit) { // If this is warning then we do not exit
 #ifndef NDEBUG
   else { assert(0); }
 #else
-  else { exit(EXIT_ERROR); }
+  else { exit(ERROR_CODE_EXIT); }
 #endif
+  }
 }
 
 // Returns the row and column of a given pointer
@@ -45,4 +47,4 @@ void error_get_row_col(const char *s, int *row, int *col) {
   return;
 }
 
-void syserror(const char *prompt) { syserror(prompt); exit(EXIT_ERROR); }
+void syserror(const char *prompt) { syserror(prompt); exit(ERROR_CODE_EXIT); }
