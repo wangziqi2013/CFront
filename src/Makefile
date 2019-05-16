@@ -22,8 +22,8 @@ mem-test: all
 	valgrind --leak-check=full ./bin/test_parse
 	valgrind --leak-check=full ./bin/test_type
 
-./bin/test_parse: test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o
-	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o -o ./bin/test_parse $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+./bin/test_parse: test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o
+	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o -o ./bin/test_parse $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 ./bin/test_lex: test_lex.o stack.o token.o error.o ast.o hashtable.o
 	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
