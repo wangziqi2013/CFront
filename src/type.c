@@ -99,16 +99,17 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child NULL)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
+  assert(decl->type == T_DECL);
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
   type->decl_prop = basetype->decl_prop;
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
-  // TODO: PROCESS THE CASE THAT WE ONLY SEE A NAME OF THE STRUCT
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
-    token_t *su = ast_getchild(basetype, 0);
+    token_t *su = ast_getchild(basetype, 0); // May access the symbol table
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     type->comp = type_getcomp(cxt, su);
+    type->decl = ast_getchild(decl, 0); // Can be NULL which means there is no derivation (ptr, array, func)
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
@@ -145,7 +146,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
   if(has_name && has_body) { // Add the comp to the current scope if there is both name and body
     if(scope_top_find(cxt, domain, name->str) != HT_NOTFOUND) // Check name conflict
       error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
-    scope_top_insert(cxt, domain, name->str, comp);
+    scope_top_insert(cxt, domain, name->str, comp); // Insert here before processing fields s.t. we can include pointer to itself
   }
   comp->fields = list_str_init();
   comp->index = bt_str_init();
@@ -174,13 +175,15 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
           error_row_col_exit(bf->offset, "Bit field length must be greater than zero\n");
       } else { f->bitfield = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
-      f->size = f->offset = curr_offset; // Set size and offset (currently no alignment)
+      f->offset = curr_offset; // Set size and offset (currently no alignment)
+      f->size = f->type->size;
       curr_offset += f->type->size;
       if(f->name) bt_insert(comp->index, f->name, f); // Only insert if there is a name
       list_insert(comp->fields, f->name, f); // Always insert into the ordered list
     }
     entry = entry->sibling;
   }
+  comp->size = curr_offset;
   return comp;
 }
 
