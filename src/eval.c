@@ -3,12 +3,34 @@
 #include "eval.h"
 #include "type.h"
 
-char eval_const_char_getcharimm()
+int eval_const_atoi(char *s, int base, token_t *token) {
+  int ret = 0;
+  do { 
+    int digit = (*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0');
+    if(digit >= base) error_row_col_exit(token->offset, "Invalid digit \'%c\' for base %d\n", *s, base);
+    ret = ret * base + digit;
+  } while(*++s);
+} 
 
-int eval_const_int_getimm(token_t *token) {
+char eval_const_char_token(token_t *token) {
+  assert(token->type == T_CHAR_CONST && BASETYPE_GET(token->decl_prop) == BASETYPE_CHAR);
+  int len = strlen(token->str) - 1; // Remaining characters
+  if(token->str[0] != '\\') {
+    if(len != 0) error_row_col_exit(token->offset, "Char literal \'%s\' contains more than one character\n", token->str);
+    return token->str[0]; // Not an escaped character, just return
+  }
+  if(len == 0) error_row_col_exit(token->offset, "Empty escape sequence: \'%s\'\n", token->str);
+  switch(token->str[1]) {
+    case 'x': 
+  }
+  if(token->str[1] == 'x') { // \xhh represents a hex number
+
+  }
+}
+
+int eval_const_int_token(token_t *token) {
   char *s = token->str;
   int base;
-  
   switch(token->type) {
     case T_HEX_INT_CONST: base = 16; break;
     case T_OCT_INT_CONST: base = 8; break;
@@ -22,10 +44,7 @@ int eval_const_int_getimm(token_t *token) {
       "Integer constant will be implicitly converted to \"int\" type in this context (was \"%s\")\n", 
       token_decl_print(token->decl_prop));
   if(token->type == T_CHAR_CONST) return (int)token->str[0]; // Char const is returned as integer with sign expansion
-  int ret = 0;
-  do { ret = ret * base + \
-             ((*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0'));
-  } while(*++s);
+  
   return ret;
 }
 
@@ -73,7 +92,7 @@ int eval_const_int(token_t *token) {
     case T_HEX_INT_CONST:
     case T_OCT_INT_CONST:
     case T_CHAR_CONST:
-    case T_DEC_INT_CONST: ret = eval_const_int_getimm(token); break;
+    case T_DEC_INT_CONST: ret = eval_const_int_token(token); break;
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 
