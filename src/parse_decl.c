@@ -168,7 +168,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
           // Evaluate the constant integer expression and store array size in token->array_size (-1 if none specified)
           if(index->type != T_) {
             token->array_size = eval_const_int(index);
-            if(token->array_size < 0) error_row_col_exit(index->offset, "Array size in declaration must be non-negative\n");
+            if(token->array_size < 0) error_row_col_exit(token->offset, "Array size in declaration must be non-negative\n");
           } else { token->array_size = -1; }
           break;
         }
