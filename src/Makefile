@@ -7,7 +7,7 @@ TESTFLAGS=-I$(PWD)
 LDFLAGS=
 
 ifeq ($(OPT), 1)
-	CFLAGS=-O3
+	CFLAGS=-O3 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 endif
 
 all: ./bin/test_lex ./bin/test_parse ./bin/test_type
