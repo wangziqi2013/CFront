@@ -119,7 +119,7 @@ typedef enum {
 typedef uint32_t decl_prop_t;
 #define DECL_NULL          0x00000000
 #define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
-// Type specifier bit mask (bit 4, 5, 6, 7)
+// Type specifier bit mask (bit 4, 5, 6, 7), at the token level
 #define DECL_TYPE_MASK     0x000000F0
 #define DECL_CHAR     0x00000010
 #define DECL_SHORT    0x00000020
@@ -147,7 +147,7 @@ typedef uint32_t decl_prop_t;
 #define DECL_CONST_MASK    0x00002000
 // All together, if any of these bits are present, then it is a declaration keyword
 #define DECL_MASK (DECL_TYPE_MASK | DECL_STGCLS_MASK | DECL_QUAL_MASK)
-// The following defines complete set of supported types (bit 16 - 23)
+// The following defines complete set of supported types (bit 16 - 23), at AST level
 #define BASETYPE_MASK       0x00FF0000
 #define BASETYPE_NONE       0x00000000
 #define BASETYPE_CHAR       0X00010000
