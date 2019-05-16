@@ -11,15 +11,18 @@
 extern jmp_buf env;
 
 #define ERROR_CODE_EXIT 1
-#define error_exit(fmt, ...) do { fprintf(stderr, "Error: " fmt, ##__VA_ARGS__); error_exit_or_jump(); } while(0);
+// Input to function error_exit_or_jump()
+#define ERROR_ACTION_CONT 0
+#define ERROR_ACTION_EXIT 1
+#define error_exit(fmt, ...) do { fprintf(stderr, "Error: " fmt, ##__VA_ARGS__); error_exit_or_jump(ERROR_ACTION_EXIT); } while(0);
 #define error_row_col_exit(s, fmt, ...) do { \
                                           int row, col; error_get_row_col(s, &row, &col); \
                                           fprintf(stderr, "Error (row %d col %d): " fmt, row, col, ##__VA_ARGS__); \
-                                          error_exit_or_jump(1); } while(0);
+                                          error_exit_or_jump(ERROR_ACTION_EXIT); } while(0);
 #define warn_row_col_exit(s, fmt, ...) do { \
                                           int row, col; error_get_row_col(s, &row, &col); \
                                           fprintf(stderr, "Warning (row %d col %d): " fmt, row, col, ##__VA_ARGS__); \
-                                          error_exit_or_jump(0); } while(0);
+                                          error_exit_or_jump(ERROR_ACTION_CONT); } while(0);
 // Usage: if(error_trycatch()) { ...code goes here } else { ... error happens } ... error did not happen
 #define error_trycatch() (setjmp(env) == ERROR_FIRSTTIME)
 #define ERROR_FIRSTTIME 0

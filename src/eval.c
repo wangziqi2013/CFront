@@ -6,9 +6,10 @@
 int eval_const_int_getintimm(token_t *token) {
   char *s = token->str;
   int base;
-  // We only support evaluating integer type (i.e. no U/L modifiers after the literal)
+  // Throw warning if literal type is not int (i.e. no U/L modifiers after the literal)
   if(BASETYPE_GET(token->decl_prop) != BASETYPE_INT) 
-    error_row_col_exit(token->offset, "Integer constant must be of \"int\" type in this context\n");
+    warn_row_col_exit(token->offset, 
+      "Integer constant suggested be of \"int\" type in this context (saw %s)\n", token_decl_print(token->decl_prop));
   switch(token->type) {
     case T_HEX_INT_CONST: base = 16; break;
     case T_OCT_INT_CONST: base = 8; break;

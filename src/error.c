@@ -15,14 +15,12 @@ void error_init(const char *s) { begin = s; inited = 1; }
 void error_free() { inited = 0; }
 void error_testmode(int mode) { testmode = mode; }
 void error_exit_or_jump(int need_exit) { 
-  if(testmode) { fprintf(stderr, "*** Errors are redirected ***\n"); longjmp(env, 1); }
-  if(need_exit) { // If this is warning then we do not exit
+  if(testmode) { fprintf(stderr, "*** %s are redirected ***\n", need_exit ? "Errors" : "Warnings"); longjmp(env, 1); }
 #ifndef NDEBUG
-  else { assert(0); }
+  else if(need_exit) { assert(0); }
 #else
-  else { exit(ERROR_CODE_EXIT); }
+  else if(need_exit) { exit(ERROR_CODE_EXIT); }
 #endif
-  }
 }
 
 // Returns the row and column of a given pointer
