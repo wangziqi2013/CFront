@@ -28,7 +28,7 @@ char eval_const_char_token(token_t *token) {
   }
   if(len == 1) error_row_col_exit(token->offset, "Empty escape sequence\n");
   char escaped = token->str[1];
-  if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[2], 8, token, 3); // 3 digits oct
+  if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[1], 8, token, 3); // 3 digits oct
   else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
   if(len != 2) error_row_col_exit(token->offset, "Multi-charracter unknown escape sequence: \"%s\"\n", token->str);
   switch(escaped) {

@@ -270,9 +270,40 @@ void test_eval_const_int() {
   printf("Pass!\n");
 }
 
-void test_getimm() {
-  printf("=== Test eval_get[type]imm() ===\n");
+void test_eval_const_token() {
+  printf("=== Test eval_const_(type)_token() ===\n");
+  parse_exp_cxt_t *cxt;
+  error_testmode(1);
+  int err;  
 
+  err = 0;
+  cxt = parse_exp_init("  \'\\xabc\' ");
+  if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  err = 0;
+  cxt = parse_exp_init("  \'\\5679\' ");
+  if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  
+  err = 0;
+  cxt = parse_exp_init("  \'\\5672\' ");
+  if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  err = 0;
+  cxt = parse_exp_init("  \'\\\' ");
+  if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
   printf("Pass!\n");
   return;
 }
@@ -331,9 +362,9 @@ int main() {
   test_list();
   test_str();
   test_vector();
-  test_getimm();
+  test_eval_const_token();
   test_eval_const_int();
-  test_type_getcomp();
+  //test_type_getcomp();
   return 0;
 }
   
