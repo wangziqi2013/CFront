@@ -737,9 +737,14 @@ char *token_get_str(char *s, token_t *token, char closing) {
   token->type = closing == '\'' ? T_CHAR_CONST : T_STR_CONST;
   char *end = s;
   do {
-    while(*end != '\0' && *end != closing) end++;
-    if(*end == '\0') error_exit("%s literal not closed\n", closing == '\"' ? "String" : "Char");
-  } while(end[-1] == '\\' && end++); // If the first is true then we increment the end ptr
+    while(*end != '\0' && *end != closing && *end != '\\') end++;
+    if(*end == '\0') error_row_col_exit(s, "%s literal not closed\n", closing == '\"' ? "String" : "Char");
+    if(*end == '\\') {
+      if(end[1] == closing || end[1] == '\\') end += 2; // Escaped closing character and '\' is skipped 
+      else end++;
+    }
+    if(*end == closing) break;
+  } while(1);
   if(closing == '\'') token->decl_prop = BASETYPE_CHAR; // If the closing is char then add type
   token_copy_literal(token, s, end);
   return end + 1;
