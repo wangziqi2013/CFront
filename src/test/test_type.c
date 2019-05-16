@@ -312,6 +312,13 @@ void test_eval_const_token_errors() {
   assert(err == 1);
   parse_exp_free(cxt);
 
+  err = 0;
+  cxt = parse_exp_init("  \'\' ");
+  if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
   printf("Pass!\n");
   return;
 }
