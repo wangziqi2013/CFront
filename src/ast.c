@@ -52,9 +52,12 @@ token_t *ast_remove(token_t *token) {
 void ast_print(token_t *token, int depth) {
   for(int i = 0;i < depth * 2;i++) if(i % 2 == 0) printf("|"); else printf(" ");
   const char *symstr = token_symstr(token->type);
-  printf("%04d:%s %s\n", token->type, token_typestr(token->type), 
+  char array_size[16];
+  if(token->type == EXP_ARRAY_SUB) sprintf(array_size, "%d", token->array_size);
+  printf("%04d:%s %s%s\n", token->type, token_typestr(token->type), 
          token->type == T_BASETYPE ? token_decl_print(token->decl_prop) : 
-         (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr));
+         (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr),
+         token->type == EXP_ARRAY_SUB ? array_size : "");
   for(token_t *child = token->child;child != NULL; child = child->sibling) ast_print(child, depth + 1);
   return;
 }
