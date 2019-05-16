@@ -3,28 +3,46 @@
 #include "eval.h"
 #include "type.h"
 
-int eval_const_atoi(char *s, int base, token_t *token) {
+// max_char is the maximum number of characters allowed in the literal; 0 means don't care
+int eval_const_atoi(char *s, int base, token_t *token, int max_char) {
   int ret = 0;
+  int chars = 0;
   do { 
     int digit = (*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0');
     if(digit >= base) error_row_col_exit(token->offset, "Invalid digit \'%c\' for base %d\n", *s, base);
     ret = ret * base + digit;
+    if(max_char && ++chars > max_char) error_row_col_exit(token->offset, "Maximum of %d characters are allowed\n", max_char);
   } while(*++s);
+  if(chars == 0) error_row_col_exit(token->offset, "Empty integer literal sequence\n"); // Must have at least one
+  return ret;
 } 
 
 char eval_const_char_token(token_t *token) {
   assert(token->type == T_CHAR_CONST && BASETYPE_GET(token->decl_prop) == BASETYPE_CHAR);
-  int len = strlen(token->str) - 1; // Remaining characters
-  if(token->str[0] != '\\') {
-    if(len != 0) error_row_col_exit(token->offset, "Char literal \'%s\' contains more than one character\n", token->str);
-    return token->str[0]; // Not an escaped character, just return
+  int len = strlen(token->str); // Remaining characters
+  if(len == 0) error_row_col_exit(token->offset, "Empty char literal\n");
+  if(token->str[0] != '\\') { // Not an escaped character, just return
+    if(len != 1) error_row_col_exit(token->offset, "Char literal \'%s\' contains more than one character\n", token->str);
+    return token->str[0];
   }
-  if(len == 0) error_row_col_exit(token->offset, "Empty escape sequence: \'%s\'\n", token->str);
-  switch(token->str[1]) {
-    case 'x': 
-  }
-  if(token->str[1] == 'x') { // \xhh represents a hex number
-
+  if(len == 1) error_row_col_exit(token->offset, "Empty escape sequence\n");
+  char escaped = token->str[1];
+  if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[2], 8, token, 3); // 3 digits oct
+  else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
+  else if(len != 2) error_row_col_exit("Multi-charracter unknown escape sequence: \"%s\"\n", token->str);
+  switch(escaped) {
+    case 'n': return '\n'; break;
+    case '0': return '\0'; break;
+    case 'r': return '\r'; break;
+    case '\\': return '\\'; break;
+    case '\'': return '\''; break;
+    case '\"': return '\"'; break;
+    case 'a': return '\a'; break;
+    case 'b': return '\b'; break;
+    case 'f': return '\f'; break;
+    case 't': return '\t'; break;
+    case 'v': return '\v'; break;
+    default: error_row_col_exit(token->offset, "Unknown escaped character: %c\n", escaped); break;
   }
 }
 
@@ -43,9 +61,7 @@ int eval_const_int_token(token_t *token) {
     warn_row_col_exit(token->offset, 
       "Integer constant will be implicitly converted to \"int\" type in this context (was \"%s\")\n", 
       token_decl_print(token->decl_prop));
-  if(token->type == T_CHAR_CONST) return (int)token->str[0]; // Char const is returned as integer with sign expansion
-  
-  return ret;
+  return token->type == T_CHAR_CONST ? (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, 0);
 }
 
 int eval_const_int(token_t *token) {
