@@ -3,19 +3,25 @@
 #include "eval.h"
 #include "type.h"
 
-int eval_const_int_getintimm(token_t *token) {
+char eval_const_char_getcharimm()
+
+int eval_const_int_getimm(token_t *token) {
   char *s = token->str;
   int base;
-  // Throw warning if literal type is not int (i.e. no U/L modifiers after the literal)
-  if(BASETYPE_GET(token->decl_prop) != BASETYPE_INT) 
-    warn_row_col_exit(token->offset, 
-      "Integer constant suggested be of \"int\" type in this context (saw %s)\n", token_decl_print(token->decl_prop));
+  
   switch(token->type) {
     case T_HEX_INT_CONST: base = 16; break;
     case T_OCT_INT_CONST: base = 8; break;
+    case T_CHAR_CONST: // Fall through
     case T_DEC_INT_CONST: base = 10; break;
-    default: assert(0);
+    default: error_row_col_exit(token->offset, "Must be integer constant type in this context\n"); break;
   }
+  // Throw warning if literal type is not int (i.e. no U/L modifiers after the literal)
+  if(BASETYPE_GET(token->decl_prop) != BASETYPE_INT) 
+    warn_row_col_exit(token->offset, 
+      "Integer constant will be implicitly converted to \"int\" type in this context (was \"%s\")\n", 
+      token_decl_print(token->decl_prop));
+  if(token->type == T_CHAR_CONST) return (int)token->str[0]; // Char const is returned as integer with sign expansion
   int ret = 0;
   do { ret = ret * base + \
              ((*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0'));
@@ -66,7 +72,8 @@ int eval_const_int(token_t *token) {
     // Immediate values (integer, char expanded into integers)
     case T_HEX_INT_CONST:
     case T_OCT_INT_CONST:
-    case T_DEC_INT_CONST: ret = eval_const_int_getintimm(token); break;
+    case T_CHAR_CONST:
+    case T_DEC_INT_CONST: ret = eval_const_int_getimm(token); break;
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 
