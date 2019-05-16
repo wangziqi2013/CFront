@@ -1,6 +1,7 @@
 
 #include "parse_decl.h"
 #include "parse_comp.h"
+#include "eval.h"
 
 parse_decl_cxt_t *parse_decl_init(char *input) { return parse_exp_init(input); }
 void parse_decl_free(parse_decl_cxt_t *cxt) { parse_exp_free(cxt); }
@@ -129,7 +130,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
       // Two cases: (1) If the parent of placeholder node is T_DECL then there is no expression, in which 
       // case we retain the empty node to indicate no expression; (2) Otherwise there is an expression
       // and we just remove the empty node (the exp has no concrete operand at leaf level) and free it
-      if(placeholder->parent->type != T_DECL) token_free(ast_remove(placeholder)); 
+      //if(placeholder->parent->type != T_DECL) token_free(ast_remove(placeholder)); 
       return decl;
     }
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers
@@ -164,6 +165,11 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
           parse_exp_reduce(cxt, -1, 1); // This reduces array sub
           if(!token_consume_type(cxt->token_cxt, T_RSPAREN)) 
             error_row_col_exit(token->offset, "Array declaration expects \']\'\n");
+          // Evaluate the constant integer expression here and store array size as integer const in token->array_size
+          if(index->type != T_) {
+            token->array_size = eval_const_int(index);
+            if(token->array_size < 0) error_row_col_exit(index->offset, "Array size in declaration must be non-negative\n");
+          } else { token->array_size = -1; }
           break;
         }
         case EXP_FUNC_CALL: {
