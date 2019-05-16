@@ -256,7 +256,7 @@ void test_parse_decl() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "void [10] "; // Allow unnamed declaration here
+  char test2[] = "void ['A' + 'b'] "; // Allow unnamed declaration here
   cxt = parse_exp_init(test2);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
@@ -785,6 +785,22 @@ void test_anomaly() {
   char test8[] = " struct str { int x : (12 + 8) / 30 - 1; }"; // Negative bit field size
   err = 0;
   cxt = parse_exp_init(test8);
+  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  char test9[] = " struct str { int x : (12UL + 8LL) / 30 - 1; }"; // Negative bit field size
+  err = 0;
+  cxt = parse_exp_init(test9);
+  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  char test10[] = " char array['A' + 'b']"; // char constant as array size
+  err = 0;
+  cxt = parse_exp_init(test10);
   if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   else err = 1;
   assert(err == 1);
