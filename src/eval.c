@@ -11,7 +11,8 @@ int eval_const_atoi(char *s, int base, token_t *token, int max_char) {
     int digit = (*s >= 'A' && *s <= 'F') ? (*s - 'A' + 10) : ((*s >= 'a' && *s <= 'f') ? (*s - 'a' + 10) : *s - '0');
     if(digit >= base) error_row_col_exit(token->offset, "Invalid digit \'%c\' for base %d\n", *s, base);
     ret = ret * base + digit;
-    if(max_char && ++chars > max_char) error_row_col_exit(token->offset, "Maximum of %d characters are allowed\n", max_char);
+    chars++;
+    if(max_char && chars > max_char) error_row_col_exit(token->offset, "Maximum of %d characters are allowed\n", max_char);
   } while(*++s);
   if(chars == 0) error_row_col_exit(token->offset, "Empty integer literal sequence\n"); // Must have at least one
   return ret;
