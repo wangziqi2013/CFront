@@ -766,6 +766,30 @@ void test_anomaly() {
   assert(err == 1);
   parse_exp_free(cxt);
 
+  char test6[] = "  struct  ;"; // Struct with no name and no body (add ; to avoid unexpected EOF on lookahead)
+  err = 0;
+  cxt = parse_exp_init(test6);
+  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  char test7[] = " volatile const int array[(12 + 8) / 30 - 1] "; // Negative array size
+  err = 0;
+  cxt = parse_exp_init(test7);
+  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  char test8[] = " struct str { int x : (12 + 8) / 30 - 1; }"; // Negative bit field size
+  err = 0;
+  cxt = parse_exp_init(test8);
+  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
   error_testmode(0);
   printf("Pass!\n");
   return;
@@ -780,9 +804,6 @@ int main() {
   test_token_lookahead();
   final_test();   // Put it here to avoid long output
   test_simple_exp_parse();
-  test_parse_decl();
-  test_parse_struct_union();
-  test_parse_enum();
   test_parse_stmt();
   test_parse_comp_stmt();
   test_parse_select_stmt();
@@ -790,6 +811,9 @@ int main() {
   test_vararg_func();
   test_parse();
   test_udef();
+  test_parse_decl();
+  test_parse_struct_union();
+  test_parse_enum();
   test_anomaly();
   return 0;
 }
