@@ -248,7 +248,7 @@ void test_parse_decl() {
   printf("=== Test parse_decl ===\n");
   parse_exp_cxt_t *cxt;
   token_t *token;
-  char test1[] = "void const * const ( *const named_decl[16]) (void a, int *[])";
+  char test1[] = "void const * const ( *const named_decl[16][32]) (void a, int *[])";
   cxt = parse_exp_init(test1);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
