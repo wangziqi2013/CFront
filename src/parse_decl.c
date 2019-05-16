@@ -165,7 +165,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
           parse_exp_reduce(cxt, -1, 1); // This reduces array sub
           if(!token_consume_type(cxt->token_cxt, T_RSPAREN)) 
             error_row_col_exit(token->offset, "Array declaration expects \']\'\n");
-          // Evaluate the constant integer expression here and store array size as integer const in token->array_size
+          // Evaluate the constant integer expression and store array size in token->array_size (-1 if none specified)
           if(index->type != T_) {
             token->array_size = eval_const_int(index);
             if(token->array_size < 0) error_row_col_exit(index->offset, "Array size in declaration must be non-negative\n");

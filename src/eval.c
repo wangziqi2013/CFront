@@ -66,7 +66,7 @@ int eval_const_int(token_t *token) {
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 
-      "Unsupported token for constant integer expression: \"%s\"", token_typestr(token->type));
+      "Unsupported token for constant integer expression: \"%s\"\n", token_typestr(token->type));
       break;
   }
   return ret;

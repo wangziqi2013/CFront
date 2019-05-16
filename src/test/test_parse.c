@@ -209,7 +209,7 @@ void test_simple_exp_parse() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "x == x + 2 && qwe > rty ? (void const volatile *const volatile*const*volatile[*zaq + qwer--])y * 6 >> 3 : *z++ += 1000";
+  char test2[] = "x == x + 2 && qwe > rty ? (void const volatile *const volatile*const*volatile[12 + 34 * 56])y * 6 >> 3 : *z++ += 1000";
   cxt = parse_exp_init(test2);
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
