@@ -11,8 +11,8 @@ char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
     char ch = *s;
     int digit;
     if(ch >= '0' && ch <= '9') digit = ch - '0';
-    else if(ch >= 'A' && ch <= 'F') digit = ch - 'A';
-    else if(ch >= 'a' && ch <= 'f') digit = ch - 'a';
+    else if(ch >= 'A' && ch <= 'F') digit = ch - 'A' + 10;
+    else if(ch >= 'a' && ch <= 'f') digit = ch - 'a' + 10;
     else break; // Invalid character for any base
     if(digit >= base) break; // Invalid character for the base
     *ret = *ret * base + digit;
@@ -23,10 +23,12 @@ char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
 // max_char is the maximum number of characters allowed in the literal; 0 means don't care
 int eval_const_atoi(char *s, int base, token_t *token, int max_char) {
   int ret = 0;
-  int chars = eval_const_atoi_maxbite(s, base, token, &ret) - s;
+  char *end;
+  int chars = (end = eval_const_atoi_maxbite(s, base, token, &ret)) - s;
   if(chars == 0) error_row_col_exit(token->offset, "Empty integer literal sequence\n");
-  else if(max_char && chars > max_char) error_row_col_exit(token->offset, "Maximum of %d characters are allowed\n", max_char);
-  else if(*s != '\0') error_row_col_exit(token->offset, "Invalid character \'%c\' in integer constant\n", *s);
+  if(max_char && chars > max_char) 
+    error_row_col_exit(token->offset, "Maximum of %d digits are allowed in integer constant \"%s\"\n", max_char, token->str);
+  if(*end != '\0') error_row_col_exit(token->offset, "Invalid character \'%c\' in integer constant \"%s\"\n", *end, token->str);
   return ret;
 } 
 
@@ -42,7 +44,7 @@ char eval_const_char_token(token_t *token) {
   char escaped = token->str[1];
   if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[1], 8, token, 3); // 3 digits oct
   else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
-  if(len != 2) error_row_col_exit(token->offset, "Multi-charracter unknown escape sequence: \"%s\"\n", token->str);
+  if(len != 2) error_row_col_exit(token->offset, "Multi-character unknown escape sequence: \"%s\"\n", token->str);
   switch(escaped) {
     case 'n': return '\n'; break;
     case '0': return '\0'; break;
