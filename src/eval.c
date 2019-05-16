@@ -29,7 +29,7 @@ char eval_const_char_token(token_t *token) {
   char escaped = token->str[1];
   if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[2], 8, token, 3); // 3 digits oct
   else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
-  else if(len != 2) error_row_col_exit("Multi-charracter unknown escape sequence: \"%s\"\n", token->str);
+  if(len != 2) error_row_col_exit(token->offset, "Multi-charracter unknown escape sequence: \"%s\"\n", token->str);
   switch(escaped) {
     case 'n': return '\n'; break;
     case '0': return '\0'; break;
@@ -44,6 +44,7 @@ char eval_const_char_token(token_t *token) {
     case 'v': return '\v'; break;
     default: error_row_col_exit(token->offset, "Unknown escaped character: %c\n", escaped); break;
   }
+  return 0;
 }
 
 int eval_const_int_token(token_t *token) {
