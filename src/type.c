@@ -170,10 +170,8 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
-        assert(ast_getchild(bf, 0) != NULL);
-        if((f->bitfield = eval_const_int(ast_getchild(bf, 0))) < 0) 
-          error_row_col_exit(bf->offset, "Bit field length must be greater than zero\n");
-      } else { f->bitfield = -1; }
+        f->bitfield = field->bitfield_size; // Could be -1 if there is no bit field
+      }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
