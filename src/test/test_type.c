@@ -270,8 +270,8 @@ void test_eval_const_int() {
   printf("Pass!\n");
 }
 
-void test_eval_const_token() {
-  printf("=== Test eval_const_(type)_token() ===\n");
+void test_eval_const_token_errors() {
+  printf("=== Test eval_const_(type)_token errors() ===\n");
   parse_exp_cxt_t *cxt;
   error_testmode(1);
   int err;  
@@ -311,6 +311,53 @@ void test_eval_const_token() {
   else err = 1;
   assert(err == 1);
   parse_exp_free(cxt);
+
+  printf("Pass!\n");
+  return;
+}
+
+void test_eval_const_token() {
+  printf("=== Test eval_const_(type)_token() ===\n");
+  token_t *token;
+  parse_exp_cxt_t *cxt;
+  char ch;
+
+  cxt = parse_exp_init(" \'\\\\\' ");
+  ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("Value %d\n", (int)ch);
+  parse_exp_free(cxt);
+  ast_free(token);
+
+  cxt = parse_exp_init(" \'\\n' ");
+  ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("Value %d\n", (int)ch);
+  parse_exp_free(cxt);
+  ast_free(token);
+
+  cxt = parse_exp_init(" \'\\xab' ");
+  ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("Value %d\n", (int)ch);
+  parse_exp_free(cxt);
+  ast_free(token);
+
+  cxt = parse_exp_init(" \'\\xb' ");
+  ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("Value %d\n", (int)ch);
+  parse_exp_free(cxt);
+  ast_free(token);
+
+  cxt = parse_exp_init(" \'\\777' ");
+  ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("Value %d\n", (int)ch);
+  parse_exp_free(cxt);
+  ast_free(token);
+
+  cxt = parse_exp_init(" \'\\76' ");
+  ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("Value %d\n", (int)ch);
+  parse_exp_free(cxt);
+  ast_free(token);
+
   printf("Pass!\n");
   return;
 }
@@ -370,6 +417,7 @@ int main() {
   test_str();
   test_vector();
   test_eval_const_token();
+  test_eval_const_token_errors(); // Memory leak
   test_eval_const_int();
   //test_type_getcomp();
   return 0;
