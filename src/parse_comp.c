@@ -1,5 +1,6 @@
 
 #include "parse_comp.h"
+#include "eval.h"
 
 parse_decl_cxt_t *parse_comp_init(char *input) { return parse_exp_init(input); }
 void parse_comp_free(parse_comp_cxt_t *cxt) { parse_exp_free(cxt); }
@@ -42,9 +43,12 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
         token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
         if(la->type == T_COLON) {
           token_consume_type(cxt->token_cxt, T_COLON);
-          ast_append_child(field, ast_append_child(token_alloc_type(T_BITFIELD), parse_exp(cxt, PARSE_EXP_NOCOMMA)));
+          token_t *bf; // Assigned next line
+          ast_append_child(field, ast_append_child(token_alloc_type(T_BITFIELD), bf = parse_exp(cxt, PARSE_EXP_NOCOMMA)));
+          field->bitfield_size = eval_const_int(bf); // Evaluate the constant expression
+          if(field->bitfield_size < 0) error_row_col_exit(bf->offset, "Bit field size in declaration must be non-negative\n");
           la = token_lookahead_notnull(cxt->token_cxt, 1);
-        }
+        } else { field->bitfield_size = -1; }
         if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
         else if(la->type == T_SEMICOLON) { token_consume_type(cxt->token_cxt, T_SEMICOLON); break; } // Finish parsing the field on ';'
         else { error_row_col_exit(la->offset, "Unexpected symbol \"%s\" in struct/union field declaration\n", 

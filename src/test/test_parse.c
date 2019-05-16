@@ -296,7 +296,7 @@ void test_parse_struct_union() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
+  char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20 + 30 * 40; long; } ";
   cxt = parse_exp_init(test2);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
