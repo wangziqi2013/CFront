@@ -299,7 +299,14 @@ void test_eval_const_token() {
   parse_exp_free(cxt);
 
   err = 0;
-  cxt = parse_exp_init("  \'\\\' ");
+  cxt = parse_exp_init("  \'\\m\' ");
+  if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  else err = 1;
+  assert(err == 1);
+  parse_exp_free(cxt);
+
+  err = 0;
+  cxt = parse_exp_init("  \'\\abc\' ");
   if(error_trycatch()) eval_const_char_token(parse_exp(cxt, PARSE_EXP_ALLOWALL));
   else err = 1;
   assert(err == 1);
