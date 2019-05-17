@@ -3,7 +3,7 @@
 #include "eval.h"
 #include "type.h"
 
-int_t ints[10] = { // Integer sign and size, using index of base type
+int_prop_t ints[10] = { // Integer sign and size, using index of base type
   {-1, -1}, // BASETYPE_NONE, 0x00
   {1, 1}, // BASETYPE_CHAR, 0x01
   {1, 2}, // BASETYPE_SHORT, 0x02
@@ -16,6 +16,13 @@ int_t ints[10] = { // Integer sign and size, using index of base type
   {1, 16}, // BASETYPE_LLONG, 0x09
   {0, 16}, // BASETYPE_ULLONG, 0x0A
 };
+
+decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2) {
+  assert(BASETYPE_GET(int1) >= BASETYPE_CHAR && BASETYPE_GET(int1) <= BASETYPE_ULLONG);
+  assert(BASETYPE_GET(int2) >= BASETYPE_CHAR && BASETYPE_GET(int2) <= BASETYPE_ULLONG);
+  int_prop_t p1 = ints[BASETYPE_INDEX(int1)], p2 = ints[BASETYPE_INDEX(int2)];
+  int_prop_t ret = {1, EVAL_MAX(p1.size, p2.size)};
+}
 
 // Take a max bite until the next char one is not legal digit
 // Return next char, result in ret variable
