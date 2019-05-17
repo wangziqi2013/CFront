@@ -71,7 +71,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
   }
 
-  token_t stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
+  token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
   int num_op = 0;
   token_t *op = ast_getchild(decl, 1);
   while(op->type != T_) {
@@ -90,8 +90,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     SYSEXPECT(parent_type != NULL);
     memset(parent_type, 0x00, sizeof(type_t));
     parent_type->next = curr_type;
-    parent_type = decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
-    if(op->type = EXP_DEREF) {
+    parent_type->decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
+    if(op->type == EXP_DEREF) {
       parent_type->decl_prop |= TYPE_OP_DEREF;
       parent_type->size = TYPE_PTR_SIZE;
     } else if(op->type == EXP_ARRAY_SUB) {
