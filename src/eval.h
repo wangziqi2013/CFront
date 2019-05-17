@@ -5,12 +5,18 @@
 #include "token.h"
 #include "ast.h"
 
+#ifndef EVAL_MAX(a, b) (a > b ? a : b)
+#ifndef EVAL_MIN(a, b) (a < b ? a : b)
+
 typedef struct {
   int sign;      // 0 means unsigned, 1 means signed
   int size;      // Number of bytes
-} int_t;
+} int_prop_t;
 
-extern int_t ints[];
+extern int_prop_t ints[];
+
+// Result type of two integers in an expression
+decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2);
 
 char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret); // Take a maximum bite and return the next to read
 int eval_const_atoi(char *s, int base, token_t *token, int max_char); // Given a string and base convert to integer
