@@ -87,15 +87,10 @@ typedef struct {
   type_t *type;        // Type of this field (actual size in this pointer)
 } field_t;
 
-int type_intsizes[11];
-
-int type_getintsize(decl_prop_t decl_prop);
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
 type_cxt_t *type_init();
 void type_free(type_cxt_t *cxt); 
-int type_cmpdecl();    // Compares a declaration of a type
-int type_cmpbase();    // Compares a definition of a type
 
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type);
 hashtable_t *scope_top(type_cxt_t *cxt, int type);

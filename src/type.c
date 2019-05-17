@@ -5,18 +5,6 @@
 #include "ast.h"
 #include "str.h"
 
-// Given a decl_prop, return the integer size. The decl prop must be an integer type
-int type_getintsize(decl_prop_t decl_prop) {
-  assert(BASETYPE_GET(decl_prop) == decl_prop); // Make sure there is no other bits set
-  assert(BASETYPE_INDEX(decl_prop) > 0 && BASETYPE_INDEX(decl_prop) < sizeof(type_intsizes) / sizeof(*type_intsizes));
-  return type_intsizes[BASETYPE_INDEX(decl_prop)];
-}
-
-// Returns a int type object, which is allocated on the heap
-type_t *type_getinttype() {
-  return NULL;
-}
-
 scope_t *scope_init(int level) {
   scope_t *scope = (scope_t *)malloc(sizeof(scope_t));
   SYSEXPECT(scope != NULL);
