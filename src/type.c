@@ -108,12 +108,21 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     token_t *su = ast_getchild(basetype, 0); // May access the symbol table
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     type->comp = type_getcomp(cxt, su);
-    // TODO: REWRITE THIS
-    //type->decl = ast_getchild(decl, 0); // Can be NULL which means there is no derivation (ptr, array, func)
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
     // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
+  }
+
+  token_t stack[TYPE_MAX_DERIVATION]; 
+  int num_op = 0;
+  token_t *op = ast_getchild(decl, 1);
+  while(op->type != T_) {
+    assert(op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB);
+    if(num_op == TYPE_MAX_DERIVATION) // Report error if the stack overflows
+      error_row_col_exit(op->offset, "Type derivation exceeds maximum allowed (%d)\n", TYPE_MAX_DERIVATION);
+    stack[num_op++] = op;
+    op = ast_getchild(op, 0); 
   }
 
   token_type_t decl_type = decl->type;

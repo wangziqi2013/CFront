@@ -10,7 +10,9 @@
 #include "eval.h"
 
 #define SCOPE_LEVEL_GLOBAL 0
-typedef uint64_t type_maxint_t;  // Maximum integer type we support
+typedef uint64_t type_maxint_t;   // Maximum integer type we support
+
+#define TYPE_MAX_DERIVATION    64 // Maximum 64 levels of type derivation (deref, array, func, etc.)
 
 enum {
  SCOPE_ENUM   = 0,
