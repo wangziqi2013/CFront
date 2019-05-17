@@ -53,7 +53,7 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
   return NULL;
 }
 
-// If the decl node does not have a T_BASETYPE node as first child (i.e. first child NULL)
+// If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   type_t *type = (type_t *)malloc(sizeof(type_t));
@@ -93,33 +93,42 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     parent_type = decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
     if(op->type = EXP_DEREF) {
       parent_type->decl_prop |= TYPE_OP_DEREF;
+      parent_type->size = TYPE_PTR_SIZE;
     } else if(op->type == EXP_ARRAY_SUB) {
       parent_type->decl_prop |= TYPE_OP_ARRAY_SUB;
       parent_type->array_size = op->array_size;
+      // If lower type is unknown size, or the array size not given then current size is also unknown
+      if(op->array_size == -1 || curr_type->size == TYPE_UNKNOWN_SIZE) parent_type->size = TYPE_UNKNOWN_SIZE;
+      else parent_type->size = curr_type->size * (size_t)op->array_size;
     } else if(op->type == EXP_FUNC_CALL) {
       parent_type->decl_prop |= TYPE_OP_FUNC_CALL;
-      arg_list = list_str_init();
+      parent_type->size = TYPE_PTR_SIZE;
+      parent_type->arg_list = list_str_init();
+      parent_type->arg_index = bt_str_init();
+      type_t *arg_type;
+      token_t *arg_decl = ast_getchild(op, 1);
+      int arg_num = 0;
+      while(arg_decl) {
+        assert(arg_decl->type == T_DECL || arg_decl->type == T_ELLIPSIS);
+        arg_num++;
+        if(arg_decl->type == T_ELLIPSIS) {
+          if(arg_decl->sibling) 
+            error_row_col_exit(op->offset, "\"...\" must be the last argument in function prototype\n")
+          parent_type->vararg = 1;
+        }
+        token_t *arg_basetype = ast_getchild(arg_decl, 0);
+        token_t *arg_exp = ast_getchild(arg_decl, 1);
+        token_t *arg_name = ast_getchild(arg_decl, 2);
+        // Detect whether the type is void, and that it is not (the first AND the last)
+        if(BASETYPE_GET(arg_basetype->decl_prop) == BASETYPE_VOID && arg_exp->type == T_ && \
+           (arg_num > 1 || arg_decl->sibling)) 
+           error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
+        arg_type = type_gettype(cxt, arg_decl, arg_basetype);
+        arg_decl = arg_decl->sibling;
+      }
     }
-
     curr_type = parent_type;
   }
-
-  token_type_t decl_type = decl->type;
-  assert(decl_type == EXP_DEREF || decl_type == EXP_FUNC_CALL || decl_type == EXP_ARRAY_SUB || decl_type == T_);
-  if(decl_type == T_) { return NULL; }
-  else if(decl_type == EXP_DEREF) { 
-    type->decl_prop |= TYPE_OP_DEREF; 
-  } else if(decl_type == EXP_ARRAY_SUB) {
-    type->decl_prop |= TYPE_OP_ARRAY_SUB;
-    type->array_size = decl->array_size;  // Value in EXP_ARRAY_SUB, -1 means not given
-  } else {
-    type->decl_prop |= TYPE_OP_FUNC_CALL;
-  }
-
-  // TODO: SET SIZE
-  // TODO: RECURSIVELY BUILD TYPE
-  // type->next = type_gettype(....)
-  // type->decl_prop = ...
 
   return type;
 }
@@ -149,8 +158,8 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
       error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
     scope_top_insert(cxt, domain, name->str, comp); // Insert here before processing fields s.t. we can include pointer to itself
   }
-  comp->fields = list_str_init();
-  comp->index = bt_str_init();
+  comp->field_list = list_str_init();
+  comp->field_index = bt_str_init();
   if(name->type == T_IDENT) comp->name = name->str;
   int curr_offset = 0;
   while(entry) {
@@ -171,14 +180,19 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
-        f->bitfield = field->bitfield_size; // Could be -1 if there is no bit field
+        f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
       }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
+      // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       curr_offset += f->type->size;
-      if(f->name) bt_insert(comp->index, f->name, f); // Only insert if there is a name
-      list_insert(comp->fields, f->name, f); // Always insert into the ordered list
+      if(f->name) { // Only insert if there is a name
+        field_t *ret = bt_insert(comp->field_index, f->name, f); // Returns prev element if key exists
+        if(ret != f) error_row_col_exit(field_name->offset, 
+            "Duplicated field name \"%s\" in composite type declaration\n", f->name);
+      }
+      list_insert(comp->field_list, f->name, f); // Always insert into the ordered list
     }
     entry = entry->sibling;
   }
@@ -187,6 +201,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
 }
 
 void type_freecomp(comp_t *comp) {
-  list_free(comp->fields);
-  bt_free(comp->index);
+  // TODO: FREE TYPE LIST ALSO
+  list_free(comp->field_list);
+  bt_free(comp->field_index);
 }
