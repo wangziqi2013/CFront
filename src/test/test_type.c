@@ -323,6 +323,19 @@ void test_eval_const_token_errors() {
   return;
 }
 
+void test_eval_int_convert() {
+  printf("=== Test eval_int_convert() ===\n");
+  decl_prop_t int1, int2, ret;
+  for(int1 = BASETYPE_CHAR;int1 <= BASETYPE_ULLONG;int1 += 0x00010000) {
+    for(int2 = BASETYPE_CHAR;int2 <= BASETYPE_ULLONG;int2 += 0x00010000) {
+      ret = eval_int_convert(int1, int2);
+      printf("%s op %s -> %s\n", token_typestr(int1), token_typestr(int2), token_typestr(ret));
+    }
+  }
+  printf("Pass!\n");
+  return;
+}
+
 void test_eval_const_token() {
   printf("=== Test eval_const_(type)_token() ===\n");
   token_t *token;
@@ -425,6 +438,7 @@ int main() {
   test_vector();
   test_eval_const_token();
   test_eval_const_token_errors(); // Memory leak
+  test_eval_int_convert();
   test_eval_const_int();
   //test_type_getcomp();
   return 0;
