@@ -17,11 +17,19 @@ int_prop_t ints[10] = { // Integer sign and size, using index of base type
   {0, 16}, // BASETYPE_ULLONG, 0x0A
 };
 
+// Return value is a mask that needs to be OR'ed onto the decl property of the destination operand
 decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2) {
   assert(BASETYPE_GET(int1) >= BASETYPE_CHAR && BASETYPE_GET(int1) <= BASETYPE_ULLONG);
   assert(BASETYPE_GET(int2) >= BASETYPE_CHAR && BASETYPE_GET(int2) <= BASETYPE_ULLONG);
   int_prop_t p1 = ints[BASETYPE_INDEX(int1)], p2 = ints[BASETYPE_INDEX(int2)];
-  int_prop_t ret = {1, EVAL_MAX(p1.size, p2.size)};
+  int_prop_t ret = {EVAL_MIN(p1.sign, p2.sign), EVAL_MAX(p1.size, p2.size)};
+  // The sign of the longer type override the sign of shorter type
+  if(p1.size > p2.size) ret.sign = p1.sign;
+  else if(p2.size > p1.size) ret.sign = p2.sign;
+  for(int i = 1;i < sizeof(ints) / sizeof(int_prop_t);i++) 
+    if(ints[i] == ret) return BASETYPE_FROMINDEX(i);
+  assert(0); // Cannot reach here
+  return 0;
 }
 
 // Take a max bite until the next char one is not legal digit
