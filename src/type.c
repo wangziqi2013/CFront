@@ -124,13 +124,20 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
            (arg_num > 1 || arg_decl->sibling)) 
            error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
         arg_type = type_gettype(cxt, arg_decl, arg_basetype);
+        type_t *ret;
+        if(arg_name->type != T_) {
+          ret = bt_insert(parent_type->arg_index, arg_name->str, arg_type);
+          if(ret != arg_type) error_row_col_exit(op->offset, 
+            "Duplicated argument name \"%s\"\n", arg_name->str);
+        }
+        list_insert(parent_type->arg_list, arg_name->str, arg_type);
         arg_decl = arg_decl->sibling;
       }
-    }
+    } // if(current op is function call)
     curr_type = parent_type;
-  }
+  } // while(num_op > 0)
 
-  return type;
+  return curr_type;
 }
 
 // Input must be T_STRUCT or T_UNION
