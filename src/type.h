@@ -10,8 +10,6 @@
 #include "eval.h"
 
 #define SCOPE_LEVEL_GLOBAL 0
-typedef uint64_t type_maxint_t;   // Maximum integer type we support
-
 #define TYPE_MAX_DERIVATION    64 // Maximum 64 levels of type derivation (deref, array, func, etc.)
 
 enum {
@@ -31,7 +29,6 @@ typedef struct {
 
 typedef struct {
   stack_t *scopes;
-  vector_t *types;    // A list of types. Type objects belong to this list and must be freed upon exit
 } type_cxt_t;
 
 typedef uint64_t typeid_t;
@@ -60,18 +57,6 @@ typedef struct type_t_struct {
   };
   size_t size;
 } type_t;
-
-extern type_t builtin_types[]; // Builtin types
-
-#define TYPE_INDEX_VOID   0
-#define TYPE_INDEX_CHAR   1
-#define TYPE_INDEX_SHORT  2
-#define TYPE_INDEX_INT    3
-#define TYPE_INDEX_LONG   4
-#define TYPE_INDEX_UCHAR  5
-#define TYPE_INDEX_USHORT 6
-#define TYPE_INDEX_UINT   7
-#define TYPE_INDEX_ULONG  8
 
 typedef struct value_t_struct {
   type_t *type;
