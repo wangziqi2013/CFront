@@ -9,8 +9,10 @@
 #include "str.h"
 #include "eval.h"
 
-#define SCOPE_LEVEL_GLOBAL 0
-#define TYPE_MAX_DERIVATION    64 // Maximum 64 levels of type derivation (deref, array, func, etc.)
+#define SCOPE_LEVEL_GLOBAL  0
+#define TYPE_MAX_DERIVATION 64 // Maximum 64 levels of type derivation (deref, array, func, etc.)
+#define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
+#define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size
 
 enum {
  SCOPE_ENUM   = 0,
@@ -52,7 +54,11 @@ typedef struct type_t_struct {
     struct type_t_struct *next; // If derived type, this points to the next type by applying the op
   };
   union {
-    list_t *arg_list; // If decl_prop is function call this stores a list of type_t *
+    struct {
+      list_t *arg_list;     // If decl_prop is function call this stores a list of type_t *
+      bintree_t *arg_index; // Binary tree using arg name as key
+      int vararg;           // Set if varadic argument function
+    };
     int array_size;   // If decl_prop is array sub this stores the (optional) size of the array
   };
   size_t size;
@@ -72,16 +78,16 @@ typedef struct value_t_struct {
 
 // Represents composite type
 typedef struct comp_t_struct {
-  char *name;        // NULL if no name; Does not own memory
-  list_t *fields;    // A list of type * representing the type of the field
-  bintree_t *index;  // These two provides both fast named access, and ordered storage
+  char *name;             // NULL if no name; Does not own memory
+  list_t *field_list;     // A list of type * representing the type of the field
+  bintree_t *field_index; // These two provides both fast named access, and ordered storage
   size_t size;
 } comp_t;
 
 // Single field within the composite type
 typedef struct {
   char *name;          // NULL if anonymous field; Does not own memory
-  int bitfield;        // Set if bit field; -1 if not
+  int bitfield_size;   // Set if bit field; -1 if not
   int offset;          // Offset within the composite structure
   size_t size;         // Number of bytes occupied by the actual storage including padding
   type_t *type;        // Type of this field (actual size in this pointer)
