@@ -99,7 +99,6 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child NULL)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
-  assert(decl->type == T_DECL);
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
@@ -115,8 +114,18 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
     // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
-  } else {
+  }
 
+  token_type_t decl_type = decl->type;
+  assert(decl_type == EXP_DEREF || decl_type == EXP_FUNC_CALL || decl_type == EXP_ARRAY_SUB || decl_type == T_);
+  if(decl_type == T_) { return NULL; }
+  else if(decl_type == EXP_DEREF) { 
+    type->decl_prop |= TYPE_OP_DEREF; 
+  } else if(decl_type == EXP_ARRAY_SUB) {
+    type->decl_prop |= TYPE_OP_ARRAY_SUB;
+    type->array_size = decl->array_size;  // Value in EXP_ARRAY_SUB, -1 means not given
+  } else {
+    type->decl_prop |= TYPE_OP_FUNC_CALL;
   }
 
   // TODO: SET SIZE
