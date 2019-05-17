@@ -109,7 +109,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     token_t *su = ast_getchild(basetype, 0); // May access the symbol table
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     type->comp = type_getcomp(cxt, su);
-    type->decl = ast_getchild(decl, 0); // Can be NULL which means there is no derivation (ptr, array, func)
+    // TODO: REWRITE THIS
+    //type->decl = ast_getchild(decl, 0); // Can be NULL which means there is no derivation (ptr, array, func)
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
@@ -119,6 +120,9 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   }
 
   // TODO: SET SIZE
+  // TODO: RECURSIVELY BUILD TYPE
+  // type->next = type_gettype(....)
+  // type->decl_prop = ...
 
   return type;
 }
