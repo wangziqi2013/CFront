@@ -5,8 +5,8 @@
 #include "token.h"
 #include "ast.h"
 
-#ifndef EVAL_MAX(a, b) (a > b ? a : b)
-#ifndef EVAL_MIN(a, b) (a < b ? a : b)
+#define EVAL_MAX(a, b) (a > b ? a : b)
+#define EVAL_MIN(a, b) (a < b ? a : b)
 
 typedef struct {
   int sign;      // 0 means unsigned, 1 means signed
