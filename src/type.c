@@ -5,26 +5,6 @@
 #include "ast.h"
 #include "str.h"
 
-// The size of base types; Right shift 16 bits and index into the table. Only integers are applicable
-int type_intsizes[11] = {
-  -1,         // Illegal
-  1, 2, 4, 8, // char short int long
-  1, 2, 4, 8, // uchar ushort uint ulong
-  16, 16,     // llong ullong
-};
-
-type_t builtin_types[] = {
-  {TYPE_INDEX_VOID, BASETYPE_VOID, NULL, NULL, -1},
-  {TYPE_INDEX_CHAR, BASETYPE_CHAR, NULL, NULL, 1},
-  {TYPE_INDEX_SHORT, BASETYPE_SHORT, NULL, NULL, 2},
-  {TYPE_INDEX_INT, BASETYPE_INT, NULL, NULL, 4},
-  {TYPE_INDEX_LONG, BASETYPE_LONG, NULL, NULL, 8},
-  {TYPE_INDEX_UCHAR, BASETYPE_UCHAR, NULL, NULL, 1},
-  {TYPE_INDEX_USHORT, BASETYPE_USHORT, NULL, NULL, 2},
-  {TYPE_INDEX_UINT, BASETYPE_UINT, NULL, NULL, 4},
-  {TYPE_INDEX_ULONG, BASETYPE_ULONG, NULL, NULL, 8},
-};
-
 // Given a decl_prop, return the integer size. The decl prop must be an integer type
 int type_getintsize(decl_prop_t decl_prop) {
   assert(BASETYPE_GET(decl_prop) == decl_prop); // Make sure there is no other bits set
@@ -56,23 +36,12 @@ type_cxt_t *type_init() {
   SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
   scope_recurse(cxt);
-  cxt->types = vector_init();
-  int type_count = (int)sizeof(builtin_types) / (int)sizeof(type_t);
-  for(int i = 0;i < type_count;i++) vector_append(cxt->types, NULL); // Make space and let size grow
-  for(int i = 0;i < type_count;i++) {
-    type_t *type = (type_t *)malloc(sizeof(type_t));
-    SYSEXPECT(type != NULL);
-    memcpy(type, builtin_types + i, sizeof(type_t));
-    *vector_addrat(cxt->types, type->typeid) = type;
-  }
   return cxt;
 }
 
 void type_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
-  for(int i = 0;i < vector_size(cxt->types);i++) free(vector_at(cxt->types, i));
-  vector_free(cxt->types);
   free(cxt);
 }
 
