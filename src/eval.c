@@ -3,6 +3,20 @@
 #include "eval.h"
 #include "type.h"
 
+int_t ints[10] = { // Integer sign and size, using index of base type
+  {-1, -1}, // BASETYPE_NONE, 0x00
+  {1, 1}, // BASETYPE_CHAR, 0x01
+  {1, 2}, // BASETYPE_SHORT, 0x02
+  {1, 4}, // BASETYPE_INT, 0x03
+  {1, 8}, // BASETYPE_LONG, 0x04
+  {0, 1}, // BASETYPE_UCHAR, 0x05
+  {0, 2}, // BASETYPE_USHORT, 0x06
+  {0, 4}, // BASETYPE_UINT, 0x07
+  {0, 8}, // BASETYPE_ULONG, 0x08
+  {1, 16}, // BASETYPE_LLONG, 0x09
+  {0, 16}, // BASETYPE_ULLONG, 0x0A
+};
+
 // Take a max bite until the next char one is not legal digit
 // Return next char, result in ret variable
 char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
