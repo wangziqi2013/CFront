@@ -329,7 +329,11 @@ void test_eval_int_convert() {
   for(int1 = BASETYPE_CHAR;int1 <= BASETYPE_ULLONG;int1 += 0x00010000) {
     for(int2 = BASETYPE_CHAR;int2 <= BASETYPE_ULLONG;int2 += 0x00010000) {
       ret = eval_int_convert(int1, int2);
-      printf("%s op %s -> %s\n", token_typestr(int1), token_typestr(int2), token_typestr(ret));
+      //printf("%X %X %X\n", int1, int2, ret);
+      // Note: token_decl_print cannot occur multiple times in printf
+      printf("%s + ", token_decl_print(int1));
+      printf("%s -> ", token_decl_print(int2));
+      printf("%s\n", token_decl_print(ret));
     }
   }
   printf("Pass!\n");
