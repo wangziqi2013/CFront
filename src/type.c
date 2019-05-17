@@ -102,7 +102,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
-  type->decl_prop = basetype->decl_prop;
+  type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0); // May access the symbol table
@@ -114,7 +114,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
   }
 
-  token_t stack[TYPE_MAX_DERIVATION]; 
+  token_t stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
   int num_op = 0;
   token_t *op = ast_getchild(decl, 1);
   while(op->type != T_) {
@@ -123,6 +123,28 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
       error_row_col_exit(op->offset, "Type derivation exceeds maximum allowed (%d)\n", TYPE_MAX_DERIVATION);
     stack[num_op++] = op;
     op = ast_getchild(op, 0); 
+    assert(op != NULL);
+  }
+
+  type_t *curr_type = type; // Points to the base type at the beginning
+  while(num_op > 0) {
+    op = stack[--num_op];
+    type_t *parent_type = (type_t *)malloc(sizeof(type_t));
+    SYSEXPECT(parent_type != NULL);
+    memset(parent_type, 0x00, sizeof(type_t));
+    parent_type->next = curr_type;
+    parent_type = decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
+    if(op->type = EXP_DEREF) {
+      parent_type->decl_prop |= TYPE_OP_DEREF;
+    } else if(op->type == EXP_ARRAY_SUB) {
+      parent_type->decl_prop |= TYPE_OP_ARRAY_SUB;
+      parent_type->array_size = op->array_size;
+    } else if(op->type == EXP_FUNC_CALL) {
+      parent_type->decl_prop |= TYPE_OP_FUNC_CALL;
+      arg_list = list_str_init();
+    }
+
+    curr_type = parent_type;
   }
 
   token_type_t decl_type = decl->type;
