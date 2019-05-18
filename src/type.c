@@ -137,13 +137,12 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
         token_t *arg_basetype = ast_getchild(arg_decl, 0);
         token_t *arg_exp = ast_getchild(arg_decl, 1);
         token_t *arg_name = ast_getchild(arg_decl, 2);
-        // Detect whether the type is void, and that it is not (the first AND the last)
-        if(BASETYPE_GET(arg_basetype->decl_prop) == BASETYPE_VOID && arg_exp->type == T_ && \
-           (arg_num > 1 || arg_decl->sibling)) 
-           error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
         arg_type = type_gettype(cxt, arg_decl, arg_basetype);
+        // Detect whether the type is void, and that it is not (the first AND the last)
+        if(BASETYPE_GET(arg_type) == BASETYPE_VOID && (arg_num > 1 || arg_decl->sibling)) 
+           error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
         type_t *ret;
-        if(arg_name->type != T_) {
+        if(arg_name->type != T_) { // Insert into the index if the arg has a name
           ret = bt_insert(parent_type->arg_index, arg_name->str, arg_type);
           if(ret != arg_type) error_row_col_exit(op->offset, 
             "Duplicated argument name \"%s\"\n", arg_name->str);
@@ -171,11 +170,6 @@ comp_t *comp_init(char *name, int has_definition) {
 }
 
 void comp_free(comp_t *comp) {
-  listnode_t *curr = list_head(comp->field_list);
-  while(curr) {
-    field_free((field_t *)list_value(curr));
-    curr = list_next(curr);
-  }
   list_free(comp->field_list);
   bt_free(comp->field_index);
   free(comp);
@@ -189,7 +183,6 @@ field_t *field_init() {
 }
 
 void field_free(field_t *field) {
-  type_free(field->type);
   free(field);
 }
 
