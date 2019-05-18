@@ -33,24 +33,28 @@ void type_sys_free(type_cxt_t *cxt) {
   free(cxt);
 }
 
-hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type) {
-  return ((scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level))->names[type];
+hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int domain) {
+  return ((scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level))->names[domain];
 }
-hashtable_t *scope_top(type_cxt_t *cxt, int type) { return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[type]; }
+hashtable_t *scope_top(type_cxt_t *cxt, int domain) { return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[domain]; }
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_numlevel(cxt))); }
 void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
-void *scope_top_find(type_cxt_t *cxt, int type, void *key) { return ht_find(scope_top(cxt, type), key); }
-void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value) { return ht_insert(scope_top(cxt, type), key, value); }
+void *scope_top_find(type_cxt_t *cxt, int domain, void *key) { return ht_find(scope_top(cxt, domain), key); }
+void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { return ht_insert(scope_top(cxt, domain), key, value); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
-void *scope_search(type_cxt_t *cxt, int type, void *name) {
-  assert(type >=0 && type < SCOPE_TYPE_COUNT && scope_numlevel(cxt) > 0);
+void *scope_search(type_cxt_t *cxt, int domain, void *name) {
+  assert(domain >= 0 && domain < SCOPE_TYPE_COUNT && scope_numlevel(cxt) > 0);
   for(int level = scope_numlevel(cxt) - 1;level >= 0;level--) {
-    void *value = ht_find(scope_atlevel(cxt, level, type), name);
+    void *value = ht_find(scope_atlevel(cxt, level, domain), name);
     if(value != HT_NOTFOUND) return value;
   }
   return NULL;
+}
+
+void scope_top_add_obj(type_cxt_t *cxt, int domain, void *obj) {
+  assert(domain >= 0 && domain < OBJ_TYPE_COUNT);
 }
 
 // NOTE: This function DOES NOT initialize arg_list and arg_index, because they may be used for other purposes
@@ -139,7 +143,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
         token_t *arg_name = ast_getchild(arg_decl, 2);
         arg_type = type_gettype(cxt, arg_decl, arg_basetype);
         // Detect whether the type is void, and that it is not (the first AND the last)
-        if(BASETYPE_GET(arg_type) == BASETYPE_VOID && (arg_num > 1 || arg_decl->sibling)) 
+        if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID && (arg_num > 1 || arg_decl->sibling)) 
            error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
         type_t *ret;
         if(arg_name->type != T_) { // Insert into the index if the arg has a name

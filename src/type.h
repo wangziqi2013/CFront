@@ -113,14 +113,15 @@ void scope_free(scope_t *scope);
 type_cxt_t *type_sys_init();
 void type_sys_free(type_cxt_t *cxt); 
 
-hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type);
-hashtable_t *scope_top(type_cxt_t *cxt, int type);
+hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int domain);
+hashtable_t *scope_top(type_cxt_t *cxt, int domain);
 int scope_numlevel(type_cxt_t *cxt);
 void scope_recurse(type_cxt_t *cxt);
 void scope_decurse(type_cxt_t *cxt);
-void *scope_top_find(type_cxt_t *cxt, int type, void *key);
-void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
-void *scope_search(type_cxt_t *cxt, int type, void *name);
+void *scope_top_find(type_cxt_t *cxt, int domain, void *key);
+void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value);
+void *scope_search(type_cxt_t *cxt, int domain, void *name);
+void scope_top_add_obj(type_cxt_t *cxt, int domain, void *obj); // Adding an object into the topmost scope for memory mgmt
 
 type_t *type_init();
 void type_free(type_t *type);
