@@ -74,7 +74,7 @@ type_t *type_init(type_cxt_t *cxt) {
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
-  scope_top_obj_insert(cxt)
+  scope_top_obj_insert(cxt, OBJ_TYPE, type);
   return type;
 }
 
@@ -183,6 +183,7 @@ comp_t *comp_init(type_cxt_t *cxt, char *name, int has_definition) {
   comp->field_list = list_init();
   comp->field_index = bt_str_init();
   if(!has_definition) comp->size = TYPE_UNKNOWN_SIZE; // Forward declaration
+  scope_top_obj_insert(cxt, OBJ_COMP, comp);
   return comp;
 }
 
@@ -196,6 +197,7 @@ field_t *field_init(type_cxt_t *cxt) {
   field_t *f = (field_t *)malloc(sizeof(field_t));
   SYSEXPECT(f != NULL);
   memset(f, 0x00, sizeof(field_t));
+  scope_top_obj_insert(cxt, OBJ_FIELD, f);
   return f;
 }
 
