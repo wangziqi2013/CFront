@@ -188,7 +188,7 @@ typedef struct token_t {
     struct token_t *next;    // If token is in pushbacks queue then form a circular queue
   };
   struct token_t *parent;    // Empty for root node
-  char *offset;              // The offset in source file, for error reporting purposes
+  char *offset;              // The offset in source file, for error reporting purposes; AST node may also have this field
   union {
     decl_prop_t decl_prop;   // Property if the kwd is part of declaration; Set when a kwd is found
     int array_size;          // Size of the array decl if it is EXP_ARRAY_SUB

@@ -10,8 +10,10 @@ token_t *ast_make_node(token_t *token) {
 int ast_isleaf(token_t *token) { return token->child == NULL; }
 
 token_t *ast_append_child(token_t *token, token_t *child) {
-  if(token->child == NULL) token->child = child;
-  else {
+  if(token->child == NULL) {
+    token->child = child;
+    token->offset = child->offset;
+  } else {
     token_t *last = token->child;
     while(last->sibling != NULL) last = last->sibling;
     last->sibling = child;
@@ -26,6 +28,7 @@ token_t *ast_push_child(token_t *token, token_t *child) {
   child->sibling = token->child;
   token->child = child;
   child->parent = token;
+  token->offset = child->offset;
   return token;
 }
 
