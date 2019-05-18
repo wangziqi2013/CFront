@@ -53,20 +53,26 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
   return NULL;
 }
 
+// NOTE: This function DOES NOT initialize arg_list and arg_index, because they may be used for other purposes
 type_t *type_init() {
-  return NULL;
+  type_t *type = (type_t *)malloc(sizeof(type_t));
+  SYSEXPECT(type != NULL);
+  memset(type, 0x00, sizeof(type_t));
+  return type;
 }
 
 void type_free(type_t *type) {
-
+  if(TYPE_OP_GET(type->decl_prop) == TYPE_OP_FUNC_CALL) {
+    list_free(type->arg_list);
+    bt_free(type->arg_index);
+  }
+  free(type);
 }
 
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
-  type_t *type = (type_t *)malloc(sizeof(type_t));
-  SYSEXPECT(type != NULL);
-  memset(type, 0x00, sizeof(type_t));
+  type_t *type = type_init();
   type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
   token_t *op = ast_getchild(decl, 1);
   token_t *decl_name = ast_getchild(decl, 2);
@@ -99,9 +105,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   type_t *curr_type = type; // Points to the base type at the beginning
   while(num_op > 0) {
     op = stack[--num_op];
-    type_t *parent_type = (type_t *)malloc(sizeof(type_t));
-    SYSEXPECT(parent_type != NULL);
-    memset(parent_type, 0x00, sizeof(type_t));
+    type_t *parent_type = type_init();
     parent_type->next = curr_type;
     parent_type->decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
     if(op->type == EXP_DEREF) {
@@ -144,7 +148,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
           if(ret != arg_type) error_row_col_exit(op->offset, 
             "Duplicated argument name \"%s\"\n", arg_name->str);
         }
-        list_insert(parent_type->arg_list, arg_name->str, arg_type);
+        list_insert(parent_type->arg_list, arg_name->str, arg_type); // May insert NULL as key
         arg_decl = arg_decl->sibling;
       }
     } // if(current op is function call)

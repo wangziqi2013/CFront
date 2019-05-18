@@ -23,10 +23,21 @@ enum {
  SCOPE_TYPE_COUNT,
 };
 
+// We track objects using a centralized list per scope to simplify memory management
+// All objects allocated within the scope will be freed when the scope gets poped
+// No ownership of memory is therefore enforced, i.e. objects do not own each other.
+enum {
+  OBJ_TYPE = 0,
+  OBJ_COMP = 1,
+  OBJ_FIELD = 2,
+  OBJ_TYPE_COUNT,
+};
+
 // A statement block creates a new scope. The bottomost scope is the global scope
 typedef struct {
   int level;                            // 0 means global
-  hashtable_t *names[SCOPE_TYPE_COUNT]; // enum, var, struct, union, udef
+  hashtable_t *names[SCOPE_TYPE_COUNT]; // enum, var, struct, union, udef, i.e. symbol table
+  list_t *objects[OBJ_TYPE_COUNT];
 } scope_t;
 
 typedef struct {
@@ -50,13 +61,13 @@ typedef struct type_t_struct {
   typeid_t typeid;        // Index in the list
   decl_prop_t decl_prop;   // Can be BASETYPE_ or TYPE_OP_ or DECL_ series
   union {
-    struct comp_t_struct *comp; // If base type indicates s/u/e this is a pointer to it
-    struct type_t_struct *next; // If derived type, this points to the next type by applying the op
+    struct comp_t_struct *comp; // If base type indicates s/u/e this is a pointer to it; Do not own
+    struct type_t_struct *next; // If derived type, this points to the next type by applying the op; Do not own
   };
   union {
     struct {
-      list_t *arg_list;     // If decl_prop is function call this stores a list of type_t *
-      bintree_t *arg_index; // Binary tree using arg name as key
+      list_t *arg_list;     // If decl_prop is function call this stores a list of type_t *; Owns memory
+      bintree_t *arg_index; // Binary tree using arg name as key; Owns memory
       int vararg;           // Set if varadic argument function
     };
     int array_size;   // If decl_prop is array sub this stores the (optional) size of the array
@@ -65,7 +76,7 @@ typedef struct type_t_struct {
 } type_t;
 
 typedef struct value_t_struct {
-  type_t *type;
+  type_t *type;         // Do not own
   addrtype_t addrtype;
   union {
     uint8_t ucharval;
@@ -83,7 +94,7 @@ typedef struct value_t_struct {
 typedef struct comp_t_struct {
   char *name;             // NULL if no name; Does not own memory
   list_t *field_list;     // A list of field * representing the type of the field; owns memory
-  bintree_t *field_index; // These two provides both fast named access, and ordered storage
+  bintree_t *field_index; // These two provides both fast named access, and ordered storage; Owns memory
   size_t size;
   int has_definition;     // Whether it is a forward definition (0 means yes)
 } comp_t;
@@ -94,7 +105,7 @@ typedef struct {
   int bitfield_size;   // Set if bit field; -1 if not
   int offset;          // Offset within the composite structure
   size_t size;         // Number of bytes occupied by the actual storage including padding
-  type_t *type;        // Type of this field; owns memory
+  type_t *type;        // Type of this field; Do not own memory
 } field_t;
 
 scope_t *scope_init(int level);
