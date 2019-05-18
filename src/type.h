@@ -61,7 +61,7 @@ typedef struct type_t_struct {
     };
     int array_size;   // If decl_prop is array sub this stores the (optional) size of the array
   };
-  size_t size;
+  size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
 typedef struct value_t_struct {
@@ -82,6 +82,7 @@ typedef struct comp_t_struct {
   list_t *field_list;     // A list of type * representing the type of the field
   bintree_t *field_index; // These two provides both fast named access, and ordered storage
   size_t size;
+  int has_definition;     // Whether it is a forward definition (0 means yes)
 } comp_t;
 
 // Single field within the composite type
@@ -97,6 +98,8 @@ scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
 type_cxt_t *type_init();
 void type_free(type_cxt_t *cxt); 
+comp_t *comp_init();
+void comp_free(comp_t *comp);
 
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type);
 hashtable_t *scope_top(type_cxt_t *cxt, int type);
@@ -109,6 +112,6 @@ void *scope_search(type_cxt_t *cxt, int type, void *name);
 
 // Returns a type * object given a T_DECL node and optionally base type
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype); 
-comp_t *type_getcomp(type_cxt_t *cxt, token_t *comp);
+comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 void type_freecomp(comp_t *comp);
 #endif
