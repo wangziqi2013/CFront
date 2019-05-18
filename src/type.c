@@ -167,6 +167,11 @@ comp_t *comp_init(char *name, int has_definition) {
 }
 
 void comp_free(comp_t *comp) {
+  listnode_t *curr = list_head(comp->field_list);
+  while(curr) {
+    field_free((field_t *)list_value(curr));
+    curr = list_next(curr);
+  }
   list_free(comp->field_list);
   bt_free(comp->field_index);
   free(comp);
