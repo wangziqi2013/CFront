@@ -69,6 +69,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     // If there is no name and no derivation then this is forward
     type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
+    type->size = type->comp->size;
     // TODO: WHAT IF THE COMP IS NOT DEFINED YET
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
@@ -145,12 +146,15 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   return curr_type;
 }
 
-comp_t *comp_init() {
+comp_t *comp_init(char *name, int has_definition) {
   comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
   SYSEXPECT(comp != NULL);
   memset(comp, 0x00, sizeof(comp_t));
+  comp->name = name;
+  comp->has_definition = has_definition;
   comp->field_list = list_str_init();
   comp->field_index = bt_str_init();
+  if(!has_definition) comp->size = TYPE_UNKNOWN_SIZE; // Forward declaration
   return comp;
 }
 
@@ -179,27 +183,30 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   assert(has_name || has_body); // Parser ensures this
   int domain = (token->type == T_STRUCT) ? SCOPE_STRUCT : SCOPE_UNION;
   comp_t *comp = NULL; // If set then do not alloc new
-  if(has_name && !has_body && !is_forward) { // Case 3
-    comp_t *comp = (comp_t *)scope_search(cxt, domain, name->str);
-    if(comp == HT_NOTFOUND) error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str);
-    return comp;
-  } else if(has_name && has_body) { // Case 1.1 - Case 1.3
-    comp_t *ht_ret = (comp_t *)scope_top_find(cxt, domain, name->str);
-    if(ht_ret != HT_NOTFOUND) {
-      // Case 1.1
-      if(ht_ret->has_definition) error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
-      else comp = ht_ret; // Case 1.2
-    } else { // Insert here before processing fields s.t. we can include pointer to itself
-      scope_top_insert(cxt, domain, name->str, comp); // Case 1.3
+  if(has_name && !has_body) { 
+    comp_t *earlier_comp = (comp_t *)scope_search(cxt, domain, name->str); // May return a struct with or without def
+    if(earlier_comp == HT_NOTFOUND) {
+      if(!is_forward) { error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str); } // Case 3
+      else { scope_top_insert(cxt, domain, name->str, earlier_comp = comp_init(name->str, COMP_NO_DEFINITION)); } // Case 4
     }
+    return earlier_comp;
+  } else if(has_name && has_body) { // Case 1.1 - Case 1.3
+    comp_t *ht_ret = (comp_t *)scope_top_find(cxt, domain, name->str); // Only collide with current level
+    if(ht_ret == HT_NOTFOUND) {
+      comp = comp_init(name->str, COMP_HAS_DEFINITION);
+      scope_top_insert(cxt, domain, name->str, comp); // Case 1.3
+    } else { // Insert here before processing fields s.t. we can include pointer to itself
+      if(ht_ret->has_definition) { // Case 1.1
+        error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
+      } else { // Case 1.2
+        comp = ht_ret; 
+        comp->has_definition = 1;
+      }
+    }
+  } else if(!has_name && has_body) { // Case 2
+    comp = comp_init(NULL, COMP_HAS_DEFINITION);
   }
-  if(!comp) {
-    
-  }
-  if(has_name && !has_body && is_forward) return comp; // Case 4
-  comp->has_definition = 1;
-  
-  if(name->type == T_IDENT) comp->name = name->str;
+
   int curr_offset = 0;
   while(entry) {
     assert(entry->type == T_COMP_DECL);
