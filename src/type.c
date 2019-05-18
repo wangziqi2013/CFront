@@ -63,9 +63,10 @@ void *scope_search(type_cxt_t *cxt, int domain, void *name) {
   return NULL;
 }
 
-void scope_top_add_obj(type_cxt_t *cxt, int domain, void *obj) {
+void scope_top_obj_insert(type_cxt_t *cxt, int domain, void *obj) {
   assert(domain >= 0 && domain < OBJ_TYPE_COUNT);
-
+  list_t *list = (list_t *)((scope_t *)stack_peek_at(cxt->scopes, 0))->objs[domain];
+  list_insert(list, NULL, obj);
 }
 
 // NOTE: This function DOES NOT initialize arg_list and arg_index, because they may be used for other purposes
