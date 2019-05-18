@@ -76,6 +76,9 @@ typedef struct value_t_struct {
   };
 } value_t;
 
+#define COMP_NO_DEFINITION   0
+#define COMP_HAS_DEFINITION  1
+
 // Represents composite type
 typedef struct comp_t_struct {
   char *name;             // NULL if no name; Does not own memory
@@ -98,8 +101,10 @@ scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
 type_cxt_t *type_init();
 void type_free(type_cxt_t *cxt); 
-comp_t *comp_init();
+comp_t *comp_init(char *name, int has_definition);
 void comp_free(comp_t *comp);
+field_t *field_init();
+void field_free(field_t *field);
 
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type);
 hashtable_t *scope_top(type_cxt_t *cxt, int type);
