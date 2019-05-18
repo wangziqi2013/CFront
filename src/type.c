@@ -263,9 +263,3 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   comp->size = curr_offset;
   return comp;
 }
-
-void type_freecomp(comp_t *comp) {
-  // TODO: FREE TYPE LIST ALSO
-  list_free(comp->field_list);
-  bt_free(comp->field_index);
-}

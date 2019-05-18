@@ -14,7 +14,7 @@
 
 void test_scope_init() {
   printf("=== Test Scope Init ===\n");
-  type_cxt_t *cxt = type_init();
+  type_cxt_t *cxt = type_sys_init();
   scope_top_insert(cxt, SCOPE_STRUCT, "wangziqi2013", (void *)0x12345UL);
   scope_top_insert(cxt, SCOPE_UNION, "wangziqi2016", (void *)0x23456UL);
   assert(scope_search(cxt, SCOPE_STRUCT, "wangziqi2013") == (void *)0x12345UL);
@@ -41,7 +41,7 @@ void test_scope_init() {
   assert(scope_search(cxt, SCOPE_STRUCT, "wangziqi2013") == (void *)0x56789UL);
   assert(scope_search(cxt, SCOPE_UNION, "wangziqi2016") == (void *)0x23456UL);
   assert(scope_search(cxt, SCOPE_STRUCT, "wangziqi2018") == (void *)0x45678UL);
-  type_free(cxt);
+  type_sys_free(cxt);
   printf("Pass!\n");
   return;
 }
