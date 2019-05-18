@@ -17,7 +17,7 @@ scope_t *scope_init(int level) {
 void scope_free(scope_t *scope) {
   for(int i = 0;i < SCOPE_TYPE_COUNT;i++) ht_free(scope->names[i]);
   // Free objects first, then free all lists
-  listnode_t *curr;
+  listnode_t *curr; // No need to use two pointers because we do not free nodes
   curr = list_head(scope->objs[OBJ_TYPE]);
   while(curr) { type_free((type_t *)curr->value); curr = list_next(curr); }
   curr = list_head(scope->objs[OBJ_COMP]);
@@ -46,12 +46,12 @@ void type_sys_free(type_cxt_t *cxt) {
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int domain) {
   return ((scope_t *)stack_peek_at(cxt->scopes, stack_size(cxt->scopes) - 1 - level))->names[domain];
 }
-hashtable_t *scope_top(type_cxt_t *cxt, int domain) { return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[domain]; }
+hashtable_t *scope_top_name(type_cxt_t *cxt, int domain) { return ((scope_t *)stack_peek_at(cxt->scopes, 0))->names[domain]; }
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_numlevel(cxt))); }
 void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
-void *scope_top_find(type_cxt_t *cxt, int domain, void *key) { return ht_find(scope_top(cxt, domain), key); }
-void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { return ht_insert(scope_top(cxt, domain), key, value); }
+void *scope_top_find(type_cxt_t *cxt, int domain, void *key) { return ht_find(scope_top_name(cxt, domain), key); }
+void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { return ht_insert(scope_top_name(cxt, domain), key, value); }
 
 // Searches all levels of scopes and return the first one; return NULL if not found
 void *scope_search(type_cxt_t *cxt, int domain, void *name) {
@@ -65,6 +65,7 @@ void *scope_search(type_cxt_t *cxt, int domain, void *name) {
 
 void scope_top_add_obj(type_cxt_t *cxt, int domain, void *obj) {
   assert(domain >= 0 && domain < OBJ_TYPE_COUNT);
+
 }
 
 // NOTE: This function DOES NOT initialize arg_list and arg_index, because they may be used for other purposes
@@ -223,14 +224,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
     comp_t *earlier_comp = (comp_t *)scope_search(cxt, domain, name->str); // May return a struct with or without def
     if(earlier_comp == HT_NOTFOUND) {
       if(!is_forward) { error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str); } // Case 3
-      else { scope_top_insert(cxt, domain, name->str, earlier_comp = comp_init(name->str, COMP_NO_DEFINITION)); } // Case 4
+      else { scope_top_name_find(cxt, domain, name->str, earlier_comp = comp_init(name->str, COMP_NO_DEFINITION)); } // Case 4
     }
     return earlier_comp;
   } else if(has_name && has_body) { // Case 1.1 - Case 1.3
     comp_t *ht_ret = (comp_t *)scope_top_find(cxt, domain, name->str); // Only collide with current level
     if(ht_ret == HT_NOTFOUND) {
       comp = comp_init(name->str, COMP_HAS_DEFINITION);
-      scope_top_insert(cxt, domain, name->str, comp); // Case 1.3
+      scope_top_find(cxt, domain, name->str, comp); // Case 1.3
     } else { // Insert here before processing fields s.t. we can include pointer to itself
       if(ht_ret->has_definition) { // Case 1.1
         error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);

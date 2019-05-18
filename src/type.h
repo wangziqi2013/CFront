@@ -114,7 +114,7 @@ type_cxt_t *type_sys_init();
 void type_sys_free(type_cxt_t *cxt); 
 
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int domain);
-hashtable_t *scope_top(type_cxt_t *cxt, int domain);
+hashtable_t *scope_top_name(type_cxt_t *cxt, int domain);
 int scope_numlevel(type_cxt_t *cxt);
 void scope_recurse(type_cxt_t *cxt);
 void scope_decurse(type_cxt_t *cxt);
