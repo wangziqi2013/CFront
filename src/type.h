@@ -36,8 +36,8 @@ enum {
 // A statement block creates a new scope. The bottomost scope is the global scope
 typedef struct {
   int level;                            // 0 means global
-  hashtable_t *names[SCOPE_TYPE_COUNT]; // enum, var, struct, union, udef, i.e. symbol table
-  list_t *objects[OBJ_TYPE_COUNT];
+  hashtable_t *names[SCOPE_TYPE_COUNT]; // enum, var, struct, union, udef, i.e. symbol table. Does not own anything
+  list_t *objs[OBJ_TYPE_COUNT];      // Objects allocates while processing the scope; Freed on scope free; Owns everything
 } scope_t;
 
 typedef struct {
