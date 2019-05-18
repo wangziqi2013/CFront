@@ -271,6 +271,8 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
+      if(f->size == TYPE_UNKNOWN_SIZE) 
+        error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
       curr_offset += f->type->size;
       if(f->name) { // Only insert if there is a name
         field_t *ret = bt_insert(comp->field_index, f->name, f); // Returns prev element if key exists
