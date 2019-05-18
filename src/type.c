@@ -145,6 +145,20 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   return curr_type;
 }
 
+comp_t *comp_init() {
+  comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
+  SYSEXPECT(comp != NULL);
+  memset(comp, 0x00, sizeof(comp_t));
+  comp->field_list = list_str_init();
+  comp->field_index = bt_str_init();
+  return comp;
+}
+
+void comp_free(comp_t *comp) {
+  list_free(comp->field_list);
+  bt_free(comp->field_index);
+  free(comp);
+}
 
 // Input must be T_STRUCT or T_UNION
 // This function may add new symbol to the current scope
