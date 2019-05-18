@@ -82,7 +82,7 @@ typedef struct value_t_struct {
 // Represents composite type
 typedef struct comp_t_struct {
   char *name;             // NULL if no name; Does not own memory
-  list_t *field_list;     // A list of type * representing the type of the field
+  list_t *field_list;     // A list of field * representing the type of the field; owns memory
   bintree_t *field_index; // These two provides both fast named access, and ordered storage
   size_t size;
   int has_definition;     // Whether it is a forward definition (0 means yes)
@@ -94,17 +94,13 @@ typedef struct {
   int bitfield_size;   // Set if bit field; -1 if not
   int offset;          // Offset within the composite structure
   size_t size;         // Number of bytes occupied by the actual storage including padding
-  type_t *type;        // Type of this field (actual size in this pointer)
+  type_t *type;        // Type of this field; owns memory
 } field_t;
 
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
-type_cxt_t *type_init();
-void type_free(type_cxt_t *cxt); 
-comp_t *comp_init(char *name, int has_definition);
-void comp_free(comp_t *comp);
-field_t *field_init();
-void field_free(field_t *field);
+type_cxt_t *type_sys_init();
+void type_sys_free(type_cxt_t *cxt); 
 
 hashtable_t *scope_atlevel(type_cxt_t *cxt, int level, int type);
 hashtable_t *scope_top(type_cxt_t *cxt, int type);
@@ -114,6 +110,11 @@ void scope_decurse(type_cxt_t *cxt);
 void *scope_top_find(type_cxt_t *cxt, int type, void *key);
 void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
+
+comp_t *comp_init(char *name, int has_definition);
+void comp_free(comp_t *comp);
+field_t *field_init();
+void field_free(field_t *field);
 
 // Returns a type * object given a T_DECL node and optionally base type
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype); 

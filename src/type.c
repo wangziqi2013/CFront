@@ -19,7 +19,7 @@ void scope_free(scope_t *scope) {
   return;
 }
 
-type_cxt_t *type_init() {
+type_cxt_t *type_sys_init() {
   type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
   SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
@@ -27,7 +27,7 @@ type_cxt_t *type_init() {
   return cxt;
 }
 
-void type_free(type_cxt_t *cxt) {
+void type_sys_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
   free(cxt);
@@ -164,6 +164,18 @@ void comp_free(comp_t *comp) {
   free(comp);
 }
 
+field_t *field_init() {
+  field_t *f = (field_t *)malloc(sizeof(field_t));
+  SYSEXPECT(f != NULL);
+  memset(f, 0x00, sizeof(field_t));
+  return f;
+}
+
+void field_free(field_t *field) {
+  type_free(field->type);
+  free(field);
+}
+
 // Input must be T_STRUCT or T_UNION
 // This function may add new symbol to the current scope
 // 1. Has name has body -> normal struct declaration, may optinally also define var
@@ -217,9 +229,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       assert(field->type == T_COMP_FIELD);
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
-      field_t *f = (field_t *)malloc(sizeof(field_t));
-      SYSEXPECT(f != NULL);
-      memset(f, 0x00, sizeof(field_t));
+      field_t *f = field_init();
       f->type = type_gettype(cxt, decl, basetype); // Set field type
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
