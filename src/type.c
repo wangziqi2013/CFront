@@ -70,10 +70,11 @@ void scope_top_obj_insert(type_cxt_t *cxt, int domain, void *obj) {
 }
 
 // NOTE: This function DOES NOT initialize arg_list and arg_index, because they may be used for other purposes
-type_t *type_init() {
+type_t *type_init(type_cxt_t *cxt) {
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
+  scope_top_obj_insert(cxt)
   return type;
 }
 
@@ -88,7 +89,7 @@ void type_free(type_t *type) {
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
-  type_t *type = type_init();
+  type_t *type = type_init(cxt);
   type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
   token_t *op = ast_getchild(decl, 1);
   token_t *decl_name = ast_getchild(decl, 2);
@@ -121,7 +122,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   type_t *curr_type = type; // Points to the base type at the beginning
   while(num_op > 0) {
     op = stack[--num_op];
-    type_t *parent_type = type_init();
+    type_t *parent_type = type_init(cxt);
     parent_type->next = curr_type;
     parent_type->decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
     if(op->type == EXP_DEREF) {
@@ -173,7 +174,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   return curr_type;
 }
 
-comp_t *comp_init(char *name, int has_definition) {
+comp_t *comp_init(type_cxt_t *cxt, char *name, int has_definition) {
   comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
   SYSEXPECT(comp != NULL);
   memset(comp, 0x00, sizeof(comp_t));
@@ -191,7 +192,7 @@ void comp_free(comp_t *comp) {
   free(comp);
 }
 
-field_t *field_init() {
+field_t *field_init(type_cxt_t *cxt) {
   field_t *f = (field_t *)malloc(sizeof(field_t));
   SYSEXPECT(f != NULL);
   memset(f, 0x00, sizeof(field_t));
@@ -210,7 +211,7 @@ void field_free(field_t *field) {
 //   1.3 Symbol table does not contain the entry -> Add to symbol table
 // 2. No name, just body -> Anonymous struct declctation, do not add to symbol table
 // 3. Just name, no body, used to define var -> Query symbol table
-// 4. Just name, no body, do not define var -> Forward declaration
+// 4. Just name, no body, do not define var -> Forward declaration, insert a placeholder to symbol table
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   assert(token->type == T_STRUCT || token->type == T_UNION);
   token_t *name = ast_getchild(token, 0);
@@ -225,14 +226,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
     comp_t *earlier_comp = (comp_t *)scope_search(cxt, domain, name->str); // May return a struct with or without def
     if(earlier_comp == HT_NOTFOUND) {
       if(!is_forward) { error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str); } // Case 3
-      else { scope_top_name_find(cxt, domain, name->str, earlier_comp = comp_init(name->str, COMP_NO_DEFINITION)); } // Case 4
+      else { scope_top_insert(cxt, domain, name->str, earlier_comp = comp_init(cxt, name->str, COMP_NO_DEFINITION)); } // Case 4
     }
     return earlier_comp;
   } else if(has_name && has_body) { // Case 1.1 - Case 1.3
     comp_t *ht_ret = (comp_t *)scope_top_find(cxt, domain, name->str); // Only collide with current level
     if(ht_ret == HT_NOTFOUND) {
-      comp = comp_init(name->str, COMP_HAS_DEFINITION);
-      scope_top_find(cxt, domain, name->str, comp); // Case 1.3
+      comp = comp_init(cxt, name->str, COMP_HAS_DEFINITION);
+      scope_top_insert(cxt, domain, name->str, comp); // Case 1.3
     } else { // Insert here before processing fields s.t. we can include pointer to itself
       if(ht_ret->has_definition) { // Case 1.1
         error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
@@ -242,7 +243,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       }
     }
   } else if(!has_name && has_body) { // Case 2
-    comp = comp_init(NULL, COMP_HAS_DEFINITION);
+    comp = comp_init(cxt, NULL, COMP_HAS_DEFINITION);
   }
 
   int curr_offset = 0;
@@ -255,7 +256,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       assert(field->type == T_COMP_FIELD);
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
-      field_t *f = field_init();
+      field_t *f = field_init(cxt);
       f->type = type_gettype(cxt, decl, basetype); // Set field type
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
