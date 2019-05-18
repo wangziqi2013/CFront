@@ -111,6 +111,8 @@ void *scope_top_find(type_cxt_t *cxt, int type, void *key);
 void *scope_top_insert(type_cxt_t *cxt, int type, void *key, void *value);
 void *scope_search(type_cxt_t *cxt, int type, void *name);
 
+type_t *type_init();
+void type_free(type_t *type);
 comp_t *comp_init(char *name, int has_definition);
 void comp_free(comp_t *comp);
 field_t *field_init();

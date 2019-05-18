@@ -53,6 +53,14 @@ void *scope_search(type_cxt_t *cxt, int type, void *name) {
   return NULL;
 }
 
+type_t *type_init() {
+  return NULL;
+}
+
+void type_free(type_t *type) {
+
+}
+
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
