@@ -115,45 +115,45 @@ void test_list() {
       tests[i][test_len - 1] = '\0';
     }
 
-    list_t *list = list_str_init();
+    list_t *list = list_init();
     for(int i = 0;i < test_size;i++) {
-      results[i] = list_insert_nodup(list, tests[i], tests[i]);
+      results[i] = list_insert_nodup(list, tests[i], tests[i], streq_cb);
     }
     
     for(int i = test_size - 1;i >= 0;i--) {
-      void *ret = list_find(list, tests[i]);
+      void *ret = list_find(list, tests[i], streq_cb);
       assert(ret != HT_NOTFOUND);
       assert(strcmp(ret, tests[i]) == 0);
     }
 
-    assert(list_find(list, "wangziqi2013") == HT_NOTFOUND);
-    assert(list_find(list, "+_1234567890") == HT_NOTFOUND);
-    assert(list_find(list, "!@#$") == HT_NOTFOUND);
-    assert(list_find(list, "QWERT[]{}") == HT_NOTFOUND);
+    assert(list_find(list, "wangziqi2013", streq_cb) == HT_NOTFOUND);
+    assert(list_find(list, "+_1234567890", streq_cb) == HT_NOTFOUND);
+    assert(list_find(list, "!@#$", streq_cb) == HT_NOTFOUND);
+    assert(list_find(list, "QWERT[]{}", streq_cb) == HT_NOTFOUND);
     printf("Finished: %06d [ Size: %d ]\r", seed, list_size(list));
     //assert(list_size(list) == test_size);
     int mid1 = test_size / 4;
     int mid2 = mid1 * 2;
     int mid3 = mid1 * 3;
     for(int i = mid1;i < mid2;i++) {  // Ascending removal from middle
-      assert(list_remove(list, tests[i]) == tests[i]);
-      assert(list_find(list, tests[i]) == BT_NOTFOUND);
-      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == tests[i]);
+      assert(list_find(list, tests[i], streq_cb) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == BT_NOTFOUND);
     }
     for(int i = mid3 - 1;i >= mid2;i--) {  // Decending removal from middle
-      assert(list_remove(list, tests[i]) == tests[i]);
-      assert(list_find(list, tests[i]) == BT_NOTFOUND);
-      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == tests[i]);
+      assert(list_find(list, tests[i], streq_cb) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == BT_NOTFOUND);
     }
     for(int i = 0;i < mid1;i++) { // Remove from beginning
-      assert(list_remove(list, tests[i]) == tests[i]);
-      assert(list_find(list, tests[i]) == BT_NOTFOUND);
-      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == tests[i]);
+      assert(list_find(list, tests[i], streq_cb) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == BT_NOTFOUND);
     }
     for(int i = test_size - 1;i >= mid3;i--) { // Remove from end
-      assert(list_remove(list, tests[i]) == tests[i]);
-      assert(list_find(list, tests[i]) == BT_NOTFOUND);
-      assert(list_remove(list, tests[i]) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == tests[i]);
+      assert(list_find(list, tests[i], streq_cb) == BT_NOTFOUND);
+      assert(list_remove(list, tests[i], streq_cb) == BT_NOTFOUND);
     }
     assert(list_size(list) == 0);
     assert(list->head == list->tail && list->head == NULL);
@@ -164,7 +164,7 @@ void test_list() {
     list_free(list);
   }
   putchar('\n');
-  list_t *list = list_str_init();
+  list_t *list = list_init();
   list_insertat(list, "a", NULL, 0); // size 1  a   
   list_insertat(list, "b", NULL, 0); // size 2  b a
   list_insertat(list, "c", NULL, 1); // size 3  b c a

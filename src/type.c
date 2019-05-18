@@ -10,7 +10,7 @@ scope_t *scope_init(int level) {
   SYSEXPECT(scope != NULL);
   scope->level = level;
   for(int i = 0;i < SCOPE_TYPE_COUNT;i++) scope->names[i] = ht_str_init();
-  for(int i = 0;i < OBJ_TYPE_COUNT;i++) scope->objs[i] = list_str_init();
+  for(int i = 0;i < OBJ_TYPE_COUNT;i++) scope->objs[i] = list_init();
   return scope;
 }
 
@@ -135,7 +135,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     } else if(op->type == EXP_FUNC_CALL) {
       parent_type->decl_prop |= TYPE_OP_FUNC_CALL;
       parent_type->size = TYPE_PTR_SIZE;
-      parent_type->arg_list = list_str_init();
+      parent_type->arg_list = list_init();
       parent_type->arg_index = bt_str_init();
       type_t *arg_type;
       token_t *arg_decl = ast_getchild(op, 1);
@@ -177,7 +177,7 @@ comp_t *comp_init(char *name, int has_definition) {
   memset(comp, 0x00, sizeof(comp_t));
   comp->name = name;
   comp->has_definition = has_definition;
-  comp->field_list = list_str_init();
+  comp->field_list = list_init();
   comp->field_index = bt_str_init();
   if(!has_definition) comp->size = TYPE_UNKNOWN_SIZE; // Forward declaration
   return comp;
