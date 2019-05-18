@@ -17,6 +17,12 @@ typedef struct {
   eq_cb_t eq;   // Call back function for comparing keys
 } list_t;
 
+inline listnode_t *list_head(list_t *list) { return list->head; }
+inline listnode_t *list_tail(list_t *list) { return list->tail; }
+inline listnode_t *list_next(listnode_t *node) { return node->next; }
+inline void *list_key(listnode_t *node) { return node->key; }
+inline void *list_value(listnode_t *node) { return node->value; }
+
 list_t *list_init(eq_cb_t eq);
 list_t *list_str_init();
 void list_free(list_t *list);
