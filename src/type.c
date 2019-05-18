@@ -60,11 +60,16 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
   type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+  token_t *op = ast_getchild(decl, 1);
+  token_t *decl_name = ast_getchild(decl, 2);
+  assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0); // May access the symbol table
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
-    type->comp = type_getcomp(cxt, su);
+    // If there is no name and no derivation then this is forward
+    type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
+    // TODO: WHAT IF THE COMP IS NOT DEFINED YET
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
@@ -73,7 +78,6 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
 
   token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
   int num_op = 0;
-  token_t *op = ast_getchild(decl, 1);
   while(op->type != T_) {
     assert(op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB);
     if(num_op == TYPE_MAX_DERIVATION) // Report error if the stack overflows
@@ -97,7 +101,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     } else if(op->type == EXP_ARRAY_SUB) {
       parent_type->decl_prop |= TYPE_OP_ARRAY_SUB;
       parent_type->array_size = op->array_size;
-      // If lower type is unknown size, or the array size not given then current size is also unknown
+      // If lower type is unknown size (e.g. another array or struct without definition), or the array size not given 
+      // then current size is also unknown
       if(op->array_size == -1 || curr_type->size == TYPE_UNKNOWN_SIZE) parent_type->size = TYPE_UNKNOWN_SIZE;
       else parent_type->size = curr_type->size * (size_t)op->array_size;
     } else if(op->type == EXP_FUNC_CALL) {
@@ -140,33 +145,46 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   return curr_type;
 }
 
+
 // Input must be T_STRUCT or T_UNION
 // This function may add new symbol to the current scope
-// TODO: PROCESS FORWARD DECL
-comp_t *type_getcomp(type_cxt_t *cxt, token_t *token) {
+// 1. Has name has body -> normal struct declaration, may optinally also define var
+//   1.1 Symbol table already contains the entry, with definition -> name clash, report error
+//   1.2 Symbol table already contains the entry, without definition -> Must have seen a forward decl; Use the entry
+//   1.3 Symbol table does not contain the entry -> Add to symbol table
+// 2. No name, just body -> Anonymous struct declctation, do not add to symbol table
+// 3. Just name, no body, used to define var -> Query symbol table
+// 4. Just name, no body, do not define var -> Forward declaration
+comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   assert(token->type == T_STRUCT || token->type == T_UNION);
   token_t *name = ast_getchild(token, 0);
   token_t *entry = ast_getchild(token, 1);
   assert(name && entry); // Both must be there
   int has_name = name->type != T_;
   int has_body = entry->type != T_;
-  assert(has_name || has_body); 
+  assert(has_name || has_body); // Parser ensures this
   int domain = (token->type == T_STRUCT) ? SCOPE_STRUCT : SCOPE_UNION;
-  if(has_name && !has_body) { // There is no body but a name - must be referencing an already defined struct or union
+  comp_t *comp = NULL; // If set then do not alloc new
+  if(has_name && !has_body && !is_forward) { // Case 3
     comp_t *comp = (comp_t *)scope_search(cxt, domain, name->str);
     if(comp == HT_NOTFOUND) error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str);
     return comp;
+  } else if(has_name && has_body) { // Case 1.1 - Case 1.3
+    comp_t *ht_ret = (comp_t *)scope_top_find(cxt, domain, name->str);
+    if(ht_ret != HT_NOTFOUND) {
+      // Case 1.1
+      if(ht_ret->has_definition) error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
+      else comp = ht_ret; // Case 1.2
+    } else { // Insert here before processing fields s.t. we can include pointer to itself
+      scope_top_insert(cxt, domain, name->str, comp); // Case 1.3
+    }
   }
-  comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
-  SYSEXPECT(comp != NULL);
-  memset(comp, 0x00, sizeof(comp_t));
-  if(has_name && has_body) { // Add the comp to the current scope if there is both name and body
-    if(scope_top_find(cxt, domain, name->str) != HT_NOTFOUND) // Check name conflict
-      error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
-    scope_top_insert(cxt, domain, name->str, comp); // Insert here before processing fields s.t. we can include pointer to itself
+  if(!comp) {
+    
   }
-  comp->field_list = list_str_init();
-  comp->field_index = bt_str_init();
+  if(has_name && !has_body && is_forward) return comp; // Case 4
+  comp->has_definition = 1;
+  
   if(name->type == T_IDENT) comp->name = name->str;
   int curr_offset = 0;
   while(entry) {
