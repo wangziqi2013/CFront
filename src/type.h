@@ -108,6 +108,13 @@ typedef struct {
   type_t *type;        // Type of this field; Do not own memory
 } field_t;
 
+typedef struct {
+  char *name;              // NULL if unnamed enum
+  list_t *field_list;      
+  bintree_t *field_index;  // Same as above
+  size_t size;             // Fixed size - same as integer
+} enum_t;
+
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
 type_cxt_t *type_sys_init();
