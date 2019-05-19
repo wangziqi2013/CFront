@@ -10,7 +10,6 @@
 #include "eval.h"
 
 #define SCOPE_LEVEL_GLOBAL  0
-#define TYPE_MAX_DERIVATION 64 // Maximum 64 levels of type derivation (deref, array, func, etc.)
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 
