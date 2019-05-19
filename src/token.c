@@ -371,6 +371,7 @@ const char *token_typestr(token_type_t type) {
     case T_: return "T_";
     case T_COMP_DECL: return "T_COMP_DECL"; 
     case T_COMP_FIELD: return "T_COMP_FIELD";
+    case T_ENUM_FIELD: return "T_ENUM_FIELD";
     case T_LBL_STMT: return "T_LBL_STMT"; 
     case T_EXP_STMT: return "T_EXP_STMT"; 
     case T_COMP_STMT: return "T_COMP_STMT";
