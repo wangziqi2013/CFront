@@ -15,14 +15,14 @@ scope_t *scope_init(int level) {
 }
 
 void scope_free(scope_t *scope) {
-  // Free objects first, then free all lists
+  // Free objects first, then free the list
   for(int i = 0;i < OBJ_TYPE_COUNT;i++) {
     obj_free_func_t func = obj_free_func_list[i];
     listnode_t *curr = list_head(scope->objs[i]);
     while(curr) { func(curr->value); curr = list_next(curr); }
+    list_free(scope->objs[i]);
   }
   for(int i = 0;i < SCOPE_TYPE_COUNT;i++) ht_free(scope->names[i]);
-  for(int i = 0;i < OBJ_TYPE_COUNT;i++) list_free(scope->objs[i]);
   free(scope);
   return;
 }
