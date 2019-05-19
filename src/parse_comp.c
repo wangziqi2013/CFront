@@ -80,7 +80,6 @@ token_t *parse_enum(parse_comp_cxt_t *cxt, token_t *root) {
         ast_append_child(enum_field, enum_const = parse_exp(cxt, PARSE_EXP_NOCOMMA));
         curr_const = enum_field->enum_const = eval_const_int(enum_const);
         la = token_lookahead_notnull(cxt->token_cxt, 1);
-        printf("field value = %d\n", curr_const);
       } else {
         enum_field->enum_const = curr_const; // If no assignment just use the value from previous loop
       }
