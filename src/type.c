@@ -101,23 +101,25 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   token_t *decl_name = ast_getchild(decl, 2);
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
-  type_t *type;
+  type_t *curr_type = NULL; // Points to the base type at the beginning
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
-    type = type_init(cxt); // Allocate a new type variable
-    type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+    curr_type = type_init(cxt); // Allocate a new type variable
+    curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     // If there is no name and no derivation then this is forward
-    type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
-    type->size = type->comp->size; // Could be unknown size
+    curr_type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
+    curr_type->size = curr_type->comp->size; // Could be unknown size
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
     token_t *typedef_name = ast_getchild(basetype, 0);
     assert(typedef_name && typedef_name->type == T_IDENT);
-    type = (type_t *)scope_search(cxt, SCOPE_UDEF, typedef_name->str); // May return a struct with or without def
-    assert(type); // There must be an earlier definition, because o.w. we would not recognize this token as udef
-    // Build new type on top of this
+    curr_type = (type_t *)scope_search(cxt, SCOPE_UDEF, typedef_name->str); // May return a struct with or without def
+    assert(curr_type); // There must be an earlier definition, because o.w. we would not recognize this token as udef
+  } else { // This branch is for primitive base types
+    curr_type = type_init(cxt);
+    curr_type->decl_prop = basetype->decl_prop;
   }
 
   token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
@@ -131,7 +133,6 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     assert(op != NULL);
   }
 
-  type_t *curr_type = type; // Points to the base type at the beginning
   while(num_op > 0) {
     op = stack[--num_op];
     type_t *parent_type = type_init(cxt);
@@ -182,6 +183,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     curr_type = parent_type;
   } // while(num_op > 0)
 
+  assert(curr_type);
   return curr_type;
 }
 
@@ -274,6 +276,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       f->type = type_gettype(cxt, decl, basetype); // Set field type
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
+      printf("field name %s\n", field_name->str ? field_name->str : "NULL");
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
@@ -287,11 +290,13 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
       curr_offset += f->type->size;
       if(f->name) { // Only insert if there is a name
+        printf("name = %s\n", f->name);
         if(bt_find(comp->field_index, f->name) != BT_NOTFOUND) error_row_col_exit(field_name->offset, 
             "Duplicated field name \"%s\" in composite type declaration\n", f->name);
         bt_insert(comp->field_index, f->name, f);
       }
       list_insert(comp->field_list, f->name, f); // Always insert into the ordered list
+      field = field->sibling;
     }
     entry = entry->sibling;
   }

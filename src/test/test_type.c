@@ -398,7 +398,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
@@ -408,7 +408,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
@@ -418,7 +418,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
@@ -428,7 +428,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
@@ -438,7 +438,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
