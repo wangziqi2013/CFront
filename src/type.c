@@ -170,11 +170,10 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
         // Detect whether the type is void, and that it is not (the first AND the last)
         if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID && (arg_num > 1 || arg_decl->sibling)) 
            error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
-        type_t *ret;
         if(arg_name->type != T_) { // Insert into the index if the arg has a name
-          ret = bt_insert(parent_type->arg_index, arg_name->str, arg_type);
-          if(ret != arg_type) error_row_col_exit(op->offset, 
+          if(bt_find(parent_type->arg_index, arg_name->str) != BT_NOTFOUND) error_row_col_exit(op->offset, 
             "Duplicated argument name \"%s\"\n", arg_name->str);
+          bt_insert(parent_type->arg_index, arg_name->str, arg_type);
         }
         list_insert(parent_type->arg_list, arg_name->str, arg_type); // May insert NULL as key
         arg_decl = arg_decl->sibling;
@@ -288,9 +287,9 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
       curr_offset += f->type->size;
       if(f->name) { // Only insert if there is a name
-        field_t *ret = bt_insert(comp->field_index, f->name, f); // Returns prev element if key exists
-        if(ret != f) error_row_col_exit(field_name->offset, 
+        if(bt_find(comp->field_index, f->name) != BT_NOTFOUND) error_row_col_exit(field_name->offset, 
             "Duplicated field name \"%s\" in composite type declaration\n", f->name);
+        bt_insert(comp->field_index, f->name, f);
       }
       list_insert(comp->field_list, f->name, f); // Always insert into the ordered list
     }
