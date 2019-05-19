@@ -231,7 +231,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   assert(token->type == T_STRUCT || token->type == T_UNION);
   token_t *name = ast_getchild(token, 0);
   token_t *entry = ast_getchild(token, 1);
-  assert(name && entry); // Both must be there
+  assert(name && entry); // Both children must exist
   int has_name = name->type != T_;
   int has_body = entry->type != T_;
   assert(has_name || has_body); // Parser ensures this

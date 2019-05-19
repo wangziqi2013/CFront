@@ -30,11 +30,14 @@ int parse_name_body(parse_comp_cxt_t *cxt, token_t *root) {
 // Returns the same node which is either T_STRUCT or T_UNION
 token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
   if(parse_name_body(cxt, root)) {
+    int has_body = 0; // Might be possible that there is {} as body but it is empty
     while(1) { // loop on lines
       if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_RCPAREN) { // Finish parsing on '}'
+        if(!has_body) ast_append_child(root, token_get_empty());
         token_consume_type(cxt->token_cxt, T_RCPAREN); 
         break; 
       }
+      has_body = 1;
       token_t *comp_decl = ast_append_child(token_alloc_type(T_COMP_DECL), parse_decl_basetype(cxt));
       while(1) { // loop on fields
         token_t *field = token_alloc_type(T_COMP_FIELD);
