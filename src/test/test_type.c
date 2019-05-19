@@ -388,46 +388,59 @@ void test_eval_const_token() {
 
 void test_type_getcomp() {
   printf("=== Test type_getcomp ===\n");
-  parse_exp_cxt_t *cxt;
+  parse_exp_cxt_t *parse_cxt;
+  type_cxt_t *type_cxt;
   token_t *token;
+  type_t *type;
   char test1[] = "struct a { int b; long c; volatile double d; }";
-  cxt = parse_exp_init(test1);
-  token = parse_comp(cxt);
-  assert(token_get_next(cxt->token_cxt) == NULL);
+  parse_cxt = parse_exp_init(test1);
+  type_cxt = type_sys_init();
+  token = parse_decl(parse_cxt);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  parse_exp_free(cxt);
+  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
   char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
-  cxt = parse_exp_init(test2);
-  token = parse_comp(cxt);
-  assert(token_get_next(cxt->token_cxt) == NULL);
+  parse_cxt = parse_exp_init(test2);
+  token = parse_decl(parse_cxt);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  parse_exp_free(cxt);
+  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
   char test3[] = "struct {}";
-  cxt = parse_exp_init(test3);
-  token = parse_comp(cxt);
-  assert(token_get_next(cxt->token_cxt) == NULL);
+  parse_cxt = parse_exp_init(test3);
+  token = parse_decl(parse_cxt);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  parse_exp_free(cxt);
+  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests nesting of struct and union
   char test4[] = "struct { struct{ int a; }; union { long b; }; }";
-  cxt = parse_exp_init(test4);
-  token = parse_comp(cxt);
-  assert(token_get_next(cxt->token_cxt) == NULL);
+  parse_cxt = parse_exp_init(test4);
+  token = parse_decl(parse_cxt);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  parse_exp_free(cxt);
+  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
-  char test5[] = "struct name;";
-  cxt = parse_exp_init(test5);
-  token = parse_comp(cxt);
-  assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
+  char test5[] = "struct name";
+  parse_cxt = parse_exp_init(test5);
+  token = parse_decl(parse_cxt);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  parse_exp_free(cxt);
+  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
   ast_free(token);
   printf("Pass!\n");
   return;
@@ -444,7 +457,7 @@ int main() {
   test_eval_const_token_errors(); // Memory leak
   test_eval_int_convert();
   test_eval_const_int();
-  //test_type_getcomp();
+  test_type_getcomp();
   return 0;
 }
   
