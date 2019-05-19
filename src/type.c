@@ -24,9 +24,16 @@ void type_print(type_t *type, const char *name, int level) {
       while(node) {
         field_t *field = (field_t *)list_value(node);
         type_print(field->type, field->name, level + 1);
+        if(field->bitfield_size != -1) printf(" : %d", field->bitfield_size);
+        printf(";\n")
+        node = list_next(node);
       }
     }
+  } else if(base == BASETYPE_UDEF) {
+
   }
+
+  return;
 }
 
 scope_t *scope_init(int level) {
@@ -125,10 +132,9 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   token_t *decl_name = ast_getchild(decl, 2);
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
-  type_t *curr_type = NULL; // Points to the base type at the beginning
+  type_t *curr_type = type_init(cxt); // Allocate a new type variable
+  curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
-    curr_type = type_init(cxt); // Allocate a new type variable
-    curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     // If there is no name and no derivation then this is forward
@@ -137,13 +143,15 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
-    token_t *typedef_name = ast_getchild(basetype, 0);
-    assert(typedef_name && typedef_name->type == T_IDENT);
-    curr_type = (type_t *)scope_search(cxt, SCOPE_UDEF, typedef_name->str); // May return a struct with or without def
-    assert(curr_type); // There must be an earlier definition, because o.w. we would not recognize this token as udef
+    token_t *udef_name = ast_getchild(basetype, 0);
+    assert(udef_name && udef_name->type == T_IDENT);
+    curr_type->udef_type = (type_t *)scope_search(cxt, SCOPE_UDEF, udef_name->str); // May return a struct with or without def
+    curr_type->udef_name = udef_name->str;
+    assert(curr_type->udef_type); // Must have been defined, otherwise the parser will not recognize it as udef
+    curr_type->size = curr_type->udef_type->size;
   } else { // This branch is for primitive base types
-    curr_type = type_init(cxt);
-    curr_type->decl_prop = basetype->decl_prop;
+    // TODO: SET TYPE SIZE
+    curr_type->size = 4; // Temporary
   }
 
   token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
