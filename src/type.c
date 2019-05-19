@@ -27,7 +27,7 @@ void type_print(type_t *type, const char *name, int level) {
         field_t *field = (field_t *)list_value(node);
         type_print(field->type, field->name, level + 1);
         if(field->bitfield_size != -1) printf(" : %d", field->bitfield_size);
-        printf(";\n")
+        printf(";\n");
         node = list_next(node);
       }
       printf("} ");
