@@ -13,7 +13,20 @@ void type_print(type_t *type, const char *name, int level) {
   type_t *basetype = type;
   while(basetype->next) basetype = basetype->next;
   decl_prop_t base = BASETYPE_GET(type->decl_prop);
-  
+  if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
+    comp_t *comp = basetype->comp;
+    for(int i = 0;i < level * 2;i++) putchar(' ');
+    printf("%s %s", base == BASETYPE_STRUCT ? "struct" : "union", comp->name ? comp->name : "");
+    if(comp->has_definition) {
+      for(int i = 0;i < level * 2;i++) putchar(' ');
+      printf(" {\n");
+      listnode_t *node = list_head(comp->field_list);
+      while(node) {
+        field_t *field = (field_t *)list_value(node);
+        type_print(field->type, field->name, level + 1);
+      }
+    }
+  }
 }
 
 scope_t *scope_init(int level) {
