@@ -50,8 +50,13 @@ hashtable_t *scope_top_name(type_cxt_t *cxt, int domain) { return ((scope_t *)st
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_numlevel(cxt))); }
 void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
-void *scope_top_find(type_cxt_t *cxt, int domain, void *key) { return ht_find(scope_top_name(cxt, domain), key); }
 void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { return ht_insert(scope_top_name(cxt, domain), key, value); }
+
+// Return NULL if the key does not exist in the domain
+void *scope_top_find(type_cxt_t *cxt, int domain, void *key) { 
+  void *ht_ret = ht_find(scope_top_name(cxt, domain), key); 
+  return ht_ret == HT_NOTFOUND ? NULL : ht_ret;
+}
 
 // Searches all levels of scopes and return the first one; return NULL if not found
 void *scope_search(type_cxt_t *cxt, int domain, void *name) {
@@ -88,24 +93,28 @@ void type_free(type_t *type) {
 
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
+// 1. Do not process storage class including typedef - the caller should add them to symbol table
+// 2. Do process struct/union/enum definition
+// 3. Type is only valid within the scope it is analyzed
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
-  type_t *type = type_init(cxt);
-  type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+  assert(basetype->type == T_BASETYPE);
   token_t *op = ast_getchild(decl, 1);
   token_t *decl_name = ast_getchild(decl, 2);
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
-    token_t *su = ast_getchild(basetype, 0); // May access the symbol table
+    type_t *type = type_init(cxt); // Allocate a new type variable
+    type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+    token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     // If there is no name and no derivation then this is forward
     type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
-    type->size = type->comp->size;
-    // TODO: WHAT IF THE COMP IS NOT DEFINED YET
+    type->size = type->comp->size; // Could be unknown size
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
     // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
+    type_t *defed = (type_t *)scope_search(cxt, SCOPE_UDEF, name->str); // May return a struct with or without def
   }
 
   token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
@@ -226,19 +235,19 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   comp_t *comp = NULL; // If set then do not alloc new
   if(has_name && !has_body) { 
     comp_t *earlier_comp = (comp_t *)scope_search(cxt, domain, name->str); // May return a struct with or without def
-    if(earlier_comp == HT_NOTFOUND) {
+    if(!earlier_comp) {
       if(!is_forward) { error_row_col_exit(token->offset, "Struct or union not yet defined: %s\n", name->str); } // Case 3
       else { scope_top_insert(cxt, domain, name->str, earlier_comp = comp_init(cxt, name->str, COMP_NO_DEFINITION)); } // Case 4
     }
     return earlier_comp;
   } else if(has_name && has_body) { // Case 1.1 - Case 1.3
     comp_t *ht_ret = (comp_t *)scope_top_find(cxt, domain, name->str); // Only collide with current level
-    if(ht_ret == HT_NOTFOUND) {
+    if(!ht_ret) {
       comp = comp_init(cxt, name->str, COMP_HAS_DEFINITION);
       scope_top_insert(cxt, domain, name->str, comp); // Case 1.3
     } else { // Insert here before processing fields s.t. we can include pointer to itself
       if(ht_ret->has_definition) { // Case 1.1
-        error_row_col_exit(token->offset, "Redefinition of struct of union: %s\n", name->str);
+        error_row_col_exit(token->offset, "Redefinition of struct or union: %s\n", name->str);
       } else { // Case 1.2
         comp = ht_ret; 
         comp->has_definition = 1;
