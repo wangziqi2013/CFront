@@ -172,9 +172,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
         if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID && (arg_num > 1 || arg_decl->sibling)) 
            error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
         if(arg_name->type != T_) { // Insert into the index if the arg has a name
-          if(bt_find(parent_type->arg_index, arg_name->str) != BT_NOTFOUND) error_row_col_exit(op->offset, 
-            "Duplicated argument name \"%s\"\n", arg_name->str);
-          bt_insert(parent_type->arg_index, arg_name->str, arg_type);
+          void *bt_ret = bt_insert(parent_type->arg_index, arg_name->str, arg_type);
+          if(bt_ret != arg_type) error_row_col_exit(op->offset, "Duplicated argument name \"%s\"\n", arg_name->str);
         }
         list_insert(parent_type->arg_list, arg_name->str, arg_type); // May insert NULL as key
         arg_decl = arg_decl->sibling;
@@ -276,7 +275,6 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       f->type = type_gettype(cxt, decl, basetype); // Set field type
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
-      printf("field name %s\n", field_name->str ? field_name->str : "NULL");
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
@@ -286,14 +284,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
+      // TODO: THIS OFFSET DOES NOT WORK
       if(f->size == TYPE_UNKNOWN_SIZE) 
         error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
       curr_offset += f->type->size;
       if(f->name) { // Only insert if there is a name
-        printf("name = %s\n", f->name);
-        if(bt_find(comp->field_index, f->name) != BT_NOTFOUND) error_row_col_exit(field_name->offset, 
+        void *bt_ret = bt_insert(comp->field_index, f->name, f);
+        if(bt_ret != f) error_row_col_exit(field_name->offset, 
             "Duplicated field name \"%s\" in composite type declaration\n", f->name);
-        bt_insert(comp->field_index, f->name, f);
       }
       list_insert(comp->field_list, f->name, f); // Always insert into the ordered list
       field = field->sibling;

@@ -403,8 +403,9 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
+  char test2[] = "struct { void : 50, **aa : 100, size_unknown[10 * 3]; int bb : 20; long; } ";
   parse_cxt = parse_exp_init(test2);
+  type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
@@ -415,6 +416,7 @@ void test_type_getcomp() {
   printf("=====================================\n");
   char test3[] = "struct {}";
   parse_cxt = parse_exp_init(test3);
+  type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
@@ -425,6 +427,7 @@ void test_type_getcomp() {
   printf("=====================================\n"); // Tests nesting of struct and union
   char test4[] = "struct { struct{ int a; }; union { long b; }; }";
   parse_cxt = parse_exp_init(test4);
+  type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
@@ -435,6 +438,7 @@ void test_type_getcomp() {
   printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
   char test5[] = "struct name";
   parse_cxt = parse_exp_init(test5);
+  type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
