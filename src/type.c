@@ -15,7 +15,6 @@ scope_t *scope_init(int level) {
 }
 
 void scope_free(scope_t *scope) {
-  for(int i = 0;i < SCOPE_TYPE_COUNT;i++) ht_free(scope->names[i]);
   // Free objects first, then free all lists
   listnode_t *curr; // No need to use two pointers because we do not free nodes
   curr = list_head(scope->objs[OBJ_TYPE]);
@@ -24,6 +23,9 @@ void scope_free(scope_t *scope) {
   while(curr) { comp_free((comp_t *)curr->value); curr = list_next(curr); }
   curr = list_head(scope->objs[OBJ_FIELD]);
   while(curr) { field_free((field_t *)curr->value); curr = list_next(curr); }
+  curr = list_head(scope->objs[OBJ_ENUM]);
+  while(curr) { enum_free((field_t *)curr->value); curr = list_next(curr); }
+  for(int i = 0;i < SCOPE_TYPE_COUNT;i++) ht_free(scope->names[i]);
   for(int i = 0;i < OBJ_TYPE_COUNT;i++) list_free(scope->objs[i]);
   free(scope);
   return;
@@ -299,3 +301,27 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   comp->size = curr_offset;
   return comp;
 }
+
+enum_t *enum_init(type_cxt_t *cxt) {
+  enum_t *e = (enum_t *)malloc(sizeof(enum_t));
+  memset(e, 0x00, sizeof(enum_t));
+  e->field_list = list_init();
+  e->field_index = bt_str_init();
+  scope_top_obj_insert(cxt, OBJ_ENUM, f);
+  return e;
+}
+
+void enum_free(void *ptr) {
+  enum_t *e = (enum_t *)ptr;
+  list_free(e->field_list);
+  bt_free(e->field_index);
+  free(e);
+}
+
+obj_free_cb_t obj_free_func_list[] = {  // Object free functions
+  type_free,
+  comp_free,
+  field_free,
+  enum_free,
+  NULL,       // Sentinel - will segment fault
+};

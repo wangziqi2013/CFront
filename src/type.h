@@ -27,9 +27,10 @@ enum {
 // All objects allocated within the scope will be freed when the scope gets poped
 // No ownership of memory is therefore enforced, i.e. objects do not own each other.
 enum {
-  OBJ_TYPE = 0,
-  OBJ_COMP = 1,
+  OBJ_TYPE  = 0,
+  OBJ_COMP  = 1,
   OBJ_FIELD = 2,
+  OBJ_ENUM  = 3,
   OBJ_TYPE_COUNT,
 };
 
@@ -39,6 +40,9 @@ typedef struct {
   hashtable_t *names[SCOPE_TYPE_COUNT]; // enum, var, struct, union, udef, i.e. symbol table. Does not own anything
   list_t *objs[OBJ_TYPE_COUNT];      // Objects allocates while processing the scope; Freed on scope free; Owns everything
 } scope_t;
+
+typedef void (*obj_free_func_t)(void *);   // Call back handlers for object free; Register one for each type
+extern obj_free_cb_t obj_free_func_list[]; // Registered call back functions for objects
 
 typedef struct {
   stack_t *scopes;
@@ -141,4 +145,7 @@ void field_free(field_t *field);
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype); 
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 void type_freecomp(comp_t *comp);
+
+enum_t *enum_init(type_cxt_t *cxt);
+void enum_free(enum_t *type);
 #endif
