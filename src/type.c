@@ -85,7 +85,8 @@ type_t *type_init(type_cxt_t *cxt) {
   return type;
 }
 
-void type_free(type_t *type) {
+void type_free(void *ptr) {
+  type_t *type = (type_t *)ptr;
   if(TYPE_OP_GET(type->decl_prop) == TYPE_OP_FUNC_CALL) {
     list_free(type->arg_list);
     bt_free(type->arg_index);
@@ -202,7 +203,8 @@ comp_t *comp_init(type_cxt_t *cxt, char *name, int has_definition) {
   return comp;
 }
 
-void comp_free(comp_t *comp) {
+void comp_free(void *ptr) {
+  comp_t *comp = (comp_t *)ptr;
   list_free(comp->field_list);
   bt_free(comp->field_index);
   free(comp);
@@ -216,8 +218,8 @@ field_t *field_init(type_cxt_t *cxt) {
   return f;
 }
 
-void field_free(field_t *field) {
-  free(field);
+void field_free(void *ptr) {
+  free(ptr);
 }
 
 // Input must be T_STRUCT or T_UNION
@@ -307,7 +309,7 @@ enum_t *enum_init(type_cxt_t *cxt) {
   memset(e, 0x00, sizeof(enum_t));
   e->field_list = list_init();
   e->field_index = bt_str_init();
-  scope_top_obj_insert(cxt, OBJ_ENUM, f);
+  scope_top_obj_insert(cxt, OBJ_ENUM, e);
   return e;
 }
 
@@ -318,7 +320,7 @@ void enum_free(void *ptr) {
   free(e);
 }
 
-obj_free_cb_t obj_free_func_list[] = {  // Object free functions
+obj_free_func_t obj_free_func_list[] = {  // Object free functions
   type_free,
   comp_free,
   field_free,
