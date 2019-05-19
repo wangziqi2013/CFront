@@ -162,19 +162,16 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     curr_type->size = 4; // Temporary
   }
 
-  token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain
   int num_op = 0;
   while(op->type != T_) {
     assert(op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB);
-    if(num_op == TYPE_MAX_DERIVATION) // Report error if the stack overflows
-      error_row_col_exit(op->offset, "Type derivation exceeds maximum allowed (%d)\n", TYPE_MAX_DERIVATION);
-    stack[num_op++] = op;
     op = ast_getchild(op, 0); 
     assert(op != NULL);
+    num_op++;
   }
 
-  while(num_op > 0) {
-    op = stack[--num_op];
+  while(num_op-- > 0) {
+    op = op->parent;
     type_t *parent_type = type_init(cxt);
     parent_type->next = curr_type;
     parent_type->decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
