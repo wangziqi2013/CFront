@@ -20,8 +20,8 @@ void test_scope_init() {
   assert(scope_search(cxt, SCOPE_STRUCT, "wangziqi2013") == (void *)0x12345UL);
   assert(scope_search(cxt, SCOPE_UNION, "wangziqi2016") == (void *)0x23456UL);
   scope_recurse(cxt); // 2 levels
-  assert(scope_top_find(cxt, SCOPE_STRUCT, "wangziqi2013") == HT_NOTFOUND);
-  assert(scope_top_find(cxt, SCOPE_UNION, "wangziqi2016") == HT_NOTFOUND);
+  assert(!scope_top_find(cxt, SCOPE_STRUCT, "wangziqi2013"));
+  assert(!scope_top_find(cxt, SCOPE_UNION, "wangziqi2016"));
   assert(scope_search(cxt, SCOPE_STRUCT, "wangziqi2013") == (void *)0x12345UL);
   assert(scope_search(cxt, SCOPE_UNION, "wangziqi2016") == (void *)0x23456UL);
   scope_recurse(cxt); // 3 levels
@@ -395,54 +395,55 @@ void test_type_getcomp() {
   char test1[] = "struct a { int b; long c; volatile double d; }";
   parse_cxt = parse_exp_init(test1);
   type_cxt = type_sys_init();
-  token = parse_decl(parse_cxt);
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
   char test2[] = "struct { void : 50, **aa : 100, []; int bb : 20; long; } ";
   parse_cxt = parse_exp_init(test2);
-  token = parse_decl(parse_cxt);
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
   char test3[] = "struct {}";
   parse_cxt = parse_exp_init(test3);
-  token = parse_decl(parse_cxt);
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests nesting of struct and union
   char test4[] = "struct { struct{ int a; }; union { long b; }; }";
   parse_cxt = parse_exp_init(test4);
-  token = parse_decl(parse_cxt);
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
   char test5[] = "struct name";
   parse_cxt = parse_exp_init(test5);
-  token = parse_decl(parse_cxt);
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, decl, ast_getchild(decl, 1));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 1));
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("Pass!\n");
+  (void)type;
   return;
 }
 
