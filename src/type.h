@@ -62,19 +62,22 @@ typedef enum {
 
 struct comp_t_struct;
 typedef struct type_t_struct {
-  typeid_t typeid;        // Index in the list
   decl_prop_t decl_prop;   // Can be BASETYPE_ or TYPE_OP_ or DECL_ series
   union {
     struct comp_t_struct *comp; // If base type indicates s/u/e this is a pointer to it; Do not own
     struct type_t_struct *next; // If derived type, this points to the next type by applying the op; Do not own
   };
   union {
+    int array_size;         // If decl_prop is array sub this stores the (optional) size of the array
     struct {
       list_t *arg_list;     // If decl_prop is function call this stores a list of type_t *; Owns memory
       bintree_t *arg_index; // Binary tree using arg name as key; Owns memory
       int vararg;           // Set if varadic argument function
     };
-    int array_size;   // If decl_prop is array sub this stores the (optional) size of the array
+    struct {            // Only valid if base type is BASETYPE_UDEF
+      char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it)
+      struct type_t_struct *udef_type; // Stores actual type for udef'ed names
+    };
   };
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
