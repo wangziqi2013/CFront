@@ -102,8 +102,9 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   token_t *decl_name = ast_getchild(decl, 2);
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
+  type_t *type;
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
-    type_t *type = type_init(cxt); // Allocate a new type variable
+    type = type_init(cxt); // Allocate a new type variable
     type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
@@ -113,8 +114,11 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
   } else if(basetype_type == BASETYPE_ENUM) {
     // TODO: ADD PROCESSING FOR ENUM
   } else if(basetype_type == BASETYPE_UDEF) {
-    // TODO: PROCESS TYPEDEF BY LOOKING UP SYMBOL TABLE
-    type_t *defed = (type_t *)scope_search(cxt, SCOPE_UDEF, name->str); // May return a struct with or without def
+    token_t *typedef_name = ast_getchild(basetype, 0);
+    assert(typedef_name && typedef_name->type == T_IDENT);
+    type = (type_t *)scope_search(cxt, SCOPE_UDEF, typedef_name->str); // May return a struct with or without def
+    assert(type); // There must be an earlier definition, because o.w. we would not recognize this token as udef
+    // Build new type on top of this
   }
 
   token_t *stack[TYPE_MAX_DERIVATION]; // Use stack to reverse the derivation chain

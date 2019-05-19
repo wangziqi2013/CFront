@@ -93,10 +93,12 @@ void token_cxt_free(token_cxt_t *cxt) {
   free(cxt);
 }
 
+// Called by parse_stmt when we see a statement block
 void token_enter_scope(token_cxt_t *cxt) { stack_push(cxt->udef_types, ht_str_init()); }
 void token_exit_scope(token_cxt_t *cxt) { ht_free((hashtable_t *)stack_pop(cxt->udef_types)); }
 
-// Adds a user-defined type
+// Adds a user-defined type into current scope's hash table. The parser adds a name when
+// it sees a typedef'ed base type with a name
 void token_add_utype(token_cxt_t *cxt, token_t *token) {
   assert(token->type == T_IDENT && stack_size(cxt->udef_types));
   token_t *prev = (token_t *)ht_find((hashtable_t *)stack_peek(cxt->udef_types), token->str);
@@ -109,6 +111,7 @@ void token_add_utype(token_cxt_t *cxt, token_t *token) {
   ht_insert((hashtable_t *)stack_peek(cxt->udef_types), token->str, token);
 }
 
+// Search from stack top to stack bottom and see whether we defined that type
 int token_isutype(token_cxt_t *cxt, token_t *token) {
   if(token->type != T_IDENT) return 0;
   for(int i = 0;i < stack_size(cxt->udef_types);i++) 
