@@ -367,7 +367,7 @@ void test_parse_enum() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test5[] = "enum name {a = (0,1,2), b = a ? 100 : 200, c = b}";
+  char test5[] = "enum name {a = (0,1,2), b = a ? 100 : 200, c = 200 + 3}";
   cxt = parse_exp_init(test5);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);

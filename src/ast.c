@@ -60,7 +60,7 @@ void ast_print(token_t *token, int depth) {
   printf("%04d:%s %s%s\n", token->type, token_typestr(token->type), 
          token->type == T_BASETYPE ? token_decl_print(token->decl_prop) : 
          (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr),
-         token->type == EXP_ARRAY_SUB || token->type == T_COMP_FIELD ? array_size : "");
+         token->type == EXP_ARRAY_SUB || token->type == T_COMP_FIELD || token->type == T_ENUM_FIELD ? array_size : "");
   for(token_t *child = token->child;child != NULL; child = child->sibling) ast_print(child, depth + 1);
   return;
 }
