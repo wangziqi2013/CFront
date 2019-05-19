@@ -13,10 +13,12 @@ void type_print(type_t *type, const char *name, int level) {
   type_t *basetype = type;
   while(basetype->next) basetype = basetype->next;
   decl_prop_t base = BASETYPE_GET(type->decl_prop);
+  // Print storage class and qualifier and base type, e.g. struct, union, enum, udef; with a space at the end
+  printf("%s", token_decl_print(base)); 
   if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
     for(int i = 0;i < level * 2;i++) putchar(' ');
-    printf("%s %s", base == BASETYPE_STRUCT ? "struct" : "union", comp->name ? comp->name : "");
+    printf("%s", comp->name ? comp->name : "");
     if(comp->has_definition) {
       for(int i = 0;i < level * 2;i++) putchar(' ');
       printf(" {\n");
@@ -28,9 +30,15 @@ void type_print(type_t *type, const char *name, int level) {
         printf(";\n")
         node = list_next(node);
       }
+      printf("} ");
     }
   } else if(base == BASETYPE_UDEF) {
-
+    printf("%s ", type->udef_name);
+  } else if(base == BASETYPE_ENUM) {
+    // TODO: ADD PRINT FOR ENUM
+    assert(0);
+  } else { // All other types
+    // Nothing to do
   }
 
   return;
