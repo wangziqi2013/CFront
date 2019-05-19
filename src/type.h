@@ -119,6 +119,8 @@ typedef struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
+void type_print(type_t *type);
+
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
 type_cxt_t *type_sys_init();

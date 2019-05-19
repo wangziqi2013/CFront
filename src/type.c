@@ -5,6 +5,17 @@
 #include "ast.h"
 #include "str.h"
 
+// Prints a type in string on stdout
+// type is the type object, name is shown as the inner most operand of the type expression, NULL means no name
+void type_print(type_t *type, const char *name, int level) {
+  assert(type);
+  // Print base type first
+  type_t *basetype = type;
+  while(basetype->next) basetype = basetype->next;
+  decl_prop_t base = BASETYPE_GET(type->decl_prop);
+  
+}
+
 scope_t *scope_init(int level) {
   scope_t *scope = (scope_t *)malloc(sizeof(scope_t));
   SYSEXPECT(scope != NULL);
