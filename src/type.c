@@ -54,7 +54,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   type_t *prev = NULL;
   str_t *decl_s = str_init();
   if(name) str_concat(decl_s, name);
-  while(type) {
+  while(type->next) { // Means it is not a base type
     decl_prop_t op = TYPE_OP_GET(type->decl_prop);
     assert(op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_FUNC_CALL);
     if(op == TYPE_OP_ARRAY_SUB) {

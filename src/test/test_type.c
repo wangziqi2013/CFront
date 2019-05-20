@@ -11,6 +11,7 @@
 #include "list.h"
 #include "str.h"
 #include "type.h"
+#include "eval.h"
 
 void test_scope_init() {
   printf("=== Test Scope Init ===\n");
@@ -392,6 +393,7 @@ void test_type_getcomp() {
   type_cxt_t *type_cxt;
   token_t *token;
   type_t *type;
+  str_t *s;
   char test1[] = "struct a { int b; long c; volatile double d; }";
   parse_cxt = parse_exp_init(test1);
   type_cxt = type_sys_init();
@@ -399,6 +401,9 @@ void test_type_getcomp() {
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", s->s);
+  str_free(s);
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
