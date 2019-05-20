@@ -40,7 +40,7 @@ typedef struct {
 } scope_t;
 
 typedef void (*obj_free_func_t)(void *);   // Call back handlers for object free; Register one for each type
-extern obj_free_func_t obj_free_func_list[]; // Registered call back functions for objects
+extern obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1]; // Registered call back functions for objects
 
 typedef struct {
   stack_t *scopes;

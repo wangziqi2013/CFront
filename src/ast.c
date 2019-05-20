@@ -13,7 +13,7 @@ int ast_isleaf(token_t *token) { return token->child == NULL; }
 void ast_update_offset(token_t *token) {
   token_t *child = token->child;
   while(child && !child->offset) child = child->sibling;
-  token->offset = child->offset;
+  if(child) token->offset = child->offset;
 }
 
 token_t *ast_append_child(token_t *token, token_t *child) {

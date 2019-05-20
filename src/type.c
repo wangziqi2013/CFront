@@ -405,7 +405,7 @@ void enum_free(void *ptr) {
   free(e);
 }
 
-obj_free_func_t obj_free_func_list[] = {  // Object free functions
+obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
   type_free,
   comp_free,
   field_free,
