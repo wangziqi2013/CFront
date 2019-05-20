@@ -52,6 +52,8 @@ void str_concat(str_t *str, const char *s) {
 
 void str_print_int(str_t *str, int d) {
   char temp[MAX_INT_DIGITS];
+  sprintf(temp, "%d", d);
+  str_concat(str, temp);
 }
 
 char *str_copy(const str_t *str) { // Returns a string allocated from heap. The str is not changed
