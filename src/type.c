@@ -62,7 +62,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       }
       str_append(decl_s, '[');
       if(type->array_size != -1) str_print_int(decl_s, type->array_size);
-      str_concat(decl_s, "] "); // Always leave a space at the end
+      str_concat(decl_s, "]"); // Always leave a space at the end
     } else if(op == TYPE_OP_DEREF) {
       char *qualifier = token_decl_print(type->decl_prop & DECL_QUAL_MASK); // Only prints qualifier
       //str_prepend(s, ' '); // Separate qualifiers
@@ -79,15 +79,18 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
         str_t *arg_s = type_print(list_value(arg), list_key(arg), NULL, 0, 0);
         str_concat(decl_s, arg_s->s);
         str_free(arg_s);
-        if(arg = list_next(arg)) str_concat(decl_s, ", ");
-        else str_concat(s, ") ");
+        if(arg = list_next(arg)) str_concat(decl_s, ", "); // If there is more arguments
+        else if(type->vararg) str_concat(s, ", ...)");
+        else str_concat(s, ")");
       }
     }
     prev = type;
     type = type->next;
   }
+  str_concat(s, decl_s->s);
+  str_free(decl_s);
 
-  return;
+  return s;
 }
 
 scope_t *scope_init(int level) {

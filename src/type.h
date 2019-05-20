@@ -122,7 +122,7 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
-void type_print(type_t *type, const char *name, int print_comp_body, int level);
+str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
