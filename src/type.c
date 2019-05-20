@@ -68,7 +68,21 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       //str_prepend(s, ' '); // Separate qualifiers
       str_prepend_str(decl_s, qualifier);
       str_prepend(decl_s, '*'); // * followed by qualifiers
-    } 
+    } else if(op == TYPE_OP_FUNC_CALL) {
+      if(prev && TYPE_OP_GET(prev->decl_prop) == TYPE_OP_DEREF) {
+        str_prepend(decl_s, '(');
+        str_append(decl_s, ')');
+      }
+      str_append(decl_s, '(');
+      listnode_t *arg = list_head(type->arg_list);
+      while(arg) {
+        str_t *arg_s = type_print(list_value(arg), list_key(arg), NULL, 0, 0);
+        str_concat(decl_s, arg_s->s);
+        str_free(arg_s);
+        if(arg = list_next(arg)) str_concat(decl_s, ", ");
+        else str_concat(s, ") ");
+      }
+    }
     prev = type;
     type = type->next;
   }
