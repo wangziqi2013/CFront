@@ -34,12 +34,24 @@ void str_append(str_t *str, char ch) {
   str->s[str->size] = '\0';
 }
 
+void str_prepend(str_t *str, char ch) {
+  if(str->size == str->capacity) str_extend(str, str->capacity * 2);
+  assert(str->size < str->capacity);
+  memcpy(str->s + 1, str->s, str->size + 1); // Including the trailing zero
+  str->s[0] = ch;
+  str->size++;
+}
+
 void str_concat(str_t *str, const char *s) {
   int copylen = strlen(s);
   if(str->size + copylen >= str->capacity) str_extend(str, str->capacity * 2);
   memcpy(str->s + str->size, s, copylen + 1); // Includes the '\0'
   str->size += copylen;
   return;
+}
+
+void str_print_int(str_t *str, int d) {
+  char temp[MAX_INT_DIGITS];
 }
 
 char *str_copy(const str_t *str) { // Returns a string allocated from heap. The str is not changed
