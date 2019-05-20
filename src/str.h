@@ -4,6 +4,7 @@
 
 #define STR_INIT_SIZE 32     // Excluding the terminating 0
 #define VECTOR_INIT_SIZE 32
+#define MAX_INT_DIGITS 64    // Can't be that long...
 
 typedef struct {
   int size;
@@ -16,6 +17,7 @@ void str_free(str_t *str);
 int str_size(str_t *str);
 void str_extend(str_t *str, int size);
 void str_append(str_t *str, char ch);
+void str_prepend(str_t *str, char ch);
 void str_concat(str_t *str, const char *s);
 char *str_copy(const str_t *str);
 
