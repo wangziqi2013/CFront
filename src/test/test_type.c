@@ -402,6 +402,7 @@ void test_type_getcomp() {
   ast_print(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0));
   s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test1);
   printf("%s\n", s->s);
   str_free(s);
   type_sys_free(type_cxt);
@@ -415,6 +416,9 @@ void test_type_getcomp() {
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test2);
+  printf("%s\n", s->s);
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
@@ -426,17 +430,23 @@ void test_type_getcomp() {
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test3);
+  printf("%s\n", s->s);
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests nesting of struct and union
-  char test4[] = "struct { struct{ int a; }; union { long b; }; }";
+  char test4[] = "struct { struct some_struct { int a; } var; union { long b; }; }";
   parse_cxt = parse_exp_init(test4);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test4);
+  printf("%s\n", s->s);
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
@@ -448,6 +458,9 @@ void test_type_getcomp() {
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test5);
+  printf("%s\n", s->s);
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);

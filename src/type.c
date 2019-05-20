@@ -11,6 +11,7 @@
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level) {
   assert(type);
   if(!s) s = str_init();
+  for(int i = 0;i < level * 2;i++) str_append(s, ' '); // Padding spaces to the level
   // Print base type first
   type_t *basetype = type;
   while(basetype->next) basetype = basetype->next;
@@ -20,11 +21,9 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   str_append(s, ' ');
   if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
-    for(int i = 0;i < level * 2;i++) str_append(s, ' ');
     if(comp->name) str_concat(s, comp->name); 
     if(print_comp_body && comp->has_definition) {
-      for(int i = 0;i < level * 2;i++) str_append(s, ' ');
-      str_concat(s, " {\n");
+      str_concat(s, "{\n");
       listnode_t *node = list_head(comp->field_list);
       while(node) {
         field_t *field = (field_t *)list_value(node);
@@ -38,6 +37,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
         str_concat(s, ";\n");
         node = list_next(node);
       }
+      for(int i = 0;i < level * 2;i++) str_append(s, ' ');
       str_concat(s, "} ");
     }
   } else if(base == BASETYPE_UDEF) {
@@ -56,7 +56,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   if(name) str_concat(decl_s, name);
   while(type->next) { // Means it is not a base type
     decl_prop_t op = TYPE_OP_GET(type->decl_prop);
-    assert(op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_FUNC_CALL);
+    assert(op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_DEREF || op == TYPE_OP_FUNC_CALL);
     if(op == TYPE_OP_ARRAY_SUB) {
       if(prev && TYPE_OP_GET(prev->decl_prop) == TYPE_OP_DEREF) {
         str_prepend(decl_s, '(');
@@ -366,7 +366,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
-      }
+      } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
