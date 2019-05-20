@@ -42,12 +42,21 @@ void str_prepend(str_t *str, char ch) {
   str->size++;
 }
 
+void str_prepend_str(str_t *str, const char *s) {
+  int copylen = strlen(s);
+  if(str->size + copylen >= str->capacity) str_extend(str, str->size + copylen);
+  assert(str->size + copylen < str->capacity);
+  memcpy(str->s + copylen, str->s, str->size + 1); // Including the trailing zero
+  memcpy(str->s, s, copylen); // Do not include the trailing zero
+  str->size += copylen;
+}
+
 void str_concat(str_t *str, const char *s) {
   int copylen = strlen(s);
-  if(str->size + copylen >= str->capacity) str_extend(str, str->capacity * 2);
+  if(str->size + copylen >= str->capacity) str_extend(str, str->size + copylen);
+  assert(str->size + copylen < str->capacity);
   memcpy(str->s + str->size, s, copylen + 1); // Includes the '\0'
   str->size += copylen;
-  return;
 }
 
 void str_print_int(str_t *str, int d) {
