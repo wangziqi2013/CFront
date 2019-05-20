@@ -6,6 +6,7 @@
 #include "list.h"
 #include "bintree.h"
 #include "token.h"
+#include "str.h"
 
 #define SCOPE_LEVEL_GLOBAL  0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes

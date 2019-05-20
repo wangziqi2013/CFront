@@ -28,7 +28,9 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       listnode_t *node = list_head(comp->field_list);
       while(node) {
         field_t *field = (field_t *)list_value(node);
-        type_print(field->type, field->name, print_comp_body, level + 1);
+        str_t *field_s = type_print(field->type, field->name, NULL, print_comp_body, level + 1);
+        str_concat(s, field_s->s);
+        str_free(field_s);
         if(field->bitfield_size != -1) {
           str_concat(s, " : ");
           str_print_int(s, field->bitfield_size);
@@ -79,7 +81,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
         str_t *arg_s = type_print(list_value(arg), list_key(arg), NULL, 0, 0);
         str_concat(decl_s, arg_s->s);
         str_free(arg_s);
-        if(arg = list_next(arg)) str_concat(decl_s, ", "); // If there is more arguments
+        if((arg = list_next(arg)) != NULL) str_concat(decl_s, ", "); // If there is more arguments
         else if(type->vararg) str_concat(s, ", ...)");
         else str_concat(s, ")");
       }
