@@ -7,38 +7,70 @@
 
 // Prints a type in string on stdout
 // type is the type object, name is shown as the inner most operand of the type expression, NULL means no name
-void type_print(type_t *type, const char *name, int level) {
+// The top level should call this function with s == NULL. The return value contains the type string
+str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level) {
   assert(type);
+  if(!s) s = str_init();
   // Print base type first
   type_t *basetype = type;
   while(basetype->next) basetype = basetype->next;
   decl_prop_t base = BASETYPE_GET(type->decl_prop);
   // Print storage class and qualifier and base type, e.g. struct, union, enum, udef; with a space at the end
-  printf("%s", token_decl_print(base)); 
+  str_concat(s, token_decl_print(base));
+  str_append(s, ' ');
   if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
-    for(int i = 0;i < level * 2;i++) putchar(' ');
-    printf("%s", comp->name ? comp->name : "");
-    if(comp->has_definition) {
-      for(int i = 0;i < level * 2;i++) putchar(' ');
-      printf(" {\n");
+    for(int i = 0;i < level * 2;i++) str_append(s, ' ');
+    if(comp->name) str_concat(s, comp->name); 
+    if(print_comp_body && comp->has_definition) {
+      for(int i = 0;i < level * 2;i++) str_append(s, ' ');
+      str_concat(s, " {\n");
       listnode_t *node = list_head(comp->field_list);
       while(node) {
         field_t *field = (field_t *)list_value(node);
-        type_print(field->type, field->name, level + 1);
-        if(field->bitfield_size != -1) printf(" : %d", field->bitfield_size);
-        printf(";\n");
+        type_print(field->type, field->name, print_comp_body, level + 1);
+        if(field->bitfield_size != -1) {
+          str_concat(s, " : ");
+          str_print_int(s, field->bitfield_size);
+        }
+        str_concat(s, ";\n");
         node = list_next(node);
       }
-      printf("} ");
+      str_concat(s, "} ");
     }
   } else if(base == BASETYPE_UDEF) {
-    printf("%s ", type->udef_name);
+    str_concat(s, type->udef_name);
+    str_append(s, ' ');
   } else if(base == BASETYPE_ENUM) {
     // TODO: ADD PRINT FOR ENUM
     assert(0);
   } else { // All other types
     // Nothing to do
+  }
+
+  // We next build the type expression
+  type_t *prev = NULL;
+  str_t *decl_s = str_init();
+  if(name) str_concat(decl_s, name);
+  while(type) {
+    decl_prop_t op = TYPE_OP_GET(type->decl_prop);
+    assert(op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_FUNC_CALL);
+    if(op == TYPE_OP_ARRAY_SUB) {
+      if(prev && TYPE_OP_GET(prev->decl_prop) == TYPE_OP_DEREF) {
+        str_prepend(decl_s, '(');
+        str_append(decl_s, ')');
+      }
+      str_append(decl_s, '[');
+      if(type->array_size != -1) str_print_int(decl_s, type->array_size);
+      str_concat(decl_s, "] "); // Always leave a space at the end
+    } else if(op == TYPE_OP_DEREF) {
+      char *qualifier = token_decl_print(type->decl_prop & DECL_QUAL_MASK); // Only prints qualifier
+      //str_prepend(s, ' '); // Separate qualifiers
+      str_prepend_str(decl_s, qualifier);
+      str_prepend(decl_s, '*'); // * followed by qualifiers
+    } 
+    prev = type;
+    type = type->next;
   }
 
   return;
@@ -164,9 +196,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
 
   int num_op = 0;
   while(op->type != T_) {
-    assert(op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB);
+    assert(op && (op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB));
     op = ast_getchild(op, 0); 
-    assert(op != NULL);
     num_op++;
   }
 

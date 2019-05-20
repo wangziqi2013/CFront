@@ -6,8 +6,6 @@
 #include "list.h"
 #include "bintree.h"
 #include "token.h"
-#include "str.h"
-#include "eval.h"
 
 #define SCOPE_LEVEL_GLOBAL  0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
@@ -124,7 +122,7 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
-void type_print(type_t *type, const char *name, int level);
+void type_print(type_t *type, const char *name, int print_comp_body, int level);
 
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
