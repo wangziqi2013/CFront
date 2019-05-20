@@ -9,10 +9,16 @@ token_t *ast_make_node(token_t *token) {
 
 int ast_isleaf(token_t *token) { return token->child == NULL; }
 
+// Update the offset using the first non-NULL token in child list
+void ast_update_offset(token_t *token) {
+  token_t *child = token->child;
+  while(child && !child->offset) child = child->sibling;
+  token->offset = child->offset;
+}
+
 token_t *ast_append_child(token_t *token, token_t *child) {
   if(token->child == NULL) {
     token->child = child;
-    token->offset = child->offset;
   } else {
     token_t *last = token->child;
     while(last->sibling != NULL) last = last->sibling;
@@ -20,6 +26,7 @@ token_t *ast_append_child(token_t *token, token_t *child) {
   }
   child->sibling = NULL;
   child->parent = token;
+  ast_update_offset(token);
   return token;
 }
 
@@ -28,7 +35,7 @@ token_t *ast_push_child(token_t *token, token_t *child) {
   child->sibling = token->child;
   token->child = child;
   child->parent = token;
-  token->offset = child->offset;
+  ast_update_offset(token);
   return token;
 }
 
@@ -37,6 +44,7 @@ token_t *ast_insert_after(token_t *token, token_t *child) {
   child->sibling = token->sibling;
   token->sibling = child;
   child->parent = token->parent;
+  ast_update_offset(token);
   return token;
 }
 
