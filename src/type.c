@@ -284,7 +284,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   return curr_type;
 }
 
-comp_t *comp_init(type_cxt_t *cxt, char *name, int has_definition) {
+comp_t *comp_init(type_cxt_t *cxt, char *name, char *offset, int has_definition) {
   comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
   SYSEXPECT(comp != NULL);
   memset(comp, 0x00, sizeof(comp_t));
@@ -393,8 +393,22 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
             "Duplicated field name \"%s\" in composite type declaration\n", f->name);
         list_insert(comp->field_list, f->name, f); // Named field, insert
       } else { // Promote inner composite type names to the current scope
-        if(type_is_comp(f->type)) { // Anonymous comp field, promote, with the type node's modifier and qualifier
-
+        if(type_is_comp(f->type)) { // Anonymous comp field, promote, with the type node's qualifier (no storage class)
+          decl_prop_t qual = f->type->decl_prop & DECL_QUAL_MASK; // OR'ed onto every field's decl prop
+          listnode_t *promote_head = list_head(f->type->comp->field_list);
+          while(promote_head) {
+            char *promote_name = list_key(promote_head);
+            field_t *promote_field = list_value(promote_head);
+            if(promote_name) {
+              if(bt_insert(comp->field_index, promote_name, promote_field) != promote_field) {
+                error_row_col_exit(promote_field->offset, 
+                  "Promoted anonymous composite field name \"%s\" clashes with including type\n", promote_name);
+              }
+            }
+            promote_field->type->decl_prop |= qual; // Inherit from including comp type's qualifiers
+            list_insert(comp->field_list, promote_name, promote_field);
+            promote_head = list_next(promote_head);
+          }
         } else {
           list_insert(comp->field_list, NULL, f); // Anonymous non-comp field, insert
         }

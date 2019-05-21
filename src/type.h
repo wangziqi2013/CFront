@@ -103,6 +103,7 @@ typedef struct value_t_struct {
 
 // Represents composite type
 typedef struct comp_t_struct {
+  char *offset;        // If name is not NULL this is the token's offset
   char *name;             // NULL if no name; Does not own memory
   list_t *field_list;     // A list of field *; Does not contain promoted comp types; Owns memory;
   bintree_t *field_index; // These two provides both fast named access, and ordered storage; Owns memory
@@ -112,6 +113,7 @@ typedef struct comp_t_struct {
 
 // Single field within the composite type
 typedef struct {
+  char *offset;        // If name is not NULL this is the token's offset
   char *name;          // NULL if anonymous field; Does not own memory
   int bitfield_size;   // Set if bit field; -1 if not
   int offset;          // Offset within the composite structure
@@ -120,6 +122,7 @@ typedef struct {
 } field_t;
 
 typedef struct enum_t_struct {
+  char *offset;            // If name is not NULL this is the token's offset
   char *name;              // NULL if unnamed enum
   list_t *field_list;      
   bintree_t *field_index;  // Same as above
