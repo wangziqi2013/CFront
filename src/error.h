@@ -35,5 +35,7 @@ void error_exit_or_jump(int need_exit);
 void error_get_row_col(const char *s, int *row, int *col);
 void syserror(const char *prompt);
 
+int error_get_offset(const char *offset); // Returns integer offset
+
 #endif
 
