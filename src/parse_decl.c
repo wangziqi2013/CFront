@@ -130,10 +130,7 @@ token_t *parse_decl(parse_decl_cxt_t *cxt, int hasbasetype) {
       ast_append_child(decl, parse_exp_reduce_all(cxt)); // This may directly put the placeholder node as a expression
       ast_append_child(decl, decl_name ? decl_name : token_get_empty()); // Only appends the name if there is one, or empty node
       parse_exp_decurse(cxt);
-      // Two cases: (1) If the parent of placeholder node is T_DECL then there is no expression, in which 
-      // case we retain the empty node to indicate no expression; (2) Otherwise there is an expression
-      // and we just remove the empty node (the exp has no concrete operand at leaf level) and free it
-      //if(placeholder->parent->type != T_DECL) token_free(ast_remove(placeholder)); 
+      // Leaf operand always empty node as stop sign when traversing the type derivation chain
       return decl;
     }
     if(token->decl_prop & DECL_QUAL_MASK) { // Special case for type qualifiers

@@ -28,12 +28,18 @@ int parse_name_body(parse_comp_cxt_t *cxt, token_t *root) {
 }
 
 // Returns the same node which is either T_STRUCT or T_UNION
+// The 2nd child is empty if there is no body or empty body
+// Check whether decl_prop has TYPE_EMPTY_BODY bit set
 token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
   if(parse_name_body(cxt, root)) {
+    
     int has_body = 0; // Might be possible that there is {} as body but it is empty
     while(1) { // loop on lines
       if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_RCPAREN) { // Finish parsing on '}'
-        if(!has_body) ast_append_child(root, token_get_empty());
+        if(!has_body) {
+          ast_append_child(root, token_get_empty());
+          root->decl_prop = TYPE_EMPTY_BODY; // Distinguish this from no body defined
+        }
         token_consume_type(cxt->token_cxt, T_RCPAREN); 
         break; 
       }
