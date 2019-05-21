@@ -364,8 +364,13 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
     comp = comp_init(cxt, NULL, token->offset, COMP_HAS_DEFINITION);
   }
 
+  if(token->decl_prop & TYPE_EMPTY_BODY) { // If the comp has no body then there is nothing we need to do
+    comp->size = 0;
+    return comp;
+  }
+
   int curr_offset = 0;
-  while(entry) { // It is possible that the struct has no entry; Must set the size field before this
+  while(entry) { 
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
     assert(basetype->type == T_BASETYPE);

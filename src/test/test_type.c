@@ -465,7 +465,7 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt); 
   ast_free(token);
   printf("=====================================\n"); // Tests promotion within composite types
-  char test6[] = "struct { const union { volatile int x; }; struct named {}; struct { volatile int xy[10]; int *z; }; }";
+  char test6[] = "struct { const union { volatile int x; }; /*struct named {};*/ struct { volatile int xy[10]; int *z; }; }";
   parse_cxt = parse_exp_init(test6);
   type_cxt = type_sys_init(); 
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
