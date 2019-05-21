@@ -50,7 +50,10 @@ void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
   if(BASETYPE_GET(basetype->decl_prop) != BASETYPE_NONE) 
     error_row_col_exit(cxt->token_cxt->s, "Already has type specifier \"%s\"\n", token_decl_print(basetype->decl_prop));
   int usign = 0;
-  token_type_t type = token_lookahead_notnull(cxt->token_cxt, 1)->type; // Use this to detect illegal "signed long double"
+  token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
+  basetype->offset = la->offset; // In case no child is pushed for the base type node, we assign the next token's offset
+  token_type_t type = la->type;  // Use this to detect illegal "signed long double"
+  // Note that this is not a while loop
   switch(type) {   // Basetype declaration cannot be the end of file
     case T_UNSIGNED: usign = 1;                                // Fall through
     case T_SIGNED: token_free(token_get_next(cxt->token_cxt)); // Fall through again
