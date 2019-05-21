@@ -11,6 +11,7 @@ int ast_isleaf(token_t *token) { return token->child == NULL; }
 
 // Update the offset using the first non-NULL token in child list
 void ast_update_offset(token_t *token) {
+  if(token->offset) return;
   token_t *child = token->child;
   while(child && !child->offset) child = child->sibling;
   if(child) token->offset = child->offset;
@@ -66,7 +67,8 @@ void ast_print(token_t *token, int depth) {
   char array_size[16];
   if(token->type == EXP_ARRAY_SUB || token->type == T_COMP_FIELD || token->type == T_ENUM_FIELD) 
     sprintf(array_size, "%d", token->array_size);
-  printf("%04d:%s %s%s\n", token->type, token_typestr(token->type), 
+  printf("%04d:%04d:%s %s%s\n", token->type, token->offset ? error_get_offset(token->offset) : 0,
+         token_typestr(token->type), 
          token->type == T_BASETYPE ? token_decl_print(token->decl_prop) : 
          (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr),
          token->type == EXP_ARRAY_SUB || token->type == T_COMP_FIELD || token->type == T_ENUM_FIELD ? array_size : "");
