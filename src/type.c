@@ -22,7 +22,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   str_append(s, ' ');
   if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
-    if(comp->name) str_concat(s, comp->name); 
+    if(comp->name) { str_concat(s, comp->name); str_append(s, ' '); } // Name followed by a space
     if(print_comp_body && comp->has_definition) {
       str_concat(s, "{\n");
       listnode_t *node = list_head(comp->field_list);
@@ -254,14 +254,18 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
           if(arg_decl->sibling) 
             error_row_col_exit(op->offset, "\"...\" must be the last argument in function prototype\n")
           parent_type->vararg = 1;
+          break; // Must be the last arg, exit loop here
         }
         token_t *arg_basetype = ast_getchild(arg_decl, 0);
         token_t *arg_exp = ast_getchild(arg_decl, 1);
         token_t *arg_name = ast_getchild(arg_decl, 2);
         arg_type = type_gettype(cxt, arg_decl, arg_basetype);
-        // Detect whether the type is void, and that it is not (the first AND the last)
-        if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID && (arg_num > 1 || arg_decl->sibling)) 
-           error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
+        // Detect whether the type is void. (1) Ignore if it is the first and only arg; (2) Otherwise throw error
+        if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID) {
+          if(arg_num > 1 || arg_decl->sibling) error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
+          else if(arg_name->type != T_) error_row_col_exit(op->offset, "\"void\" argument must be anonymous\n");
+          else break;
+        }
         if(arg_name->type != T_) { // Insert into the index if the arg has a name
           void *bt_ret = bt_insert(parent_type->arg_index, arg_name->str, arg_type);
           if(bt_ret != arg_type) error_row_col_exit(op->offset, "Duplicated argument name \"%s\"\n", arg_name->str);
@@ -372,6 +376,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
       } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
+      // TODO: ONLY INTEGER TYPES ARE ALLOWED TO BE IN A BIT FIELD
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
