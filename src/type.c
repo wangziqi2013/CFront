@@ -284,11 +284,11 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   return curr_type;
 }
 
-comp_t *comp_init(type_cxt_t *cxt, char *name, char *offset, int has_definition) {
+comp_t *comp_init(type_cxt_t *cxt, char *name, char *source_offset, int has_definition) {
   comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
   SYSEXPECT(comp != NULL);
   memset(comp, 0x00, sizeof(comp_t));
-  comp->offset = offset;
+  comp->source_offset = source_offset;
   comp->name = name;
   comp->has_definition = has_definition;
   comp->field_list = list_init();
@@ -357,7 +357,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       }
     }
   } else if(!has_name && has_body) { // Case 2
-    comp = comp_init(cxt, NULL, NULL, COMP_HAS_DEFINITION);
+    comp = comp_init(cxt, NULL, token->offset, COMP_HAS_DEFINITION);
   }
 
   int curr_offset = 0;
@@ -373,7 +373,10 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       field_t *f = field_init(cxt);
       f->type = type_gettype(cxt, decl, basetype, 0); // Set field type; do not allow void and storage class
       token_t *field_name = ast_getchild(decl, 2);
-      if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
+      if(field_name->type == T_IDENT) {
+        f->name = field_name->str;             // Set field name if there is one
+        f->source_offset = field_name->offset; // Set field offset to the name for error reporting
+      } else { f->source_offset = field->offset; } // If anonymous field, set offset from the field token
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
@@ -384,14 +387,13 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
-      // TODO: THIS OFFSET DOES NOT WORK
       if(f->size == TYPE_UNKNOWN_SIZE) 
         error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
       
       if(f->name) { // Only insert if there is a name
-        void *bt_ret = bt_insert(comp->field_index, f->name, f);
-        if(bt_ret != f) error_row_col_exit(field_name->offset, 
-            "Duplicated field name \"%s\" in composite type declaration\n", f->name);
+        if(bt_insert(comp->field_index, f->name, f) != f) {
+          error_row_col_exit(field_name->offset, "Duplicated field name \"%s\" in composite type declaration\n", f->name);
+        }
         list_insert(comp->field_list, f->name, f); // Named field, insert
       } else { // Promote inner composite type names to the current scope
         if(type_is_comp(f->type)) { // Anonymous comp field, promote, with the type node's qualifier (no storage class)
@@ -402,19 +404,17 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
             field_t *promote_field = list_value(promote_head);
             if(promote_name) {
               if(bt_insert(comp->field_index, promote_name, promote_field) != promote_field) {
-                error_row_col_exit(promote_field->offset, 
+                error_row_col_exit(promote_field->source_offset, 
                   "Promoted anonymous composite field name \"%s\" clashes with including type\n", promote_name);
               }
             }
             promote_field->type->decl_prop |= qual; // Inherit from including comp type's qualifiers
+            promote_field->offset += curr_offset;   // Offset by the current position
             list_insert(comp->field_list, promote_name, promote_field);
             promote_head = list_next(promote_head);
           }
-        } else {
-          list_insert(comp->field_list, NULL, f); // Anonymous non-comp field, insert
-        }
+        } else { list_insert(comp->field_list, NULL, f); } // Anonymous non-comp field, insert
       }
-      
       curr_offset += f->type->size;
       field = field->sibling;
     }
