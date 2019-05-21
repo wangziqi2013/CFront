@@ -336,7 +336,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   token_t *entry = ast_getchild(token, 1);
   assert(name && entry); // Both children must exist
   int has_name = name->type != T_;
-  int has_body = entry->type != T_;
+  int has_body = entry->type != T_ || (token->decl_prop & TYPE_EMPTY_BODY); // Has at least one entry, or empty body
   assert(has_name || has_body); // Parser ensures this
   int domain = (token->type == T_STRUCT) ? SCOPE_STRUCT : SCOPE_UNION;
   comp_t *comp = NULL; // If set then do not alloc new
