@@ -8,6 +8,7 @@
     "bintree.h": "c",
     "error.h": "c",
     "list.h": "c",
-    "eval.h": "c"
+    "eval.h": "c",
+    "token.h": "c"
   }
 }

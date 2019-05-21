@@ -423,7 +423,7 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test3[] = "struct {int;}";
+  char test3[] = "struct {void *;}";
   parse_cxt = parse_exp_init(test3);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
