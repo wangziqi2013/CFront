@@ -262,8 +262,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
         arg_type = type_gettype(cxt, arg_decl, arg_basetype);
         // Detect whether the type is void. (1) Ignore if it is the first and only arg; (2) Otherwise throw error
         if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID) {
-          if(arg_num > 1 || arg_decl->sibling) error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n");
-          else if(arg_name->type != T_) error_row_col_exit(op->offset, "\"void\" argument must be anonymous\n");
+          if(arg_num > 1 || arg_decl->sibling) { error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n"); }
+          else if(arg_name->type != T_) { error_row_col_exit(op->offset, "\"void\" argument must be anonymous\n"); }
           else break;
         }
         if(arg_name->type != T_) { // Insert into the index if the arg has a name

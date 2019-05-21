@@ -437,7 +437,7 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests nesting of struct and union
-  char test4[] = "struct { struct some_struct { int a; } var; union { long b; }; }";
+  char test4[] = "struct { struct some_struct { int (*(*a)[10])(int x, ...); } var; union { long (*b)(void); }; }";
   parse_cxt = parse_exp_init(test4);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
