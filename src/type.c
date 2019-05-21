@@ -189,7 +189,7 @@ void type_free(void *ptr) {
 // 1. Do not process storage class including typedef - the caller should add them to symbol table
 // 2. Do process struct/union/enum definition
 // 3. Type is only valid within the scope it is analyzed
-type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
+type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags) {
   assert(basetype->type == T_BASETYPE);
   token_t *op = ast_getchild(decl, 1);
   token_t *decl_name = ast_getchild(decl, 2);
@@ -213,6 +213,13 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     assert(curr_type->udef_type); // Must have been defined, otherwise the parser will not recognize it as udef
     curr_type->size = curr_type->udef_type->size;
   } else { // This branch is for primitive base types
+    if(BASETYPE_GET(basetype->decl_prop) == BASETYPE_VOID) {
+      if(DECL_STGCLS_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have storage class\n"); }
+      else if(DECL_QUAL_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have qualifiers\n"); }
+      else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
+        error_row_col_exit(basetype->offset, "\"void\" type can only be used in function argument and return value\n");
+      }
+    }
     // TODO: SET TYPE SIZE
     curr_type->size = 4; // Temporary
   }
@@ -252,7 +259,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
         token_t *arg_basetype = ast_getchild(arg_decl, 0);
         token_t *arg_exp = ast_getchild(arg_decl, 1);
         token_t *arg_name = ast_getchild(arg_decl, 2);
-        arg_type = type_gettype(cxt, arg_decl, arg_basetype);
+        arg_type = type_gettype(cxt, arg_decl, arg_basetype, TYPE_ALLOW_VOID); // This allows both base and decl to be void type
         // Detect whether the type is void. (1) Ignore if it is the first and only arg; (2) Otherwise throw error
         if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID) {
           if(arg_num > 1 || arg_decl->sibling) { error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n"); }
@@ -361,7 +368,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
       field_t *f = field_init(cxt);
-      f->type = type_gettype(cxt, decl, basetype); // Set field type
+      f->type = type_gettype(cxt, decl, basetype, 0); // Set field type; do not allow void
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)

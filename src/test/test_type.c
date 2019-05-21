@@ -400,7 +400,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test1);
   printf("%s\n", s->s);
@@ -409,13 +409,13 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "struct { void : 50, **aa : 100, size_unknown[10 * 2 + 3]; int bb : 20; long; } ";
+  char test2[] = "struct { int : 50, **aa : 100, size_unknown[10 * 2 + 3]; int bb : 20; long; } ";
   parse_cxt = parse_exp_init(test2);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test2);
   printf("%s\n", s->s);
@@ -429,7 +429,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test3);
   printf("%s\n", s->s);
@@ -437,13 +437,13 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests nesting of struct and union
-  char test4[] = "struct { struct some_struct { int (*(*a)[10])(int x, ...); } var; union { long (*b)(void); }; }";
+  char test4[] = "struct { struct some_struct { int (*(*a)[10])(int x, ...); } var; /*void x*/ union { void (*b)(void); }; }";
   parse_cxt = parse_exp_init(test4);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test4);
   printf("%s\n", s->s);
@@ -457,7 +457,7 @@ void test_type_getcomp() {
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
   ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 0));
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test5);
   printf("%s\n", s->s);

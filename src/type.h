@@ -12,6 +12,8 @@
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 
+#define TYPE_ALLOW_VOID     0x00000001
+
 enum {
  SCOPE_ENUM   = 0,
  SCOPE_VAR    = 1,
@@ -148,7 +150,7 @@ field_t *field_init(type_cxt_t *cxt);
 void field_free(void *ptr);
 
 // Returns a type * object given a T_DECL node and optionally base type
-type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype); 
+type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags); 
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 void type_freecomp(comp_t *comp);
 
