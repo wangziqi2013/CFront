@@ -126,7 +126,7 @@ typedef struct enum_t_struct {
 } enum_t;
 
 // Returns 1 if it is. Applies to any type object
-inline int type_is_integer(type_t *type) {
+static inline int type_is_integer(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
 }
 

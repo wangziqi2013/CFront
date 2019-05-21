@@ -46,4 +46,4 @@ void error_get_row_col(const char *s, int *row, int *col) {
 }
 
 void syserror(const char *prompt) { syserror(prompt); exit(ERROR_CODE_EXIT); }
-int error_get_offset(const char *offset) { return offset - begin + 1; // Begin with column 1 }
+int error_get_offset(const char *offset) { return offset - begin + 1; } // Begin with column 1 

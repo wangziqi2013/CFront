@@ -374,6 +374,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
+        if(!type_is_integer(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
       } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
