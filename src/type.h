@@ -103,7 +103,7 @@ typedef struct value_t_struct {
 // Represents composite type
 typedef struct comp_t_struct {
   char *name;             // NULL if no name; Does not own memory
-  list_t *field_list;     // A list of field * representing the type of the field; owns memory
+  list_t *field_list;     // A list of field *; Does not contain promoted comp types; Owns memory;
   bintree_t *field_index; // These two provides both fast named access, and ordered storage; Owns memory
   size_t size;
   int has_definition;     // Whether it is a forward definition (0 means yes)
@@ -125,9 +125,13 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
-// Returns 1 if it is. Applies to any type object
+// Returns 1 if it is integer types. Applies to any type object
 static inline int type_is_integer(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
+}
+// Returns 1 if it is struct or union type. Applies to any type object
+static inline int type_is_comp(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
 }
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
