@@ -157,7 +157,7 @@ void scope_top_obj_insert(type_cxt_t *cxt, int domain, void *obj); // Adding an 
 
 type_t *type_init(type_cxt_t *cxt);
 void type_free(void *ptr);
-comp_t *comp_init(type_cxt_t *cxt, char *name, int has_definition);
+comp_t *comp_init(type_cxt_t *cxt, char *name, char *offset, int has_definition);
 void comp_free(void *ptr);
 field_t *field_init(type_cxt_t *cxt);
 void field_free(void *ptr);
