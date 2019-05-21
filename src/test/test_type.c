@@ -464,6 +464,20 @@ void test_type_getcomp() {
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
+  printf("=====================================\n"); // Tests promotion within composite types
+  char test6[] = "struct { const union { volatile int x; }; struct { volatile int xy[10]; int *z; }; }";
+  parse_cxt = parse_exp_init(test6);
+  type_cxt = type_sys_init(); 
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test6);
+  printf("%s\n", s->s);
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
+  ast_free(token);
   printf("Pass!\n");
   (void)type;
   return;

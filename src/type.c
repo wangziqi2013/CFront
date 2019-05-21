@@ -35,7 +35,9 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
           str_concat(s, " : ");
           str_print_int(s, field->bitfield_size);
         }
-        str_concat(s, ";\n");
+        str_concat(s, "; @ ");
+        str_print_int(s, field->offset); // Append field offset
+        str_append(s, '\n');
         node = list_next(node);
       }
       for(int i = 0;i < level * 2;i++) str_append(s, ' ');
@@ -216,6 +218,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     curr_type->size = curr_type->udef_type->size;
   } else { // This branch is for primitive base types
     if(BASETYPE_GET(basetype->decl_prop) == BASETYPE_VOID) {
+      // const void * is also illegal
       if(DECL_STGCLS_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have storage class\n"); }
       else if(DECL_QUAL_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have qualifiers\n"); }
       else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
@@ -384,6 +387,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
       } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
+      // TODO: BIT FIELD LENGTH MUST NOT EXCEED INTEGER LENGTH
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
