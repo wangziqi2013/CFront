@@ -86,9 +86,9 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
         str_concat(decl_s, arg_s->s);
         str_free(arg_s);
         if((arg = list_next(arg)) != NULL) str_concat(decl_s, ", "); // If there is more arguments
-        else if(type->vararg) str_concat(s, ", ...)");
-        else str_concat(s, ")");
+        else if(type->vararg) str_concat(decl_s, ", ...");
       }
+      str_append(decl_s, ')');
     }
     prev = type;
     type = type->next;
@@ -217,15 +217,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
     curr_type->size = 4; // Temporary
   }
 
-  int num_op = 0;
   while(op->type != T_) {
     assert(op && (op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB));
-    op = ast_getchild(op, 0); 
-    num_op++;
-  }
-
-  while(num_op-- > 0) {
-    op = op->parent;
     type_t *parent_type = type_init(cxt);
     parent_type->next = curr_type;
     parent_type->decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
@@ -275,7 +268,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype) {
       }
     } // if(current op is function call)
     curr_type = parent_type;
-  } // while(num_op > 0)
+    op = ast_getchild(op, 0); // To the next op (i.e. the op that should be eval'ed before current one)
+  } // while(not at the end of AST)
 
   assert(curr_type);
   return curr_type;
