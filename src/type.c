@@ -197,6 +197,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
   type_t *curr_type = type_init(cxt); // Allocate a new type variable
   curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+  if(!(flags & TYPE_ALLOW_STGCLS) && (basetype->decl_prop & DECL_STGCLS_MASK)) 
+    error_row_col_exit(basetype->offset, "Storage class modifier is not allowed in this context\n");
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
@@ -368,7 +370,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
       field_t *f = field_init(cxt);
-      f->type = type_gettype(cxt, decl, basetype, 0); // Set field type; do not allow void
+      f->type = type_gettype(cxt, decl, basetype, 0); // Set field type; do not allow void and storage class
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) f->name = field_name->str; // Set field name if there is one
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
@@ -378,20 +380,27 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
       } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
-      // TODO: ONLY INTEGER TYPES ARE ALLOWED TO BE IN A BIT FIELD
       // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       // TODO: THIS OFFSET DOES NOT WORK
       if(f->size == TYPE_UNKNOWN_SIZE) 
         error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
-      curr_offset += f->type->size;
+      
       if(f->name) { // Only insert if there is a name
         void *bt_ret = bt_insert(comp->field_index, f->name, f);
         if(bt_ret != f) error_row_col_exit(field_name->offset, 
             "Duplicated field name \"%s\" in composite type declaration\n", f->name);
+        list_insert(comp->field_list, f->name, f); // Named field, insert
+      } else { // Promote inner composite type names to the current scope
+        if(type_is_comp(f->type)) { // Anonymous comp field, promote, with the type node's modifier and qualifier
+
+        } else {
+          list_insert(comp->field_list, NULL, f); // Anonymous non-comp field, insert
+        }
       }
-      list_insert(comp->field_list, f->name, f); // Always insert into the ordered list
+      
+      curr_offset += f->type->size;
       field = field->sibling;
     }
     entry = entry->sibling;

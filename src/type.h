@@ -12,7 +12,8 @@
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 
-#define TYPE_ALLOW_VOID     0x00000001
+#define TYPE_ALLOW_VOID   0x00000001
+#define TYPE_ALLOW_STGCLS 0x00000002
 
 enum {
  SCOPE_ENUM   = 0,
