@@ -15,9 +15,10 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   // Print base type first
   type_t *basetype = type;
   while(basetype->next) basetype = basetype->next;
-  decl_prop_t base = BASETYPE_GET(type->decl_prop);
   // Print storage class and qualifier and base type, e.g. struct, union, enum, udef; with a space at the end
-  str_concat(s, token_decl_print(base));
+  str_concat(s, token_decl_print(basetype->decl_prop));
+  // This does not include qualifier and storage class
+  decl_prop_t base = BASETYPE_GET(type->decl_prop);
   str_append(s, ' ');
   if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
@@ -67,8 +68,11 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       str_concat(decl_s, "]"); // Always leave a space at the end
     } else if(op == TYPE_OP_DEREF) {
       char *qualifier = token_decl_print(type->decl_prop & DECL_QUAL_MASK); // Only prints qualifier
-      //str_prepend(s, ' '); // Separate qualifiers
-      str_prepend_str(decl_s, qualifier);
+      if(*qualifier) { // Qualifiers are surrounded by a pair of spaces
+        str_prepend(decl_s, ' ');
+        str_prepend_str(decl_s, qualifier);
+        str_prepend(decl_s, ' '); // Separate qualifiers
+      }
       str_prepend(decl_s, '*'); // * followed by qualifiers
     } else if(op == TYPE_OP_FUNC_CALL) {
       if(prev && TYPE_OP_GET(prev->decl_prop) == TYPE_OP_DEREF) {

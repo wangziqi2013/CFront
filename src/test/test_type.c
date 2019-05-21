@@ -394,7 +394,7 @@ void test_type_getcomp() {
   token_t *token;
   type_t *type;
   str_t *s;
-  char test1[] = "struct a { int b; long c; volatile double d; }";
+  char test1[] = "struct a { int * const b; const long c; volatile double d; }";
   parse_cxt = parse_exp_init(test1);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
