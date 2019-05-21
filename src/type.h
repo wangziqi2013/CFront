@@ -125,6 +125,11 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
+// Returns 1 if it is. Applies to any type object
+inline int type_is_integer(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
+}
+
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
 scope_t *scope_init(int level);
