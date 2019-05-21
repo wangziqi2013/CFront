@@ -204,7 +204,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
-    // If there is no name and no derivation then this is forward
+    // If there is no name and no derivation and no body (checked inside type_getcomp) then this is forward
     curr_type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
     curr_type->size = curr_type->comp->size; // Could be unknown size
   } else if(basetype_type == BASETYPE_ENUM) {
@@ -297,6 +297,7 @@ comp_t *comp_init(type_cxt_t *cxt, char *name, char *source_offset, int has_defi
   comp->field_list = list_init();
   comp->field_index = bt_str_init();
   if(!has_definition) comp->size = TYPE_UNKNOWN_SIZE; // Forward declaration
+  else comp->size = 0;
   scope_top_obj_insert(cxt, OBJ_COMP, comp);
   return comp;
 }
@@ -364,12 +365,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   }
 
   int curr_offset = 0;
-  while(entry) {
+  while(entry) { // It is possible that the struct has no entry; Must set the size field before this
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
     assert(basetype->type == T_BASETYPE);
     token_t *field = ast_getchild(entry, 1);
+    int field_count = 0;
     while(field) {
+      field_count++;
       assert(field->type == T_COMP_FIELD);
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
@@ -388,19 +391,23 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
       // TODO: BIT FIELD LENGTH MUST NOT EXCEED INTEGER LENGTH
-      // TODO: ALLOW ANONYMOUS STRUCT/UNION TO BE PROMOTED TO PARENT LEVEL
+      // TODO: COMPUTE UNION SIZE DIFFERENTLY
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
-      if(f->size == TYPE_UNKNOWN_SIZE) 
-        error_row_col_exit(field->offset, "Struct member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
+      if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
+        error_row_col_exit(f->name ? f->source_offset : basetype->offset, 
+          "Struct or union member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
       
-      if(f->name) { // Only insert if there is a name
+      if(f->name) { // Only insert if there is a name; 
         if(bt_insert(comp->field_index, f->name, f) != f) {
           error_row_col_exit(field_name->offset, "Duplicated field name \"%s\" in composite type declaration\n", f->name);
         }
         list_insert(comp->field_list, f->name, f); // Named field, insert
       } else { // Promote inner composite type names to the current scope
+        assert(field_count == 1);   // If there is no name it must be the first field
         if(type_is_comp(f->type)) { // Anonymous comp field, promote, with the type node's qualifier (no storage class)
+          if(f->type->comp->name)   // Could not declare struct { struct named_struct { ... } ; } which is confusing
+            error_row_col_exit(f->type->comp->source_offset, "Please do not declare named struct with anonymous variables\n");
           decl_prop_t qual = f->type->decl_prop & DECL_QUAL_MASK; // OR'ed onto every field's decl prop
           listnode_t *promote_head = list_head(f->type->comp->field_list);
           while(promote_head) {
