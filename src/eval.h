@@ -13,8 +13,6 @@ typedef struct {
   int size;      // Number of bytes
 } int_prop_t;
 
-extern int_prop_t ints[];
-
 // Result type of two integers in an expression
 decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2);
 

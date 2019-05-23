@@ -138,6 +138,8 @@ static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
 }
 
+extern int_prop_t ints[]; // An array of integer properties
+
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
 scope_t *scope_init(int level);
