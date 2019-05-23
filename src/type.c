@@ -240,7 +240,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
       curr_type->size = ints[BASETYPE_INDEX(basetype->decl_prop)].size;
     } else {
-      error_row_col_exit(basetype->offset, "Sorry, type %s not yet supported\n", token_decl_print(basetype_type));
+      error_row_col_exit(basetype->offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(basetype_type));
     }
   }
 
@@ -384,7 +384,8 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
     return comp;
   }
 
-  int curr_offset = 0;
+  int curr_offset = 0; // Current entry offset (always 0 for unions)
+  size_t max_size = 0;    // Maximum member, only used for unions
   while(entry) { 
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
@@ -408,10 +409,10 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         assert(bf->type == T_BITFIELD);
         if(!type_is_integer(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
+        if((size_t)f->bitfield_size > f->type->size * 8) 
+          error_row_col_exit(field->offset, "Bit field \"%s\" size must not exceed the integer size\n", type_printable_name(f->name));
       } else { f->bitfield_size = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
-      // TODO: BIT FIELD LENGTH MUST NOT EXCEED INTEGER LENGTH
-      // TODO: COMPUTE UNION SIZE DIFFERENTLY
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
@@ -446,12 +447,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
           }
         } else { list_insert(comp->field_list, NULL, f); } // Anonymous non-comp field, insert
       }
-      curr_offset += f->type->size;
+      if(token->type == T_STRUCT) curr_offset += f->type->size;   // Even true for promoted struct/union
+      else if(max_size < f->type->size) max_size = f->type->size;
       field = field->sibling;
     }
     entry = entry->sibling;
   }
-  comp->size = curr_offset;
+  if(token->type == T_STRUCT) comp->size = (size_t)curr_offset;
+  else comp->size = max_size;                            // Size of union is the maximum of all types
   return comp;
 }
 
