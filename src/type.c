@@ -238,6 +238,7 @@ void field_free(void *ptr) {
 
 enum_t *enum_init(type_cxt_t *cxt) {
   enum_t *e = (enum_t *)malloc(sizeof(enum_t));
+  SYSEXPECT(e != NULL);
   memset(e, 0x00, sizeof(enum_t));
   e->field_list = list_init();
   e->field_index = bt_str_init();
@@ -250,6 +251,18 @@ void enum_free(void *ptr) {
   list_free(e->field_list);
   bt_free(e->field_index);
   free(e);
+}
+
+value_t *value_init(type_cxt_t *cxt) {
+  value_t *value = (value_t *)malloc(sizeof(value_t));
+  SYSEXPECT(value != NULL);
+  memset(value, 0x00, sizeof(value_t));
+  scope_top_obj_insert(cxt, OBJ_VALUE, value);
+  return value;
+}
+
+void value_free(void *ptr) {
+  free(ptr);
 }
 
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
@@ -518,12 +531,15 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   return comp;
 }
 
-enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
+enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
+  assert(token->type == T_ENUM);
+}
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
   type_free,
   comp_free,
   field_free,
   enum_free,
+  value_free,
   NULL,       // Sentinel - will segment fault
 };

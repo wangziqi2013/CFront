@@ -17,7 +17,7 @@
 #define TYPE_ALLOW_STGCLS 0x00000002     // Whether allow storage class (not for comp type and func arg)
 
 enum {
-  SCOPE_VAR    = 1, // Variable that has a value or memory location; Enum constants are put here
+  SCOPE_VALUE  = 1, // Named variable that has a value or memory location; Enum constants are put here
   SCOPE_ENUM   = 0, // Enum structures are put here 
   SCOPE_STRUCT = 2,
   SCOPE_UNION  = 3,
@@ -33,6 +33,7 @@ enum {
   OBJ_COMP  = 1,
   OBJ_FIELD = 2,
   OBJ_ENUM  = 3,
+  OBJ_VALUE = 4,   // Note that not all values are named
   OBJ_TYPE_COUNT,
 };
 
@@ -96,6 +97,7 @@ typedef struct value_t_struct {
     uint32_t uintval;
     uint64_t ulongval;
     offset_t offset;    // If it represents an address then this is the offset
+    uint64_t ptrval;
   };
 } value_t;
 
@@ -174,6 +176,8 @@ field_t *field_init(type_cxt_t *cxt);
 void field_free(void *ptr);
 enum_t *enum_init(type_cxt_t *cxt);
 void enum_free(void *ptr);
+value_t *value_init(type_cxt_t *cxt);
+void value_free(void *ptr);
 
 // Returns a type * object given a T_DECL node and optionally base type
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags); 
