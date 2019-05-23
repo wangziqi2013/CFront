@@ -34,6 +34,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   // This does not include qualifier and storage class
   decl_prop_t base = BASETYPE_GET(type->decl_prop);
   str_append(s, ' ');
+
   if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
     if(comp->name) { str_concat(s, comp->name); str_append(s, ' '); } // Name followed by a space
@@ -65,8 +66,20 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
     str_concat(s, type->udef_name);
     str_append(s, ' ');
   } else if(base == BASETYPE_ENUM) {
-    // TODO: ADD PRINT FOR ENUM
-    assert(0);
+    enum_t *enu = basetype->enu;
+    if(enu->name) { str_concat(s, enu->name); str_append(s, ' '); } 
+    str_concat(s, "{\n");
+    listnode_t *node = list_head(enu->field_list);
+    while(node) {
+      for(int i = 0;i < level * 2 + 2;i++) str_append(s, ' ');
+      str_concat(s, (const char *)list_key(node));
+      str_concat(s, " = ");
+      str_print_int(s, (int)(long)list_value(node));
+      str_concat(s, ",\n");
+      node = list_next(node);
+    }
+    for(int i = 0;i < level * 2;i++) str_append(s, ' ');
+    str_concat(s, "} ");
   } else {} // All other types; Nothing to do
 
   // We next build the type expression
