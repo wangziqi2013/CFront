@@ -533,6 +533,9 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
 
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   assert(token->type == T_ENUM);
+  enum_t *enu = enum_init(cxt);
+  
+  return enu;
 }
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions

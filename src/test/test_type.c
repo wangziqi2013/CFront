@@ -493,7 +493,31 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("Pass!\n");
-  (void)type;
+  return;
+}
+
+void test_type_getenum() {
+  printf("=== Test type_getenum ===\n");
+  parse_exp_cxt_t *parse_cxt;
+  type_cxt_t *type_cxt;
+  token_t *token;
+  type_t *type;
+  str_t *s;
+  char test1[] = "enum enum_name { a = 1, b = 2, c = 3, }";
+  parse_cxt = parse_exp_init(test1);
+  type_cxt = type_sys_init();
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test1);
+  printf("%s\n", s->s);
+  str_free(s);
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
+  ast_free(token);
+  printf("Pass!\n");
   return;
 }
 
@@ -509,6 +533,7 @@ int main() {
   test_eval_int_convert();
   test_eval_const_int();
   test_type_getcomp();
+  test_type_getenum();
   return 0;
 }
   
