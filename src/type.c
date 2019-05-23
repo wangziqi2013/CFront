@@ -51,6 +51,10 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
         }
         str_concat(s, "; @ ");
         str_print_int(s, field->offset); // Append field offset
+        if(field->bitfield_size != -1) {
+          str_concat(s, " bit ");
+          str_print_int(s, field->bitfield_offset);
+        }
         str_append(s, '\n');
         node = list_next(node);
       }
