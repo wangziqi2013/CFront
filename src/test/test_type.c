@@ -409,7 +409,7 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "struct { /* extern */ int : 50, **aa /* : 100 */, size_unknown[10 * 2 + 3]; unsigned long long bb : 20; long; } ";
+  char test2[] = "struct { /* extern */ int : 33, **aa /* : 100 */, size_unknown[10 * 2 + 3]; unsigned long long bb : 20; long; } ";
   parse_cxt = parse_exp_init(test2);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
@@ -465,7 +465,7 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt); 
   ast_free(token);
   printf("=====================================\n"); // Tests promotion within composite types
-  char test6[] = "struct { const union { volatile int x; }; /*struct named {};*/ struct { volatile int xy[10]; int *z; }; }";
+  char test6[] = "struct { /*int x;*/ const union { volatile int x, y; long zz; }; /*struct named {};*/ struct { volatile int xy[10]; int *z; }; }";
   parse_cxt = parse_exp_init(test6);
   type_cxt = type_sys_init(); 
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);

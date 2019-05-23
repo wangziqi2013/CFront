@@ -117,6 +117,7 @@ typedef struct {
   char *source_offset; // If name is not NULL this is the token's offset
   char *name;          // NULL if anonymous field; Does not own memory
   int bitfield_size;   // Set if bit field; -1 if not
+  int bitfield_offset; // Bit offset within the integer; Must not be larger than size
   int offset;          // Offset within the composite structure
   size_t size;         // Number of bytes occupied by the actual storage including padding
   type_t *type;        // Type of this field; Do not own memory

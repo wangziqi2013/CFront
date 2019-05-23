@@ -392,6 +392,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
     assert(basetype->type == T_BASETYPE);
     token_t *field = ast_getchild(entry, 1);
     int field_count = 0;
+    field_t *prev_field = NULL; // Used to coalesce bitfield
     while(field) {
       field_count++;
       assert(field->type == T_COMP_FIELD);
@@ -410,14 +411,15 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         if(!type_is_integer(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
         f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
         if((size_t)f->bitfield_size > f->type->size * 8) 
-          error_row_col_exit(field->offset, "Bit field \"%s\" size must not exceed the integer size\n", type_printable_name(f->name));
-      } else { f->bitfield_size = -1; }
+          error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
+            type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
+      } else { f->bitfield_size = f->bitfield_offset = -1; }
       // TODO: ADD BIT FIELD PADDING AND COALESCE
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
         error_row_col_exit(f->name ? f->source_offset : basetype->offset, 
-          "Struct or union member \"%s\" size is unknown\n", f->name ? f->name : "<no name>");
+          "Struct or union member \"%s\" size is unknown\n", type_printable_name(f->name));
       
       if(f->name) { // Only insert if there is a name; 
         if(bt_insert(comp->field_index, f->name, f) != f) {
