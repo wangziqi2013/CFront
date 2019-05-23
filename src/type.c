@@ -455,17 +455,23 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         if(f->bitfield_size == -1 && prev_field->bitfield_size == -1) {
           curr_offset += f->type->size; // Both normal fields; size has been set above
         } else if(f->bitfield_size == -1 && prev_field->bitfield_size != -1) {
+          f->offset = curr_offset + prev_field->type->size; // f's offset is wrong because curr_offset is not updated
           curr_offset += (f->type->size + prev_field->type->size) // Increment for both prev and curr
         } else if(f->bitfield_size != -1 && prev_field->bitfield_size == -1) {
-          f->bitfield_offset = f->bitfield_size; // Starting a bit field (may potentially have more later)
+          f->bitfield_offset = 0; // Starting a bit field (may potentially have more later)
         } else { // Both are valid bitfields - try to coalesce!
-          if(prev_field->bitfield_offset + f->bitfield_size <= prev_field->size) {
-            f->offset = prev_field->offset;
-            f->bitfield_offset = 
+          if(prev_field->bitfield_offset + prev_field->bitfield_size + f->bitfield_size <= prev_field->size) {
+            f->offset = prev_field->offset; // This is unnecessary, but put here for clarity
+            f->bitfield_offset = prev_field->bitfield_offset + prev_field->bitfield_size;
+          } else {
+            error_row_col_exit(field->offset, "Cannot pack \"%s\" into the bit field (max %lu bits)\n",
+              type_printable_name(f->name), prev_field->size * 8);
           }
         }
+      } else if(max_size < f->type->size) {
+        max_size = f->type->size;
       }
-      else if(max_size < f->type->size) max_size = f->type->size;
+
       field = field->sibling;
       prev_field = f;
     }
