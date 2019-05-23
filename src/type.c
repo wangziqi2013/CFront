@@ -466,7 +466,6 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
           error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
             type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
       } else { f->bitfield_size = f->bitfield_offset = -1; }
-      // TODO: ADD BIT FIELD PADDING AND COALESCE
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
@@ -563,16 +562,25 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     assert(field->type == T_ENUM_FIELD);
     token_t *entry_name = ast_getchild(field, 0);
     assert(entry_name->type == T_IDENT); // Enum field must have a name
-    int value = field->enum_const;       // This must be valid
+    int int_value = field->enum_const;       // This must be valid
     char *name_str = entry_name->str;
-    list_insert(enu->field_list, name_str, (void *)(long)value); // Directly store the integer as value
+    list_insert(enu->field_list, name_str, (void *)(long)int_value); // Directly store the integer as value
     if(bt_find(enu->field_index, name_str) != BT_NOTFOUND) {
       error_row_col_exit(field->offset, "Enum field name \"%s\" clashes with a previous name\n", name_str);
     } else {
-      bt_insert(enu->field_index, name_str, (void *)(long)value);
+      bt_insert(enu->field_index, name_str, (void *)(long)int_value);
     }
     // TODO: CALL EVAL TO COMPUTE THE CONSTANT VALUE; WE USE CONST_EVAL TEMPORARILY
-    if(nameless) {}
+    if(nameless) { // Insert the names to the current scope as integer const
+      value_t *value = value_init(cxt);
+      value->addrtype = ADDR_IMM;
+      value->intval = int_value;
+      if(scope_top_find(cxt, SCOPE_VALUE, name_str)) {
+        error_row_col_exit(entry_name->offset, "Anonymous enum field \"%s\" clashes with an existing name", name_str);
+      } else {
+        scope_top_insert(cxt, SCOPE_VALUE, name_str, value);
+      }
+    }
     field = field->sibling;
   }
   return enu;

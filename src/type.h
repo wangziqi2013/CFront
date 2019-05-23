@@ -93,9 +93,13 @@ typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
   union {
+    int8_t charval;     // The following are for constant evaluation; We do not support long long
     uint8_t ucharval;
+    int16_t shortval;
     uint16_t ushortval;
+    int32_t intval;
     uint32_t uintval;
+    int64_t longval;
     uint64_t ulongval;
     offset_t offset;    // If it represents an address then this is the offset
     uint64_t ptrval;
