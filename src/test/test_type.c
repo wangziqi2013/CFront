@@ -478,6 +478,20 @@ void test_type_getcomp() {
   type_sys_free(type_cxt);
   parse_exp_free(parse_cxt);
   ast_free(token);
+  printf("=====================================\n"); // Tests promotion within composite types
+  char test7[] = "struct { int a; struct { int b : 7, c : 8, d : 10, e, f : 31; int g : 1; }; int h; int i : 15; long j : 33; }";
+  parse_cxt = parse_exp_init(test7);
+  type_cxt = type_sys_init(); 
+  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
+  assert(token_get_next(parse_cxt->token_cxt) == NULL);
+  ast_print(token, 0);
+  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  s = type_print(type, NULL, NULL, 1, 0);
+  printf("%s\n", test7);
+  printf("%s\n", s->s);
+  type_sys_free(type_cxt);
+  parse_exp_free(parse_cxt);
+  ast_free(token);
   printf("Pass!\n");
   (void)type;
   return;
