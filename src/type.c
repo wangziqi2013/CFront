@@ -450,17 +450,21 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         } else { list_insert(comp->field_list, NULL, f); } // Anonymous non-comp field, insert
       }
       if(token->type == T_STRUCT) {
+
         // Non-Bit field always increments the offset; This works also for promoted types
         // Note: If prev is bit field then we have not incremented the offset yet
-        if(f->bitfield_size == -1 && prev_field->bitfield_size == -1) {
+        if(!prev_field) { // First entry in struct
+          if(f->bitfield_size == -1) curr_offset += f->type->size;
+          else f->bitfield_offset = 0;
+        } else if(f->bitfield_size == -1 && prev_field->bitfield_size == -1) {
           curr_offset += f->type->size; // Both normal fields; size has been set above
         } else if(f->bitfield_size == -1 && prev_field->bitfield_size != -1) {
           f->offset = curr_offset + prev_field->type->size; // f's offset is wrong because curr_offset is not updated
-          curr_offset += (f->type->size + prev_field->type->size) // Increment for both prev and curr
+          curr_offset += (f->type->size + prev_field->type->size); // Increment for both prev and curr
         } else if(f->bitfield_size != -1 && prev_field->bitfield_size == -1) {
           f->bitfield_offset = 0; // Starting a bit field (may potentially have more later)
         } else { // Both are valid bitfields - try to coalesce!
-          if(prev_field->bitfield_offset + prev_field->bitfield_size + f->bitfield_size <= prev_field->size) {
+          if(prev_field->bitfield_offset + prev_field->bitfield_size + f->bitfield_size <= (int)prev_field->size) {
             f->offset = prev_field->offset; // This is unnecessary, but put here for clarity
             f->bitfield_offset = prev_field->bitfield_offset + prev_field->bitfield_size;
           } else {
