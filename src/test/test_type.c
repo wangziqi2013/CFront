@@ -479,7 +479,7 @@ void test_type_getcomp() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests promotion within composite types
-  char test7[] = "struct { int a; struct { int b : 7, c : 8, d : 10, e, f : 31; int g : 1; }; int h; int i : 15; long j : 33; }";
+  char test7[] = "struct { int a; struct { int b : 7, c : 8, d : 10, e, f : 31; int g : 2; }; int h; int i : 15; long j : 33; }";
   parse_cxt = parse_exp_init(test7);
   type_cxt = type_sys_init(); 
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);

@@ -390,14 +390,13 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
 
   int curr_offset = 0; // Current entry offset (always 0 for unions)
   size_t max_size = 0;    // Maximum member, only used for unions
-  field_t *prev_field = NULL; // Used to coalesce bitfield
+  field_t *prev_field = NULL; // Used to coalesce bitfield; Declare outermost because it can take effect across declarations
   while(entry) { 
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
     assert(basetype->type == T_BASETYPE);
     token_t *field = ast_getchild(entry, 1);
     int field_count = 0;
-    
     while(field) {
       field_count++;
       assert(field->type == T_COMP_FIELD);
@@ -457,6 +456,12 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       if(token->type == T_STRUCT) {
         printf("%s %d\n", f->name, f->bitfield_size);
         // Non-Bit field always increments the offset; This works also for promoted types
+        // Bit field coalesce rules:
+        // (1) Adjacent entries of the same integer type will be coalesced; If they cannot be packed into the 
+        //     declared base type, we leave a gap and start a new field;
+        // (2) Different types (incl. sign difference) are never coalesced;
+        // (3) Packed fields are arranged from lower bits to higher bits; Unused bits will be ignored
+        // (4) Coalesced bit fields take the storage identical to the base type
         if(!prev_field) { // First entry in struct
           if(f->bitfield_size != -1) f->bitfield_offset = 0;
           curr_offset += f->type->size;
@@ -478,8 +483,9 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
             f->offset = prev_field->offset; 
             f->bitfield_offset = prev_field->bitfield_offset + prev_field->bitfield_size;
           } else {
-            error_row_col_exit(field->offset, "Cannot pack \"%s\" into the bit field (max %lu bits)\n",
-              type_printable_name(f->name), prev_field->size * 8);
+            f->offset = prev_field->offset + prev_field->type->size; 
+            f->bitfield_offset = 0;
+            curr_offset += f->type->size;
           }
         }
       } else if(max_size < f->type->size) {
