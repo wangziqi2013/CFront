@@ -172,12 +172,12 @@ comp_t *comp_init(type_cxt_t *cxt, char *name, char *source_offset, int has_defi
 void comp_free(void *ptr);
 field_t *field_init(type_cxt_t *cxt);
 void field_free(void *ptr);
+enum_t *enum_init(type_cxt_t *cxt);
+void enum_free(void *ptr);
 
 // Returns a type * object given a T_DECL node and optionally base type
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags); 
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
-void type_freecomp(comp_t *comp);
+enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
-enum_t *enum_init(type_cxt_t *cxt);
-void enum_free(void *ptr);
 #endif

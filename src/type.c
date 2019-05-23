@@ -202,6 +202,56 @@ void type_free(void *ptr) {
   free(type);
 }
 
+comp_t *comp_init(type_cxt_t *cxt, char *name, char *source_offset, int has_definition) {
+  comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
+  SYSEXPECT(comp != NULL);
+  memset(comp, 0x00, sizeof(comp_t));
+  comp->source_offset = source_offset;
+  comp->name = name;
+  comp->has_definition = has_definition;
+  comp->field_list = list_init();
+  comp->field_index = bt_str_init();
+  if(!has_definition) comp->size = TYPE_UNKNOWN_SIZE; // Forward declaration
+  else comp->size = 0;
+  scope_top_obj_insert(cxt, OBJ_COMP, comp);
+  return comp;
+}
+
+void comp_free(void *ptr) {
+  comp_t *comp = (comp_t *)ptr;
+  list_free(comp->field_list);
+  bt_free(comp->field_index);
+  free(comp);
+}
+
+field_t *field_init(type_cxt_t *cxt) {
+  field_t *f = (field_t *)malloc(sizeof(field_t));
+  SYSEXPECT(f != NULL);
+  memset(f, 0x00, sizeof(field_t));
+  scope_top_obj_insert(cxt, OBJ_FIELD, f);
+  return f;
+}
+
+void field_free(void *ptr) {
+  free(ptr);
+}
+
+enum_t *enum_init(type_cxt_t *cxt) {
+  enum_t *e = (enum_t *)malloc(sizeof(enum_t));
+  memset(e, 0x00, sizeof(enum_t));
+  e->field_list = list_init();
+  e->field_index = bt_str_init();
+  scope_top_obj_insert(cxt, OBJ_ENUM, e);
+  return e;
+}
+
+void enum_free(void *ptr) {
+  enum_t *e = (enum_t *)ptr;
+  list_free(e->field_list);
+  bt_free(e->field_index);
+  free(e);
+}
+
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
 // 1. Do not process storage class including typedef - the caller should add them to symbol table
@@ -304,40 +354,6 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 
   assert(curr_type);
   return curr_type;
-}
-
-comp_t *comp_init(type_cxt_t *cxt, char *name, char *source_offset, int has_definition) {
-  comp_t *comp = (comp_t *)malloc(sizeof(comp_t));
-  SYSEXPECT(comp != NULL);
-  memset(comp, 0x00, sizeof(comp_t));
-  comp->source_offset = source_offset;
-  comp->name = name;
-  comp->has_definition = has_definition;
-  comp->field_list = list_init();
-  comp->field_index = bt_str_init();
-  if(!has_definition) comp->size = TYPE_UNKNOWN_SIZE; // Forward declaration
-  else comp->size = 0;
-  scope_top_obj_insert(cxt, OBJ_COMP, comp);
-  return comp;
-}
-
-void comp_free(void *ptr) {
-  comp_t *comp = (comp_t *)ptr;
-  list_free(comp->field_list);
-  bt_free(comp->field_index);
-  free(comp);
-}
-
-field_t *field_init(type_cxt_t *cxt) {
-  field_t *f = (field_t *)malloc(sizeof(field_t));
-  SYSEXPECT(f != NULL);
-  memset(f, 0x00, sizeof(field_t));
-  scope_top_obj_insert(cxt, OBJ_FIELD, f);
-  return f;
-}
-
-void field_free(void *ptr) {
-  free(ptr);
 }
 
 // Input must be T_STRUCT or T_UNION
@@ -502,21 +518,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   return comp;
 }
 
-enum_t *enum_init(type_cxt_t *cxt) {
-  enum_t *e = (enum_t *)malloc(sizeof(enum_t));
-  memset(e, 0x00, sizeof(enum_t));
-  e->field_list = list_init();
-  e->field_index = bt_str_init();
-  scope_top_obj_insert(cxt, OBJ_ENUM, e);
-  return e;
-}
-
-void enum_free(void *ptr) {
-  enum_t *e = (enum_t *)ptr;
-  list_free(e->field_list);
-  bt_free(e->field_index);
-  free(e);
-}
+enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
   type_free,
