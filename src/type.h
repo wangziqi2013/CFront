@@ -143,7 +143,7 @@ typedef struct { // Integer (builtin type) properties
   int size;      // Number of bytes
 } int_prop_t;
 
-extern int_prop_t ints[]; // An array of integer properties
+extern int_prop_t ints[11]; // An array of integer properties
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 

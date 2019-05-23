@@ -63,9 +63,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   } else if(base == BASETYPE_ENUM) {
     // TODO: ADD PRINT FOR ENUM
     assert(0);
-  } else { // All other types
-    // Nothing to do
-  }
+  } else {} // All other types; Nothing to do
 
   // We next build the type expression
   type_t *prev = NULL;
@@ -210,7 +208,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   token_t *op = ast_getchild(decl, 1);
   token_t *decl_name = ast_getchild(decl, 2);
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
-  decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop);
+  decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop); // The type primitive of base type decl; only valid with BASETYPE_*
   type_t *curr_type = type_init(cxt); // Allocate a new type variable
   curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
   if(!(flags & TYPE_ALLOW_STGCLS) && (basetype->decl_prop & DECL_STGCLS_MASK)) 
@@ -231,16 +229,19 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     assert(curr_type->udef_type); // Must have been defined, otherwise the parser will not recognize it as udef
     curr_type->size = curr_type->udef_type->size;
   } else { // This branch is for primitive base types
-    if(BASETYPE_GET(basetype->decl_prop) == BASETYPE_VOID) {
+    if(basetype_type == BASETYPE_VOID) {
       // const void * is also illegal
       if(DECL_STGCLS_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have storage class\n"); }
       else if(DECL_QUAL_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have qualifiers\n"); }
       else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
         error_row_col_exit(basetype->offset, "\"void\" type can only be used in function argument and return value\n");
       }
+      curr_type->size = 0; // Void type does not have valid size, use 0 as placeholder
+    } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
+      curr_type->size = ints[BASETYPE_INDEX(basetype->decl_prop)].size;
+    } else {
+      error_row_col_exit(basetype->offset, "Sorry, type %s not yet supported\n", token_decl_print(basetype_type));
     }
-    // TODO: SET TYPE SIZE
-    curr_type->size = 4; // Temporary
   }
 
   while(op->type != T_) {
