@@ -8,11 +8,6 @@
 #define EVAL_MAX(a, b) (a > b ? a : b)
 #define EVAL_MIN(a, b) (a < b ? a : b)
 
-typedef struct {
-  int sign;      // 0 means unsigned, 1 means signed
-  int size;      // Number of bytes
-} int_prop_t;
-
 // Result type of two integers in an expression
 decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2);
 

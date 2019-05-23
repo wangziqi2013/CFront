@@ -138,6 +138,11 @@ static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
 }
 
+typedef struct { // Integer (builtin type) properties
+  int sign;      // 0 means unsigned, 1 means signed
+  int size;      // Number of bytes
+} int_prop_t;
+
 extern int_prop_t ints[]; // An array of integer properties
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
