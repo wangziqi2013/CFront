@@ -12,16 +12,17 @@
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 
-#define TYPE_ALLOW_VOID   0x00000001
-#define TYPE_ALLOW_STGCLS 0x00000002
+// Arguments to type_gettype
+#define TYPE_ALLOW_VOID   0x00000001     // Whether allow void as base type (only allowed for func arg)
+#define TYPE_ALLOW_STGCLS 0x00000002     // Whether allow storage class (not for comp type and func arg)
 
 enum {
- SCOPE_ENUM   = 0,
- SCOPE_VAR    = 1,
- SCOPE_STRUCT = 2,
- SCOPE_UNION  = 3,
- SCOPE_UDEF   = 4,
- SCOPE_TYPE_COUNT,
+  SCOPE_VAR    = 1, // Variable that has a value or memory location; Enum constants are put here
+  SCOPE_ENUM   = 0, // Enum structures are put here 
+  SCOPE_STRUCT = 2,
+  SCOPE_UNION  = 3,
+  SCOPE_UDEF   = 4, // Type aliasing, i.e. maps a name to a type
+  SCOPE_TYPE_COUNT,
 };
 
 // We track objects using a centralized list per scope to simplify memory management
@@ -137,6 +138,8 @@ static inline int type_is_integer(type_t *type) {
 static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
 }
+
+static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
 
 typedef struct { // Integer (builtin type) properties
   int sign;      // 0 means unsigned, 1 means signed
