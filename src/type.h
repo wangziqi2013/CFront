@@ -10,6 +10,7 @@
 
 #define SCOPE_LEVEL_GLOBAL  0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
+#define TYPE_INT_SIZE       4
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 
 // Arguments to type_gettype

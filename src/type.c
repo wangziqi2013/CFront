@@ -9,11 +9,11 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
   {-1, -1}, // BASETYPE_NONE, 0x00
   {1, 1}, // BASETYPE_CHAR, 0x01
   {1, 2}, // BASETYPE_SHORT, 0x02
-  {1, 4}, // BASETYPE_INT, 0x03
+  {1, TYPE_INT_SIZE}, // BASETYPE_INT, 0x03
   {1, 8}, // BASETYPE_LONG, 0x04
   {0, 1}, // BASETYPE_UCHAR, 0x05
   {0, 2}, // BASETYPE_USHORT, 0x06
-  {0, 4}, // BASETYPE_UINT, 0x07
+  {0, TYPE_INT_SIZE}, // BASETYPE_UINT, 0x07
   {0, 8}, // BASETYPE_ULONG, 0x08
   {1, 16}, // BASETYPE_LLONG, 0x09
   {0, 16}, // BASETYPE_ULLONG, 0x0A
@@ -242,6 +242,7 @@ enum_t *enum_init(type_cxt_t *cxt) {
   memset(e, 0x00, sizeof(enum_t));
   e->field_list = list_init();
   e->field_index = bt_str_init();
+  e->size = TYPE_INT_SIZE;   // Enum always has integer size
   scope_top_obj_insert(cxt, OBJ_ENUM, e);
   return e;
 }
@@ -483,7 +484,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         } else { list_insert(comp->field_list, NULL, f); } // Anonymous non-comp field, insert
       }
       if(token->type == T_STRUCT) {
-        printf("%s %d\n", f->name, f->bitfield_size);
+        //printf("%s %d\n", f->name, f->bitfield_size);
         // Non-Bit field always increments the offset; This works also for promoted types
         // Bit field coalesce rules:
         // (1) Adjacent entries of the same integer type will be coalesced; If they cannot be packed into the 
@@ -534,7 +535,28 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   assert(token->type == T_ENUM);
   enum_t *enu = enum_init(cxt);
-  
+  enu->offset = token->offset;
+  token_t *name = ast_getchild(token, 0);
+  token_t *field = ast_getchild(token, 1);
+  assert(name);
+  int nameless = name->type == T_;
+  if(!nameless) enu->name = name->str;
+  while(field) {
+    assert(field->type == T_ENUM_FIELD);
+    token_t *entry_name = ast_getchild(field, 0);
+    assert(entry_name->type == T_IDENT); // Enum field must have a name
+    int value = field->enum_const;       // This must be valid
+    char *name_str = entry_name->str;
+    list_insert(enu->enum_list, name_str, (void *)value); // Directly store the integer as value
+    if(bt_find(enu->enum_index, name_str) != BT_NOTFOUND) {
+      error_row_col_exit(field->offset, "Enum field name \"%s\" clashes with a previous name\n", name_str);
+    } else {
+      bt_insert(enu->enum_index, name_str, (void *)value);
+    }
+    // TODO: CALL EVAL TO COMPUTE THE CONSTANT VALUE; WE USE CONST_EVAL TEMPORARILY
+    if(nameless) {}
+    field = field->sibling;
+  }
   return enu;
 }
 
