@@ -281,6 +281,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
   if(!(flags & TYPE_ALLOW_STGCLS) && (basetype->decl_prop & DECL_STGCLS_MASK)) 
     error_row_col_exit(basetype->offset, "Storage class modifier is not allowed in this context\n");
+  
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
@@ -288,7 +289,11 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     curr_type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
     curr_type->size = curr_type->comp->size; // Could be unknown size
   } else if(basetype_type == BASETYPE_ENUM) {
-    // TODO: ADD PROCESSING FOR ENUM
+    token_t *enum_token = ast_getchild(basetype, 0);
+    assert(enum_token && enum_token->type == T_ENUM);
+    curr_type->enu = type_getenum(cxt, enum_token); 
+    assert(curr_type->enu->size == TYPE_INT_SIZE);
+    curr_type->size = TYPE_INT_SIZE;
   } else if(basetype_type == BASETYPE_UDEF) {
     token_t *udef_name = ast_getchild(basetype, 0);
     assert(udef_name && udef_name->type == T_IDENT);

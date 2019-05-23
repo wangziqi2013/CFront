@@ -503,7 +503,7 @@ void test_type_getenum() {
   token_t *token;
   type_t *type;
   str_t *s;
-  char test1[] = "enum enum_name { a = 1, b = 2, c = 3, }";
+  char test1[] = "enum enum_name { a = 1, b, c = 10, }";
   parse_cxt = parse_exp_init(test1);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
