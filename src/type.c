@@ -552,11 +552,11 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     assert(entry_name->type == T_IDENT); // Enum field must have a name
     int value = field->enum_const;       // This must be valid
     char *name_str = entry_name->str;
-    list_insert(enu->enum_list, name_str, (void *)value); // Directly store the integer as value
-    if(bt_find(enu->enum_index, name_str) != BT_NOTFOUND) {
+    list_insert(enu->field_list, name_str, (void *)(long)value); // Directly store the integer as value
+    if(bt_find(enu->field_index, name_str) != BT_NOTFOUND) {
       error_row_col_exit(field->offset, "Enum field name \"%s\" clashes with a previous name\n", name_str);
     } else {
-      bt_insert(enu->enum_index, name_str, (void *)value);
+      bt_insert(enu->field_index, name_str, (void *)(long)value);
     }
     // TODO: CALL EVAL TO COMPUTE THE CONSTANT VALUE; WE USE CONST_EVAL TEMPORARILY
     if(nameless) {}
