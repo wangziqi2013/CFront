@@ -390,13 +390,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
 
   int curr_offset = 0; // Current entry offset (always 0 for unions)
   size_t max_size = 0;    // Maximum member, only used for unions
+  field_t *prev_field = NULL; // Used to coalesce bitfield
   while(entry) { 
     assert(entry->type == T_COMP_DECL);
     token_t *basetype = ast_getchild(entry, 0); // This will be repeatedly used
     assert(basetype->type == T_BASETYPE);
     token_t *field = ast_getchild(entry, 1);
     int field_count = 0;
-    field_t *prev_field = NULL; // Used to coalesce bitfield
+    
     while(field) {
       field_count++;
       assert(field->type == T_COMP_FIELD);
@@ -454,22 +455,27 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         } else { list_insert(comp->field_list, NULL, f); } // Anonymous non-comp field, insert
       }
       if(token->type == T_STRUCT) {
-
+        printf("%s %d\n", f->name, f->bitfield_size);
         // Non-Bit field always increments the offset; This works also for promoted types
-        // Note: If prev is bit field then we have not incremented the offset yet
         if(!prev_field) { // First entry in struct
-          if(f->bitfield_size == -1) curr_offset += f->type->size;
-          else f->bitfield_offset = 0;
+          if(f->bitfield_size != -1) f->bitfield_offset = 0;
+          curr_offset += f->type->size;
         } else if(f->bitfield_size == -1 && prev_field->bitfield_size == -1) {
           curr_offset += f->type->size; // Both normal fields; size has been set above
         } else if(f->bitfield_size == -1 && prev_field->bitfield_size != -1) {
-          f->offset = curr_offset + prev_field->type->size; // f's offset is wrong because curr_offset is not updated
-          curr_offset += (f->type->size + prev_field->type->size); // Increment for both prev and curr
+          curr_offset += f->type->size;
         } else if(f->bitfield_size != -1 && prev_field->bitfield_size == -1) {
           f->bitfield_offset = 0; // Starting a bit field (may potentially have more later)
+          curr_offset += f->type->size;
         } else { // Both are valid bitfields - try to coalesce!
-          if(prev_field->bitfield_offset + prev_field->bitfield_size + f->bitfield_size <= (int)prev_field->size) {
-            f->offset = prev_field->offset; // This is unnecessary, but put here for clarity
+          assert(f->bitfield_size != -1 && prev_field->bitfield_size != -1);
+          //printf("%s %s %d %d\n", prev_field->name, f->name, prev_field->bitfield_size, f->bitfield_size);
+          // If types differ, start a new bit field
+          if(BASETYPE_GET(prev_field->type->decl_prop) != BASETYPE_GET(f->type->decl_prop)) {
+            f->bitfield_offset = 0;
+            curr_offset += prev_field->type->size;
+          } else if(prev_field->bitfield_offset + prev_field->bitfield_size + f->bitfield_size <= (int)prev_field->size * 8) {
+            f->offset = prev_field->offset; 
             f->bitfield_offset = prev_field->bitfield_offset + prev_field->bitfield_size;
           } else {
             error_row_col_exit(field->offset, "Cannot pack \"%s\" into the bit field (max %lu bits)\n",
@@ -482,7 +488,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
 
       field = field->sibling;
       prev_field = f;
-    }
+    } // while(field)
     entry = entry->sibling;
   }
   if(token->type == T_STRUCT) comp->size = (size_t)curr_offset;
