@@ -33,13 +33,21 @@ void error_get_row_col(const char *s, int *row, int *col) {
   else {
     *row = *col = 1;
     const char *p;
+    const char *line_head = begin; // Track the beginning of the line
     for(p = begin; p != s && *p != '\0';p++) {
-      if(*p == '\n') (*row)++, *col = 1;
+      if(*p == '\n') (*row)++, *col = 1, line_head = p + 1;
       else (*col)++;
     }
     if(*p == '\0' && p != s) { // if p == s then still valid
       *row = *col = -2;
       fprintf(stderr, "Did you forget to register a new pointer with error module?\n");
+    } else { // Print from line head to next line
+      printf("----\n");
+      while(*line_head != '\n' && *line_head != '\0') putchar(*line_head++);
+      putchar('\n');
+      for(int i = 0;i < *col - 1;i++) putchar(' ');
+      printf("^\n");
+      printf("----\n");
     }
   }
   return;
