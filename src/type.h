@@ -89,6 +89,8 @@ typedef struct type_t_struct {
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
+extern type_t type_builtin_int;
+
 typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
@@ -160,6 +162,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
 
 scope_t *scope_init(int level);
 void scope_free(scope_t *scope);
+void init_builtin_types();
 type_cxt_t *type_sys_init();
 void type_sys_free(type_cxt_t *cxt); 
 
