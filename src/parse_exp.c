@@ -313,13 +313,22 @@ token_t *parse_exp(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallow) {
       if(op_top == NULL) error_row_col_exit(token->offset, "Did not find matching \'[\'\n");
       parse_exp_reduce(cxt, -1, 1); // This reduces '['
       token_free(token);
-    } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) { // Type cases
+    } else if(token->type == EXP_LPAREN && parse_exp_la_isdecl(cxt)) { // Type casts
       token->type = EXP_CAST;
       token_t *decl = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
       ast_push_child(token, decl);
       parse_exp_shift(cxt, OP_STACK, token);
       if(!token_consume_type(cxt->token_cxt, T_RPAREN)) 
           error_row_col_exit(token->offset, "Type cast expects \')\'\n");
+    } else if(token->type == EXP_SIZEOF) {
+      if(!token_consume_type(cxt->token_cxt, T_LPAREN)) error_row_col_exit(token->offset, "Expected \'(\' for sizeof operator\n");
+      if(parse_exp_la_isdecl(cxt)) {
+        ast_push_child(token, parse_decl(cxt, PARSE_DECL_HASBASETYPE));
+      } else {
+        ast_push_child(token, parse_exp(cxt, PARSE_EXP_ALLOWALL));
+      }
+      if(!token_consume_type(cxt->token_cxt, T_RPAREN)) error_row_col_exit(token->offset, "Expected \')\' after sizeof operator\n");
+      parse_exp_shift(cxt, AST_STACK, token);
     } else {
       parse_exp_reduce_preced(cxt, token);
       parse_exp_shift(cxt, OP_STACK, token);
