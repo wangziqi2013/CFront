@@ -41,8 +41,6 @@ obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free funct
   NULL,       // Sentinel - will segment fault
 };
 
-type_t type_builtin_int;
-
 // Prints a type in string on stdout
 // type is the type object, name is shown as the inner most operand of the type expression, NULL means no name
 // The top level should call this function with s == NULL. The return value contains the type string
@@ -619,7 +617,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
       value_t *value = value_init(cxt);
       value->addrtype = ADDR_IMM;
       value->intval = curr_value;
-      value->type = &type_builtin_int; // Assign built in type, do not create new type objects
+      value->type = &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)]; // Assign built in type, do not create new type objects
       if(scope_top_find(cxt, SCOPE_VALUE, name_str)) {
         error_row_col_exit(entry_name->offset, "Anonymous enum field \"%s\" clashes with an existing name", name_str);
       } else {

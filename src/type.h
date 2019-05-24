@@ -10,7 +10,11 @@
 
 #define SCOPE_LEVEL_GLOBAL  0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
+#define TYPE_CHAR_SIZE      1
+#define TYPE_SHORT_SIZE     2
 #define TYPE_INT_SIZE       4
+#define TYPE_LONG_SIZE      8
+#define TYPE_LLONG_SIZE     16
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 
 // Arguments to type_gettype
@@ -89,7 +93,7 @@ typedef struct type_t_struct {
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
-extern type_t type_builtin_int;
+extern type_t type_builtin_ints[10];
 
 typedef struct value_t_struct {
   type_t *type;         // Do not own
