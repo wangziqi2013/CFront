@@ -161,8 +161,21 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
       ret = eval_const_int(cxt, ast_getchild(token, 0));
       break;
     }
-    // sizeof operator (queries the type system)
-    case EXP_SIZEOF: // Temporarily disable this
+    // sizeof operator (queries the type system and/or symbol table)
+    case EXP_SIZEOF: {
+      token_t *decl = ast_getchild(token, 0);
+      assert(decl);
+      if(decl->type == T_DECL) {
+        token_t *basetype = ast_getchild(decl, 0);
+        assert(basetype);
+        type_t *type = type_gettype(cxt, decl, basetype, TYPE_ALLOW_VOID); // Allow void but not storage class
+        if(type->size == TYPE_UNKNOWN_SIZE) error_row_col_exit(token->offset, "Sizeof operator with an incomplete type\n");
+        ret = type->size;
+      } else {
+        assert(0);
+        // TODO: DERIVE TYPE OF AN EXPRESSION
+      }
+    }
     default: error_row_col_exit(token->offset, 
       "Unsupported token for constant integer expression: \"%s\"\n", token_typestr(token->type));
       break;
