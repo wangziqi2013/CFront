@@ -19,6 +19,15 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
   {0, 16}, // BASETYPE_ULLONG, 0x0A
 };
 
+obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
+  type_free,
+  comp_free,
+  field_free,
+  enum_free,
+  value_free,
+  NULL,       // Sentinel - will segment fault
+};
+
 type_t type_builtin_int;
 
 // Prints a type in string on stdout
@@ -612,11 +621,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
-obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
-  type_free,
-  comp_free,
-  field_free,
-  enum_free,
-  value_free,
-  NULL,       // Sentinel - will segment fault
-};
+type_t *type_typeof(token_t *exp) {
+  return NULL;
+}
+

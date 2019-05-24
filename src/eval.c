@@ -173,6 +173,7 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
         ret = type->size;
       } else {
         assert(0);
+        token_t *expr = decl; // If not then must be an expression
         // TODO: DERIVE TYPE OF AN EXPRESSION
       }
       break;
