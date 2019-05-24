@@ -19,7 +19,8 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
   {0, TYPE_LLONG_SIZE}, // BASETYPE_ULLONG, 0x0A
 };
 
-type_t type_builtin_ints[10] = {
+type_t type_builtin_ints[11] = {
+  {0, NULL, {NULL}, {0}, 0}, // Integer type begins at index 1
   {BASETYPE_CHAR, NULL, {NULL}, {0}, TYPE_CHAR_SIZE},
   {BASETYPE_SHORT, NULL, {NULL}, {0}, TYPE_SHORT_SIZE},
   {BASETYPE_INT, NULL, {NULL}, {0}, TYPE_INT_SIZE},

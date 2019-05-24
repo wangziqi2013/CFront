@@ -42,6 +42,11 @@ enum {
   OBJ_TYPE_COUNT,
 };
 
+typedef struct { // Integer (builtin type) properties
+  int sign;      // 0 means unsigned, 1 means signed
+  int size;      // Number of bytes
+} int_prop_t;
+
 // A statement block creates a new scope. The bottomost scope is the global scope
 typedef struct {
   int level;                            // 0 means global
@@ -93,7 +98,8 @@ typedef struct type_t_struct {
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
-extern type_t type_builtin_ints[10];
+extern int_prop_t ints[11];           // An array of integer properties for conversion
+extern type_t type_builtin_ints[11];  // An array of built in integer types
 
 typedef struct value_t_struct {
   type_t *type;         // Do not own
@@ -154,13 +160,6 @@ static inline int type_is_comp(type_t *type) {
 }
 
 static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
-
-typedef struct { // Integer (builtin type) properties
-  int sign;      // 0 means unsigned, 1 means signed
-  int size;      // Number of bytes
-} int_prop_t;
-
-extern int_prop_t ints[11]; // An array of integer properties
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
