@@ -538,6 +538,67 @@ void test_type_getenum() {
   return;
 }
 
+void test_type_anomaly() {
+  printf("=== Test anomalies ===\n");
+  error_testmode(1);
+  int err;  
+  parse_exp_cxt_t *cxt;
+  type_cxt_t *type_cxt;
+  type_t *type;
+  token_t *token;
+  char test1[] = " volatile const int array[(12 + 8) / 30 - 1] "; // Negative array size
+  err = 0;
+  cxt = parse_exp_init(test1);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
+  char test2[] = " struct str { int x : (12 + 8) / 30 - 1; }"; // Negative bit field size
+  err = 0;
+  cxt = parse_exp_init(test2);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
+  char test3[] = " struct str { int x : (12UL + 8LL) / 30 - 1; }"; // Negative bit field size
+  err = 0;
+  cxt = parse_exp_init(test3);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
+  char test4[] = " char array['A' + 'b']"; // char constant as array size
+  err = 0;
+  cxt = parse_exp_init(test4);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
+  printf("Pass!\n");
+  (void)type;
+  return;
+}
+
 int main() {
   printf("=== Hello World! ===\n");
   test_scope_init();
@@ -551,6 +612,7 @@ int main() {
   test_eval_const_int();
   test_type_getcomp();
   test_type_getenum();
+  test_type_anomaly();
   return 0;
 }
   
