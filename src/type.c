@@ -477,11 +477,16 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
         if(!type_is_integer(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
-        f->bitfield_size = field->bitfield_size; // Could be -1 if there is no bit field
+        field->bitfield_size = eval_const_int(cxt, ast_getchild(bf, 0)); // Evaluate the constant expression
+        if(field->bitfield_size < 0) error_row_col_exit(field->offset, "Bit field size in declaration must be non-negative\n");
+        f->bitfield_size = field->bitfield_size; 
         if((size_t)f->bitfield_size > f->type->size * 8) 
           error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
             type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
-      } else { f->bitfield_size = f->bitfield_offset = -1; }
+      } else { 
+        assert(field->bitfield_size == -1);
+        f->bitfield_size = f->bitfield_offset = -1; 
+      }
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
@@ -574,17 +579,21 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   assert(name);
   int nameless = name->type == T_;
   if(!nameless) enu->name = name->str;
+  int curr_value = 0;
   while(field) {
     assert(field->type == T_ENUM_FIELD);
     token_t *entry_name = ast_getchild(field, 0);
     assert(entry_name->type == T_IDENT); // Enum field must have a name
-    int int_value = field->enum_const;       // This must be valid
+    token_t *enum_exp = ast_getchild(field, 1);
+    if(enum_exp) {
+      field->enum_const = curr_value = eval_const_int(cxt, enum_exp);
+    }
     char *name_str = entry_name->str;
-    list_insert(enu->field_list, name_str, (void *)(long)int_value); // Directly store the integer as value
+    list_insert(enu->field_list, name_str, (void *)(long)curr_value); // Directly store the integer as value
     if(bt_find(enu->field_index, name_str) != BT_NOTFOUND) {
       error_row_col_exit(field->offset, "Enum field name \"%s\" clashes with a previous name\n", name_str);
     } else {
-      bt_insert(enu->field_index, name_str, (void *)(long)int_value);
+      bt_insert(enu->field_index, name_str, (void *)(long)curr_value);
     }
     // TODO: CALL EVAL TO COMPUTE THE CONSTANT VALUE; WE USE CONST_EVAL TEMPORARILY
     if(nameless) { // Insert the names to the current scope as integer const
@@ -599,6 +608,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
       }
     }
     field = field->sibling;
+    curr_value++;
   }
   return enu;
 }
