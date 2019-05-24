@@ -19,6 +19,8 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
   {0, 16}, // BASETYPE_ULLONG, 0x0A
 };
 
+type_t type_builtin_int;
+
 // Prints a type in string on stdout
 // type is the type object, name is shown as the inner most operand of the type expression, NULL means no name
 // The top level should call this function with s == NULL. The return value contains the type string
@@ -152,7 +154,15 @@ void scope_free(scope_t *scope) {
   return;
 }
 
+void init_builtin_types() {
+  memset(&type_builtin_int, 0x00, sizeof(type_t));
+  type_builtin_int.size = TYPE_INT_SIZE;
+  type_builtin_int.decl_prop = BASETYPE_INT;
+  return;
+}
+
 type_cxt_t *type_sys_init() {
+  init_builtin_types();
   type_cxt_t *cxt = (type_cxt_t *)malloc(sizeof(type_cxt_t));
   SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
@@ -340,6 +350,12 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       parent_type->size = TYPE_PTR_SIZE;
     } else if(op->type == EXP_ARRAY_SUB) {
       parent_type->decl_prop |= TYPE_OP_ARRAY_SUB;
+      token_t *index = ast_getchild(op, 1);
+      assert(index);
+      if(index->type != T_) {
+        op->array_size = eval_const_int(cxt, index);
+        if(token->array_size < 0) error_row_col_exit(op->offset, "Array size in declaration must be non-negative\n");
+      } else { op->array_size = -1; }
       parent_type->array_size = op->array_size;
       // If lower type is unknown size (e.g. another array or struct without definition), or the array size not given 
       // then current size is also unknown
@@ -575,6 +591,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
       value_t *value = value_init(cxt);
       value->addrtype = ADDR_IMM;
       value->intval = int_value;
+      value->type = &type_builtin_int; // Assign built in type, do not create new type objects
       if(scope_top_find(cxt, SCOPE_VALUE, name_str)) {
         error_row_col_exit(entry_name->offset, "Anonymous enum field \"%s\" clashes with an existing name", name_str);
       } else {
