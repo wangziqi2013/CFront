@@ -33,6 +33,13 @@ type_t type_builtin_ints[11] = {
   {BASETYPE_ULLONG, NULL, {NULL}, {0}, TYPE_LLONG_SIZE},
 };
 
+type_t type_builtin_const_char = { // const char type
+  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, TYPE_CHAR_SIZE
+}; 
+type_t type_builtin_string = { // String type is evaluated as const char *
+  TYPE_OP_DEREF, &type_builtin_const_char, {NULL}, {0}, TYPE_PTR_SIZE
+};
+
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
   type_free,
   comp_free,

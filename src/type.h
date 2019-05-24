@@ -100,6 +100,8 @@ typedef struct type_t_struct {
 
 extern int_prop_t ints[11];           // An array of integer properties for conversion
 extern type_t type_builtin_ints[11];  // An array of built in integer types
+extern type_t type_builtin_const_char;
+extern type_t type_builtin_string;
 
 typedef struct value_t_struct {
   type_t *type;         // Do not own
