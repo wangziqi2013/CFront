@@ -354,7 +354,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       assert(index);
       if(index->type != T_) {
         op->array_size = eval_const_int(cxt, index);
-        if(token->array_size < 0) error_row_col_exit(op->offset, "Array size in declaration must be non-negative\n");
+        if(op->array_size < 0) error_row_col_exit(op->offset, "Array size in declaration must be non-negative\n");
       } else { op->array_size = -1; }
       parent_type->array_size = op->array_size;
       // If lower type is unknown size (e.g. another array or struct without definition), or the array size not given 
@@ -585,9 +585,8 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     token_t *entry_name = ast_getchild(field, 0);
     assert(entry_name->type == T_IDENT); // Enum field must have a name
     token_t *enum_exp = ast_getchild(field, 1);
-    if(enum_exp) {
-      field->enum_const = curr_value = eval_const_int(cxt, enum_exp);
-    }
+    if(enum_exp) field->enum_const = curr_value = eval_const_int(cxt, enum_exp);
+    else field->enum_const = curr_value;
     char *name_str = entry_name->str;
     list_insert(enu->field_list, name_str, (void *)(long)curr_value); // Directly store the integer as value
     if(bt_find(enu->field_index, name_str) != BT_NOTFOUND) {
@@ -599,7 +598,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     if(nameless) { // Insert the names to the current scope as integer const
       value_t *value = value_init(cxt);
       value->addrtype = ADDR_IMM;
-      value->intval = int_value;
+      value->intval = curr_value;
       value->type = &type_builtin_int; // Assign built in type, do not create new type objects
       if(scope_top_find(cxt, SCOPE_VALUE, name_str)) {
         error_row_col_exit(entry_name->offset, "Anonymous enum field \"%s\" clashes with an existing name", name_str);
