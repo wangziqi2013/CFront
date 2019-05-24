@@ -7,16 +7,29 @@
 
 int_prop_t ints[11] = { // Integer sign and size, using index of base type
   {-1, -1}, // BASETYPE_NONE, 0x00
-  {1, 1}, // BASETYPE_CHAR, 0x01
-  {1, 2}, // BASETYPE_SHORT, 0x02
+  {1, TYPE_CHAR_SIZE}, // BASETYPE_CHAR, 0x01
+  {1, TYPE_SHORT_SIZE}, // BASETYPE_SHORT, 0x02
   {1, TYPE_INT_SIZE}, // BASETYPE_INT, 0x03
-  {1, 8}, // BASETYPE_LONG, 0x04
-  {0, 1}, // BASETYPE_UCHAR, 0x05
-  {0, 2}, // BASETYPE_USHORT, 0x06
+  {1, TYPE_LONG_SIZE}, // BASETYPE_LONG, 0x04
+  {0, TYPE_CHAR_SIZE}, // BASETYPE_UCHAR, 0x05
+  {0, TYPE_SHORT_SIZE}, // BASETYPE_USHORT, 0x06
   {0, TYPE_INT_SIZE}, // BASETYPE_UINT, 0x07
-  {0, 8}, // BASETYPE_ULONG, 0x08
-  {1, 16}, // BASETYPE_LLONG, 0x09
-  {0, 16}, // BASETYPE_ULLONG, 0x0A
+  {0, TYPE_LONG_SIZE}, // BASETYPE_ULONG, 0x08
+  {1, TYPE_LLONG_SIZE}, // BASETYPE_LLONG, 0x09
+  {0, TYPE_LLONG_SIZE}, // BASETYPE_ULLONG, 0x0A
+};
+
+type_t type_builtin_ints[10] = {
+  {BASETYPE_CHAR, NULL, {NULL}, {0}, TYPE_CHAR_SIZE},
+  {BASETYPE_SHORT, NULL, {NULL}, {0}, TYPE_SHORT_SIZE},
+  {BASETYPE_INT, NULL, {NULL}, {0}, TYPE_INT_SIZE},
+  {BASETYPE_LONG, NULL, {NULL}, {0}, TYPE_LONG_SIZE},
+  {BASETYPE_UCHAR, NULL, {NULL}, {0}, TYPE_CHAR_SIZE},
+  {BASETYPE_USHORT, NULL, {NULL}, {0}, TYPE_SHORT_SIZE},
+  {BASETYPE_UINT, NULL, {NULL}, {0}, TYPE_INT_SIZE},
+  {BASETYPE_ULONG, NULL, {NULL}, {0}, TYPE_LONG_SIZE},
+  {BASETYPE_LLONG, NULL, {NULL}, {0}, TYPE_LLONG_SIZE},
+  {BASETYPE_ULLONG, NULL, {NULL}, {0}, TYPE_LLONG_SIZE},
 };
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
@@ -164,9 +177,7 @@ void scope_free(scope_t *scope) {
 }
 
 void init_builtin_types() {
-  memset(&type_builtin_int, 0x00, sizeof(type_t));
-  type_builtin_int.size = TYPE_INT_SIZE;
-  type_builtin_int.decl_prop = BASETYPE_INT;
+  
   return;
 }
 
@@ -622,6 +633,10 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 }
 
 type_t *type_typeof(token_t *exp) {
+  switch(exp->type) {
+
+    default: assert(0); break;
+  }
   return NULL;
 }
 
