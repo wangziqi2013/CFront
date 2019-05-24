@@ -520,7 +520,7 @@ void test_type_getenum() {
   parse_exp_free(parse_cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test2[] = "struct stru { enum {a,b,c} x; enum {d,e, /* a -> name clash with previous enum*/} y; }"; // Tests unnamed enum
+  char test2[] = "struct stru { enum {a,b,c} x; enum {d,e = c * 10 + (2 << 3), /* a -> name clash with previous enum*/} y; }"; // Tests unnamed enum
   parse_cxt = parse_exp_init(test2);
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);

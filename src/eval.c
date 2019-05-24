@@ -96,51 +96,71 @@ int eval_const_int_token(token_t *token) {
   return token->type == T_CHAR_CONST ? (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, 0);
 }
 
-int eval_const_int(token_t *token) {
+int eval_const_int(type_cxt_t *cxt, token_t *token) {
   int ret = 0;
   switch(token->type) {
     // Unary operators
-    case EXP_PLUS: ret = eval_const_int(ast_getchild(token, 0)); break;
-    case EXP_LOGICAL_NOT: ret = !eval_const_int(ast_getchild(token, 0)); break;
-    case EXP_BIT_NOT: ret = ~eval_const_int(ast_getchild(token, 0)); break;
+    case EXP_PLUS: ret = eval_const_int(cxt, ast_getchild(token, 0)); break;
+    case EXP_LOGICAL_NOT: ret = !eval_const_int(cxt, ast_getchild(token, 0)); break;
+    case EXP_BIT_NOT: ret = ~eval_const_int(cxt, ast_getchild(token, 0)); break;
     // Binary operators
-    case EXP_MUL: ret = eval_const_int(ast_getchild(token, 0)) * eval_const_int(ast_getchild(token, 1)); break;
+    case EXP_MUL: ret = eval_const_int(cxt, ast_getchild(token, 0)) * eval_const_int(cxt, ast_getchild(token, 1)); break;
     case EXP_DIV: { 
-      int rhs = eval_const_int(ast_getchild(token, 1));
+      int rhs = eval_const_int(cxt, ast_getchild(token, 1));
       if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression \"%s\" is zero\n", token_typestr(token->type));
-      ret = eval_const_int(ast_getchild(token, 0)) / rhs;
+      ret = eval_const_int(cxt, ast_getchild(token, 0)) / rhs;
       break;
     }
     case EXP_MOD: { 
-      int rhs = eval_const_int(ast_getchild(token, 1));
+      int rhs = eval_const_int(cxt, ast_getchild(token, 1));
       if(rhs == 0) error_row_col_exit(token->offset, "The dividend of constant expression \"%s\" is zero\n", token_typestr(token->type));
-      ret = eval_const_int(ast_getchild(token, 0)) % rhs;
+      ret = eval_const_int(cxt, ast_getchild(token, 0)) % rhs;
       break;
     }
-    case EXP_ADD: ret = eval_const_int(ast_getchild(token, 0)) + eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_SUB: ret = eval_const_int(ast_getchild(token, 0)) - eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_LSHIFT: ret = eval_const_int(ast_getchild(token, 0)) << eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_RSHIFT: ret = eval_const_int(ast_getchild(token, 0)) >> eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_LESS: ret = eval_const_int(ast_getchild(token, 0)) < eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_GREATER: ret = eval_const_int(ast_getchild(token, 0)) > eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_LEQ: ret = eval_const_int(ast_getchild(token, 0)) <= eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_GEQ: ret = eval_const_int(ast_getchild(token, 0)) >= eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_EQ: ret = eval_const_int(ast_getchild(token, 0)) == eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_NEQ: ret = eval_const_int(ast_getchild(token, 0)) != eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_BIT_AND: ret = eval_const_int(ast_getchild(token, 0)) & eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_BIT_OR: ret = eval_const_int(ast_getchild(token, 0)) | eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_BIT_XOR: ret = eval_const_int(ast_getchild(token, 0)) ^ eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_LOGICAL_AND: ret = eval_const_int(ast_getchild(token, 0)) && eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_LOGICAL_OR: ret = eval_const_int(ast_getchild(token, 0)) || eval_const_int(ast_getchild(token, 1)); break;
-    case EXP_COMMA: ret = eval_const_int(ast_getchild(token, 0)), eval_const_int(ast_getchild(token, 1)); break;
+    case EXP_ADD: ret = eval_const_int(cxt, ast_getchild(token, 0)) + eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_SUB: ret = eval_const_int(cxt, ast_getchild(token, 0)) - eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_LSHIFT: ret = eval_const_int(cxt, ast_getchild(token, 0)) << eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_RSHIFT: ret = eval_const_int(cxt, ast_getchild(token, 0)) >> eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_LESS: ret = eval_const_int(cxt, ast_getchild(token, 0)) < eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_GREATER: ret = eval_const_int(cxt, ast_getchild(token, 0)) > eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_LEQ: ret = eval_const_int(cxt, ast_getchild(token, 0)) <= eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_GEQ: ret = eval_const_int(cxt, ast_getchild(token, 0)) >= eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_EQ: ret = eval_const_int(cxt, ast_getchild(token, 0)) == eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_NEQ: ret = eval_const_int(cxt, ast_getchild(token, 0)) != eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_BIT_AND: ret = eval_const_int(cxt, ast_getchild(token, 0)) & eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_BIT_OR: ret = eval_const_int(cxt, ast_getchild(token, 0)) | eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_BIT_XOR: ret = eval_const_int(cxt, ast_getchild(token, 0)) ^ eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_LOGICAL_AND: ret = eval_const_int(cxt, ast_getchild(token, 0)) && eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_LOGICAL_OR: ret = eval_const_int(cxt, ast_getchild(token, 0)) || eval_const_int(cxt, ast_getchild(token, 1)); break;
+    case EXP_COMMA: ret = eval_const_int(cxt, ast_getchild(token, 0)), eval_const_int(cxt, ast_getchild(token, 1)); break;
     // Tenary operator
     case EXP_COND: ret = \
-      eval_const_int(ast_getchild(token, 0)) ? eval_const_int(ast_getchild(token, 1)) : eval_const_int(ast_getchild(token, 2)); break;
+      eval_const_int(cxt, ast_getchild(token, 0)) ? eval_const_int(cxt, ast_getchild(token, 1)) : eval_const_int(cxt, ast_getchild(token, 2)); break;
     // Immediate values (integer, char expanded into integers)
     case T_HEX_INT_CONST:
     case T_OCT_INT_CONST:
     case T_CHAR_CONST:
     case T_DEC_INT_CONST: ret = eval_const_int_token(token); break;
+    case T_IDENT: {
+      value_t *value = (value_t *)scope_search(cxt, SCOPE_VALUE, token->str);
+      if(!value) error_row_col_exit(token->offset, "Cannot find integer constant \"%s\"\n", token->str);
+      if(value->addrtype != ADDR_IMM) error_row_col_exit(token->offset, "Name \"%s\" is not a constant\n", token->str);
+      if(!type_is_integer(value->type)) error_row_col_exit(token->offset, "Name \"%s\" is not of integer type\n", token->str);
+      if(BASETYPE_GET(value->type->decl_prop) != BASETYPE_INT) 
+        warn_row_col_exit(token->offset, "Name \"%s\" will be converted to int type\n", token->str);
+      ret = value->intval;
+      break;
+    }
+    case EXP_CAST: {
+      token_t *decl = ast_getchild(token, 1);
+      token_t *basetype = ast_getchild(decl, 0);
+      type_t *cast_type = type_gettype(cxt, decl, basetype, 0); // Do not allow void and storage class
+      if(!type_is_integer(cast_type)) error_row_col_exit(token->offset, "Can only cast to integer type\n");
+      if(BASETYPE_GET(cast_type->decl_prop) != BASETYPE_INT) 
+        warn_row_col_exit(token->offset, "Type cast will be ignored; Result will be integer type\n");
+      ret = eval_const_int(cxt, ast_getchild(token, 0));
+      break;
+    }
     // sizeof operator (queries the type system)
     case EXP_SIZEOF: // Temporarily disable this
     default: error_row_col_exit(token->offset, 
