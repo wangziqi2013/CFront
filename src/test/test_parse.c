@@ -774,38 +774,6 @@ void test_anomaly() {
   assert(err == 1);
   parse_exp_free(cxt);
 
-  char test7[] = " volatile const int array[(12 + 8) / 30 - 1] "; // Negative array size
-  err = 0;
-  cxt = parse_exp_init(test7);
-  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
-  else err = 1;
-  assert(err == 1);
-  parse_exp_free(cxt);
-
-  char test8[] = " struct str { int x : (12 + 8) / 30 - 1; }"; // Negative bit field size
-  err = 0;
-  cxt = parse_exp_init(test8);
-  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
-  else err = 1;
-  assert(err == 1);
-  parse_exp_free(cxt);
-
-  char test9[] = " struct str { int x : (12UL + 8LL) / 30 - 1; }"; // Negative bit field size
-  err = 0;
-  cxt = parse_exp_init(test9);
-  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
-  else err = 1;
-  assert(err == 1);
-  parse_exp_free(cxt);
-
-  char test10[] = " char array['A' + 'b']"; // char constant as array size
-  err = 0;
-  cxt = parse_exp_init(test10);
-  if(error_trycatch()) parse_decl(cxt, PARSE_DECL_HASBASETYPE);
-  else err = 1;
-  assert(err == 1);
-  parse_exp_free(cxt);
-
   error_testmode(0);
   printf("Pass!\n");
   return;
