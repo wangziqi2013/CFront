@@ -594,6 +594,30 @@ void test_type_anomaly() {
   parse_exp_free(cxt);
   type_sys_free(type_cxt);
 
+  char test5[] = " char array[(char (*)(void))x]"; // char constant as array size
+  err = 0;
+  cxt = parse_exp_init(test5);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
+  char test6[] = " char array[(unsigned long long)x]"; // char constant as array size
+  err = 0;
+  cxt = parse_exp_init(test6);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
   printf("Pass!\n");
   (void)type;
   return;
