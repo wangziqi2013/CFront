@@ -546,6 +546,7 @@ void test_type_anomaly() {
   type_cxt_t *type_cxt;
   type_t *type;
   token_t *token;
+  str_t *s;
   char test1[] = " volatile const int array[(12 + 8) / 30 - 1] "; // Negative array size
   err = 0;
   cxt = parse_exp_init(test1);
@@ -618,6 +619,18 @@ void test_type_anomaly() {
   parse_exp_free(cxt);
   type_sys_free(type_cxt);
 
+  char test7[] = " char array[sizeof(int *[])]"; // char constant as array size
+  err = 0;
+  cxt = parse_exp_init(test7);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+    //ast_print(token, 0); // Print after this to get array size info
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
   printf("Pass!\n");
   (void)type;
   return;

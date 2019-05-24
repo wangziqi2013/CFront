@@ -175,6 +175,7 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
         assert(0);
         // TODO: DERIVE TYPE OF AN EXPRESSION
       }
+      break;
     }
     default: error_row_col_exit(token->offset, 
       "Unsupported token for constant integer expression: \"%s\"\n", token_typestr(token->type));
