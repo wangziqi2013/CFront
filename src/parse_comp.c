@@ -51,12 +51,9 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
         // Declarator body, can be named or unamed
         token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
         if(la->type == T_COLON) {
-          char *colon_offset = la->offset; // Used for error reporting
           token_consume_type(cxt->token_cxt, T_COLON);
           token_t *bf; // Assigned next line
           ast_append_child(field, ast_append_child(token_alloc_type(T_BITFIELD), bf = parse_exp(cxt, PARSE_EXP_NOCOMMA)));
-          field->bitfield_size = eval_const_int(bf); // Evaluate the constant expression
-          if(field->bitfield_size < 0) error_row_col_exit(colon_offset, "Bit field size in declaration must be non-negative\n");
           la = token_lookahead_notnull(cxt->token_cxt, 1);
         } else { field->bitfield_size = -1; }
         if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
