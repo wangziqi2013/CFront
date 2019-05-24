@@ -813,7 +813,8 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
 }
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL
-// Return value cannot be used
+// Parameter num "1" means the immediate next token
+// Return value cannot be used to build AST tree
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
   assert(num > 0 && cxt->pb_num >= 0);  
   while(cxt->pb_num < num) {

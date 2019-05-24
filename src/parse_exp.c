@@ -179,7 +179,7 @@ token_t *parse_exp_next_token(parse_exp_cxt_t *cxt, parse_exp_disallow_t disallo
       case T_BIT_NOT: token->type = EXP_BIT_NOT; break;
       case T_STAR: token->type = EXP_DEREF; break;
       case T_AND: token->type = EXP_ADDR; break;
-      case T_SIZEOF: token->type = EXP_SIZEOF; break;
+      case T_SIZEOF: token->type = EXP_SIZEOF; break;       // sizeof is expected to occur where we expect an AST
       default: error_row_col_exit(token->offset, 
                                   "Did not expect to see \"%s\" as a prefix operator\n", 
                                   token_symstr(token->type));

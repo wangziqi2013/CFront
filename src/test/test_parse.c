@@ -217,7 +217,7 @@ void test_simple_exp_parse() {
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
-  char test3[] = "(void **(int **, long, short))g + (void* (*named_decl[16]) (void a, int *[]) ) a()++ - sizeof(1) * sizeof **a++";
+  char test3[] = "(void **(int **, long, short))g + (void* (*named_decl[16]) (void a, int *[]) ) a()++ - sizeof(void (*)(int)) + sizeof(1) * sizeof(**a++)";
   cxt = parse_exp_init(test3);
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
