@@ -69,7 +69,6 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
 
 token_t *parse_enum(parse_comp_cxt_t *cxt, token_t *root) {
   if(parse_name_body(cxt, root)) {
-    int curr_const = 0; // The constant value of the current entry
     while(1) { // loop on lines
       if(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_RCPAREN) { 
         token_consume_type(cxt->token_cxt, T_RCPAREN); break;
@@ -81,15 +80,10 @@ token_t *parse_enum(parse_comp_cxt_t *cxt, token_t *root) {
       else error_row_col_exit(la->offset, "Expecting an identifier in enum body\n");
       la = token_lookahead_notnull(cxt->token_cxt, 1);
       if(la->type == T_ASSIGN) {
-        token_t *enum_const;
         token_consume_type(cxt->token_cxt, T_ASSIGN);
-        ast_append_child(enum_field, enum_const = parse_exp(cxt, PARSE_EXP_NOCOMMA));
-        curr_const = enum_field->enum_const = eval_const_int(enum_const);
+        ast_append_child(enum_field, parse_exp(cxt, PARSE_EXP_NOCOMMA));
         la = token_lookahead_notnull(cxt->token_cxt, 1);
-      } else {
-        enum_field->enum_const = curr_const; // If no assignment just use the value from previous loop
       }
-      curr_const++;
       // Last entry does not have to use comma
       if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
       else if(la->type == T_RCPAREN) { token_consume_type(cxt->token_cxt, T_RCPAREN); break; }
