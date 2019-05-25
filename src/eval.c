@@ -5,7 +5,7 @@
 
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
-  char buffer[5];
+  static char buffer[5];
   if(isprint(ch)) sprintf(buffer, "%c", ch);
   else sprintf(buffer, "\\x%02X", (unsigned char)ch); // Use a cast to avoid sign extension
   return buffer;

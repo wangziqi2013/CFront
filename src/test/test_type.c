@@ -642,7 +642,7 @@ void test_eval_const_str_token() {
   parse_exp_cxt_t *cxt;
   str_t *s, *printable;
 
-  cxt = parse_exp_init(" \"abcdefg\\n \\\\ \\xff \\096\" ");
+  cxt = parse_exp_init(" \"abcdefg\\n\\r\\v\\b\\t \\\" \\\' \\\\ \\xff \\765\" ");
   s = eval_const_str_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
   printable = eval_print_const_str(s);
   printf("str = -->%s<--\n", str_cstr(printable));
