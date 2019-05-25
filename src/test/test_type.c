@@ -343,45 +343,45 @@ void test_eval_int_convert() {
   return;
 }
 
-void test_eval_const_token() {
-  printf("=== Test eval_const_(type)_token() ===\n");
+void test_eval_const_char_token() {
+  printf("=== Test eval_const_char_token() ===\n");
   token_t *token;
   parse_exp_cxt_t *cxt;
   char ch;
 
   cxt = parse_exp_init(" \'\\\\\' ");
   ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("Value %d\n", (int)ch);
+  printf("Value %d\n", (int)ch); assert((int)ch == 92);
   parse_exp_free(cxt);
   ast_free(token);
 
   cxt = parse_exp_init(" \'\\n' ");
   ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("Value %d\n", (int)ch);
+  printf("Value %d\n", (int)ch); assert((int)ch == 10);
   parse_exp_free(cxt);
   ast_free(token);
 
   cxt = parse_exp_init(" \'\\xab' ");
   ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("Value %d\n", (int)ch);
+  printf("Value %d\n", (int)ch); assert((int)ch == -85);
   parse_exp_free(cxt);
   ast_free(token);
 
   cxt = parse_exp_init(" \'\\xb' ");
   ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("Value %d\n", (int)ch);
+  printf("Value %d\n", (int)ch); assert((int)ch == 11);
   parse_exp_free(cxt);
   ast_free(token);
 
   cxt = parse_exp_init(" \'\\777' ");
   ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("Value %d\n", (int)ch);
+  printf("Value %d\n", (int)ch); assert((int)ch == -1);
   parse_exp_free(cxt);
   ast_free(token);
 
   cxt = parse_exp_init(" \'\\76' ");
   ch = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("Value %d\n", (int)ch);
+  printf("Value %d\n", (int)ch); assert((int)ch == 62);
   parse_exp_free(cxt);
   ast_free(token);
 
@@ -636,6 +636,8 @@ void test_type_anomaly() {
   return;
 }
 
+
+
 void test_type_typeof() {
   printf("=== Test type_typeof ===\n");
   parse_exp_cxt_t *parse_cxt;
@@ -680,7 +682,7 @@ int main() {
   test_list();
   test_str();
   test_vector();
-  test_eval_const_token();
+  test_eval_const_char_token();
   test_eval_const_token_errors(); // Memory leak
   test_eval_int_convert();
   test_eval_const_int();
