@@ -3,6 +3,14 @@
 #include "eval.h"
 #include "type.h"
 
+// Represent a character as \xhh
+char *eval_hex_char(char ch) {
+  char buffer[5];
+  if(isprint(ch)) sprintf(buffer, "%c", ch);
+  else sprintf(buffer, "\\x%02X", (unsigned char)ch); // Use a cast to avoid sign extension
+  return buffer;
+}
+
 // Caller frees the returned string object
 str_t *eval_print_const_str(str_t *s) {
   char *ptr = str_cstr(s);
@@ -23,14 +31,12 @@ str_t *eval_print_const_str(str_t *s) {
         case '\"': str_concat(ret, "\\\""); break;
         case '\\': str_concat(ret, "\\\\"); break;
         default: {
-          char buffer[3];
-          sprintf(buffer, "%02X", *ptr);
-          str_concat(ret, "\x");
-          str_concat(buffer);
+          str_concat(ret, eval_hex_char(*ptr));
           break;
         } // default
       } // switch
     } // is printable or not
+    ptr++;
   } // while(*ptr)
   return ret;
 }
@@ -79,7 +85,7 @@ int eval_const_atoi(char *s, int base, token_t *token, int max_char, int check_e
   if(max_char && chars > max_char) 
     error_row_col_exit(token->offset, "Maximum of %d digits are allowed in integer constant \"%s\"\n", max_char, token->str);
   if(check_end && *end != '\0') 
-    error_row_col_exit(token->offset, "Invalid character \'%c\' in integer constant \"%s\"\n", *end, token->str);
+    error_row_col_exit(token->offset, "Invalid character \'%s\' in integer constant \"%s\"\n", eval_hex_char(*end), token->str);
   if(next) *next = end; // Return next char to read in this argument if it is not NULL
   return ret;
 } 
@@ -100,7 +106,7 @@ char eval_escaped_char(char escaped, token_t *token) {
     case 'f': return '\f'; break;
     case 't': return '\t'; break;
     case 'v': return '\v'; break;
-    default: error_row_col_exit(token->offset, "Unknown escaped character: %c\n", escaped); break;
+    default: error_row_col_exit(token->offset, "Unknown escaped character: \'%s\'\n", eval_hex_char(escaped)); break;
   }
   assert(0);
   return 0; // Should never reach here
@@ -134,6 +140,7 @@ str_t *eval_const_str_token(token_t *token) {
     char ch0 = *ptr;
     if(ch0 != '\\') { 
       str_append(s, ch0); 
+      ptr++;
     } else {
       char ch1 = ptr[1];   // ch1 is the escaped character
       assert(ch1 != '\0'); // Otherwise the string ends with '\' which will escape the following '"'
@@ -144,6 +151,7 @@ str_t *eval_const_str_token(token_t *token) {
         escaped_value = eval_const_atoi(ptr + 1, 8, token, 3, ATOI_NO_CHECK_END, &ptr);  // Must have 1 - 3 char
       } else {
         escaped_value = eval_escaped_char(ptr[1], token);
+        ptr += 2;
       }
       str_append(s, escaped_value);
     }
