@@ -159,6 +159,9 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
+static inline void type_error_not_supported(token_t *token) {
+  error_row_col_exit(token->offset, "Sorry, type \"%s\" not yet supported\n");
+}
 // Returns 1 if it is integer types. Applies to any type object
 static inline int type_is_integer(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
@@ -205,6 +208,6 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
-type_t *type_typeof(token_t *exp, uint32_t options); // Evaluate the type of an expression
+type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options); // Evaluate the type of an expression
 
 #endif
