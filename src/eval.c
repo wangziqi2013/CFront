@@ -19,8 +19,8 @@ decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2) {
   return 0;
 }
 
-// Take a max bite until the next char one is not legal digit
-// Return next char, result in ret variable
+// Take a max bite until the next char one is not legal digit or string ends
+// Return next char ptr (could be pointing to '\0'), result in ret variable
 char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
   *ret = 0;
   do { 
@@ -36,7 +36,8 @@ char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
   return s;
 } 
 
-// max_char is the maximum number of characters allowed in the literal; 0 means don't care
+// atoi 
+// Argument max_char is the maximum number of characters allowed in the literal; 0 means don't care
 int eval_const_atoi(char *s, int base, token_t *token, int max_char) {
   int ret = 0;
   char *end;
@@ -48,19 +49,10 @@ int eval_const_atoi(char *s, int base, token_t *token, int max_char) {
   return ret;
 } 
 
-char eval_const_char_token(token_t *token) {
-  assert(token->type == T_CHAR_CONST && BASETYPE_GET(token->decl_prop) == BASETYPE_CHAR);
-  int len = strlen(token->str); // Remaining characters
-  if(len == 0) error_row_col_exit(token->offset, "Empty char literal\n");
-  if(token->str[0] != '\\') { // Not an escaped character, just return
-    if(len != 1) error_row_col_exit(token->offset, "Char literal \'%s\' contains more than one character\n", token->str);
-    return token->str[0];
-  }
-  if(len == 1) error_row_col_exit(token->offset, "Empty escape sequence\n");
-  char escaped = token->str[1];
-  if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[1], 8, token, 3); // 3 digits oct
-  else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
-  if(len != 2) error_row_col_exit(token->offset, "Multi-character unknown escape sequence: \"%s\"\n", token->str);
+// Converts escaped sequence into a char, i.e. input 'n' will return '\n'
+// Do not process 'x', and 0 - 7
+// Argument "token" is just for error reporting
+char eval_escaped_char(char escaped, token_t *token) {
   switch(escaped) {
     case 'n': return '\n'; break;
     case '0': return '\0'; break;
@@ -75,7 +67,29 @@ char eval_const_char_token(token_t *token) {
     case 'v': return '\v'; break;
     default: error_row_col_exit(token->offset, "Unknown escaped character: %c\n", escaped); break;
   }
+}
+
+char eval_const_char_token(token_t *token) {
+  assert(token->type == T_CHAR_CONST && BASETYPE_GET(token->decl_prop) == BASETYPE_CHAR);
+  int len = strlen(token->str); // Remaining characters
+  if(len == 0) error_row_col_exit(token->offset, "Empty char literal\n");
+  if(token->str[0] != '\\') { // Not an escaped character, just return
+    if(len != 1) error_row_col_exit(token->offset, "Char literal \'%s\' contains more than one character\n", token->str);
+    return token->str[0];
+  }
+  if(len == 1) error_row_col_exit(token->offset, "Empty escape sequence\n");
+  char escaped = token->str[1];
+  if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[1], 8, token, 3); // 3 digits oct
+  else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
+  if(len != 2) error_row_col_exit(token->offset, "Multi-character unknown escape sequence: \"%s\"\n", token->str);
+  
   return 0;
+}
+
+// Given a string liternal token, return a string object containing binary data of the string
+str_t *eval_const_str_token(token_t *token) {
+  assert(token->type == T_STR_CONST && token->str);
+
 }
 
 int eval_const_int_token(token_t *token) {
