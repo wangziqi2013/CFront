@@ -636,14 +636,14 @@ void test_type_anomaly() {
   return;
 }
 
-void test_eval_const_char_token() {
-  printf("=== Test eval_const_char_token() ===\n");
+void test_eval_const_str_token() {
+  printf("=== Test eval_const_str_token() ===\n");
   token_t *token;
   parse_exp_cxt_t *cxt;
   str_t *s, *printable;
 
-  cxt = parse_exp_init(" \"abcdefg\\n\" ");
-  s = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  cxt = parse_exp_init(" \"abcdefg\\n \\\\ \\xff \\096\" ");
+  s = eval_const_str_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
   printable = eval_print_const_str(s);
   printf("str = -->%s<--\n", str_cstr(printable));
   parse_exp_free(cxt);
@@ -705,7 +705,7 @@ int main() {
   test_type_getcomp();
   test_type_getenum();
   test_type_anomaly();
-  test_eval_const_char_token();
+  test_eval_const_str_token();
   test_type_typeof();
   return 0;
 }

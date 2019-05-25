@@ -22,9 +22,7 @@ void str_concat(str_t *str, const char *s);
 void str_prepend_str(str_t *str, const char *s);
 void str_print_int(str_t *str, int d);  // Append an integer at the end of the str
 char *str_copy(const str_t *str);
-
-static inline str_cstr(str_t *s) { return s->s; }
-static inline str_size(str_t *s) { return s->size; }
+static inline char *str_cstr(str_t *s) { return s->s; }
 
 typedef struct {
   int size, capacity;
