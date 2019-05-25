@@ -640,7 +640,7 @@ void test_eval_const_str_token() {
   printf("=== Test eval_const_str_token() ===\n");
   token_t *token;
   parse_exp_cxt_t *cxt;
-  str_t *s, *printable;
+  str_t *s = NULL, *printable = NULL;
 
   cxt = parse_exp_init(" \"abcdefg\\n\\r\\v\\b\\t \\\" \\\' \\\\ \\xff \\765\" ");
   s = eval_const_str_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
@@ -648,7 +648,8 @@ void test_eval_const_str_token() {
   printf("str = -->%s<--\n", str_cstr(printable));
   parse_exp_free(cxt);
   ast_free(token);
-  str_free(s);
+  if(s) str_free(s);
+  if(printable) str_free(printable);
 
   printf("Pass!\n");
   return;
