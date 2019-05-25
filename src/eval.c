@@ -38,7 +38,8 @@ char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
 
 // Argument max_char is the maximum number of characters allowed in the literal; 0 means don't care
 // Argument check_end indicates whether we enforce the next reading position to be '\0'; 0 means don't care
-int eval_const_atoi(char *s, int base, token_t *token, int max_char, int check_end) {
+// Argument next returns the next char to read in s; NULL will be ignored
+int eval_const_atoi(char *s, int base, token_t *token, int max_char, int check_end, char **next) {
   int ret = 0;
   char *end;
   int chars = (end = eval_const_atoi_maxbite(s, base, token, &ret)) - s;
@@ -47,6 +48,7 @@ int eval_const_atoi(char *s, int base, token_t *token, int max_char, int check_e
     error_row_col_exit(token->offset, "Maximum of %d digits are allowed in integer constant \"%s\"\n", max_char, token->str);
   if(check_end && *end != '\0') 
     error_row_col_exit(token->offset, "Invalid character \'%c\' in integer constant \"%s\"\n", *end, token->str);
+  if(next) *next = end; // Return next char to read in this argument if it is not NULL
   return ret;
 } 
 
@@ -82,8 +84,11 @@ char eval_const_char_token(token_t *token) {
   }
   if(len == 1) error_row_col_exit(token->offset, "Empty escape sequence\n");
   char escaped = token->str[1];
-  if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[1], 8, token, 3); // 3 digits oct
-  else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
+  if(escaped >= '0' && escaped <= '7') {
+    return eval_const_atoi(&token->str[1], 8, token, 3, ATOI_CHECK_END, NULL);  // 3 digits oct
+  } else if(escaped == 'x') {
+    return eval_const_atoi(&token->str[2], 16, token, 2, ATOI_CHECK_END, NULL); // 2 digits hex
+  }
   if(len != 2) error_row_col_exit(token->offset, "Multi-character unknown escape sequence: \"%s\"\n", token->str);
   return eval_escaped_char(escaped, token); // Regular single char escape
 }
@@ -98,12 +103,20 @@ str_t *eval_const_str_token(token_t *token) {
     if(ch0 != '\\') { 
       str_append(s, ch0); 
     } else {
-      char ch1 = ptr[1];
+      char ch1 = ptr[1];   // ch1 is the escaped character
       assert(ch1 != '\0'); // Otherwise the string ends with '\' which will escape the following '"'
-      if(ch1 == 'x') 
+      char escaped_value;
+      if(ch1 == 'x') {
+        escaped_value = eval_const_atoi(ptr + 2, 16, token, 2, ATOI_NO_CHECK_END, &ptr); // Must have 1 or 2 char
+      } else if(ch1 >= '0' && ch1 <= '7') {
+        escaped_value = eval_const_atoi(ptr + 1, 8, token, 3, ATOI_NO_CHECK_END, &ptr);  // Must have 1 - 3 char
+      } else {
+        escaped_value = eval_escaped_char(ptr[1], token);
+      }
+      str_append(s, escaped_value);
     }
   }
-  return NULL;
+  return s;
 }
 
 int eval_const_int_token(token_t *token) {
