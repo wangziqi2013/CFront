@@ -9,6 +9,7 @@
     "error.h": "c",
     "list.h": "c",
     "eval.h": "c",
-    "token.h": "c"
+    "token.h": "c",
+    "type.h": "c"
   }
 }

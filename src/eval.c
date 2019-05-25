@@ -5,7 +5,34 @@
 
 // Caller frees the returned string object
 str_t *eval_print_const_str(str_t *s) {
-
+  char *ptr = str_cstr(s);
+  str_t *ret = str_init();
+  while(*ptr) {
+    if(isprint(*ptr)) {
+      str_append(ret, *ptr);
+    } else {
+      switch(*ptr) {
+        case '\n': str_concat(ret, "\\n"); break;
+        case '\r': str_concat(ret, "\\r"); break;
+        case '\a': str_concat(ret, "\\a"); break;
+        case '\b': str_concat(ret, "\\b"); break;
+        case '\f': str_concat(ret, "\\f"); break;
+        case '\t': str_concat(ret, "\\t"); break;
+        case '\v': str_concat(ret, "\\v"); break;
+        case '\'': str_concat(ret, "\\'"); break;
+        case '\"': str_concat(ret, "\\\""); break;
+        case '\\': str_concat(ret, "\\\\"); break;
+        default: {
+          char buffer[3];
+          sprintf(buffer, "%02X", *ptr);
+          str_concat(ret, "\x");
+          str_concat(buffer);
+          break;
+        } // default
+      } // switch
+    } // is printable or not
+  } // while(*ptr)
+  return ret;
 }
 
 // Return value is a mask that needs to be OR'ed onto the decl property of the destination operand
