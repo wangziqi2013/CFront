@@ -36,8 +36,9 @@ type_t type_builtin_ints[11] = {
 type_t type_builtin_const_char = { // const char type
   BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, TYPE_CHAR_SIZE
 }; 
-type_t type_builtin_string = { // String type is evaluated as const char *
-  TYPE_OP_DEREF, &type_builtin_const_char, {NULL}, {0}, TYPE_PTR_SIZE
+// String type is evaluated as const char [length]; here is a template
+type_t type_builtin_string_template = { 
+  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, TYPE_UNKNOWN_SIZE // Should change size to actual length
 };
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
@@ -48,6 +49,15 @@ obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free funct
   value_free,
   NULL,       // Sentinel - will segment fault
 };
+
+// Argument full_size includes the trailing '\0'
+type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size) {
+  type_t *ret = type_init(cxt);
+  memcpy(ret, &type_builtin_string_template, sizeof(type_t));
+  ret->array_size = full_size;
+  ret->size = full_size * TYPE_CHAR_SIZE;
+  return ret;
+}
 
 // Prints a type in string on stdout
 // type is the type object, name is shown as the inner most operand of the type expression, NULL means no name

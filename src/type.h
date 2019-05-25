@@ -42,11 +42,6 @@ enum {
   OBJ_TYPE_COUNT,
 };
 
-typedef struct { // Integer (builtin type) properties
-  int sign;      // 0 means unsigned, 1 means signed
-  int size;      // Number of bytes
-} int_prop_t;
-
 // A statement block creates a new scope. The bottomost scope is the global scope
 typedef struct {
   int level;                            // 0 means global
@@ -98,24 +93,29 @@ typedef struct type_t_struct {
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
+typedef struct { // Integer (builtin type) properties
+  int sign;      // 0 means unsigned, 1 means signed
+  int size;      // Number of bytes
+} int_prop_t;
+
 extern int_prop_t ints[11];           // An array of integer properties for conversion
 extern type_t type_builtin_ints[11];  // An array of built in integer types
 extern type_t type_builtin_const_char;
-extern type_t type_builtin_string;
+extern type_t type_builtin_string_template;
 
 typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
   union {
-    int8_t charval;     // The following are for constant evaluation; We do not support long long
-    uint8_t ucharval;
-    int16_t shortval;
+    int8_t   charval;   // The following are for constant evaluation; We do not support long long
+    uint8_t  ucharval;
+    int16_t  shortval;
     uint16_t ushortval;
-    int32_t intval;
+    int32_t  intval;
     uint32_t uintval;
-    int64_t longval;
+    int64_t  longval;
     uint64_t ulongval;
-    offset_t offset;    // If it represents an address then this is the offset
+    int64_t  offset;    // If it represents an address then this is the offset (relative to data segment, stack, etc.)
     uint64_t ptrval;
   };
 } value_t;
@@ -160,8 +160,9 @@ static inline int type_is_integer(type_t *type) {
 static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
 }
-
 static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
+
+type_t *type_get_strliteral(size_t full_size); // Returns a const char[full_size] type object
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
