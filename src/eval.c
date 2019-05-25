@@ -36,16 +36,17 @@ char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret) {
   return s;
 } 
 
-// atoi 
 // Argument max_char is the maximum number of characters allowed in the literal; 0 means don't care
-int eval_const_atoi(char *s, int base, token_t *token, int max_char) {
+// Argument check_end indicates whether we enforce the next reading position to be '\0'; 0 means don't care
+int eval_const_atoi(char *s, int base, token_t *token, int max_char, int check_end) {
   int ret = 0;
   char *end;
   int chars = (end = eval_const_atoi_maxbite(s, base, token, &ret)) - s;
   if(chars == 0) error_row_col_exit(token->offset, "Empty integer literal sequence\n");
   if(max_char && chars > max_char) 
     error_row_col_exit(token->offset, "Maximum of %d digits are allowed in integer constant \"%s\"\n", max_char, token->str);
-  if(*end != '\0') error_row_col_exit(token->offset, "Invalid character \'%c\' in integer constant \"%s\"\n", *end, token->str);
+  if(check_end && *end != '\0') 
+    error_row_col_exit(token->offset, "Invalid character \'%c\' in integer constant \"%s\"\n", *end, token->str);
   return ret;
 } 
 
@@ -67,6 +68,8 @@ char eval_escaped_char(char escaped, token_t *token) {
     case 'v': return '\v'; break;
     default: error_row_col_exit(token->offset, "Unknown escaped character: %c\n", escaped); break;
   }
+  assert(0);
+  return 0; // Should never reach here
 }
 
 char eval_const_char_token(token_t *token) {
@@ -82,14 +85,25 @@ char eval_const_char_token(token_t *token) {
   if(escaped >= '0' && escaped <= '7') return eval_const_atoi(&token->str[1], 8, token, 3); // 3 digits oct
   else if(escaped == 'x') return eval_const_atoi(&token->str[2], 16, token, 2); // 2 digits hex
   if(len != 2) error_row_col_exit(token->offset, "Multi-character unknown escape sequence: \"%s\"\n", token->str);
-  
-  return 0;
+  return eval_escaped_char(escaped, token); // Regular single char escape
 }
 
 // Given a string liternal token, return a string object containing binary data of the string
 str_t *eval_const_str_token(token_t *token) {
   assert(token->type == T_STR_CONST && token->str);
-
+  str_t *s = str_init();
+  char *ptr = token->str;
+  while(*ptr) { // it is possible that the string is empty
+    char ch0 = *ptr;
+    if(ch0 != '\\') { 
+      str_append(s, ch0); 
+    } else {
+      char ch1 = ptr[1];
+      assert(ch1 != '\0'); // Otherwise the string ends with '\' which will escape the following '"'
+      if(ch1 == 'x') 
+    }
+  }
+  return NULL;
 }
 
 int eval_const_int_token(token_t *token) {
