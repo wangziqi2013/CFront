@@ -372,7 +372,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
       curr_type->size = ints[BASETYPE_INDEX(basetype->decl_prop)].size;
     } else {
-      error_row_col_exit(basetype->offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(basetype_type));
+      type_error_not_supported(basetype->offset, basetype_type);
     }
   }
 
@@ -648,13 +648,23 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
+// This function evaluates the type of an expression
 // Argument options: see TYPEOF_IGNORE_ series. For functions and arrays we do not need the type of 
-// arguments and index to determine the final type
-type_t *type_typeof(token_t *exp, uint32_t options) {
+// arguments and index to determine the final type; Caller must not modify the returned type
+// 1. For literal types, just return their type constant
+// 2. void cannot be evaluated as part of an expression; will not be returned
+type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   // Integer constants use builtin type
-  if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG)
+  if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
     return &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)];
-  if(exp->type == T_STR_CONST) {};
+  } else if(exp->type == T_STR_CONST) {
+    str_t *s = eval_const_str_token(exp);
+    size_t sz = str_size(s);
+    str_free(s);                             // Do not use its content
+    return type_get_strliteral(cxt, sz + 1); // We reserve one byte for trailing '\0'
+  } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
+    type_error_not_supported(exp->offset, exp->decl_prop);
+  }
   switch(exp->type) {
     
     default: assert(0); break;

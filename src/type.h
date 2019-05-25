@@ -159,8 +159,8 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
-static inline void type_error_not_supported(token_t *token) {
-  error_row_col_exit(token->offset, "Sorry, type \"%s\" not yet supported\n");
+static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
+  error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
 }
 // Returns 1 if it is integer types. Applies to any type object
 static inline int type_is_integer(type_t *type) {
