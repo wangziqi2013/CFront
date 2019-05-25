@@ -134,7 +134,8 @@ int eval_const_int_token(token_t *token) {
     warn_row_col_exit(token->offset, 
       "Integer constant will be implicitly converted to \"int\" type in this context (was \"%s\")\n", 
       token_decl_print(token->decl_prop));
-  return token->type == T_CHAR_CONST ? (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, 0);
+  return token->type == T_CHAR_CONST ? \
+    (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, ATOI_NO_MAX_CHAR, ATOI_CHECK_END, NULL);
 }
 
 int eval_const_int(type_cxt_t *cxt, token_t *token) {
