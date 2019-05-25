@@ -16,10 +16,20 @@
 #define TYPE_LONG_SIZE      8
 #define TYPE_LLONG_SIZE     16
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
+#define TYPE_CHAR_MAX       ((1 << (TYPE_CHAR_SIZE * 8 - 1)) - 1)
+#define TYPE_UCHAR_MAX      ((1 << (TYPE_CHAR_SIZE * 8)) - 1)
+
+// Used with comp_t init function
+#define COMP_NO_DEFINITION   0
+#define COMP_HAS_DEFINITION  1
 
 // Arguments to type_gettype
 #define TYPE_ALLOW_VOID   0x00000001     // Whether allow void as base type (only allowed for func arg)
 #define TYPE_ALLOW_STGCLS 0x00000002     // Whether allow storage class (not for comp type and func arg)
+
+// Used with type_typeof
+#define TYPEOF_IGNORE_FUNC_ARG     0x00000001 // Do not check type for function argument
+#define TYPEOF_IGNORE_ARRAY_INDEX  0x00000002 // Do not check array index type
 
 enum {
   SCOPE_VALUE  = 1, // Named variable that has a value or memory location; Enum constants are put here
@@ -120,9 +130,6 @@ typedef struct value_t_struct {
   };
 } value_t;
 
-#define COMP_NO_DEFINITION   0
-#define COMP_HAS_DEFINITION  1
-
 // Represents composite type
 typedef struct comp_t_struct {
   char *source_offset;    // If name is not NULL this is the token's offset
@@ -162,7 +169,7 @@ static inline int type_is_comp(type_t *type) {
 }
 static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
 
-type_t *type_get_strliteral(size_t full_size); // Returns a const char[full_size] type object
+type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size); // Returns a const char[full_size] type object
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
@@ -198,6 +205,6 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
-type_t *type_typeof(token_t *exp); // Evaluate the type of an expression
+type_t *type_typeof(token_t *exp, uint32_t options); // Evaluate the type of an expression
 
 #endif
