@@ -654,7 +654,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 // 1. For literal types, just return their type constant
 // 2. void cannot be evaluated as part of an expression; will not be returned
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
-  // Integer constants use builtin type
+  // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
     return &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)];
   } else if(exp->type == T_STR_CONST) {
@@ -664,11 +664,20 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     return type_get_strliteral(cxt, sz + 1); // We reserve one byte for trailing '\0'
   } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
     type_error_not_supported(exp->offset, exp->decl_prop);
+  } else if(exp->type == T_IDENT) {
+    value_t *value = scope_search(cxt, SCOPE_VALUE, exp->str);
+    if(!value) error_row_col_exit(exp->offset, "Name \"%s\" cannot be found for type information\n", exp->str);
+    return value->type;
   }
-  switch(exp->type) {
-    
-    default: assert(0); break;
+
+  token_type_t op_type = exp->type;
+  type_t *lhs, *rhs;
+  // Type derivation operators: * -> . () []
+  if(op_type == EXP_DEREF) {
+    lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
+    if()
   }
+  
   return NULL;
 }
 
