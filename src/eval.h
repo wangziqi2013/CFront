@@ -14,6 +14,7 @@
 #define ATOI_CHECK_END    1
 #define ATOI_NO_MAX_CHAR  0
 
+char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);
 
 // Result type of two integers in an expression
