@@ -61,7 +61,7 @@ type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size) {
 
 // Prints a type in string on stdout
 // type is the type object, name is shown as the inner most operand of the type expression, NULL means no name
-// The top level should call this function with s == NULL. The return value contains the type string
+// The top level should call this function with s == NULL, name == NULL. The return value contains the type string
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level) {
   assert(type);
   if(!s) s = str_init();
@@ -648,9 +648,15 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
-type_t *type_typeof(token_t *exp) {
+// Argument options: see TYPEOF_IGNORE_ series. For functions and arrays we do not need the type of 
+// arguments and index to determine the final type
+type_t *type_typeof(token_t *exp, uint32_t options) {
+  // Integer constants use builtin type
+  if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG)
+    return type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)];
+  if(exp->type == T_STR_CONST) ;
   switch(exp->type) {
-
+    
     default: assert(0); break;
   }
   return NULL;
