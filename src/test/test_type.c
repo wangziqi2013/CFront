@@ -636,7 +636,23 @@ void test_type_anomaly() {
   return;
 }
 
+void test_eval_const_char_token() {
+  printf("=== Test eval_const_char_token() ===\n");
+  token_t *token;
+  parse_exp_cxt_t *cxt;
+  str_t *s;
 
+  cxt = parse_exp_init(" \"abcdefg\\n\" ");
+  s = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
+  printf("str = ");
+  eval_print_const_str(s);
+  parse_exp_free(cxt);
+  ast_free(token);
+  str_free(s);
+
+  printf("Pass!\n");
+  return;
+}
 
 void test_type_typeof() {
   printf("=== Test type_typeof ===\n");
@@ -689,6 +705,7 @@ int main() {
   test_type_getcomp();
   test_type_getenum();
   test_type_anomaly();
+  test_eval_const_char_token();
   test_type_typeof();
   return 0;
 }

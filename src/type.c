@@ -653,8 +653,8 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 type_t *type_typeof(token_t *exp, uint32_t options) {
   // Integer constants use builtin type
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG)
-    return type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)];
-  if(exp->type == T_STR_CONST) ;
+    return &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)];
+  if(exp->type == T_STR_CONST) {};
   switch(exp->type) {
     
     default: assert(0); break;
