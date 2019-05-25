@@ -14,6 +14,7 @@
 #define ATOI_CHECK_END    1
 #define ATOI_NO_MAX_CHAR  0
 
+str_t *eval_print_const_str(str_t *s);
 
 // Result type of two integers in an expression
 decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2);

@@ -640,12 +640,12 @@ void test_eval_const_char_token() {
   printf("=== Test eval_const_char_token() ===\n");
   token_t *token;
   parse_exp_cxt_t *cxt;
-  str_t *s;
+  str_t *s, *printable;
 
   cxt = parse_exp_init(" \"abcdefg\\n\" ");
   s = eval_const_char_token(token = parse_exp(cxt, PARSE_EXP_ALLOWALL));
-  printf("str = ");
-  eval_print_const_str(s);
+  printable = eval_print_const_str(s);
+  printf("str = -->%s<--\n", str_cstr(printable));
   parse_exp_free(cxt);
   ast_free(token);
   str_free(s);

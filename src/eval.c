@@ -3,6 +3,11 @@
 #include "eval.h"
 #include "type.h"
 
+// Caller frees the returned string object
+str_t *eval_print_const_str(str_t *s) {
+
+}
+
 // Return value is a mask that needs to be OR'ed onto the decl property of the destination operand
 decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2) {
   assert(BASETYPE_GET(int1) >= BASETYPE_CHAR && BASETYPE_GET(int1) <= BASETYPE_ULLONG);
