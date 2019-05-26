@@ -659,12 +659,27 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 // Implicit cast rules:
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
 //       the same length
+//   1.2 Casting signed shorter int to longer types always use sign extension
 //   4.1 Implicit cast does not allow casting between pointers, except to void * type
 // See TYPE_CAST_ series for return values
-int type_cast(type_t *to, type_t *from, int cast_type) {
-  if(type_is_integer(to) && type_is_integer(from)) { // case 1
-    int from_sign = ints[BASETYPE_INDEX(from->decl_prop)].size;
-    int to_sign = ints[BASETYPE_INDEX(to->decl_prop)].size;
+int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
+  if(type_is_integer(to) && type_is_integer(from)) { // case 1: int to int
+    if(cast_type == TYPE_CAST_EXPLICIT) {
+      if(to->size == from->size) return TYPE_CAST_NO_OP;        // Same size cast - always allowed for explicit casting
+      else if(to->size < from->size) return TYPE_CAST_TRUNCATE; // Casting from longer to shorter
+      if(type_is_signed(from)) return TYPE_CAST_SIGN_EXT;       // Casting from shorter signed int
+      else return TYPE_CAST_ZERO_EXT;                           // Casting from shorter unsigned int
+    } else {
+      int from_sign = type_is_signed(from);
+      int to_sign = type_is_signed(to);
+      if(to->size < from->size) error_row_col_exit(offset, "Cannot cast to shorter integer type implicitly\n");
+      else if(to->size == from->size && (!to_sign && from_sign)) 
+        error_row_col_exit(offset, "Cannot cast from signed to unsigned of the same size\n");
+      // To longer type - same as explicit
+      if(from_sign) return TYPE_CAST_SIGN_EXT;
+      else return TYPE_CAST_ZERO_EXT;
+    }
+    
   }
 }
 
