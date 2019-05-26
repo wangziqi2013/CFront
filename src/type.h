@@ -105,10 +105,10 @@ typedef struct type_t_struct {
       bintree_t *arg_index; // Binary tree using arg name as key; Owns memory
       int vararg;           // Set if varadic argument function
     };
-    struct {            // Only valid if base type is BASETYPE_UDEF
-      int is_udef;      // Whether this is a user defined type (for printing purposes we stop once seeing this
-      char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it))
-    };
+  };
+  struct {            // These two are set if the type is added as a result of typedef from another type
+    int is_udef;      // Whether this is a user defined type (for printing purposes we stop once seeing this)
+    char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it))
   };
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;

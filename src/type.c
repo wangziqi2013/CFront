@@ -20,28 +20,28 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
 };
 
 type_t type_builtin_ints[11] = {
-  {0, NULL, {NULL}, {0}, 0}, // Integer type begins at index 1
-  {BASETYPE_CHAR, NULL, {NULL}, {0}, TYPE_CHAR_SIZE},
-  {BASETYPE_SHORT, NULL, {NULL}, {0}, TYPE_SHORT_SIZE},
-  {BASETYPE_INT, NULL, {NULL}, {0}, TYPE_INT_SIZE},
-  {BASETYPE_LONG, NULL, {NULL}, {0}, TYPE_LONG_SIZE},
-  {BASETYPE_UCHAR, NULL, {NULL}, {0}, TYPE_CHAR_SIZE},
-  {BASETYPE_USHORT, NULL, {NULL}, {0}, TYPE_SHORT_SIZE},
-  {BASETYPE_UINT, NULL, {NULL}, {0}, TYPE_INT_SIZE},
-  {BASETYPE_ULONG, NULL, {NULL}, {0}, TYPE_LONG_SIZE},
-  {BASETYPE_LLONG, NULL, {NULL}, {0}, TYPE_LLONG_SIZE},
-  {BASETYPE_ULLONG, NULL, {NULL}, {0}, TYPE_LLONG_SIZE},
+  {0, NULL, {NULL}, {0}, {0, NULL}, 0}, // Integer type begins at index 1
+  {BASETYPE_CHAR, NULL, {NULL}, {0}, {0, NULL}, TYPE_CHAR_SIZE},
+  {BASETYPE_SHORT, NULL, {NULL}, {0}, {0, NULL}, TYPE_SHORT_SIZE},
+  {BASETYPE_INT, NULL, {NULL}, {0}, {0, NULL}, TYPE_INT_SIZE},
+  {BASETYPE_LONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LONG_SIZE},
+  {BASETYPE_UCHAR, NULL, {NULL}, {0}, {0, NULL}, TYPE_CHAR_SIZE},
+  {BASETYPE_USHORT, NULL, {NULL}, {0}, {0, NULL}, TYPE_SHORT_SIZE},
+  {BASETYPE_UINT, NULL, {NULL}, {0}, {0, NULL}, TYPE_INT_SIZE},
+  {BASETYPE_ULONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LONG_SIZE},
+  {BASETYPE_LLONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LLONG_SIZE},
+  {BASETYPE_ULLONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LLONG_SIZE},
 };
 
 type_t type_builtin_void = {
-  BASETYPE_VOID, NULL, {NULL}, {0}, TYPE_VOID_SIZE
+  BASETYPE_VOID, NULL, {NULL}, {0}, {0, NULL}, TYPE_VOID_SIZE
 };
 type_t type_builtin_const_char = { // const char type
-  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, TYPE_CHAR_SIZE
+  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, {0, NULL}, TYPE_CHAR_SIZE
 }; 
 // String type is evaluated as const char [length]; here is a template
-type_t type_builtin_string_template = { 
-  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, TYPE_UNKNOWN_SIZE // Should change size to actual length
+type_t type_builtin_string_template = { // Should change size to actual length when copy
+  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, {0, NULL}, TYPE_UNKNOWN_SIZE 
 };
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
