@@ -217,7 +217,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
-int type_cast(type_t *to, type_t *from, int cast_type, int *to_len, int *from_len);
+int type_cast(type_t *to, type_t *from, int cast_type);
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options); // Evaluate the type of an expression
 
 #endif

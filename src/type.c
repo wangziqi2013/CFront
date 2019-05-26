@@ -648,9 +648,9 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
-// Checks whether type cast is valid
-// 1. Explicit type cast: Using EXP_CAST operator
-// 2. Implicit type cast: Assignments, array indexing, function arguments
+// Performs type cast:
+//   1. Explicit type cast: Using EXP_CAST operator
+//   2. Implicit type cast: Assignments, array indexing, function arguments
 // Type cast rule:
 //   1. int <-> int (both)
 //   2. int <-> ptr (explicit)
@@ -661,9 +661,11 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 //       the same length
 //   4.1 Implicit cast does not allow casting between pointers, except to void * type
 // See TYPE_CAST_ series for return values
-// Argument to_len and from_len returns the source and destination size of the type
-int type_cast(type_t *to, type_t *from, int cast_type, int *to_len, int *from_len) {
-
+int type_cast(type_t *to, type_t *from, int cast_type) {
+  if(type_is_integer(to) && type_is_integer(from)) { // case 1
+    int from_sign = ints[BASETYPE_INDEX(from->decl_prop)].size;
+    int to_sign = ints[BASETYPE_INDEX(to->decl_prop)].size;
+  }
 }
 
 // This function evaluates the type of an expression
