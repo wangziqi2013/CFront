@@ -20,28 +20,28 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
 };
 
 type_t type_builtin_ints[11] = {
-  {0, NULL, {NULL}, {0}, {0, NULL}, 0}, // Integer type begins at index 1
-  {BASETYPE_CHAR, NULL, {NULL}, {0}, {0, NULL}, TYPE_CHAR_SIZE},
-  {BASETYPE_SHORT, NULL, {NULL}, {0}, {0, NULL}, TYPE_SHORT_SIZE},
-  {BASETYPE_INT, NULL, {NULL}, {0}, {0, NULL}, TYPE_INT_SIZE},
-  {BASETYPE_LONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LONG_SIZE},
-  {BASETYPE_UCHAR, NULL, {NULL}, {0}, {0, NULL}, TYPE_CHAR_SIZE},
-  {BASETYPE_USHORT, NULL, {NULL}, {0}, {0, NULL}, TYPE_SHORT_SIZE},
-  {BASETYPE_UINT, NULL, {NULL}, {0}, {0, NULL}, TYPE_INT_SIZE},
-  {BASETYPE_ULONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LONG_SIZE},
-  {BASETYPE_LLONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LLONG_SIZE},
-  {BASETYPE_ULLONG, NULL, {NULL}, {0}, {0, NULL}, TYPE_LLONG_SIZE},
+  {0, NULL, {NULL}, {0}, NULL, 0}, // Integer type begins at index 1
+  {BASETYPE_CHAR, NULL, {NULL}, {0}, NULL, TYPE_CHAR_SIZE},
+  {BASETYPE_SHORT, NULL, {NULL}, {0}, NULL, TYPE_SHORT_SIZE},
+  {BASETYPE_INT, NULL, {NULL}, {0}, NULL, TYPE_INT_SIZE},
+  {BASETYPE_LONG, NULL, {NULL}, {0}, NULL, TYPE_LONG_SIZE},
+  {BASETYPE_UCHAR, NULL, {NULL}, {0}, NULL, TYPE_CHAR_SIZE},
+  {BASETYPE_USHORT, NULL, {NULL}, {0}, NULL, TYPE_SHORT_SIZE},
+  {BASETYPE_UINT, NULL, {NULL}, {0}, NULL, TYPE_INT_SIZE},
+  {BASETYPE_ULONG, NULL, {NULL}, {0}, NULL, TYPE_LONG_SIZE},
+  {BASETYPE_LLONG, NULL, {NULL}, {0}, NULL, TYPE_LLONG_SIZE},
+  {BASETYPE_ULLONG, NULL, {NULL}, {0}, NULL, TYPE_LLONG_SIZE},
 };
 
 type_t type_builtin_void = {
-  BASETYPE_VOID, NULL, {NULL}, {0}, {0, NULL}, TYPE_VOID_SIZE
+  BASETYPE_VOID, NULL, {NULL}, {0}, NULL, TYPE_VOID_SIZE
 };
 type_t type_builtin_const_char = { // const char type
-  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, {0, NULL}, TYPE_CHAR_SIZE
+  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, NULL, TYPE_CHAR_SIZE
 }; 
 // String type is evaluated as const char [length]; here is a template
 type_t type_builtin_string_template = { // Should change size to actual length when copy
-  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, {0, NULL}, TYPE_UNKNOWN_SIZE 
+  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, NULL, TYPE_UNKNOWN_SIZE 
 };
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
@@ -69,16 +69,24 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   assert(type);
   if(!s) s = str_init();
   for(int i = 0;i < level * 2;i++) str_append(s, ' '); // Padding spaces to the level
-  // Print base type first
+  // Find base type. Stop at the end or at a udef'ed name
   type_t *basetype = type;
-  while(basetype->next) basetype = basetype->next;
-  // Print storage class and qualifier and base type, e.g. struct, union, enum, udef; with a space at the end
+  while(basetype->next && !basetype->udef_name) basetype = basetype->next;
+
+  // First, print base type, qualifier and storage class, if it is a primitive type, with a space at the end
+  // typedef is also printed
   str_concat(s, token_decl_print(basetype->decl_prop));
-  // This does not include qualifier and storage class
-  decl_prop_t base = BASETYPE_GET(type->decl_prop);
   str_append(s, ' ');
 
-  if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
+  // This does not include qualifier and storage class
+  decl_prop_t base = BASETYPE_GET(basetype->decl_prop);
+  assert(base != BASETYPE_UDEF); // Must have already been translated to other types
+  
+  // If base type is composite, print its body
+  if(basetype->udef_name) { // This has highest priority - just print udef name
+    str_concat(s, basetype->udef_name);
+    str_append(s, ' ');
+  } else if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
     if(comp->name) { str_concat(s, comp->name); str_append(s, ' '); } // Name followed by a space
     if(print_comp_body && comp->has_definition) {
@@ -86,7 +94,10 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       listnode_t *node = list_head(comp->field_list);
       while(node) {
         field_t *field = (field_t *)list_value(node);
-        str_t *field_s = type_print(field->type, field->name, NULL, print_comp_body, level + 1);
+        // Note: For self-pointing struct member this will incur infinite loop
+        // Check whether it is pointer type, and do not print body if positive
+        int print_field_body = !TYPE_OP_GET(field->type->decl_prop); // If derived type do not print body
+        str_t *field_s = type_print(field->type, field->name, NULL, print_field_body, level + 1);
         str_concat(s, field_s->s);
         str_free(field_s);
         if(field->bitfield_size != -1) {
@@ -105,9 +116,6 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       for(int i = 0;i < level * 2;i++) str_append(s, ' ');
       str_concat(s, "} ");
     }
-  } else if(base == BASETYPE_UDEF) {
-    str_concat(s, type->udef_name);
-    str_append(s, ' ');
   } else if(base == BASETYPE_ENUM) {
     enum_t *enu = basetype->enu;
     if(enu->name) { str_concat(s, enu->name); str_append(s, ' '); } 
@@ -156,7 +164,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
       str_append(decl_s, '(');
       listnode_t *arg = list_head(type->arg_list);
       while(arg) {
-        str_t *arg_s = type_print(list_value(arg), list_key(arg), NULL, 0, 0);
+        str_t *arg_s = type_print(list_value(arg), list_key(arg), NULL, 0, 0); // Always do not print body
         str_concat(decl_s, arg_s->s);
         str_free(arg_s);
         if((arg = list_next(arg)) != NULL) str_concat(decl_s, ", "); // If there is more arguments
