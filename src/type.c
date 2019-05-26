@@ -33,6 +33,9 @@ type_t type_builtin_ints[11] = {
   {BASETYPE_ULLONG, NULL, {NULL}, {0}, TYPE_LLONG_SIZE},
 };
 
+type_t type_builtin_void = {
+  BASETYPE_VOID, NULL, {NULL}, {0}, TYPE_VOID_SIZE
+};
 type_t type_builtin_const_char = { // const char type
   BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, TYPE_CHAR_SIZE
 }; 
@@ -336,30 +339,30 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   token_t *decl_name = ast_getchild(decl, 2);
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop); // The type primitive of base type decl; only valid with BASETYPE_*
-  type_t *curr_type = type_init(cxt); // Allocate a new type variable
-  curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+  type_t *curr_type;
   if(!(flags & TYPE_ALLOW_STGCLS) && (basetype->decl_prop & DECL_STGCLS_MASK)) 
     error_row_col_exit(basetype->offset, "Storage class modifier is not allowed in this context\n");
   
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
+    curr_type = type_init(cxt);
+    curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
     // If there is no name and no derivation and no body (checked inside type_getcomp) then this is forward
     curr_type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
     curr_type->size = curr_type->comp->size; // Could be unknown size
   } else if(basetype_type == BASETYPE_ENUM) {
     token_t *enum_token = ast_getchild(basetype, 0);
     assert(enum_token && enum_token->type == T_ENUM);
+    curr_type = type_init(cxt);
+    curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
     curr_type->enu = type_getenum(cxt, enum_token); 
     assert(curr_type->enu->size == TYPE_INT_SIZE);
     curr_type->size = TYPE_INT_SIZE;
-  } else if(basetype_type == BASETYPE_UDEF) {
+  } else if(basetype_type == BASETYPE_UDEF) { // Just directly use the udef'ed type
     token_t *udef_name = ast_getchild(basetype, 0);
     assert(udef_name && udef_name->type == T_IDENT);
-    curr_type->udef_type = (type_t *)scope_search(cxt, SCOPE_UDEF, udef_name->str); // May return a struct with or without def
-    curr_type->udef_name = udef_name->str;
-    assert(curr_type->udef_type); // Must have been defined, otherwise the parser will not recognize it as udef
-    curr_type->size = curr_type->udef_type->size;
+    curr_type = (type_t *)scope_search(cxt, SCOPE_UDEF, udef_name->str); // May return a struct with or without def
   } else { // This branch is for primitive base types
     if(basetype_type == BASETYPE_VOID) {
       // const void * is also illegal
@@ -368,9 +371,9 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
         error_row_col_exit(basetype->offset, "\"void\" type can only be used in function argument and return value\n");
       }
-      curr_type->size = 0; // Void type does not have valid size, use 0 as placeholder
+      curr_type = &type_builtin_ints[0]; // void is in the 0th index
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
-      curr_type->size = ints[BASETYPE_INDEX(basetype->decl_prop)].size;
+      curr_type = &type_builtin_ints[BASETYPE_INDEX(basetype_type)];
     } else {
       type_error_not_supported(basetype->offset, basetype_type);
     }
@@ -654,15 +657,23 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 // Type cast rule:
 //   1. int <-> int (both)
 //   2. int <-> ptr (explicit)
-//   3. array <-> ptr of the same base type (both)
+//   3. ptr <-  array of the same base type (both)
+//      Note: ptr cannot be casted to arrays in any context; For function args array is treated as a pointer
 //   4. ptr <-> ptr (see below)
 // Implicit cast rules:
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
 //       the same length
 //   1.2 Casting signed shorter int to longer types always use sign extension
 //   4.1 Implicit cast does not allow casting between pointers, except to void * type
+//   *.* Casting from const to non-const implicitly is prohibited for all types
 // See TYPE_CAST_ series for return values
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
+  // TODO: CONST MODIFIER ON POINTER
+  // TODO: SELF-CASTING (TYPE COMPARISON?) -> This is needed for all assignments
+  // TODO: UDEF
+  if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
+    error_row_col_exit(offset, "Implicit cast cannot drop \"const\" qualifier\n");
+  assert(cast_type == TYPE_CAST_EXPLICIT || cast_type == TYPE_CAST_IMPLICIT);
   if(type_is_integer(to) && type_is_integer(from)) { // case 1: int to int
     if(cast_type == TYPE_CAST_EXPLICIT) {
       if(to->size == from->size) return TYPE_CAST_NO_OP;        // Same size cast - always allowed for explicit casting
@@ -679,8 +690,9 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
       if(from_sign) return TYPE_CAST_SIGN_EXT;
       else return TYPE_CAST_ZERO_EXT;
     }
-    
   }
+
+  return TYPE_CAST_INVALID;
 }
 
 // This function evaluates the type of an expression
