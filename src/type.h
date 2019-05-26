@@ -181,6 +181,12 @@ static inline int type_is_signed(type_t *type) {
   assert(BASETYPE_INDEX(type->decl_prop) >= 1 && BASETYPE_INDEX(type->decl_prop) <= 10);
   return ints[BASETYPE_INDEX(type->decl_prop)].sign;
 }
+static inline int type_is_const(type_t *type) { // Returns 1 if the type has const modifier
+  return !!(type->decl_prop & DECL_CONST_MASK);
+}
+static inline int type_is_volatile(type_t *type) { // Returns 1 if the type has const modifier
+  return !!(type->decl_prop & DECL_VOLATILE_MASK);
+}
 // Returns 1 if it is struct or union type. Applies to any type object
 static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
