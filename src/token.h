@@ -174,6 +174,7 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_INDEX(decl_prop) (decl_prop >> 16)   // Returns the index into the integer size table
 #define BASETYPE_FROMINDEX(index) ((decl_prop_t)index << 16)
 // The following are used by type nodes to specify the derivation operation
+#define TYPE_OP_NONE           0x00000000
 #define TYPE_OP_DEREF          0x01000000
 #define TYPE_OP_ARRAY_SUB      0x02000000
 #define TYPE_OP_FUNC_CALL      0x03000000
