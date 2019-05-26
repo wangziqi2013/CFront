@@ -37,7 +37,7 @@ void str_append(str_t *str, char ch) {
 void str_prepend(str_t *str, char ch) {
   if(str->size == str->capacity) str_extend(str, str->capacity * 2);
   assert(str->size < str->capacity);
-  memcpy(str->s + 1, str->s, str->size + 1); // Including the trailing zero
+  memmove(str->s + 1, str->s, str->size + 1); // Including the trailing zero
   str->s[0] = ch;
   str->size++;
 }
@@ -46,7 +46,7 @@ void str_prepend_str(str_t *str, const char *s) {
   int copylen = strlen(s);
   if(str->size + copylen >= str->capacity) str_extend(str, str->size + copylen);
   assert(str->size + copylen <= str->capacity);
-  memcpy(str->s + copylen, str->s, str->size + 1); // Including the trailing zero
+  memmove(str->s + copylen, str->s, str->size + 1); // Including the trailing zero
   memcpy(str->s, s, copylen); // Do not include the trailing zero
   str->size += copylen;
 }
@@ -55,7 +55,7 @@ void str_concat(str_t *str, const char *s) {
   int copylen = strlen(s);
   if(str->size + copylen >= str->capacity) str_extend(str, str->size + copylen);
   assert(str->size + copylen <= str->capacity);
-  memcpy(str->s + str->size, s, copylen + 1); // Includes the '\0'
+  memmove(str->s + str->size, s, copylen + 1); // Includes the '\0'
   str->size += copylen;
 }
 
