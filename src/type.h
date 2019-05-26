@@ -9,6 +9,7 @@
 #include "str.h"
 
 #define SCOPE_LEVEL_GLOBAL  0
+#define TYPE_VOID_SIZE      0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_CHAR_SIZE      1
 #define TYPE_SHORT_SIZE     2
@@ -105,8 +106,8 @@ typedef struct type_t_struct {
       int vararg;           // Set if varadic argument function
     };
     struct {            // Only valid if base type is BASETYPE_UDEF
-      char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it)
-      struct type_t_struct *udef_type; // Stores actual type for udef'ed names
+      int is_udef;      // Whether this is a user defined type (for printing purposes we stop once seeing this
+      char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it))
     };
   };
   size_t size;  // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
@@ -120,6 +121,7 @@ typedef struct { // Integer (builtin type) properties
 extern int_prop_t ints[11];           // An array of integer properties for conversion
 extern type_t type_builtin_ints[11];  // An array of built in integer types
 extern type_t type_builtin_const_char;
+extern type_t type_builtin_void;
 extern type_t type_builtin_string_template;
 
 typedef struct value_t_struct {
