@@ -338,9 +338,10 @@ void value_free(void *ptr) {
 
 // If the decl node does not have a T_BASETYPE node as first child (i.e. first child T_)
 // then the additional basetype node may provide the base type; Caller must free memory
-// 1. Do not process storage class including typedef - the caller should add them to symbol table
-// 2. Do process struct/union/enum definition
-// 3. Type is only valid within the scope it is analyzed
+//   1. Do not process storage class including typedef - the caller should add them to symbol table
+//      1.1 Type object decl_prop will never have storage class bits set (DECL_STGCLS_MASK)
+//   2. Do process struct/union/enum definition
+//   3. Type is only valid within the scope it is analyzed
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags) {
   assert(basetype->type == T_BASETYPE);
   token_t *op = ast_getchild(decl, 1);
@@ -355,7 +356,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     curr_type = type_init(cxt);
-    curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+    curr_type->decl_prop = basetype->decl_prop & (~DECL_STGCLS_MASK); // Mask off storage class, only copies qualifier
     // If there is no name and no derivation and no body (checked inside type_getcomp) then this is forward
     curr_type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
     curr_type->size = curr_type->comp->size; // Could be unknown size
@@ -363,7 +364,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     token_t *enum_token = ast_getchild(basetype, 0);
     assert(enum_token && enum_token->type == T_ENUM);
     curr_type = type_init(cxt);
-    curr_type->decl_prop = basetype->decl_prop; // This may copy qualifier and storage class of the base type
+    curr_type->decl_prop = basetype->decl_prop & (~DECL_STGCLS_MASK); // Mask off storage class, only copies qualifier
     curr_type->enu = type_getenum(cxt, enum_token); 
     assert(curr_type->enu->size == TYPE_INT_SIZE);
     curr_type->size = TYPE_INT_SIZE;
@@ -660,20 +661,31 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
+// Compare two types
+//   1. We compare array range and function arguments, they must be strictly equal
+//      1.1 Two arrays of undefined range are equal
+int type_cmp(type_t *to, type_t *from) {
+  return 0;
+}
+
 // Performs type cast:
 //   1. Explicit type cast: Using EXP_CAST operator
 //   2. Implicit type cast: Assignments, array indexing, function arguments
 // Type cast rule:
+//   0. any type <-> itself
 //   1. int <-> int (both)
 //   2. int <-> ptr (explicit)
 //   3. ptr <-  array of the same base type (both)
 //      Note: ptr cannot be casted to arrays in any context; For function args array is treated as a pointer
 //   4. ptr <-> ptr (see below)
+//   5. Any type to void is allowed, returns TYPE_CAST_VOID
 // Implicit cast rules:
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
 //       the same length
 //   1.2 Casting signed shorter int to longer types always use sign extension
 //   4.1 Implicit cast does not allow casting between pointers, except to void * type
+//       4.1.1 But, if these two pointed to types only differ by const, then we can implicitly cast non-const 
+//             to const; Same applies to volatile
 //   *.* Casting from const to non-const implicitly is prohibited for all types
 // See TYPE_CAST_ series for return values
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
@@ -709,8 +721,8 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
 // This function evaluates the type of an expression
 // Argument options: see TYPEOF_IGNORE_ series. For functions and arrays we do not need the type of 
 // arguments and index to determine the final type; Caller must not modify the returned type
-// 1. For literal types, just return their type constant
-// 2. void cannot be evaluated as part of an expression; will not be returned
+//   1. For literal types, just return their type constant
+//   2. void cannot be evaluated as part of an expression; will not be returned
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {

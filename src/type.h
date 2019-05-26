@@ -32,6 +32,11 @@
 #define TYPEOF_IGNORE_FUNC_ARG     0x00000001 // Do not check type for function argument
 #define TYPEOF_IGNORE_ARRAY_INDEX  0x00000002 // Do not check array index type
 
+// Used with type_cmp
+#define TYPE_CMP_EQ                0          // Return value: Two types are strictly equal
+#define TYPE_CMP_LOSELESS          1          // Return value: Both are pointers, and no information loss
+#define TYPE_CMP_LOSSY             2          // Return value: Incompatible types, might lose information
+
 // Used with type_cast
 #define TYPE_CAST_EXPLICIT         0          // Explicit cast using cast operator
 #define TYPE_CAST_IMPLICIT         1          // Implicit cast with array indexing, func arg, and assignment
@@ -39,7 +44,8 @@
 #define TYPE_CAST_SIGN_EXT         1          // Return value: should perform sign extension
 #define TYPE_CAST_ZERO_EXT         2          // Return value: should perform zero extension
 #define TYPE_CAST_TRUNCATE         3          // Return value: should truncate
-#define TYPE_CAST_NO_OP            4          // No special bit operation needed
+#define TYPE_CAST_NO_OP            4          // Return value: No special bit operation needed
+#define TYPE_CAST_VOID             5          // Return value: The value has been invalidated
 
 enum {
   SCOPE_VALUE  = 1, // Named variable that has a value or memory location; Enum constants are put here
@@ -228,6 +234,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
+int type_cmp(type_t *to, type_t *from);
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset);
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options); // Evaluate the type of an expression
 
