@@ -662,10 +662,19 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 }
 
 // Compare two types
-//   1. We compare array range and function arguments, they must be strictly equal
-//      1.1 Two arrays of undefined range are equal
+//   1. If the two types are exactly identical, return TYPE_CMP_EQ
+//   2. If the two types only differ by const and/or volatile qualifier, and the const/volatile is
+//      on the "to" type, return TYPE_CMP_LOSELESS (do not lose information by casting to a more 
+//      strict type)
+//      Note: It is possible to implicitly cast a less strict type to more strict type, e.g. const int -> int
+//      is generally fine
+//   3. Otherwise return TYPE_CMP_LOSSY
 int type_cmp(type_t *to, type_t *from) {
-  return 0;
+  while(1) {
+    decl_prop_t op1 = TYPE_OP_GET(to->decl_prop);
+    decl_prop_t op2 = TYPE_OP_GET(from->decl_prop);
+    if(op1 != op2) return TYPE_CMP_LOSSY; // Incompatible
+  }
 }
 
 // Performs type cast:
