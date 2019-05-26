@@ -178,6 +178,7 @@ static inline int type_is_integer(type_t *type) {
 // Returns 1 if type is signed; only valid for integer types; undefined for others
 static inline int type_is_signed(type_t *type) {
   assert(type_is_integer(type));
+  assert(BASETYPE_INDEX(type->decl_prop) >= 1 && BASETYPE_INDEX(type->decl_prop) <= 10);
   return ints[BASETYPE_INDEX(type->decl_prop)].sign;
 }
 // Returns 1 if it is struct or union type. Applies to any type object
@@ -222,7 +223,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
-int type_cast(type_t *to, type_t *from, int cast_type);
+int type_cast(type_t *to, type_t *from, int cast_type, char *offset);
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options); // Evaluate the type of an expression
 
 #endif
