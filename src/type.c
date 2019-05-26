@@ -648,6 +648,24 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
+// Checks whether type cast is valid
+// 1. Explicit type cast: Using EXP_CAST operator
+// 2. Implicit type cast: Assignments, array indexing, function arguments
+// Type cast rule:
+//   1. int <-> int (both)
+//   2. int <-> ptr (explicit)
+//   3. array <-> ptr of the same base type (both)
+//   4. ptr <-> ptr (see below)
+// Implicit cast rules:
+//   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
+//       the same length
+//   4.1 Implicit cast does not allow casting between pointers, except to void * type
+// See TYPE_CAST_ series for return values
+// Argument to_len and from_len returns the source and destination size of the type
+int type_cast(type_t *to, type_t *from, int cast_type, int *to_len, int *from_len) {
+
+}
+
 // This function evaluates the type of an expression
 // Argument options: see TYPEOF_IGNORE_ series. For functions and arrays we do not need the type of 
 // arguments and index to determine the final type; Caller must not modify the returned type
@@ -673,9 +691,13 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   token_type_t op_type = exp->type;
   type_t *lhs, *rhs;
   // Type derivation operators: * -> . () []
-  if(op_type == EXP_DEREF) {
+  if(op_type == EXP_DEREF) { // Dereference can be applied to both ptr and array type
     lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
-    if()
+    if(TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_DEREF && TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_ARRAY_SUB) 
+      error_row_col_exit(exp->offset, "Operator \'*\' cannot be applied to non-pointer type\n");
+    return lhs->next;
+  } else if(op_type == EXP_ARRAY_SUB) {
+    // TODO: ADD TYPE CAST TO INTEGER TYPE FOR ARRAY SUB
   }
   
   return NULL;
