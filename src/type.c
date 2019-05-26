@@ -363,6 +363,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     token_t *udef_name = ast_getchild(basetype, 0);
     assert(udef_name && udef_name->type == T_IDENT);
     curr_type = (type_t *)scope_search(cxt, SCOPE_UDEF, udef_name->str); // May return a struct with or without def
+    assert(curr_type); // Must exist because otherwise parser will not tag this as UDEF name
   } else { // This branch is for primitive base types
     if(basetype_type == BASETYPE_VOID) {
       // const void * is also illegal
@@ -371,7 +372,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
         error_row_col_exit(basetype->offset, "\"void\" type can only be used in function argument and return value\n");
       }
-      curr_type = &type_builtin_ints[0]; // void is in the 0th index
+      curr_type = &type_builtin_void;
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
       curr_type = &type_builtin_ints[BASETYPE_INDEX(basetype_type)];
     } else {
@@ -383,7 +384,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     assert(op && (op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB));
     type_t *parent_type = type_init(cxt);
     parent_type->next = curr_type;
-    parent_type->decl_prop = op->decl_prop; // This copies pointer qualifier (const, volatile)
+    parent_type->decl_prop = op->decl_prop;       // This copies pointer qualifier (const, volatile)
+    assert(!(op->decl_prop & DECL_STGCLS_MASK)); // Must not have storage class (syntax does not allow)
     if(op->type == EXP_DEREF) {
       parent_type->decl_prop |= TYPE_OP_DEREF;
       parent_type->size = TYPE_PTR_SIZE;
@@ -633,7 +635,6 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     } else {
       bt_insert(enu->field_index, name_str, (void *)(long)curr_value);
     }
-    // TODO: CALL EVAL TO COMPUTE THE CONSTANT VALUE; WE USE CONST_EVAL TEMPORARILY
     if(nameless) { // Insert the names to the current scope as integer const
       value_t *value = value_init(cxt);
       value->addrtype = ADDR_IMM;
@@ -683,9 +684,11 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
     } else {
       int from_sign = type_is_signed(from);
       int to_sign = type_is_signed(to);
-      if(to->size < from->size) error_row_col_exit(offset, "Cannot cast to shorter integer type implicitly\n");
-      else if(to->size == from->size && (!to_sign && from_sign)) 
+      if(to->size < from->size) { 
+        error_row_col_exit(offset, "Cannot cast to shorter integer type implicitly\n"); 
+      } else if(to->size == from->size && (!to_sign && from_sign)) {
         error_row_col_exit(offset, "Cannot cast from signed to unsigned of the same size\n");
+      }
       // To longer type - same as explicit
       if(from_sign) return TYPE_CAST_SIGN_EXT;
       else return TYPE_CAST_ZERO_EXT;
