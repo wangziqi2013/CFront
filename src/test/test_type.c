@@ -645,6 +645,20 @@ void test_type_anomaly() {
   assert(err == 1);
   parse_exp_free(cxt);
   type_sys_free(type_cxt);
+
+  char test8[] = " int * const (**)(void)"; // returning const value
+  err = 0;
+  cxt = parse_exp_init(test8);
+  type_cxt = type_sys_init();
+  if(error_trycatch()) {
+    token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
+    type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
+    //ast_print(token, 0); // Print after this to get array size info
+  } else { err = 1; }
+  assert(err == 1);
+  parse_exp_free(cxt);
+  type_sys_free(type_cxt);
+
   printf("Pass!\n");
   (void)type;
   return;
