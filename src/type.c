@@ -706,10 +706,19 @@ int type_cmp(type_t *to, type_t *from) {
     } else { // Base type, must be identical, so just check lossy flag
       return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
     }
-  } else if(op1 == TYPE_OP_DEREF || op1 == TYPE_OP_ARRAY_SUB || op1 == TYPE_OP_FUNC_CALL) {
-    if(op1 == TYPE_OP_ARRAY_SUB) { // Compare index
-
-    } //else if()
+  } else {
+    assert(op1 == TYPE_OP_DEREF || op1 == TYPE_OP_ARRAY_SUB || op1 == TYPE_OP_FUNC_CALL);
+    if(op1 == TYPE_OP_ARRAY_SUB) { // Compare index - if none then it will be -1 which fits naturally into this
+      if(to->array_size != from->array_size) return TYPE_CMP_NEQ;
+    } else if(op1 == TYPE_OP_FUNC_CALL) { // Compare argument - must be strictly identical, not even compatible
+      if(to->vararg != from->vararg) return TYPE_CMP_NEQ; // Vararg functions must match
+      if(list_size(to->arg_list) != list_size(from->arg_list)) return TYPE_CMP_NEQ; // Argument number
+      listnode_t *to_arg = list_head(to->arg_list);
+      listnode_t *from_arg = list_head(from->arg_list);
+      while(to_arg && from_arg) {
+        to_arg
+      }
+    }
     int ret = type_cmp(to->next, from->next);
     switch(ret) {
       case TYPE_CMP_NEQ: return TYPE_CMP_NEQ; break;
