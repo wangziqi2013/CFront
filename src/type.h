@@ -33,9 +33,10 @@
 #define TYPEOF_IGNORE_ARRAY_INDEX  0x00000002 // Do not check array index type
 
 // Used with type_cmp
-#define TYPE_CMP_EQ                0          // Return value: Two types are strictly equal
-#define TYPE_CMP_LOSELESS          1          // Return value: Both are pointers, and no information loss
-#define TYPE_CMP_LOSSY             2          // Return value: Incompatible types, might lose information
+#define TYPE_CMP_EQ                0          // Return value: Equal types, strictly
+#define TYPE_CMP_LOSELESS          1          // Return value: Equal types except const/volatile, do not lose info
+#define TYPE_CMP_LOSSY             2          // Return value: Equal types except const/volatile, but will lose info
+#define TYPE_CMP_NEQ               3          // Return value: Two types are not equal
 
 // Used with type_cast
 #define TYPE_CAST_EXPLICIT         0          // Explicit cast using cast operator
