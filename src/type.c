@@ -668,12 +668,36 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 //      strict type)
 //      Note: It is possible to implicitly cast a less strict type to more strict type, e.g. const int -> int
 //      is generally fine
-//   3. Otherwise return TYPE_CMP_LOSSY
+//   3. If the two types only differ by const and/or volatile qualifier, and the qualifier is on
+//      "from" type, return TYPE_CMP_LOSSY
+//   4. If two types differ in their derivation chain and/or base types, return TYPE_CMP_NEQ
+// This function does not treat array and deref as the same type; Caller should be aware
 int type_cmp(type_t *to, type_t *from) {
-  while(1) {
-    decl_prop_t op1 = TYPE_OP_GET(to->decl_prop);
-    decl_prop_t op2 = TYPE_OP_GET(from->decl_prop);
-    if(op1 != op2) return TYPE_CMP_LOSSY; // Incompatible
+  decl_prop_t base1, base2;
+  int const_flag, volatile_flag, lossy_flag;
+  decl_prop_t op1 = TYPE_OP_GET(to->decl_prop);
+  decl_prop_t op2 = TYPE_OP_GET(from->decl_prop);
+  if(op1 != op2) return TYPE_CMP_NEQ;
+
+  // If set then const and volatile are incompatible
+  const_flag = !(to->decl_prop & DECL_CONST_MASK) && (from->decl_prop & DECL_CONST_MASK);
+  volatile_flag = !(to->decl_prop & DECL_VOLATILE_MASK) && (from->decl_prop & DECL_VOLATILE_MASK);
+  lossy_flag = const_flag || volatile_flag; // Set to 1 if RHS is more strict than LHS
+
+  // Base type, end of recursion
+  if(op1 == TYPE_OP_NONE) {
+    base1 = BASETYPE_GET(to->decl_prop);
+    base2 = BASETYPE_GET(from->decl_prop);
+    if(base1 != base2) return TYPE_CMP_LOSSY; // Incompatible type because base types are different
+    if(base1 == BASETYPE_STRUCT || base1 == BASETYPE_UNION) {
+      // Note that struct, union and enum are only created once and used multiple times, so just compare ptr
+      if(to->comp == from->comp) return lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS;
+      else return TYPE_CMP_NEQ;
+    } else if(base1 == BASETYPE_ENUM) {
+
+    } else {
+
+    }
   }
 }
 
