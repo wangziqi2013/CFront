@@ -716,7 +716,10 @@ int type_cmp(type_t *to, type_t *from) {
       listnode_t *to_arg = list_head(to->arg_list);
       listnode_t *from_arg = list_head(from->arg_list);
       while(to_arg && from_arg) {
-        to_arg
+        int ret = type_cmp((type_t *)list_value(to_arg), (type_t *)list_value(from_arg));
+        if(ret != TYPE_CMP_EQ) return TYPE_CMP_NEQ; // Args must be strictly equal
+        to_arg = list_next(to_arg);
+        from_arg = list_next(from_arg);
       }
     }
     int ret = type_cmp(to->next, from->next);
@@ -728,6 +731,7 @@ int type_cmp(type_t *to, type_t *from) {
       default: assert(0);
     }
   }
+  assert(0);
   return 0;
 }
 

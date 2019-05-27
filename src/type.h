@@ -108,8 +108,8 @@ typedef struct type_t_struct {
   union {
     int array_size;         // If decl_prop is array sub this stores the (optional) size of the array
     struct {
-      list_t *arg_list;     // If decl_prop is function call this stores a list of type_t *; Owns memory
-      bintree_t *arg_index; // Binary tree using arg name as key; Owns memory
+      list_t *arg_list;     // If decl_prop is function call this stores a list of type_t *; Owns the list
+      bintree_t *arg_index; // Binary tree using arg name as key; Owns the bin tree
       int vararg;           // Set if varadic argument function
     };
   };
