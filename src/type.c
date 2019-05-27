@@ -674,29 +674,46 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
 // This function does not treat array and deref as the same type; Caller should be aware
 int type_cmp(type_t *to, type_t *from) {
   decl_prop_t base1, base2;
-  int const_flag, volatile_flag, lossy_flag;
+  int const_flag, volatile_flag, lossy_flag, eq_flag;
   decl_prop_t op1 = TYPE_OP_GET(to->decl_prop);
   decl_prop_t op2 = TYPE_OP_GET(from->decl_prop);
+  // Reject if derivations are different
   if(op1 != op2) return TYPE_CMP_NEQ;
 
   // If set then const and volatile are incompatible
+  // All derivations and base types may have a qualifier: base type, *, [], ()
   const_flag = !(to->decl_prop & DECL_CONST_MASK) && (from->decl_prop & DECL_CONST_MASK);
   volatile_flag = !(to->decl_prop & DECL_VOLATILE_MASK) && (from->decl_prop & DECL_VOLATILE_MASK);
   lossy_flag = const_flag || volatile_flag; // Set to 1 if RHS is more strict than LHS
+  eq_flag = (to->decl_prop & DECL_QUAL_MASK) == (from->decl_prop & DECL_QUAL_MASK);
+  assert(!eq_flag || !lossy_flag); // At most one can be 1
 
   // Base type, end of recursion
   if(op1 == TYPE_OP_NONE) {
     base1 = BASETYPE_GET(to->decl_prop);
     base2 = BASETYPE_GET(from->decl_prop);
-    if(base1 != base2) return TYPE_CMP_LOSSY; // Incompatible type because base types are different
+    if(base1 != base2) return TYPE_CMP_LOSSY; // Reject different base types
     if(base1 == BASETYPE_STRUCT || base1 == BASETYPE_UNION) {
       // Note that struct, union and enum are only created once and used multiple times, so just compare ptr
-      if(to->comp == from->comp) return lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS;
-      else return TYPE_CMP_NEQ;
+      if(to->comp == from->comp) return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+      else return TYPE_CMP_NEQ; // Different structs
     } else if(base1 == BASETYPE_ENUM) {
+      if(to->enu == from->enu) return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+      else return TYPE_CMP_NEQ;
+    } else { // Base type, must be identical, so just check lossy flag
+      return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+    }
+  } else if(op1 == TYPE_OP_DEREF || op1 == TYPE_OP_ARRAY_SUB) {
+    if(op1 == TYPE_OP_ARRAY_SUB) { // Compare index
 
-    } else {
-
+    }
+    int ret = type_cmp(to->next, from->next);
+    switch(ret) {
+      case TYPE_CMP_NEQ: return TYPE_CMP_NEQ; break;
+      case TYPE_CMP_LOSSY: return TYPE_CMP_LOSSY; break;
+      case TYPE_CMP_LOSELESS: return eq_flag ? TYPE_CMP_LOSELESS : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+      case TYPE_CMP_EQ: return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+      default: assert(0);
     }
   }
 }
