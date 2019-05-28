@@ -689,15 +689,113 @@ void test_type_cmp() {
   type_cxt_t *type_cxt;
   type_t *to, *from;
   token_t *token_1, *token_2;
+  int ret;
 
-  parse_cxt_1 = parse_exp_init("char **(*a)[32]");
-  parse_cxt_2 = parse_exp_init("char **(*a)[32]");
+  const char *ret_string[] = {
+    "EQ", "LOSELESS", "LOSSY", "NEQ",
+  };
+
+  char test1_from[] = "char **(*a)[32]";
+  char test1_to[] = "char **(*a)[32]";
+  parse_cxt_1 = parse_exp_init(test1_from);
+  parse_cxt_2 = parse_exp_init(test1_to);
   type_cxt = type_sys_init();
   token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
-  token_2 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
-  to = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
-  from = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from); printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_EQ);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
+
+  char test2_from[] = "char **(*a)[33]";
+  char test2_to[] = "char **(*a)[32]";
+  parse_cxt_1 = parse_exp_init(test2_from);
+  parse_cxt_2 = parse_exp_init(test2_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from); printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_NEQ);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
+
+  char test3_from[] = "char **const (*a)[32]";
+  char test3_to[] = "char **(*a)[32]";
+  parse_cxt_1 = parse_exp_init(test3_from);
+  parse_cxt_2 = parse_exp_init(test3_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_LOSSY);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
+
+  char test4_from[] = "char **const (*a)[32]";
+  char test4_to[] = "const char * const * const (*const a)[32]";
+  parse_cxt_1 = parse_exp_init(test4_from);
+  parse_cxt_2 = parse_exp_init(test4_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_LOSELESS);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
+
+  char test5_from[] = "void **(*x)(int, long)";
+  char test5_to[] = "void **(*x)(int, char)";
+  parse_cxt_1 = parse_exp_init(test5_from);
+  parse_cxt_2 = parse_exp_init(test5_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_NEQ);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
   
+  char test6_from[] = "void **(*x)(int, long)";
+  char test6_to[] = "void **(*x)(int, long)";
+  parse_cxt_1 = parse_exp_init(test6_from);
+  parse_cxt_2 = parse_exp_init(test6_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_EQ);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
+  // Tests whether function return value type must not be loseless
+  char test7_from[] = "void **(*x)(int, long)";
+  char test7_to[] = "void *const *(*x)(int, long)";
+  parse_cxt_1 = parse_exp_init(test7_from);
+  parse_cxt_2 = parse_exp_init(test7_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_NEQ);
   parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
   ast_free(token_1); ast_free(token_2);
   type_sys_free(type_cxt);
