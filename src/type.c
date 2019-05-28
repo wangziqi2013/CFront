@@ -755,6 +755,7 @@ int type_cmp(type_t *to, type_t *from) {
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
 //       the same length
 //   1.2 Casting signed shorter int to longer types always use sign extension
+//   2.1 Do not allow casting pointers from/to different sized integer types
 //   4.1 Implicit cast does not allow casting between pointers, except to void * type
 //       4.1.1 But, if these two pointed to types only differ by const, then we can implicitly cast non-const 
 //             to const; Same applies to volatile
@@ -791,7 +792,15 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   } else if(type_is_int(to) && type_is_ptr(from)) { // Case 2, one direction
     if(cast_type != TYPE_CAST_EXPLICIT) 
       error_row_col_exit(offset, "Could not cast pointer to integer implicitly\n");
-    
+    if(type_get_int_size(to) != TYPE_PTR_SIZE) 
+      error_row_col_exit(offset, "Could not cast pointer to integer of different sizes\n");
+    return TYPE_CAST_NO_OP;
+  } else if(type_is_ptr(to) && type_is_int(from)) { // Case 2, the other direction
+    if(cast_type != TYPE_CAST_EXPLICIT) 
+      error_row_col_exit(offset, "Could not cast pointer to integer implicitly\n");
+    if(type_get_int_size(from) != TYPE_PTR_SIZE) 
+      error_row_col_exit(offset, "Could not cast pointer to integer of different sizes\n");
+    return TYPE_CAST_NO_OP;
   }
 
   return TYPE_CAST_INVALID;
