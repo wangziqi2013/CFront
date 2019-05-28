@@ -184,6 +184,9 @@ static inline int type_is_integer(type_t *type) {
 static inline int type_is_void(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_VOID;
 }
+static inline int type_is_ptr(type_t *type) {
+  return TYPE_OP_GET(type->decl_prop) == TYPE_OP_DEREF;
+}
 // Returns 1 if type is signed; only valid for integer types; undefined for others
 static inline int type_is_signed(type_t *type) {
   assert(type_is_integer(type));
