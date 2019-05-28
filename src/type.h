@@ -178,8 +178,9 @@ static inline void type_error_not_supported(const char *offset, decl_prop_t decl
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
 }
 // Returns the size of integers
-static inline int type_get_integer_size(type_t *type) {
-  return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
+static inline int type_get_int_size(type_t *type) {
+  assert(type_is_int(type));
+  return ints[BASETYPE_INDEX(type->decl_prop)].size;
 }
 // Returns 1 if it is integer types. Applies to any type object
 static inline int type_is_int(type_t *type) {
