@@ -177,8 +177,12 @@ typedef struct enum_t_struct {
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
 }
+// Returns the size of integers
+static inline int type_get_integer_size(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
+}
 // Returns 1 if it is integer types. Applies to any type object
-static inline int type_is_integer(type_t *type) {
+static inline int type_is_int(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
 }
 static inline int type_is_void(type_t *type) {
@@ -187,9 +191,15 @@ static inline int type_is_void(type_t *type) {
 static inline int type_is_ptr(type_t *type) {
   return TYPE_OP_GET(type->decl_prop) == TYPE_OP_DEREF;
 }
+static inline int type_is_array(type_t *type) {
+  return TYPE_OP_GET(type->decl_prop) == TYPE_OP_ARRAY_SUB;
+}
+static inline int type_is_func(type_t *type) {
+  return TYPE_OP_GET(type->decl_prop) == TYPE_OP_FUNC_CALL;
+}
 // Returns 1 if type is signed; only valid for integer types; undefined for others
 static inline int type_is_signed(type_t *type) {
-  assert(type_is_integer(type));
+  assert(type_is_int(type));
   assert(BASETYPE_INDEX(type->decl_prop) >= 1 && BASETYPE_INDEX(type->decl_prop) <= 10);
   return ints[BASETYPE_INDEX(type->decl_prop)].sign;
 }

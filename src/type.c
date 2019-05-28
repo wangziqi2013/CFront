@@ -529,7 +529,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
-        if(!type_is_integer(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
+        if(!type_is_int(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
         field->bitfield_size = eval_const_int(cxt, ast_getchild(bf, 0)); // Evaluate the constant expression
         if(field->bitfield_size < 0) error_row_col_exit(field->offset, "Bit field size in declaration must be non-negative\n");
         f->bitfield_size = field->bitfield_size; 
@@ -763,12 +763,14 @@ int type_cmp(type_t *to, type_t *from) {
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   // TODO: CONST MODIFIER ON POINTER
   // TODO: SELF-CASTING (TYPE COMPARISON?) -> This is needed for all assignments
-  // If it is self-cast or implicitly the same type then do nothing
-  if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP;
+  // Handle easy cases first:
+  if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP; // Case 0: self-cast
+  else if(type_is_void(to)) return TYPE_CAST_VOID; // Case 5: to void
+
   if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
     error_row_col_exit(offset, "Implicit cast cannot drop \"const\" qualifier\n");
   assert(cast_type == TYPE_CAST_EXPLICIT || cast_type == TYPE_CAST_IMPLICIT);
-  if(type_is_integer(to) && type_is_integer(from)) { // case 1: int to int
+  if(type_is_int(to) && type_is_int(from)) { // Case 1: int to int
     if(cast_type == TYPE_CAST_EXPLICIT) {
       if(to->size == from->size) return TYPE_CAST_NO_OP;        // Same size cast - always allowed for explicit casting
       else if(to->size < from->size) return TYPE_CAST_TRUNCATE; // Casting from longer to shorter
@@ -786,6 +788,10 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
       if(from_sign) return TYPE_CAST_SIGN_EXT;
       else return TYPE_CAST_ZERO_EXT;
     }
+  } else if(type_is_int(to) && type_is_ptr(from)) { // Case 2, one direction
+    if(cast_type != TYPE_CAST_EXPLICIT) 
+      error_row_col_exit(offset, "Could not cast pointer to integer implicitly\n");
+    
   }
 
   return TYPE_CAST_INVALID;

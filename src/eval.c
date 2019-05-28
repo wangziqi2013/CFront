@@ -227,7 +227,7 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
       value_t *value = (value_t *)scope_search(cxt, SCOPE_VALUE, token->str);
       if(!value) error_row_col_exit(token->offset, "Cannot find integer constant \"%s\"\n", token->str);
       if(value->addrtype != ADDR_IMM) error_row_col_exit(token->offset, "Name \"%s\" is not a constant\n", token->str);
-      if(!type_is_integer(value->type)) error_row_col_exit(token->offset, "Name \"%s\" is not of integer type\n", token->str);
+      if(!type_is_int(value->type)) error_row_col_exit(token->offset, "Name \"%s\" is not of integer type\n", token->str);
       if(BASETYPE_GET(value->type->decl_prop) != BASETYPE_INT) 
         warn_row_col_exit(token->offset, "Name \"%s\" will be converted to int type\n", token->str);
       ret = value->intval;
@@ -237,7 +237,7 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
       token_t *decl = ast_getchild(token, 1);
       token_t *basetype = ast_getchild(decl, 0);
       type_t *cast_type = type_gettype(cxt, decl, basetype, 0); // Do not allow void and storage class
-      if(!type_is_integer(cast_type)) error_row_col_exit(token->offset, "Can only cast to integer type\n");
+      if(!type_is_int(cast_type)) error_row_col_exit(token->offset, "Can only cast to integer type\n");
       if(BASETYPE_GET(cast_type->decl_prop) != BASETYPE_INT) 
         warn_row_col_exit(token->offset, "Type cast will be ignored; Result will be integer type\n");
       ret = eval_const_int(cxt, ast_getchild(token, 0));
