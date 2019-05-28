@@ -722,13 +722,18 @@ int type_cmp(type_t *to, type_t *from) {
         from_arg = list_next(from_arg);
       }
     }
-    int ret = type_cmp(to->next, from->next);
-    switch(ret) {
-      case TYPE_CMP_NEQ: return TYPE_CMP_NEQ; break;
-      case TYPE_CMP_LOSSY: return TYPE_CMP_LOSSY; break;
-      case TYPE_CMP_LOSELESS: return eq_flag ? TYPE_CMP_LOSELESS : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
-      case TYPE_CMP_EQ: return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
-      default: assert(0);
+    int ret = type_cmp(to->next, from->next); 
+    if(op1 != TYPE_OP_FUNC_CALL) {
+      switch(ret) {
+        case TYPE_CMP_NEQ: return TYPE_CMP_NEQ; break;
+        case TYPE_CMP_LOSSY: return TYPE_CMP_LOSSY; break;
+        case TYPE_CMP_LOSELESS: return eq_flag ? TYPE_CMP_LOSELESS : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+        case TYPE_CMP_EQ: return eq_flag ? TYPE_CMP_EQ : (lossy_flag ? TYPE_CMP_LOSSY : TYPE_CMP_LOSELESS);
+        default: assert(0);
+      }
+    } else { // For func arg this compares the return value, and if it is not EQ then it is NEQ
+      if(ret == TYPE_CMP_EQ) return TYPE_CMP_EQ;
+      else return TYPE_CMP_NEQ;
     }
   }
   assert(0);
@@ -758,7 +763,8 @@ int type_cmp(type_t *to, type_t *from) {
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   // TODO: CONST MODIFIER ON POINTER
   // TODO: SELF-CASTING (TYPE COMPARISON?) -> This is needed for all assignments
-  // TODO: UDEF
+  // If it is self-cast or implicitly the same type then do nothing
+  if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP;
   if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
     error_row_col_exit(offset, "Implicit cast cannot drop \"const\" qualifier\n");
   assert(cast_type == TYPE_CAST_EXPLICIT || cast_type == TYPE_CAST_IMPLICIT);
