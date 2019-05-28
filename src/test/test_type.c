@@ -683,6 +683,29 @@ void test_eval_const_str_token() {
   return;
 }
 
+void test_type_cmp() {
+  printf("=== Test type_cmp ===\n");
+  parse_exp_cxt_t *parse_cxt_1, *parse_cxt_2;
+  type_cxt_t *type_cxt;
+  type_t *to, *from;
+  token_t *token_1, *token_2;
+
+  parse_cxt_1 = parse_exp_init("char **(*a)[32]");
+  parse_cxt_2 = parse_exp_init("char **(*a)[32]");
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  to = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  from = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
+
+  printf("Pass!\n");
+  return;
+}
+
 void test_type_typeof() {
   printf("=== Test type_typeof ===\n");
   parse_exp_cxt_t *parse_cxt;
@@ -735,6 +758,7 @@ int main() {
   test_type_getenum();
   test_type_anomaly();
   test_eval_const_str_token();
+  test_type_cmp();
   test_type_typeof();
   return 0;
 }
