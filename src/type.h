@@ -181,6 +181,9 @@ static inline void type_error_not_supported(const char *offset, decl_prop_t decl
 static inline int type_is_integer(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
 }
+static inline int type_is_void(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) == BASETYPE_VOID;
+}
 // Returns 1 if type is signed; only valid for integer types; undefined for others
 static inline int type_is_signed(type_t *type) {
   assert(type_is_integer(type));
