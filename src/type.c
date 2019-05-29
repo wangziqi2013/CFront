@@ -762,6 +762,7 @@ int type_cmp(type_t *to, type_t *from) {
 //             to const; Same applies to volatile
 //   *.* Casting from const to non-const implicitly is prohibited for all types
 // See TYPE_CAST_ series for return values
+// This function will report error and exit if an error is detected
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   // TODO: CONST MODIFIER ON POINTER
   // TODO: SELF-CASTING (TYPE COMPARISON?) -> This is needed for all assignments
@@ -804,24 +805,31 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
     return TYPE_CAST_NO_OP;
   } else if(type_is_ptr(to) && type_is_array(from)) { // Case 3
     if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
-    if(cast_type == TYPE_CAST_IMPLICIT) {
+    if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
       int ret = type_cmp(to->next, from->next);
-      // This is the same for both implicit and explicit
       if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast array to pointer type of different base types\n");
       else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast array to incompatible pointer type\n");
     }
     return TYPE_CAST_GEN_PTR;
   } else if(type_is_ptr(to) && type_is_ptr(from)) { // Case 4
-    if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
-    if(cast_type == TYPE_CAST_IMPLICIT) {
+    if(type_is_void_ptr(to)) return TYPE_CAST_NO_OP; // Case 5
+    if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
       int ret = type_cmp(to->next, from->next);
-      // This is the same for both implicit and explicit
       if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast between pointers of different base types\n");
       else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast pointer to incompatible base types\n");
     }
+    return TYPE_CAST_NO_OP;
+  } else if(type_is_ptr(to) && type_is_func(from)) { // Case 6
+    if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
+    if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
+      int ret = type_cmp(to->next, from); // Note: We compare the function type with the pointer's target type
+      if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast function to pointer type of a different prototype\n");
+    }
     return TYPE_CAST_GEN_PTR;
   }
-
+  // All other casts are invalid
+  error_row_col_exit(offset, "Invalid %s type cast\n", cast_type == TYPE_CAST_EXPLICIT ? "explicit" : "implicit");
+  assert(0);
   return TYPE_CAST_INVALID;
 }
 

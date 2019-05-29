@@ -41,7 +41,7 @@
 // Used with type_cast
 #define TYPE_CAST_EXPLICIT         0          // Explicit cast using cast operator
 #define TYPE_CAST_IMPLICIT         1          // Implicit cast with array indexing, func arg, and assignment
-#define TYPE_CAST_INVALID          0          // Return value: invalid cast
+#define TYPE_CAST_INVALID          0          // Return value: invalid cast (never used - the function reports error)
 #define TYPE_CAST_SIGN_EXT         1          // Return value: should perform sign extension
 #define TYPE_CAST_ZERO_EXT         2          // Return value: should perform zero extension
 #define TYPE_CAST_TRUNCATE         3          // Return value: should truncate
