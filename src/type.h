@@ -248,7 +248,7 @@ void *scope_search(type_cxt_t *cxt, int domain, void *name);
 void scope_top_obj_insert(type_cxt_t *cxt, int domain, void *obj); // Adding an object into the topmost scope for memory mgmt
 
 type_t *type_init(type_cxt_t *cxt);
-type_t *type_init_from(type_cxt_t *cxt, type_t *from);
+type_t *type_init_from(type_cxt_t *cxt, type_t *from, char *offset);
 void type_free(void *ptr);
 comp_t *comp_init(type_cxt_t *cxt, char *name, char *source_offset, int has_definition);
 void comp_free(void *ptr);
