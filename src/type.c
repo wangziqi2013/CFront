@@ -947,7 +947,18 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       if(!type_is_int(lhs)) 
         error_row_col_exit(exp->offset, "Operator \'%c\' must be applied to integer types\n",
           op_type == EXP_PLUS ? '+' : '-');
+      return lhs;
     } break;
+    case EXP_LOGICAL_NOT: {
+      if(!type_is_int(lhs) && !type_is_ptr(lhs)) 
+        error_row_col_exit(exp->offset, "Operator \'!\' must be applied to integer or pointer types\n");
+      return lhs;
+    } break;
+    case EXP_BIT_NOT: {
+      if(!type_is_int(lhs)) 
+        error_row_col_exit(exp->offset, "Operator \'~\' must be applied to integer types\n");
+      return lhs;
+    }
     default: assert(0);
   }
   return NULL;
