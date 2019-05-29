@@ -770,8 +770,8 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP; // Case 0: self-cast
   else if(type_is_void(to)) return TYPE_CAST_VOID; // Case 5: to void
 
-  if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
-    error_row_col_exit(offset, "Implicit cast cannot drop \"const\" qualifier\n");
+  //if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
+  //  error_row_col_exit(offset, "Implicit cast cannot drop \"const\" qualifier\n");
   assert(cast_type == TYPE_CAST_EXPLICIT || cast_type == TYPE_CAST_IMPLICIT);
   if(type_is_int(to) && type_is_int(from)) { // Case 1: int to int
     if(cast_type == TYPE_CAST_EXPLICIT) {
@@ -807,22 +807,23 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
     if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
     if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
       int ret = type_cmp(to->next, from->next);
-      if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast array to pointer type of different base types\n");
-      else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast array to incompatible pointer type\n");
+      if(ret == TYPE_CMP_NEQ) { error_row_col_exit(offset, "Cannot cast array to pointer type of different base types\n"); }
+      else if(ret == TYPE_CMP_LOSSY) { error_row_col_exit(offset, "Cannot cast array to incompatible pointer type\n"); }
     }
     return TYPE_CAST_GEN_PTR;
   } else if(type_is_ptr(to) && type_is_ptr(from)) { // Case 4
     if(type_is_void_ptr(to)) return TYPE_CAST_NO_OP; // Case 5
     if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
       int ret = type_cmp(to->next, from->next);
-      if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast between pointers of different base types\n");
-      else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast pointer to incompatible base types\n");
+      if(ret == TYPE_CMP_NEQ) { error_row_col_exit(offset, "Cannot cast between pointers of different base types\n"); }
+      else if(ret == TYPE_CMP_LOSSY) { error_row_col_exit(offset, "Cannot cast pointer to incompatible base types\n"); }
     }
     return TYPE_CAST_NO_OP;
   } else if(type_is_ptr(to) && type_is_func(from)) { // Case 6
     if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
     if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
       int ret = type_cmp(to->next, from); // Note: We compare the function type with the pointer's target type
+      assert(ret == TYPE_CMP_EQ || ret == TYPE_CMP_NEQ); // Function type can only return these two results
       if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast function to pointer type of a different prototype\n");
     }
     return TYPE_CAST_GEN_PTR;
@@ -837,7 +838,8 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
 // Argument options: see TYPEOF_IGNORE_ series. For functions and arrays we do not need the type of 
 // arguments and index to determine the final type; Caller must not modify the returned type
 //   1. For literal types, just return their type constant
-//   2. void cannot be evaluated as part of an expression; will not be returned
+//   2. void can be the result of casting, and can be returned
+//   3. Bit fields within a struct returns the base element type (e.g. For struct { short int x : 15; }, x type is "int")
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
@@ -861,10 +863,19 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   if(op_type == EXP_DEREF) { // Dereference can be applied to both ptr and array type
     lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
     if(TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_DEREF && TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_ARRAY_SUB) 
-      error_row_col_exit(exp->offset, "Operator \'*\' cannot be applied to non-pointer type\n");
+      error_row_col_exit(exp->offset, "Operator \'*\' cannot be applied to non-pointer (or array) type\n");
     return lhs->next;
   } else if(op_type == EXP_ARRAY_SUB) {
-    // TODO: ADD TYPE CAST TO INTEGER TYPE FOR ARRAY SUB
+    if(!(options & TYPEOF_IGNORE_ARRAY_INDEX)) {
+      token_t *index_token = ast_getchild(exp, 1);
+      assert(index_token);
+      type_t *index_type = type_typeof(cxt, index_token, options);
+      if(!type_is_int(index_type)) 
+        error_row_col_exit(index_token->offset, "Array index must be of one of the integral type\n");
+    }
+    lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
+    if(TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_DEREF && TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_ARRAY_SUB) 
+      error_row_col_exit(exp->offset, "Operator \'[]\' cannot be applied to non-array (or pointer) type\n");
   }
   
   return NULL;

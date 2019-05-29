@@ -46,7 +46,7 @@
 #define TYPE_CAST_ZERO_EXT         2          // Return value: should perform zero extension
 #define TYPE_CAST_TRUNCATE         3          // Return value: should truncate
 #define TYPE_CAST_NO_OP            4          // Return value: No special bit operation needed
-#define TYPE_CAST_VOID             5          // Return value: The value has been invalidated
+#define TYPE_CAST_VOID             5          // Return value: The value has been invalidated (remove from symbol table)
 #define TYPE_CAST_GEN_PTR          6          // Return value: Generate a pointer (source type is an array or func)
 
 enum {
