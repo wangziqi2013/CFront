@@ -264,6 +264,13 @@ type_t *type_init(type_cxt_t *cxt) {
   return type;
 }
 
+// Init a type object from a given object (only shallow copy); Do not set offset field
+type_t *type_init_from(type_cxt_t *cxt, type_t *from) {
+  type_t *ret = type_init(cxt);
+  memcpy(ret, from, sizeof(type_t));
+  return ret;
+}
+
 void type_free(void *ptr) {
   type_t *type = (type_t *)ptr;
   if(TYPE_OP_GET(type->decl_prop) == TYPE_OP_FUNC_CALL) {
