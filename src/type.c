@@ -967,6 +967,15 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       type_cast(target, lhs, TYPE_CAST_EXPLICIT, exp->offset); // Try explicit cast and see if it works
       return target;
     } break;
+    case EXP_ADDR: { // This works even for the two symbol types: ARRAY_SUB and FUNC_CALL
+      if(lhs->bitfield_size == -1) error_row_col_exit(exp->offset, "Cannot take address of bitfields\n");
+      type_t *deref = type_init(cxt);   // Create a new type node
+      deref->decl_prop = TYPE_OP_DEREF;
+      deref->next = lhs;
+      deref->offset = exp->offset;
+      deref->size = TYPE_PTR_SIZE;
+      return deref;
+    } break;
     default: assert(0);
   }
   return NULL;
