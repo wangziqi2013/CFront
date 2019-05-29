@@ -959,6 +959,14 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         error_row_col_exit(exp->offset, "Operator \'~\' must be applied to integer types\n");
       return lhs;
     }
+    case EXP_CAST: { // For EXP_CAST, lhs is the expression, while RHS is the T_DECL with first child being T_BASETYPE
+      token_t *decl_token = ast_getchild(exp, 1);
+      token_t *basetype_token = ast_getchild(decl_token, 0);
+      // Allow casting to void or functions returning void
+      type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID); 
+      type_cast(target, lhs, TYPE_CAST_EXPLICIT, exp->offset); // Try explicit cast and see if it works
+      return target;
+    } break;
     default: assert(0);
   }
   return NULL;
