@@ -268,7 +268,7 @@ type_t *type_init(type_cxt_t *cxt) {
 type_t *type_init_from(type_cxt_t *cxt, type_t *from, char *offset) {
   type_t *ret = type_init(cxt);
   memcpy(ret, from, sizeof(type_t));
-  ret->offsst = offset;
+  ret->offset = offset;
   return ret;
 }
 
@@ -916,8 +916,16 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     return lhs->next;
   }
   
-  // TODO: Process general operators, including those overloaded for pointers such as ++ -- (pre) ++ -- (post), + int, - int
-
+  // Process general operators
+  switch(op_type) {
+    // If applied to integer then result is the same integer, if applied to pointers then result is pointer
+    case EXP_POST_INC: case EXP_PRE_INC: case EXP_PRE_DEC: case EXP_POST_DEC: {
+      lhs = type_typeof(cxt, exp, options);
+      if(type_is_int(lhs) || type_is_ptr(lhs)) return lhs;
+      error_row_col_exit(exp->offset, "Invalid operand for ++/-- operator\n");
+    } break;
+    default: assert(0);
+  }
   return NULL;
 }
 
