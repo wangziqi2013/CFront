@@ -545,12 +545,14 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         field->bitfield_size = eval_const_int(cxt, ast_getchild(bf, 0)); // Evaluate the constant expression
         if(field->bitfield_size < 0) error_row_col_exit(field->offset, "Bit field size in declaration must be non-negative\n");
         f->bitfield_size = field->bitfield_size; 
+        f->type->bitfield_size = f->bitfield_size;
         if((size_t)f->bitfield_size > f->type->size * 8) 
           error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
             type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
       } else { 
         assert(field->bitfield_size == -1);
         f->bitfield_size = f->bitfield_offset = -1; 
+        f->type->bitfield_size = f->type->bitfield_offset = -1; // Also set the value in type object
       }
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
@@ -596,28 +598,28 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         // (3) Packed fields are arranged from lower bits to higher bits; Unused bits will be ignored
         // (4) Coalesced bit fields take the storage identical to the base type
         if(!prev_field) { // First entry in struct
-          if(f->bitfield_size != -1) f->bitfield_offset = 0;
+          if(f->bitfield_size != -1) f->type->bitfield_offset = f->bitfield_offset = 0;
           curr_offset += f->type->size;
         } else if(f->bitfield_size == -1 && prev_field->bitfield_size == -1) {
           curr_offset += f->type->size; // Both normal fields; size has been set above
         } else if(f->bitfield_size == -1 && prev_field->bitfield_size != -1) {
           curr_offset += f->type->size;
         } else if(f->bitfield_size != -1 && prev_field->bitfield_size == -1) {
-          f->bitfield_offset = 0; // Starting a bit field (may potentially have more later)
+          f->type->bitfield_offset = f->bitfield_offset = 0; // Starting a bit field (may potentially have more later)
           curr_offset += f->type->size;
         } else { // Both are valid bitfields - try to coalesce!
           assert(f->bitfield_size != -1 && prev_field->bitfield_size != -1);
           //printf("%s %s %d %d\n", prev_field->name, f->name, prev_field->bitfield_size, f->bitfield_size);
           // If types differ, start a new bit field
           if(BASETYPE_GET(prev_field->type->decl_prop) != BASETYPE_GET(f->type->decl_prop)) {
-            f->bitfield_offset = 0;
+            f->type->bitfield_offset = f->bitfield_offset = 0;
             curr_offset += prev_field->type->size;
           } else if(prev_field->bitfield_offset + prev_field->bitfield_size + f->bitfield_size <= (int)prev_field->size * 8) {
             f->offset = prev_field->offset; 
-            f->bitfield_offset = prev_field->bitfield_offset + prev_field->bitfield_size;
+            f->type->bitfield_offset = f->bitfield_offset = prev_field->bitfield_offset + prev_field->bitfield_size;
           } else {
             f->offset = prev_field->offset + prev_field->type->size; 
-            f->bitfield_offset = 0;
+            f->type->bitfield_offset = f->bitfield_offset = 0;
             curr_offset += f->type->size;
           }
         }
@@ -916,14 +918,21 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     return lhs->next;
   }
   
-  // Process general operators
+  // Everything down below must have at least one operand whose type is the first child of exp
+  lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
   switch(op_type) {
     // If applied to integer then result is the same integer, if applied to pointers then result is pointer
     case EXP_POST_INC: case EXP_PRE_INC: case EXP_PRE_DEC: case EXP_POST_DEC: {
-      lhs = type_typeof(cxt, exp, options);
       if(type_is_int(lhs) || type_is_ptr(lhs)) return lhs;
       error_row_col_exit(exp->offset, "Invalid operand for ++/-- operator\n");
     } break;
+    case EXP_ARROW:
+      if(!type_is_ptr(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to pointer types\n");
+      lhs = lhs->next;
+      // Fall thruogh
+    case EXP_DOT: {
+      if(lhs )
+    }
     default: assert(0);
   }
   return NULL;
