@@ -56,11 +56,10 @@ obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free funct
 
 // Argument full_size includes the trailing '\0'
 type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size, char *offset) {
-  type_t *ret = type_init(cxt);
-  memcpy(ret, &type_builtin_string_template, sizeof(type_t));
+  type_t *const_char_type = type_init_from(cxt, &type_builtin_const_char, offset);
+  type_t *ret = type_init_from(cxt, &type_builtin_string_template, offset);
   ret->array_size = full_size;
   ret->size = full_size * TYPE_CHAR_SIZE;
-  ret->offset = offset;
   return ret;
 }
 
@@ -393,7 +392,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
         error_row_col_exit(basetype->offset, "\"void\" type can only be used in function argument and return value\n");
       }
-      curr_type = &type_builtin_void;
+      curr_type = type_init_from(cxt, &type_builtin_void, basetype->offset);
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
       curr_type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(basetype_type)], basetype->offset);
     } else {
