@@ -751,6 +751,7 @@ int type_cmp(type_t *to, type_t *from) {
 //      Note: ptr cannot be casted to arrays in any context; For function args array is treated as a pointer
 //   4. ptr <-> ptr (see below)
 //   5. Any type to void is allowed, returns TYPE_CAST_VOID
+//   6. Function type to pointer of the same function type
 // Implicit cast rules:
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
 //       the same length
@@ -801,8 +802,16 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
     if(type_get_int_size(from) != TYPE_PTR_SIZE) 
       error_row_col_exit(offset, "Could not cast pointer to integer of different sizes\n");
     return TYPE_CAST_NO_OP;
-  }
-
+  } else if(type_is_ptr(to) && type_is_array(from)) { // Case 3
+    if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
+    if(cast_type == TYPE_CAST_IMPLICIT) {
+      int ret = type_cmp(to->next, from->next);
+      // This is the same for both implicit and explicit
+      if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast array to pointer type of different base types\n");
+      else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast array to incompatible pointer type\n");
+    }
+    return TYPE_CAST_GEN_PTR;
+  } 
   return TYPE_CAST_INVALID;
 }
 
