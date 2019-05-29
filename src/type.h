@@ -47,6 +47,7 @@
 #define TYPE_CAST_TRUNCATE         3          // Return value: should truncate
 #define TYPE_CAST_NO_OP            4          // Return value: No special bit operation needed
 #define TYPE_CAST_VOID             5          // Return value: The value has been invalidated
+#define TYPE_CAST_GEN_PTR          6          // Return value: Generate a pointer (source type is an array or func)
 
 enum {
   SCOPE_VALUE  = 1, // Named variable that has a value or memory location; Enum constants are put here
@@ -177,11 +178,7 @@ typedef struct enum_t_struct {
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
 }
-// Returns the size of integers
-static inline int type_get_int_size(type_t *type) {
-  assert(type_is_int(type));
-  return ints[BASETYPE_INDEX(type->decl_prop)].size;
-}
+
 // Returns 1 if it is integer types. Applies to any type object
 static inline int type_is_int(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
@@ -189,8 +186,17 @@ static inline int type_is_int(type_t *type) {
 static inline int type_is_void(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_VOID;
 }
+// Returns the size of integers
+static inline int type_get_int_size(type_t *type) {
+  assert(type_is_int(type));
+  return ints[BASETYPE_INDEX(type->decl_prop)].size;
+}
 static inline int type_is_ptr(type_t *type) {
   return TYPE_OP_GET(type->decl_prop) == TYPE_OP_DEREF;
+}
+// If type is not ptr the second clause will not be evaluated
+static inline int type_is_void_ptr(type_t *type) {
+  return type_is_ptr(type) && type_is_void(type->next); 
 }
 static inline int type_is_array(type_t *type) {
   return TYPE_OP_GET(type->decl_prop) == TYPE_OP_ARRAY_SUB;
