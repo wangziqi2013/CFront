@@ -811,7 +811,17 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
       else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast array to incompatible pointer type\n");
     }
     return TYPE_CAST_GEN_PTR;
-  } 
+  } else if(type_is_ptr(to) && type_is_ptr(from)) { // Case 4
+    if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
+    if(cast_type == TYPE_CAST_IMPLICIT) {
+      int ret = type_cmp(to->next, from->next);
+      // This is the same for both implicit and explicit
+      if(ret == TYPE_CMP_NEQ) error_row_col_exit(offset, "Cannot cast between pointers of different base types\n");
+      else if(ret == TYPE_CMP_LOSSY) error_row_col_exit(offset, "Cannot cast pointer to incompatible base types\n");
+    }
+    return TYPE_CAST_GEN_PTR;
+  }
+
   return TYPE_CAST_INVALID;
 }
 
