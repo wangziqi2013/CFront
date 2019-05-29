@@ -113,6 +113,10 @@ typedef struct type_t_struct {
       bintree_t *arg_index; // Binary tree using arg name as key; Owns the bin tree
       int vararg;           // Set if varadic argument function
     };
+    struct {                // This duplicates the two fields from field_t
+      int bitfield_size;
+      int bitfield_offset;
+    };
   };
   char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it))
   char *offset;     // Points to source code that generates this type
