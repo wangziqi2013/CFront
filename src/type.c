@@ -54,11 +54,12 @@ obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free funct
 };
 
 // Argument full_size includes the trailing '\0'
-type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size) {
+type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size, char *offset) {
   type_t *ret = type_init(cxt);
   memcpy(ret, &type_builtin_string_template, sizeof(type_t));
   ret->array_size = full_size;
   ret->size = full_size * TYPE_CHAR_SIZE;
+  ret->offset = offset;
   return ret;
 }
 
@@ -356,6 +357,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     token_t *su = ast_getchild(basetype, 0);
     assert(su && (su->type == T_STRUCT || su->type == T_UNION));
     curr_type = type_init(cxt);
+    curr_type->offset = su->offset;
     curr_type->decl_prop = basetype->decl_prop & (~DECL_STGCLS_MASK); // Mask off storage class, only copies qualifier
     // If there is no name and no derivation and no body (checked inside type_getcomp) then this is forward
     curr_type->comp = type_getcomp(cxt, su, decl_name->type == T_ && op->type == T_); 
@@ -364,6 +366,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
     token_t *enum_token = ast_getchild(basetype, 0);
     assert(enum_token && enum_token->type == T_ENUM);
     curr_type = type_init(cxt);
+    curr_type->offset = enum_token->offset;
     curr_type->decl_prop = basetype->decl_prop & (~DECL_STGCLS_MASK); // Mask off storage class, only copies qualifier
     curr_type->enu = type_getenum(cxt, enum_token); 
     assert(curr_type->enu->size == TYPE_INT_SIZE);
@@ -392,6 +395,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   while(op->type != T_) {
     assert(op && (op->type == EXP_DEREF || op->type == EXP_FUNC_CALL || op->type == EXP_ARRAY_SUB));
     type_t *parent_type = type_init(cxt);
+    parent_type->offset = op->offset;
     parent_type->next = curr_type;
     parent_type->decl_prop = op->decl_prop;       // This copies pointer qualifier (const, volatile)
     assert(!(op->decl_prop & DECL_STGCLS_MASK)); // Must not have storage class (syntax does not allow)
@@ -848,7 +852,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     str_t *s = eval_const_str_token(exp);
     size_t sz = str_size(s);
     str_free(s);                             // Do not use its content
-    return type_get_strliteral(cxt, sz + 1); // We reserve one byte for trailing '\0'
+    return type_get_strliteral(cxt, sz + 1, exp->offset); // We reserve one byte for trailing '\0'
   } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
     type_error_not_supported(exp->offset, exp->decl_prop);
   } else if(exp->type == T_IDENT) {
@@ -878,7 +882,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     }
     return lhs->next;
   } else if(op_type == EXP_FUNC_CALL) { // Function call operator will dereference the ptr implicitly
-    token_t func_token = ast_getchild(exp, 0);
+    token_t *func_token = ast_getchild(exp, 0);
     lhs = type_typeof(cxt, func_token, options);
     if(!type_is_func(lhs) && !type_is_func_ptr(lhs)) 
       error_row_col_exit(func_token->offset, "Function call must be applied to function of function pointer\n");
@@ -903,6 +907,8 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     return lhs->next;
   }
   
+  // TODO: Process general operators, including those overloaded for pointers such as ++ -- (pre) ++ -- (post), + int, - int
+
   return NULL;
 }
 
