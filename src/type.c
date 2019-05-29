@@ -929,10 +929,11 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_ARROW:
       if(!type_is_ptr(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to pointer types\n");
       lhs = lhs->next;
-      if(!type_is_comp(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to composite types\n");
       // Fall thruogh
     case EXP_DOT: {
-      if(!type_is_comp(lhs)) error_row_col_exit(exp->offset, "Operator \'.\' must be applied to composite types\n");
+      if(!type_is_comp(lhs)) 
+        error_row_col_exit(exp->offset, "Operator %s must be applied to composite types\n", 
+          op_type == EXP_ARROW ? "\"->\"" : "\'.\'");
       comp_t *comp = lhs->comp;
       token_t *field_name_token = ast_getchild(exp, 1);
       assert(field_name_token);
@@ -943,7 +944,9 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       return ((field_t *)ret)->type; // If it is a bit field the type object has the field set to -1
     } break;
     case EXP_PLUS: case EXP_MINUS: {
-      
+      if(!type_is_int(lhs)) 
+        error_row_col_exit(exp->offset, "Operator \'%c\' must be applied to integer types\n",
+          op_type == EXP_PLUS ? '+' : '-');
     } break;
     default: assert(0);
   }
