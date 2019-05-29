@@ -929,10 +929,22 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_ARROW:
       if(!type_is_ptr(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to pointer types\n");
       lhs = lhs->next;
+      if(!type_is_comp(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to composite types\n");
       // Fall thruogh
     case EXP_DOT: {
-      if(lhs )
-    }
+      if(!type_is_comp(lhs)) error_row_col_exit(exp->offset, "Operator \'.\' must be applied to composite types\n");
+      comp_t *comp = lhs->comp;
+      token_t *field_name_token = ast_getchild(exp, 1);
+      assert(field_name_token);
+      if(field_name_token->type != T_IDENT) error_row_col_exit(field_name_token->offset, "Invalid field specifier\n");
+      char *field_name = field_name_token->str;
+      void *ret = bt_find(comp->field_index, field_name);
+      if(ret == BT_NOTFOUND) error_row_col_exit(exp->offset, "Composite type has no field \"%s\"\n", field_name);
+      return ((field_t *)ret)->type; // If it is a bit field the type object has the field set to -1
+    } break;
+    case EXP_PLUS: case EXP_MINUS: {
+      
+    } break;
     default: assert(0);
   }
   return NULL;
