@@ -897,7 +897,8 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         arg = list_next(arg);
         arg_index++;
       }
-      if(ast_getchild(exp, arg_index)) error_row_col_exit(arg_token->offset, "");
+      // If after expected arg list is exhausted there is still argument expression, we have passed too many args
+      if(ast_getchild(exp, arg_index)) error_row_col_exit(arg_token->offset, "Too many arguments to function\n");
     }
     return lhs->next;
   }
