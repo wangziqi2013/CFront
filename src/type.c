@@ -866,6 +866,9 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       error_row_col_exit(exp->offset, "Operator \'*\' cannot be applied to non-pointer (or array) type\n");
     return lhs->next;
   } else if(op_type == EXP_ARRAY_SUB) {
+    lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
+    if(TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_DEREF && TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_ARRAY_SUB) 
+      error_row_col_exit(exp->offset, "Operator \'[]\' cannot be applied to non-array (or pointer) type\n");
     if(!(options & TYPEOF_IGNORE_ARRAY_INDEX)) {
       token_t *index_token = ast_getchild(exp, 1);
       assert(index_token);
@@ -873,9 +876,30 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       if(!type_is_int(index_type)) 
         error_row_col_exit(index_token->offset, "Array index must be of one of the integral type\n");
     }
-    lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
-    if(TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_DEREF && TYPE_OP_GET(lhs->decl_prop) != TYPE_OP_ARRAY_SUB) 
-      error_row_col_exit(exp->offset, "Operator \'[]\' cannot be applied to non-array (or pointer) type\n");
+    return lhs->next;
+  } else if(op_type == EXP_FUNC_CALL) { // Function call operator will dereference the ptr implicitly
+    token_t func_token = ast_getchild(exp, 0);
+    lhs = type_typeof(cxt, func_token, options);
+    if(!type_is_func(lhs) && !type_is_func_ptr(lhs)) 
+      error_row_col_exit(func_token->offset, "Function call must be applied to function of function pointer\n");
+    if(type_is_func_ptr(lhs)) lhs = lhs->next;
+    // Invariant: after this line, lhs is always function call type
+    if(!(options & TYPEOF_IGNORE_FUNC_ARG)) {
+      listnode_t *arg = list_head(lhs->arg_list); // Expected type
+      token_t *arg_token;
+      int arg_index = 1; // Index of argument starts at 1 under exp node
+      while(arg) {
+        arg_token = ast_getchild(exp, arg_index); // Actual type
+        if(!arg_token) error_row_col_exit(exp->offset, "Missing argument %d in function call\n", arg_index);
+        type_t *arg_type = type_typeof(cxt, arg_token, options);
+        // This will report error if implicit cast is illegal
+        type_cast(list_value(arg), arg_type, TYPE_CAST_IMPLICIT, arg_token->offset); 
+        arg = list_next(arg);
+        arg_index++;
+      }
+      if(ast_getchild(exp, arg_index)) error_row_col_exit(arg_token->offset, "");
+    }
+    return lhs->next;
   }
   
   return NULL;
