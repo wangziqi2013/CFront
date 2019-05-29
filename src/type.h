@@ -204,6 +204,9 @@ static inline int type_is_array(type_t *type) {
 static inline int type_is_func(type_t *type) {
   return TYPE_OP_GET(type->decl_prop) == TYPE_OP_FUNC_CALL;
 }
+static inline int type_is_func_ptr(type_t *type) {
+  return type_is_ptr(type) && type->next && type_is_func(type->next);
+}
 // Returns 1 if type is signed; only valid for integer types; undefined for others
 static inline int type_is_signed(type_t *type) {
   assert(type_is_int(type));
