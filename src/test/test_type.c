@@ -799,6 +799,21 @@ void test_type_cmp() {
   parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
   ast_free(token_1); ast_free(token_2);
   type_sys_free(type_cxt);
+  // Test pure function type and function pointer
+  char test8_from[] = "void **(x)(int, long)";
+  char test8_to[] = "void *const *(*x)(int, long)";
+  parse_cxt_1 = parse_exp_init(test8_from);
+  parse_cxt_2 = parse_exp_init(test8_to);
+  type_cxt = type_sys_init();
+  token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
+  token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
+  assert(ret == TYPE_CMP_NEQ);
+  parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
+  ast_free(token_1); ast_free(token_2);
+  type_sys_free(type_cxt);
 
   printf("Pass!\n");
   return;
