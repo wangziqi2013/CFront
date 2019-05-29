@@ -115,6 +115,7 @@ typedef struct type_t_struct {
     };
   };
   char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it))
+  char *offset;     // Points to source code that generates this type
   size_t size;      // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
@@ -225,7 +226,8 @@ static inline int type_is_comp(type_t *type) {
 }
 static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
 
-type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size); // Returns a const char[full_size] type object
+// Returns a const char[full_size] type object
+type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size, char *offset); 
 
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
