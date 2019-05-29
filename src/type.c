@@ -19,29 +19,30 @@ int_prop_t ints[11] = { // Integer sign and size, using index of base type
   {0, TYPE_LLONG_SIZE}, // BASETYPE_ULLONG, 0x0A
 };
 
+// The following are type templates, they cannot be directly used, and must be obtained using type_init_from
 type_t type_builtin_ints[11] = {
-  {0, NULL, {NULL}, {0}, NULL, 0}, // Integer type begins at index 1
-  {BASETYPE_CHAR, NULL, {NULL}, {0}, NULL, TYPE_CHAR_SIZE},
-  {BASETYPE_SHORT, NULL, {NULL}, {0}, NULL, TYPE_SHORT_SIZE},
-  {BASETYPE_INT, NULL, {NULL}, {0}, NULL, TYPE_INT_SIZE},
-  {BASETYPE_LONG, NULL, {NULL}, {0}, NULL, TYPE_LONG_SIZE},
-  {BASETYPE_UCHAR, NULL, {NULL}, {0}, NULL, TYPE_CHAR_SIZE},
-  {BASETYPE_USHORT, NULL, {NULL}, {0}, NULL, TYPE_SHORT_SIZE},
-  {BASETYPE_UINT, NULL, {NULL}, {0}, NULL, TYPE_INT_SIZE},
-  {BASETYPE_ULONG, NULL, {NULL}, {0}, NULL, TYPE_LONG_SIZE},
-  {BASETYPE_LLONG, NULL, {NULL}, {0}, NULL, TYPE_LLONG_SIZE},
-  {BASETYPE_ULLONG, NULL, {NULL}, {0}, NULL, TYPE_LLONG_SIZE},
+  {0, NULL, {NULL}, {0}, NULL, NULL, 0}, // Integer type begins at index 1
+  {BASETYPE_CHAR, NULL, {NULL}, {0}, NULL, NULL, TYPE_CHAR_SIZE},
+  {BASETYPE_SHORT, NULL, {NULL}, {0}, NULL, NULL, TYPE_SHORT_SIZE},
+  {BASETYPE_INT, NULL, {NULL}, {0}, NULL, NULL, TYPE_INT_SIZE},
+  {BASETYPE_LONG, NULL, {NULL}, {0}, NULL, NULL, TYPE_LONG_SIZE},
+  {BASETYPE_UCHAR, NULL, {NULL}, {0}, NULL, NULL, TYPE_CHAR_SIZE},
+  {BASETYPE_USHORT, NULL, {NULL}, {0}, NULL, NULL, TYPE_SHORT_SIZE},
+  {BASETYPE_UINT, NULL, {NULL}, {0}, NULL, NULL, TYPE_INT_SIZE},
+  {BASETYPE_ULONG, NULL, {NULL}, {0}, NULL, NULL, TYPE_LONG_SIZE},
+  {BASETYPE_LLONG, NULL, {NULL}, {0}, NULL, NULL, TYPE_LLONG_SIZE},
+  {BASETYPE_ULLONG, NULL, {NULL}, {0}, NULL, NULL, TYPE_LLONG_SIZE},
 };
 
 type_t type_builtin_void = {
-  BASETYPE_VOID, NULL, {NULL}, {0}, NULL, TYPE_VOID_SIZE
+  BASETYPE_VOID, NULL, {NULL}, {0}, NULL, NULL, TYPE_VOID_SIZE
 };
 type_t type_builtin_const_char = { // const char type
-  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, NULL, TYPE_CHAR_SIZE
+  BASETYPE_CHAR | DECL_CONST_MASK, NULL, {NULL}, {0}, NULL, NULL, TYPE_CHAR_SIZE
 }; 
 // String type is evaluated as const char [length]; here is a template
 type_t type_builtin_string_template = { // Should change size to actual length when copy
-  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, NULL, TYPE_UNKNOWN_SIZE 
+  TYPE_OP_ARRAY_SUB, &type_builtin_const_char, {NULL}, {0}, NULL, NULL, TYPE_UNKNOWN_SIZE 
 };
 
 obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1] = {  // Object free functions
@@ -265,9 +266,10 @@ type_t *type_init(type_cxt_t *cxt) {
 }
 
 // Init a type object from a given object (only shallow copy); Do not set offset field
-type_t *type_init_from(type_cxt_t *cxt, type_t *from) {
+type_t *type_init_from(type_cxt_t *cxt, type_t *from, char *offset) {
   type_t *ret = type_init(cxt);
   memcpy(ret, from, sizeof(type_t));
+  ret->offsst = offset;
   return ret;
 }
 
@@ -393,7 +395,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       }
       curr_type = &type_builtin_void;
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
-      curr_type = &type_builtin_ints[BASETYPE_INDEX(basetype_type)];
+      curr_type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(basetype_type)], basetype->offset);
     } else {
       type_error_not_supported(basetype->offset, basetype_type);
     }
@@ -662,7 +664,8 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
       value_t *value = value_init(cxt);
       value->addrtype = ADDR_IMM;
       value->intval = curr_value;
-      value->type = &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)]; // Assign built in type, do not create new type objects
+      // Assign built in type, do not create new type objects. Offset is the offset of symbol name
+      value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], entry_name->offset);
       if(scope_top_find(cxt, SCOPE_VALUE, name_str)) {
         error_row_col_exit(entry_name->offset, "Anonymous enum field \"%s\" clashes with an existing name", name_str);
       } else {
@@ -854,7 +857,7 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
-    return &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)];
+    return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)], exp->offset);
   } else if(exp->type == T_STR_CONST) {
     str_t *s = eval_const_str_token(exp);
     size_t sz = str_size(s);
