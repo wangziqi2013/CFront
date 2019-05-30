@@ -1033,6 +1033,21 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       error_row_col_exit(exp->offset, 
         "Operator \"%s\" must be applied to integer types", op_str);
     } break;
+    case EXP_LESS: case EXP_GREATER: case EXP_LEQ: case EXP_GEQ: { // Comparison requires the same as +/-
+      rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
+      if(type_is_int(lhs) && type_is_int(rhs)) { 
+        type_t *after_convert = type_int_convert(lhs, rhs); // Must convert to same length and must not lose information
+        type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
+        type_cast(after_convert, rhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 1)->offset);
+      } else if(type_is_ptr(lhs) && type_is_ptr(rhs)) {
+        if(!type_is_void_ptr(lhs) && !type_is_void_ptr(rhs)) {
+          int ret = type_cmp(lhs->next, rhs->next); // Compare target type of pointers
+          if(ret == TYPE_CMP_NEQ) error_row_col_exit(exp->offset, 
+            "Pointer comparison must have the same base type (except const/volatile)\n");
+        }
+      }
+      return TYPE_GETINT(BASETYPE_INT); // Comparison result is always signed int
+    } break;
     default: assert(0);
   }
   return NULL;

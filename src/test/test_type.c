@@ -332,7 +332,7 @@ void test_type_int_convert() {
   type_t *ret;
   for(int1 = BASETYPE_CHAR;int1 <= BASETYPE_ULLONG;int1 += 0x00010000) {
     for(int2 = BASETYPE_CHAR;int2 <= BASETYPE_ULLONG;int2 += 0x00010000) {
-      ret = type_int_convert(TYPE_DEBUG_GETINT(int1), TYPE_DEBUG_GETINT(int2));
+      ret = type_int_convert(TYPE_GETINT(int1), TYPE_GETINT(int2));
       //printf("%X %X %X\n", int1, int2, ret);
       // Note: token_decl_print cannot occur multiple times in printf
       printf("%s + ", token_decl_print(int1));
