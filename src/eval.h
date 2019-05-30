@@ -17,9 +17,6 @@
 char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);
 
-// Result type of two integers in an expression
-decl_prop_t eval_int_convert(decl_prop_t int1, decl_prop_t int2);
-
 // Take a maximum bite and return the next to read
 char *eval_const_atoi_maxbite(char *s, int base, token_t *token, int *ret); 
 // Given a string and base convert to integer
