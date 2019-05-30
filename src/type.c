@@ -1027,6 +1027,12 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       error_row_col_exit(exp->offset, 
         "Operator \"%s\" must be applied to integer types or pointer and integer", op_str);
     } break;
+    case EXP_LSHIFT: case EXP_RSHIFT: { // Shift operator preserves the type
+      rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
+      if(type_is_int(lhs) && type_is_int(rhs)) return lhs;
+      error_row_col_exit(exp->offset, 
+        "Operator \"%s\" must be applied to integer types", op_str);
+    } break;
     default: assert(0);
   }
   return NULL;
