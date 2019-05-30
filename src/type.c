@@ -1003,25 +1003,38 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(TYPE_SIZEOF_TYPE)], exp->offset);
     } break;
     case EXP_MUL: case EXP_DIV: case EXP_MOD: 
-    case EXP_BIT_AND: case EXP_BIT_OR: case EXP_BIT_XOR: {
+    case EXP_BIT_AND: case EXP_BIT_OR: case EXP_BIT_XOR: 
+    case EXP_MUL_ASSIGN: case EXP_DIV_ASSIGN: case EXP_MOD_ASSIGN: 
+    case EXP_AND_ASSIGN: case EXP_OR_ASSIGN: case EXP_XOR_ASSIGN: {
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); // Evaluate both left and right operands
       if(type_is_int(lhs) && type_is_int(rhs)) { // Integer type conversion
         type_t *after_convert = type_int_convert(lhs, rhs);
         // Test whether they could convert, e.g. (int * unsigned int) is invalid because int could not be casted to unsigned int
         type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
         type_cast(after_convert, rhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 1)->offset);
-        return after_convert;
+        if(token_is_assign(exp)) { // += -= needs to cast result back to lhs
+          type_cast(lhs, after_convert, TYPE_CAST_IMPLICIT, exp->offset);
+          return lhs;
+        } else {
+          return after_convert;
+        }
       }
       error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to integer types", op_str);
     } break;
-    case EXP_ADD: case EXP_SUB: {
+    case EXP_ADD: case EXP_SUB: 
+    case EXP_ADD_ASSIGN: case EXP_SUB_ASSIGN: {
       // Copied from above
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
       if(type_is_int(lhs) && type_is_int(rhs)) { 
         type_t *after_convert = type_int_convert(lhs, rhs);
         type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
         type_cast(after_convert, rhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 1)->offset);
-        return after_convert;
+        if(token_is_assign(exp)) { // += -= needs to cast result back to lhs
+          type_cast(lhs, after_convert, TYPE_CAST_IMPLICIT, exp->offset);
+          return lhs;
+        } else {
+          return after_convert;
+        }
       } else if(type_is_ptr(lhs) && type_is_int(rhs)) {
         return lhs;
       }
@@ -1074,6 +1087,11 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
           "The type of two options in conditional expression must be identical (you may use cast)\n");
       return type2;
     }
+    case EXP_ASSIGN: { // All assignments return the type of the left operand
+      rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
+      type_cast(lhs, rhs, TYPE_CAST_IMPLICIT, exp->offset); 
+      return lhs;
+    } break;
     default: assert(0);
   }
   return NULL;
