@@ -326,17 +326,18 @@ void test_eval_const_token_errors() {
   return;
 }
 
-void test_eval_int_convert() {
-  printf("=== Test eval_int_convert() ===\n");
-  decl_prop_t int1, int2, ret;
+void test_type_int_convert() {
+  printf("=== Test type_int_convert() ===\n");
+  decl_prop_t int1, int2;
+  type_t *ret;
   for(int1 = BASETYPE_CHAR;int1 <= BASETYPE_ULLONG;int1 += 0x00010000) {
     for(int2 = BASETYPE_CHAR;int2 <= BASETYPE_ULLONG;int2 += 0x00010000) {
-      ret = eval_int_convert(int1, int2);
+      ret = type_int_convert(TYPE_DEBUG_GETINT(int1), TYPE_DEBUG_GETINT(int2));
       //printf("%X %X %X\n", int1, int2, ret);
       // Note: token_decl_print cannot occur multiple times in printf
       printf("%s + ", token_decl_print(int1));
       printf("%s -> ", token_decl_print(int2));
-      printf("%s\n", token_decl_print(ret));
+      printf("%s\n", token_decl_print(ret->decl_prop));
     }
   }
   printf("Pass!\n");
@@ -829,7 +830,7 @@ void test_type_typeof() {
   
   // First test whether get string type works
   type_cxt = type_sys_init();
-  type = type_get_strliteral(type_cxt, 25);
+  type = type_get_strliteral(type_cxt, 25, "Placeholder");
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", s->s);
   str_free(s);
@@ -865,7 +866,7 @@ int main() {
   test_vector();
   test_eval_const_char_token();
   test_eval_const_token_errors(); // Memory leak
-  test_eval_int_convert();
+  test_type_int_convert();
   test_eval_const_int();
   test_type_getcomp();
   test_type_getenum();
