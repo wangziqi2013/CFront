@@ -85,7 +85,7 @@ typedef enum {
   EXP_LOGICAL_AND, EXP_LOGICAL_OR,          // && ||
   EXP_COND, EXP_COLON,                      // ? :
   EXP_ASSIGN_BEGIN,                         // We use these two to check whether exp has an assign
-  EXP_ASSIGN = EXP_ASSIGN_BEGIN             // =
+  EXP_ASSIGN = EXP_ASSIGN_BEGIN,            // =
   EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,           // += -=
   EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
   EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=

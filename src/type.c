@@ -1002,6 +1002,8 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_SIZEOF: { // sizeof() operator returns size_t type, which is unsigned long
       return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(TYPE_SIZEOF_TYPE)], exp->offset);
     } break;
+    // Group of operators that just perform an integer convert and check feasibility
+    // Optionally cast back to the LHS type for assignment
     case EXP_MUL: case EXP_DIV: case EXP_MOD: 
     case EXP_BIT_AND: case EXP_BIT_OR: case EXP_BIT_XOR: 
     case EXP_MUL_ASSIGN: case EXP_DIV_ASSIGN: case EXP_MOD_ASSIGN: 
@@ -1021,6 +1023,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       }
       error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to integer types", op_str);
     } break;
+    // This group of operators can operate on both pointers and integers
     case EXP_ADD: case EXP_SUB: 
     case EXP_ADD_ASSIGN: case EXP_SUB_ASSIGN: {
       // Copied from above
@@ -1041,7 +1044,9 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       error_row_col_exit(exp->offset, 
         "Operator \"%s\" must be applied to integer types or pointer and integer", op_str);
     } break;
-    case EXP_LSHIFT: case EXP_RSHIFT: { // Shift operator preserves the type
+    // No extra check for assign because shift operator returns the lhs always
+    case EXP_LSHIFT: case EXP_RSHIFT: 
+    case EXP_LSHIFT_ASSIGN: case EXP_RSHIFT_ASSIGN: { // Shift operator preserves the type
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
       if(type_is_int(lhs) && type_is_int(rhs)) return lhs;
       error_row_col_exit(exp->offset, 
