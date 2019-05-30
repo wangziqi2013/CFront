@@ -238,9 +238,9 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
         if(type->size == TYPE_UNKNOWN_SIZE) error_row_col_exit(token->offset, "Sizeof operator with an incomplete type\n");
         ret = type->size;
       } else {
-        assert(0);
-        token_t *expr = decl; // If not then must be an expression
-        // TODO: DERIVE TYPE OF AN EXPRESSION
+        token_t *exp = decl; // If not then must be an expression
+        type_t *type = type_typeof(cxt, exp, TYPEOF_IGNORE_FUNC_ARG | TYPEOF_IGNORE_ARRAY_INDEX);
+        ret = type->size;
       }
       break;
     }
