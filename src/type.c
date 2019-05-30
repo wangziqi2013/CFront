@@ -260,6 +260,7 @@ type_t *type_init(type_cxt_t *cxt) {
   type_t *type = (type_t *)malloc(sizeof(type_t));
   SYSEXPECT(type != NULL);
   memset(type, 0x00, sizeof(type_t));
+  type->bitfield_size = -1;
   scope_top_obj_insert(cxt, OBJ_TYPE, type);
   return type;
 }
@@ -269,6 +270,7 @@ type_t *type_init_from(type_cxt_t *cxt, type_t *from, char *offset) {
   type_t *ret = type_init(cxt);
   memcpy(ret, from, sizeof(type_t));
   ret->offset = offset;
+  ret->bitfield_size = -1;
   return ret;
 }
 
@@ -679,6 +681,28 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   return enu;
 }
 
+// Integer operation result type is a function of both operands
+//   1. Size of the result is always the larger of them
+//   2. If both are signed or unsigned the result is also consistent
+//   3. Otherwise, if one type is longer, then use the longer type's sign
+//   4. If two types are of equal length, and one is unsigned, the result is unsigned
+type_t *type_int_convert(type_t *lhs, type_t *rhs) {
+  assert(BASETYPE_GET(int1) >= BASETYPE_CHAR && BASETYPE_GET(int1) <= BASETYPE_ULLONG);
+  assert(BASETYPE_GET(int2) >= BASETYPE_CHAR && BASETYPE_GET(int2) <= BASETYPE_ULLONG);
+  decl_prop_t int1 = lhs->decl_prop;
+  decl_prop_t int2 = rhs->decl_prop;
+  int_prop_t p1 = ints[BASETYPE_INDEX(int1)], p2 = ints[BASETYPE_INDEX(int2)];
+  // MIN on sign means that we prefer unsigned when the sizes are equal
+  int_prop_t ret = {EVAL_MIN(p1.sign, p2.sign), EVAL_MAX(p1.size, p2.size)}; 
+  // The sign of the longer type override the sign of shorter type
+  if(p1.size > p2.size) ret.sign = p1.sign;
+  else if(p2.size > p1.size) ret.sign = p2.sign;
+  for(int i = 1;i < (int)sizeof(ints) / (int)sizeof(int_prop_t);i++) 
+    if(memcmp(&ints[i], &ret, sizeof(int_prop_t)) == 0) return &type_builtin_int[BASETYPE_FROMINDEX(i)];
+  assert(0); // Cannot reach here
+  return 0;
+}
+
 // Compare two types
 //   1. If the two types are exactly identical, return TYPE_CMP_EQ
 //   2. If the two types only differ by const and/or volatile qualifier, and the const/volatile is
@@ -975,6 +999,16 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       deref->offset = exp->offset;
       deref->size = TYPE_PTR_SIZE;
       return deref;
+    } break;
+    case EXP_SIZEOF: { // sizeof() operator returns size_t type, which is unsigned long
+      return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(TYPE_SIZEOF_TYPE)], exp->offset);
+    } break;
+    case EXP_MUL: case EXP_DIV: case EXP_MOD: {
+      rhs = type_typeof(cxt, ast_getchild(exp, 1), options); // Evaluate both left and right operands
+      if(type_is_int(lhs) && type_is_int(rhs)) { // Integer type conversion
+
+      }
+      
     } break;
     default: assert(0);
   }

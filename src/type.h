@@ -19,6 +19,8 @@
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
 #define TYPE_CHAR_MAX       ((1 << (TYPE_CHAR_SIZE * 8 - 1)) - 1)
 #define TYPE_UCHAR_MAX      ((1 << (TYPE_CHAR_SIZE * 8)) - 1)
+// The value type of sizeof operator
+#define TYPE_SIZEOF_TYPE    BASETYPE_ULONG
 
 // Used with comp_t init function
 #define COMP_NO_DEFINITION   0
@@ -268,6 +270,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
 comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward);
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 
+type_t *type_int_convert(type_t *lhs, type_t *rhs);
 int type_cmp(type_t *to, type_t *from);
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset);
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options); // Evaluate the type of an expression
