@@ -84,11 +84,13 @@ typedef enum {
   EXP_BIT_AND, EXP_BIT_OR, EXP_BIT_XOR,     // binary & | ^
   EXP_LOGICAL_AND, EXP_LOGICAL_OR,          // && ||
   EXP_COND, EXP_COLON,                      // ? :
-  EXP_ASSIGN,                               // =
+  EXP_ASSIGN_BEGIN,                         // We use these two to check whether exp has an assign
+  EXP_ASSIGN = EXP_ASSIGN_BEGIN             // =
   EXP_ADD_ASSIGN, EXP_SUB_ASSIGN,           // += -=
   EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
   EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
   EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,     // <<= >>=
+  EXP_ASSIGN_END,
   EXP_COMMA,                                // ,
   EXP_END,
   // Internal nodes
@@ -217,6 +219,10 @@ typedef enum {
 extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
+
+static inline int token_is_assign(token_t *token) { 
+  return token->type >= EXP_ASSIGN_BEGIN && token->type < EXP_ASSIGN_END; 
+}
 
 token_cxt_t *token_cxt_init(char *input);
 void token_cxt_free(token_cxt_t *cxt);
