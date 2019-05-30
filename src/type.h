@@ -9,7 +9,7 @@
 #include "str.h"
 
 // Only used for debugging; given BASETYPE_ constant return type *, only for integers
-#define TYPE_DEBUG_GETINT(decl_prop) (&type_builtin_ints[BASETYPE_FROMINDEX(decl_prop)])
+#define TYPE_DEBUG_GETINT(decl_prop) (&type_builtin_ints[BASETYPE_INDEX(decl_prop)])
 
 #define SCOPE_LEVEL_GLOBAL  0
 #define TYPE_VOID_SIZE      0
