@@ -944,11 +944,12 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   
   // Everything down below must have at least one operand whose type is the first child of exp
   lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
+  char *op_str = token_symstr(exp->type);
   switch(op_type) {
     // If applied to integer then result is the same integer, if applied to pointers then result is pointer
     case EXP_POST_INC: case EXP_PRE_INC: case EXP_PRE_DEC: case EXP_POST_DEC: {
       if(type_is_int(lhs) || type_is_ptr(lhs)) return lhs;
-      error_row_col_exit(exp->offset, "Invalid operand for ++/-- operator\n");
+      error_row_col_exit(exp->offset, "Invalid operand for \"%s\" operator\n", op_str);
     } break;
     case EXP_ARROW:
       if(!type_is_ptr(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to pointer types\n");
@@ -956,8 +957,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       // Fall thruogh
     case EXP_DOT: {
       if(!type_is_comp(lhs)) 
-        error_row_col_exit(exp->offset, "Operator %s must be applied to composite types\n", 
-          op_type == EXP_ARROW ? "\"->\"" : "\'.\'");
+        error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to composite types\n", op_str);
       comp_t *comp = lhs->comp;
       token_t *field_name_token = ast_getchild(exp, 1);
       assert(field_name_token);
@@ -969,8 +969,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     } break;
     case EXP_PLUS: case EXP_MINUS: {
       if(!type_is_int(lhs)) 
-        error_row_col_exit(exp->offset, "Operator \'%c\' must be applied to integer types\n",
-          op_type == EXP_PLUS ? '+' : '-');
+        error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to integer types\n", op_str);
       return lhs;
     } break;
     case EXP_LOGICAL_NOT: {
@@ -1006,9 +1005,16 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_MUL: case EXP_DIV: case EXP_MOD: {
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); // Evaluate both left and right operands
       if(type_is_int(lhs) && type_is_int(rhs)) { // Integer type conversion
-
+        type_t *after_convert = type_int_convert(lhs, rhs);
+        // Test whether they could convert, e.g. (int * unsigned int) is invalid because int could not be casted to unsigned int
+        type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
+        type_cast(after_convert, rhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 1)->offset);
+        return after_convert;
       }
-      
+      error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to integer types", op_str);
+    } break;
+    case EXP_ADD: case EXP_SUB: {
+
     } break;
     default: assert(0);
   }
