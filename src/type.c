@@ -1059,6 +1059,21 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         error_row_col_exit(ast_getchild(exp, 1)->offset, 
           "Operatpr \"%s\" must be applied to integer or pointer type\n", op_str);
     } break;
+    case EXP_COND: { // This operator has three operands. Note that op2 and op3 could have void type
+      token_t *op2 = ast_getchild(exp, 1);
+      token_t *op3 = ast_getchild(exp, 2);
+      assert(op2 && op3);
+      if(!type_is_int(lhs) && !type_is_ptr(lhs)) // First check condition
+        error_row_col_exit(ast_getchild(exp, 0)->offset, 
+          "The first operand of condition operator must be integer or pointer type\n");
+      type_t *type2 = type_typeof(cxt, op2, options);
+      type_t *type3 = type_typeof(cxt, op3, options);
+      int ret = type_cmp(type2, type3);
+      if(ret != TYPE_CMP_EQ) // Must be strictly identical, because at run time both could be used as the operand
+        error_row_col_exit(exp->offset, 
+          "The type of two options in conditional expression must be identical (you may use cast)\n");
+      return type2;
+    }
     default: assert(0);
   }
   return NULL;
