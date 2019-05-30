@@ -944,7 +944,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   
   // Everything down below must have at least one operand whose type is the first child of exp
   lhs = type_typeof(cxt, ast_getchild(exp, 0), options);
-  char *op_str = token_symstr(exp->type);
+  const char *op_str = token_symstr(exp->type);
   switch(op_type) {
     // If applied to integer then result is the same integer, if applied to pointers then result is pointer
     case EXP_POST_INC: case EXP_PRE_INC: case EXP_PRE_DEC: case EXP_POST_DEC: {
@@ -1002,7 +1002,8 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_SIZEOF: { // sizeof() operator returns size_t type, which is unsigned long
       return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(TYPE_SIZEOF_TYPE)], exp->offset);
     } break;
-    case EXP_MUL: case EXP_DIV: case EXP_MOD: {
+    case EXP_MUL: case EXP_DIV: case EXP_MOD: 
+    case EXP_BIT_AND: case EXP_BIT_OR: case EXP_BIT_XOR: {
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); // Evaluate both left and right operands
       if(type_is_int(lhs) && type_is_int(rhs)) { // Integer type conversion
         type_t *after_convert = type_int_convert(lhs, rhs);
@@ -1033,7 +1034,8 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       error_row_col_exit(exp->offset, 
         "Operator \"%s\" must be applied to integer types", op_str);
     } break;
-    case EXP_LESS: case EXP_GREATER: case EXP_LEQ: case EXP_GEQ: { // Comparison requires the same as +/-
+    case EXP_LESS: case EXP_GREATER: case EXP_LEQ: case EXP_GEQ: 
+    case EXP_EQ: case EXP_NEQ: { // Comparison requires the same as +/-
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
       if(type_is_int(lhs) && type_is_int(rhs)) { 
         type_t *after_convert = type_int_convert(lhs, rhs); // Must convert to same length and must not lose information
@@ -1047,6 +1049,15 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         }
       }
       return TYPE_GETINT(BASETYPE_INT); // Comparison result is always signed int
+    } break;
+    case EXP_LOGICAL_AND: case EXP_LOGICAL_OR: { // && || accepts both pointer and integer as operands
+      rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
+      if(!type_is_int(lhs) && !type_is_ptr(lhs)) 
+        error_row_col_exit(ast_getchild(exp, 0)->offset, 
+          "Operatpr \"%s\" must be applied to integer or pointer type\n", op_str);
+      if(!type_is_int(rhs) && !type_is_ptr(rhs)) 
+        error_row_col_exit(ast_getchild(exp, 1)->offset, 
+          "Operatpr \"%s\" must be applied to integer or pointer type\n", op_str);
     } break;
     default: assert(0);
   }
