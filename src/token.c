@@ -200,13 +200,13 @@ int token_get_num_operand(token_type_t type) {
 }
 
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
-// Note:
-//   1. Argument s must be a null-terminated string
-token_type_t token_get_keyword_type(const char *s) {
+// The token is specified by argument s and end
+token_type_t token_get_keyword_type(const char *s, const char *end) {
   int begin = 0, end = sizeof(keywords) / sizeof(const char *);
+  int str_len = end - s; // Parameter to strncmp
   while(begin < end - 1) {
     int middle = (begin + end) / 2;
-    int cmp = strcmp(keywords[middle], s);
+    int cmp = strncmp(keywords[middle], s, str_len);
     if(cmp == 0) return T_KEYWORDS_BEGIN + middle;
     else if(cmp < 0) begin = middle + 1;
     else end = middle;
@@ -663,9 +663,9 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
     char *end = s + 1;
     while(isalnum(*end) || *end == '_') end++;
     // Exchange end with '\0' in order to call the function
-    char temp = *end; *end = '\0';
-    token_type_t type = token_get_keyword_type(s);
-    *end = temp;
+    //char temp = *end; *end = '\0';
+    token_type_t type = token_get_keyword_type(s, end);
+    //*end = temp;
     if(type == T_ILLEGAL) {
       token->type = T_IDENT;
       token_copy_literal(token, s, end);
