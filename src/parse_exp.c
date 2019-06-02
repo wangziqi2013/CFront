@@ -19,6 +19,26 @@ parse_exp_cxt_t *parse_exp_init(char *input) {
   return cxt;
 }
 
+void parse_exp_reinit(parse_exp_cxt_t *cxt, char *input) {
+  stack_free(cxt->stacks[0]);
+  stack_free(cxt->stacks[1]);
+  stack_free(cxt->tops[0]);
+  stack_free(cxt->tops[1]);
+  stack_free(cxt->prev_active);
+  // Reinitialize stacks and pointers
+  cxt->stacks[0] = stack_init();
+  cxt->stacks[1] = stack_init();
+  cxt->tops[0] = stack_init();
+  cxt->tops[1] = stack_init();
+  cxt->prev_active = stack_init();
+  // If the first token is an operator then it must be prefix operator
+  cxt->last_active_stack = OP_STACK;
+  token_cxt_reinit(cxt->token_cxt, input);
+  // Enable error reporting
+  error_init(input);
+  return cxt;
+}
+
 void parse_exp_free(parse_exp_cxt_t *cxt) {
   stack_free(cxt->stacks[0]);
   stack_free(cxt->stacks[1]);

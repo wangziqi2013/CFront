@@ -228,6 +228,7 @@ static inline int token_is_assign(token_t *token) {
 }
 
 token_cxt_t *token_cxt_init(char *input);
+void token_cxt_reinit(token_cxt_t *cxt, char *input); // Change input stream
 void token_cxt_free(token_cxt_t *cxt);
 void token_enter_scope(token_cxt_t *cxt);
 void token_exit_scope(token_cxt_t *cxt);
