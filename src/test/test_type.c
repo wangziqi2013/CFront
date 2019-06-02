@@ -821,8 +821,29 @@ void test_type_cmp() {
 }
 
 // Note that decl could not be const char * because the tokenizer may write into the stream
-void insert_symbol(type_cxt_t *cxt, char *decl, const char *name) {
-
+// If argument "s" has a name, the name is inserted into either typedef domain or the value domain
+// depending on whether typedef stgcls is present
+// Also returns the type
+type_t *insert_symbol(type_cxt_t *type_cxt, list_t *token_list, char *s) {
+  parse_exp_cxt_t *parse_cxt = parse_exp_init(s);
+  token_t *decl = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
+  list_insert(token_list, NULL, decl);
+  if(decl->type != T_DECL) printf("Not a valid declaration: \"%s\"\n", s);
+  token_t *base = ast_getchild(decl, 0);
+  token_t *op = ast_getchild(decl, 1);
+  token_t *name = ast_getchild(decl, 2);
+  type_t *type = type_gettype(type_cxt, decl, op, TYPE_ALLOW_VOID | TYPE_ALLOW_STGCLS);
+  if(name) {
+    if((base->decl_prop & DECL_STGCLS_MASK) == DECL_TYPEDEF) { // Insert into typedef domain
+      scope_top_insert(type_cxt, SCOPE_UDEF, name->str, type);
+    } else { // Insert into value domain using value_t objects
+      value_t *value = value_init(type_cxt);
+      value->type = type;
+      scope_top_insert(type_cxt, SCOPE_VALUE, name->str, value);
+    }
+  }
+  parse_exp_free(parse_cxt);
+  return type;
 }
 
 void test_type_typeof() {

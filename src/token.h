@@ -141,7 +141,7 @@ typedef uint32_t decl_prop_t;
 #define DECL_SIGNED   0x000000D0
 // Storage class bit mask (bit 8, 9, 10, 11); Incompatible with each other
 #define DECL_STGCLS_MASK      0x00000F00
-#define DECL_TYPEDEF   0x00000100
+#define DECL_TYPEDEF   0x00000100 // Define a new type using typedef storage class
 #define DECL_EXTERN    0x00000200
 #define DECL_AUTO      0x00000300
 #define DECL_REGISTER  0x00000400
