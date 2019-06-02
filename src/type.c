@@ -1041,6 +1041,8 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       } else if(type_is_ptr(lhs) && type_is_int(rhs)) {
         return lhs;
       } else if(op_type == EXP_SUB && type_is_ptr(lhs) && type_is_ptr(rhs)) { // Pointer subtraction
+        if(type_is_void_ptr(lhs) || type_is_void_ptr(rhs)) error_row_col_exit(exp->offset,
+          "Could not subtract to or from void pointer\n");
         int ret = type_cmp(lhs->next, rhs->next); // Don't care about const/volatile bc they do not affect type size
         if(ret == TYPE_CMP_NEQ) error_row_col_exit(exp->offset, 
           "Pointer subtraction can only be applied to pointers of the same base type\n");
@@ -1101,6 +1103,11 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       type_cast(lhs, rhs, TYPE_CAST_IMPLICIT, exp->offset); 
       return lhs;
     } break;
+    case EXP_COMMA: { // Comma operator only returns the value of the second expression
+      // Note that here we also perform type check for LHS by recursively calling this function
+      rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
+      return rhs;
+    }
     default: assert(0);
   }
   return NULL;
