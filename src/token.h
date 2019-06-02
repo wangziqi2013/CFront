@@ -12,6 +12,8 @@
 #include "stack.h"
 #include "hashtable.h"
 
+#define TOKEN_MAX_KWD_SIZE 31 // Keywords cannot be 32 chars long (enough for C kwywords)
+
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both
 // unary "plus" and binary "add" is T_PLUS. Extra information such as operator property 
@@ -90,7 +92,7 @@ typedef enum {
   EXP_MUL_ASSIGN, EXP_DIV_ASSIGN, EXP_MOD_ASSIGN, // *= /= %=
   EXP_AND_ASSIGN, EXP_OR_ASSIGN, EXP_XOR_ASSIGN,  // &= |= ^=
   EXP_LSHIFT_ASSIGN, EXP_RSHIFT_ASSIGN,     // <<= >>=
-  EXP_ASSIGN_END,
+  EXP_ASSIGN_END = EXP_RSHIFT_ASSIGN,       // There must be no gap
   EXP_COMMA,                                // ,
   EXP_END,
   // Internal nodes
@@ -220,8 +222,9 @@ extern const char *keywords[32];
 extern uint32_t kwd_props[32];
 extern int precedences[51];
 
+// Note that both bounds are inclusive because there must be no gap in the exp token enum
 static inline int token_is_assign(token_t *token) { 
-  return token->type >= EXP_ASSIGN_BEGIN && token->type < EXP_ASSIGN_END; 
+  return token->type >= EXP_ASSIGN_BEGIN && token->type <= EXP_ASSIGN_END; 
 }
 
 token_cxt_t *token_cxt_init(char *input);
@@ -235,7 +238,7 @@ int token_decl_apply(token_t *dest, token_t *src);
 char *token_decl_print(decl_prop_t decl_prop);
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc);
 int token_get_num_operand(token_type_t type);
-token_type_t token_get_keyword_type(const char *s, const char *end);
+token_type_t token_get_keyword_type(const char *s);
 const char *token_typestr(token_type_t type);
 const char *token_symstr(token_type_t type);
 char *token_get_op(char *s, token_t *token);
@@ -244,7 +247,7 @@ void token_free(token_t *token);
 token_t *token_alloc();
 token_t *token_alloc_type(token_type_t type);
 token_t *token_get_empty();
-char *token_get_ident(token_cxt_t *cxt, const char *s, token_t *token);
+char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token);
 char *token_get_int(char *s, token_t *token);
 char *token_get_str(char *s, token_t *token, char closing);
 token_t *token_get_next(token_cxt_t *cxt);
