@@ -826,6 +826,15 @@ typedef struct {
   token_list_t *token_list;
 } test_cxt_t;
 
+test_cxt_t *test_set_up() {
+  test_cxt_t *test_cxt = (test_cxt_t *)malloc(sizeof(test_cxt));
+  SYSEXPECT(test_cxt != NULL);
+  test_cxt->parse_cxt = parse_exp_init(NULL); // Use NULL as a placeholder
+  test_cxt->type_cxt = type_sys_init();
+  test_cxt->token_list = list_init();
+  return test_cxt;
+}
+
 // Note that decl could not be const char * because the tokenizer may write into the stream
 // If argument "s" has a name, the name is inserted into either typedef domain or the value domain
 // depending on whether typedef stgcls is present
