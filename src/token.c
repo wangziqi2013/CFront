@@ -201,12 +201,11 @@ int token_get_num_operand(token_type_t type) {
 
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
 // The token is specified by argument s and end
-token_type_t token_get_keyword_type(const char *s, const char *end) {
+token_type_t token_get_keyword_type(const char *s) {
   int begin = 0, end = sizeof(keywords) / sizeof(const char *);
-  int str_len = end - s; // Parameter to strncmp
   while(begin < end - 1) {
     int middle = (begin + end) / 2;
-    int cmp = strncmp(keywords[middle], s, str_len);
+    int cmp = strcmp(keywords[middle], s);
     if(cmp == 0) return T_KEYWORDS_BEGIN + middle;
     else if(cmp < 0) begin = middle + 1;
     else end = middle;
@@ -657,15 +656,18 @@ token_t *token_get_empty() { return token_alloc_type(T_); }
 // Note:
 //   1. If keywords are detected then the buffer is not initialized
 char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
+  static char buffer[TOKEN_MAX_KWD_SIZE + 1];  // One additional for terminating zero
   token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
   else if(isalpha(*s) || *s == '_') {
     char *end = s + 1;
     while(isalnum(*end) || *end == '_') end++;
-    // Exchange end with '\0' in order to call the function
-    //char temp = *end; *end = '\0';
-    token_type_t type = token_get_keyword_type(s, end);
-    //*end = temp;
+    token_type_t type = T_ILLEGAL;
+    if(end - s <= TOKEN_MAX_KWD_SIZE) {
+      memcpy(buffer, s, end - s);
+      buffer[end - s] = '\0';
+      type = token_get_keyword_type(buffer);
+    }
     if(type == T_ILLEGAL) {
       token->type = T_IDENT;
       token_copy_literal(token, s, end);
