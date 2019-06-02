@@ -820,6 +820,11 @@ void test_type_cmp() {
   return;
 }
 
+// Note that decl could not be const char * because the tokenizer may write into the stream
+void insert_symbol(type_cxt_t *cxt, char *decl, const char *name) {
+
+}
+
 void test_type_typeof() {
   printf("=== Test type_typeof ===\n");
   parse_exp_cxt_t *parse_cxt;
@@ -836,22 +841,6 @@ void test_type_typeof() {
   str_free(s);
   type_sys_free(type_cxt);
   printf("=====================================\n");
-  /*
-  char test1[] = "enum enum_name { a = 1, b, c = 10, }"; // Tests named enum
-  parse_cxt = parse_exp_init(test1);
-  type_cxt = type_sys_init();
-  token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
-  assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
-  type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
-  s = type_print(type, NULL, NULL, 1, 0);
-  printf("%s\n", test1);
-  printf("%s\n", s->s);
-  str_free(s);
-  type_sys_free(type_cxt);
-  parse_exp_free(parse_cxt);
-  ast_free(token);
-  */
 
   printf("Pass!\n");
   return;
