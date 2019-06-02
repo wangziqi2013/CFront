@@ -78,6 +78,19 @@ token_cxt_t *token_cxt_init(char *input) {
   return cxt;
 }
 
+void token_cxt_reinit(token_cxt_t *cxt, char *input) {
+  cxt->s = cxt->begin = input;
+  cxt->pb_num = 0;
+  cxt->ignore_pb = 0;
+  token_t *curr = cxt->pushbacks, *prev = NULL;
+  while(curr) {
+    prev = curr;
+    curr = curr->next;
+    token_free(prev); // Only free the node after we get its next node
+  }
+  return;
+}
+
 void token_cxt_free(token_cxt_t *cxt) {
   while(stack_size(cxt->udef_types)) ht_free(stack_pop(cxt->udef_types));
   stack_free(cxt->udef_types);
