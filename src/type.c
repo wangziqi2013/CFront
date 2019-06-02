@@ -1040,9 +1040,13 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         }
       } else if(type_is_ptr(lhs) && type_is_int(rhs)) {
         return lhs;
+      } else if(op_type == EXP_SUB && type_is_ptr(lhs) && type_is_ptr(rhs)) { // Pointer subtraction
+        int ret = type_cmp(lhs->next, rhs->next); // Don't care about const/volatile bc they do not affect type size
+        if(ret == TYPE_CMP_NEQ) error_row_col_exit(exp->offset, 
+          "Pointer subtraction can only be applied to pointers of the same base type\n");
+        return TYPE_GETINT(TYPE_PTR_DIFF_TYPE);
       }
-      error_row_col_exit(exp->offset, 
-        "Operator \"%s\" must be applied to integer types or pointer and integer", op_str);
+      error_row_col_exit(exp->offset, "Operator \"%s\" cannot be applied here", op_str);
     } break;
     // No extra check for assign because shift operator returns the lhs always
     case EXP_LSHIFT: case EXP_RSHIFT: 

@@ -24,6 +24,7 @@
 #define TYPE_UCHAR_MAX      ((1 << (TYPE_CHAR_SIZE * 8)) - 1)
 // The value type of sizeof operator
 #define TYPE_SIZEOF_TYPE    BASETYPE_ULONG
+#define TYPE_PTR_DIFF_TYPE  BASETYPE_LONG    // Type of pointer subtraction
 
 // Used with comp_t init function
 #define COMP_NO_DEFINITION   0
