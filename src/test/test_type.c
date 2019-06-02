@@ -820,6 +820,12 @@ void test_type_cmp() {
   return;
 }
 
+typedef struct {
+  parse_exp_cxt_t *parse_cxt;
+  type_cxt_t *type_cxt;
+  token_list_t *token_list;
+} test_cxt_t;
+
 // Note that decl could not be const char * because the tokenizer may write into the stream
 // If argument "s" has a name, the name is inserted into either typedef domain or the value domain
 // depending on whether typedef stgcls is present
@@ -844,6 +850,11 @@ type_t *insert_symbol(type_cxt_t *type_cxt, list_t *token_list, char *s) {
   }
   parse_exp_free(parse_cxt);
   return type;
+}
+
+// Test tear down
+void test_tear_down(list_t *token_list) {
+
 }
 
 void test_type_typeof() {
