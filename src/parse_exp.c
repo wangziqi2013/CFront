@@ -36,7 +36,7 @@ void parse_exp_reinit(parse_exp_cxt_t *cxt, char *input) {
   token_cxt_reinit(cxt->token_cxt, input);
   // Enable error reporting
   error_init(input);
-  return cxt;
+  return;
 }
 
 void parse_exp_free(parse_exp_cxt_t *cxt) {

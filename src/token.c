@@ -88,6 +88,7 @@ void token_cxt_reinit(token_cxt_t *cxt, char *input) {
     curr = curr->next;
     token_free(prev); // Only free the node after we get its next node
   }
+  cxt->pushbacks = NULL;
   return;
 }
 
