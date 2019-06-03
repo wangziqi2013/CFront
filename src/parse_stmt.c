@@ -46,7 +46,7 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
         token_t *name = ast_gettype(decl, T_IDENT);
         if(!name) error_row_col_exit(cxt->token_cxt->s, "Expecting a name for typedef\n");
         assert(name->type == T_IDENT);
-        token_add_utype(cxt->token_cxt, name);
+        token_add_utype(cxt->token_cxt, name); // Add a name, but does not need to concrete type
       }
       token_t *var = ast_append_child(token_alloc_type(T_DECL_STMT_VAR), decl);
       ast_append_child(decl_entry, var);
