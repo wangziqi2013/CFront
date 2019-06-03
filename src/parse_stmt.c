@@ -42,7 +42,7 @@ token_t *parse_comp_stmt(parse_stmt_cxt_t *cxt) {
     while(1) { // Loop through variables
     token_t *decl = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
       // Check decl's name here; If it is typedef then add the name into the token cxt
-      if(basetype->decl_prop & DECL_TYPEDEF) {
+      if(DECL_ISTYPEDEF(basetype->decl_prop)) {
         token_t *name = ast_gettype(decl, T_IDENT);
         if(!name) error_row_col_exit(cxt->token_cxt->s, "Expecting a name for typedef\n");
         assert(name->type == T_IDENT);
