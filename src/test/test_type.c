@@ -827,12 +827,23 @@ typedef struct {
   list_t *token_list;
 } test_cxt_t;
 
+// This function does not following:
+//   1. Initialize the string to parse to NULL
+//   2. Insert a few udef'ed name for parser to let them correctly identify types
+//      2.1 udef1, udef2, udef3, udef4. If you are using them in the test, make sure you actually define them
 test_cxt_t *test_set_up() {
   test_cxt_t *test_cxt = (test_cxt_t *)malloc(sizeof(test_cxt));
   SYSEXPECT(test_cxt != NULL);
   test_cxt->parse_cxt = parse_exp_init(NULL); // Use NULL as a placeholder
   test_cxt->type_cxt = type_sys_init();
   test_cxt->token_list = list_init();
+  static token_t udef_tokens[4] = {
+    {T_IDENT, T_IDENT, "udef1", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, T_IDENT, "udef2", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, T_IDENT, "udef3", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, T_IDENT, "udef4", NULL, {NULL}, NULL, NULL, {0}},
+  };
+//  token_add_utype(
   return test_cxt;
 }
 
