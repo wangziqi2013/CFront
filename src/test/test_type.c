@@ -660,6 +660,7 @@ void test_type_anomaly() {
   parse_exp_free(cxt);
   type_sys_free(type_cxt);
 
+  error_testmode(0);
   printf("Pass!\n");
   (void)type;
   return;
@@ -839,7 +840,7 @@ test_cxt_t *test_set_up() {
 // If argument "s" has a name, the name is inserted into either typedef domain or the value domain
 // depending on whether typedef stgcls is present
 // Also returns the type
-type_t *insert_symbol(test_cxt_t *test_cxt, list_t *token_list, char *s) {
+type_t *test_insert_symbol(test_cxt_t *test_cxt, char *s) {
   parse_exp_reinit(test_cxt->parse_cxt, s);
   token_t *decl = parse_decl(test_cxt->parse_cxt, PARSE_DECL_HASBASETYPE);
   list_insert(test_cxt->token_list, NULL, decl);
@@ -847,9 +848,9 @@ type_t *insert_symbol(test_cxt_t *test_cxt, list_t *token_list, char *s) {
   token_t *base = ast_getchild(decl, 0);
   token_t *op = ast_getchild(decl, 1);
   token_t *name = ast_getchild(decl, 2);
-  type_t *type = type_gettype(test_cxt->type_cxt, decl, op, TYPE_ALLOW_VOID | TYPE_ALLOW_STGCLS);
+  type_t *type = type_gettype(test_cxt->type_cxt, decl, base, TYPE_ALLOW_VOID | TYPE_ALLOW_STGCLS);
   if(name) {
-    if((base->decl_prop & DECL_STGCLS_MASK) == DECL_TYPEDEF) { // Insert into typedef domain
+    if(DECL_ISTYPEDEF(base->decl_prop)) { // Insert into typedef domain
       scope_top_insert(test_cxt->type_cxt, SCOPE_UDEF, name->str, type);
     } else { // Insert into value domain using value_t objects
       value_t *value = value_init(test_cxt->type_cxt);
@@ -864,11 +865,11 @@ type_t *insert_symbol(test_cxt_t *test_cxt, list_t *token_list, char *s) {
 void test_tear_down(test_cxt_t *test_cxt) {
   parse_exp_free(test_cxt->parse_cxt);
   type_sys_free(test_cxt->type_cxt);
-  list_node_t *curr = list_head(test_cxt->token_list), *prev;
+  listnode_t *curr = list_head(test_cxt->token_list), *prev;
   while(curr) {
     prev = curr;
-    curr = curr->next;
-    token_free(prev);
+    curr = list_next(curr);
+    token_free(list_value(prev));
   }
   list_free(test_cxt->token_list);
 }
@@ -889,6 +890,13 @@ void test_type_typeof() {
   str_free(s);
   type_sys_free(type_cxt);
   printf("=====================================\n");
+
+  test_cxt_t *cxt = test_set_up();
+  test_insert_symbol(cxt, "typedef unsigned int uint32_t");
+  test_insert_symbol(cxt, "uint32_t x");
+  test_insert_symbol(cxt, "long y");
+
+  test_tear_down(cxt);
 
   printf("Pass!\n");
   return;
