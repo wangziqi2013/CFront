@@ -144,16 +144,26 @@ typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
   union {
-    int8_t   charval;   // The following are for constant evaluation; We do not support long long
-    uint8_t  ucharval;
-    int16_t  shortval;
-    uint16_t ushortval;
-    int32_t  intval;
-    uint32_t uintval;
-    int64_t  longval;
-    uint64_t ulongval;
-    int64_t  offset;    // If it represents an address then this is the offset (relative to data segment, stack, etc.)
-    uint64_t ptrval;
+    uint8_t  uint8;
+    int8_t   int8;
+    uint16_t uint16;
+    int16_t  int16;
+    uint32_t uint32;
+    int32_t  int32;
+    uint64_t uint64;
+    int64_t  int64;
+    int64_t  ptr;       // Value is a pointer
+    int64_t  offset;    // Value is an offset
+  };
+  union {
+    uint8_t  uint8_hi;
+    int8_t   int8_hi;
+    uint16_t uint16_hi;
+    int16_t  int16_hi;
+    uint32_t uint32_hi;
+    int32_t  int32_hi;
+    uint64_t uint64_hi;
+    int64_t  int64_hi;
   };
 } value_t;
 
