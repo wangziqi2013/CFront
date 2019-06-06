@@ -85,6 +85,9 @@ type.o: type.c type.h token.h ast.h hashtable.h stack.h error.h bintree.h list.h
 eval.o: eval.c eval.h token.h type.h
 	$(CC) eval.c -c -o eval.o $(CFLAGS) $(LDFLAGS)
 
+cgen.o: cgen.h cgen.c type.h
+	$(CC) cgen.c -c -o cgen.o $(CFLAGS) $(LDFLAGS)
+
 parse_exp.h: stack.h token.h ast.h hashtable.h
 
 #queue.o: queue.c queue.h
