@@ -14,30 +14,6 @@
 #define ATOI_CHECK_END    1    // Do not report error if there is still char after the int literal
 #define ATOI_NO_MAX_CHAR  0    // For \xhh \ooo we only eat 2 and 3 chars respectively
 
-typedef struct {
-  int sign; int size;
-  union {
-    uint8_t  uint8;
-    int8_t   int8;
-    uint16_t uint16;
-    int16_t  int16;
-    uint32_t uint32;
-    int32_t  int32;
-    uint64_t uint64;
-    int64_t  int64;
-  };
-  union {
-    uint8_t  uint8_hi;
-    int8_t   int8_hi;
-    uint16_t uint16_hi;
-    int16_t  int16_hi;
-    uint32_t uint32_hi;
-    int32_t  int32_hi;
-    uint64_t uint64_hi;
-    int64_t  int64_hi;
-  };
-} int_imm_t; // Immediate value of integer
-
 char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);
 
