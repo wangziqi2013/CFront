@@ -3,6 +3,19 @@
 #include "eval.h"
 #include "type.h"
 
+int_imm_t *eval_int_imm_init(int sign, int size) {
+  int_imm_t *imm = (int_imm_t *)malloc(sizeof(int_imm_t));
+  SYSEXPECT(imm != NULL);
+  memset(imm, 0x00, sizeof(int_imm_t));
+  imm->sign = sign;
+  imm->size = size;
+  return imm;
+}
+
+void eval_int_imm_free(int_imm_t *imm) {
+  free(imm);
+}
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];

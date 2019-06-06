@@ -15,7 +15,7 @@
 #define ATOI_NO_MAX_CHAR  0    // For \xhh \ooo we only eat 2 and 3 chars respectively
 
 typedef struct {
-  int size; int sign;
+  int sign; int size;
   union {
     uint8_t  uint8;
     int8_t   int8;
