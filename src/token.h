@@ -149,6 +149,10 @@ typedef uint32_t decl_prop_t;
 // Macro for accessing storage class
 #define DECL_STGCLS_GET(decl_prop) ((decl_prop) & DECL_STGCLS_MASK)
 #define DECL_ISTYPEDEF(decl_prop) (DECL_STGCLS_GET(decl_prop) == DECL_TYPEDEF)
+#define DECL_ISEXTERN(decl_prop) (DECL_STGCLS_GET(decl_prop) == DECL_EXTERN)
+#define DECL_ISAUTO(decl_prop) (DECL_STGCLS_GET(decl_prop) == DECL_AUTO)
+#define DECL_ISREGISTER(decl_prop) (DECL_STGCLS_GET(decl_prop) == DECL_REGISTER)
+#define DECL_ISSTATIC(decl_prop) (DECL_STGCLS_GET(decl_prop) == DECL_STATIC)
 
 // Type qualifier bit mask (bit 12, 13); Note that these two are compatible (so they are mask)
 #define DECL_QUAL_MASK     0x00003000
