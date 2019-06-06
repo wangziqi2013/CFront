@@ -843,7 +843,10 @@ test_cxt_t *test_set_up() {
     {T_IDENT, T_IDENT, "udef3", NULL, {NULL}, NULL, NULL, {0}},
     {T_IDENT, T_IDENT, "udef4", NULL, {NULL}, NULL, NULL, {0}},
   };
-//  token_add_utype(
+  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[0]);
+  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[1]);
+  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[2]);
+  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[3]);
   return test_cxt;
 }
 
@@ -859,8 +862,9 @@ type_t *test_insert_symbol(test_cxt_t *test_cxt, char *s) {
   token_t *base = ast_getchild(decl, 0);
   token_t *op = ast_getchild(decl, 1);
   token_t *name = ast_getchild(decl, 2);
+  assert(base && op && name);
   type_t *type = type_gettype(test_cxt->type_cxt, decl, base, TYPE_ALLOW_VOID | TYPE_ALLOW_STGCLS);
-  if(name) {
+  if(name->type == T_IDENT) {
     if(DECL_ISTYPEDEF(base->decl_prop)) { // Insert into typedef domain
       scope_top_insert(test_cxt->type_cxt, SCOPE_UDEF, name->str, type);
     } else { // Insert into value domain using value_t objects
@@ -903,10 +907,10 @@ void test_type_typeof() {
   printf("=====================================\n");
 
   test_cxt_t *cxt = test_set_up();
-  test_insert_symbol(cxt, "typedef unsigned int uint32_t");
-  test_insert_symbol(cxt, "uint32_t x");
+  test_insert_symbol(cxt, "struct str { int *x; long y; unsigned z : 20; }");
+  test_insert_symbol(cxt, "unsigned x");
   test_insert_symbol(cxt, "long y");
-
+  //type = typeof
   test_tear_down(cxt);
 
   printf("Pass!\n");
