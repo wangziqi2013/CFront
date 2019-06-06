@@ -97,17 +97,6 @@ typedef struct {
 typedef uint64_t typeid_t;
 typedef uint64_t offset_t;
 
-typedef enum {
-  LVALUES_BEGIN = 1, 
-  ADDR_STACK, ADDR_HEAP, ADDR_GLOBAL, // Named variable
-  LVALUES_END, RVALUES_BEGIN = 10,
-  ADDR_TEMP, // Unnamed variable (intermediate node of an expression)
-  ADDR_IMM,  // Immediate value (constants)
-  ADDR_SYMBOL, // Array name and function name. Taking the addr returns the symbol addr
-  ADDR_RES,    // Resource type, not having a name but must be stored
-  RVALUES_END,
-} addrtype_t;
-
 struct comp_t_struct;
 struct enum_t_struct;
 
@@ -146,6 +135,19 @@ extern type_t type_builtin_const_char;
 extern type_t type_builtin_void;
 extern type_t type_builtin_string_template;
 
+typedef enum {
+  LVALUES_BEGIN = 1, 
+  ADDR_STACK, ADDR_HEAP, 
+  ADDR_GLOBAL, // Offset field indicates the offset to data segment
+  ADDR_GLOBAL_PENDING, // Declarated variable, has an address, but is currently unknown (maybe till link time)
+  LVALUES_END, RVALUES_BEGIN = 10,
+  ADDR_TEMP, // Unnamed variable (intermediate node of an expression)
+  ADDR_IMM,  // Immediate value (constants)
+  ADDR_SYMBOL, // Array name and function name. Taking the addr returns the symbol addr
+  ADDR_RES,    // Resource type, not having a name but must be stored
+  RVALUES_END,
+} addrtype_t;
+
 typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
@@ -159,7 +161,6 @@ typedef struct value_t_struct {
     int32_t  int32;
     uint64_t uint64;
     int64_t  int64;
-    int64_t  ptr;       // Value is a pointer
     int64_t  offset;    // Value is an offset
   };
 } value_t;
