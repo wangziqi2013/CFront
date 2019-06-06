@@ -12,6 +12,7 @@
 #define TYPE_GETINT(decl_prop) (&type_builtin_ints[BASETYPE_INDEX(decl_prop)])
 
 #define SCOPE_LEVEL_GLOBAL  0
+
 #define TYPE_VOID_SIZE      0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_CHAR_SIZE      1
@@ -19,9 +20,12 @@
 #define TYPE_INT_SIZE       4
 #define TYPE_LONG_SIZE      8
 #define TYPE_LLONG_SIZE     16
+#define TYPE_INT_SIZE_MAX   16 // This is the maximum size we support for constant evaluation
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
+
 #define TYPE_CHAR_MAX       ((1 << (TYPE_CHAR_SIZE * 8 - 1)) - 1)
 #define TYPE_UCHAR_MAX      ((1 << (TYPE_CHAR_SIZE * 8)) - 1)
+
 // The value type of sizeof operator
 #define TYPE_SIZEOF_TYPE    BASETYPE_ULONG
 #define TYPE_PTR_DIFF_TYPE  BASETYPE_LONG    // Type of pointer subtraction
@@ -95,10 +99,12 @@ typedef uint64_t offset_t;
 
 typedef enum {
   LVALUES_BEGIN = 1, 
-  ADDR_STACK, ADDR_HEAP, ADDR_GLOBAL,
+  ADDR_STACK, ADDR_HEAP, ADDR_GLOBAL, // Named variable
   LVALUES_END, RVALUES_BEGIN = 10,
   ADDR_TEMP, // Unnamed variable (intermediate node of an expression)
   ADDR_IMM,  // Immediate value (constants)
+  ADDR_SYMBOL, // Array name and function name. Taking the addr returns the symbol addr
+  ADDR_RES,    // Resource type, not having a name but must be stored
   RVALUES_END,
 } addrtype_t;
 
@@ -144,6 +150,7 @@ typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
   union {
+    uint8_t  data[0];   // Starting pointer
     uint8_t  uint8;
     int8_t   int8;
     uint16_t uint16;
@@ -154,16 +161,6 @@ typedef struct value_t_struct {
     int64_t  int64;
     int64_t  ptr;       // Value is a pointer
     int64_t  offset;    // Value is an offset
-  };
-  union {
-    uint8_t  uint8_hi;
-    int8_t   int8_hi;
-    uint16_t uint16_hi;
-    int16_t  int16_hi;
-    uint32_t uint32_hi;
-    int32_t  int32_hi;
-    uint64_t uint64_hi;
-    int64_t  int64_hi;
   };
 } value_t;
 

@@ -666,7 +666,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     if(nameless) { // Insert the names to the current scope as integer const
       value_t *value = value_init(cxt);
       value->addrtype = ADDR_IMM;
-      value->intval = curr_value;
+      value->int32 = curr_value;
       // Assign built in type, do not create new type objects. Offset is the offset of symbol name
       value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], entry_name->offset);
       if(scope_top_find(cxt, SCOPE_VALUE, name_str)) {
@@ -913,7 +913,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       assert(index_token);
       type_t *index_type = type_typeof(cxt, index_token, options);
       if(!type_is_int(index_type)) 
-        error_row_col_exit(index_token->offset, "Array index must be of one of the integral type\n");
+        error_row_col_exit(index_token->offset, "Array index must be of one of the integral types\n");
     }
     return lhs->next;
   } else if(op_type == EXP_FUNC_CALL) { // Function call operator will dereference the ptr implicitly

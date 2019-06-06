@@ -3,6 +3,24 @@
 #include "eval.h"
 #include "type.h"
 
+// The following functions perform constant evaluation
+// value type is not altered
+
+/*
+// If signed == 1 and to > from, it is sign extension
+void eval_const_adjust_size(value_t *value, int to, int from, int signed) {
+  assert(to <= TYPE_INT_SIZE_MAX && to > 0 && from <= TYPE_INT_SIZE_MAX && from > 0);
+  //value_t *ret = value_init();
+  if(from == to) return;
+  if(to < from) { // truncation
+
+  } else { // Extension
+
+  }
+  return;
+}
+*/
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];
@@ -214,7 +232,7 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
       if(!type_is_int(value->type)) error_row_col_exit(token->offset, "Name \"%s\" is not of integer type\n", token->str);
       if(BASETYPE_GET(value->type->decl_prop) != BASETYPE_INT) 
         warn_row_col_exit(token->offset, "Name \"%s\" will be converted to int type\n", token->str);
-      ret = value->intval;
+      ret = value->int32;
       break;
     }
     case EXP_CAST: {
