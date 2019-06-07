@@ -215,7 +215,7 @@ type_cxt_t *type_sys_init() {
   SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
   scope_recurse(cxt);
-  cxt->global_ptr = 0L;
+  cxt->global_data_ptr = 0L;
   cxt->global_import_id = 0L;
   cxt->import_list = list_init();
   cxt->import_index = ht_str_init();
