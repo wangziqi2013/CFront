@@ -32,27 +32,38 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       error_row_col_exit(decl->offset, "Keyword \"register\" is not allowed for outer-most scope\n");
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
       error_row_col_exit(decl->offset, "Keyword \"auto\" is not allowed for outer-most scope\n");
-    } else if(DECL_ISEXTERN(basetype->decl_prop) && !init) {
+    } else if((DECL_ISEXTERN(basetype->decl_prop) && !init) || (type_is_func(type))) { 
+      // Declaration: has extern, no def, or is function type
       if(name->type == T_) // Extern type must have a name to be imported
-        error_row_col_exit(decl->offset, "Externally imported type must have a name\n");
-      else if(type_is_func(type))
+        error_row_col_exit(decl->offset, "External declaration must have a name\n");
+      else if(type_is_func(type) && DECL_ISEXTERN(basetype->decl_prop))
         error_row_col_exit(decl->offset, "You don't need \"extern\" to declare functions\n");
+      else if(type_is_func(type) && init)
+        error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
+
       value_t *value = value_init(cxt);
       value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
-      value->addrtype = ADDR_GLOBAL; // Variables declares with "extern" must have storage
+      value->pending_list = list_init();
+      if(type_is_array(type) || type_is_func(type)) value->addrtype = ADDR_LABEL;
+      else value->addrtype = ADDR_GLOBAL;  // Otherwise it must be a global variable (func are in the next branch)
       value->import_id = cxt->global_import_id++;
       value->type = type;
       list_insert(cxt->import_list, name->str, value);
-    } else { // Defines a new global variable, function or array - may not have name
+      ht_insert(cxt->import_index, name->str, value);
+    } else { // Defines a new global variable or array - may not have name
+      assert(!type_is_func(type));
       if(type->size == TYPE_UNKNOWN_SIZE) 
-        error_row_col_exit(decl->offset, "Incomplete type for global variables\n");
-      // If there is no name then it is a struct/union/enum
-      if(name->type != T_) {
-
+        error_row_col_exit(decl->offset, "Incomplete type for global definition\n");
+      if(name->type != T_) { // Named global variable or array
+        value_t *value = value_init(cxt);
+        if(type_is_array(type)) value->addrtype = ADDR_LABEL;
+        else value->addrtype = ADDR_GLOBAL;  // Otherwise it must be a global variable (func are in the next branch)
+        value->type = type;
+        value->offset = cxt->global_data_ptr
         if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
-          // We may override an externally defined var
+          list_insert(cxt->export_list, name->str, value);
         }
-      } else { // Otherwise we only allow anonymous comp type or enum
+      } else { // Otherwise we only allow comp type or enum with no name
         if(!type_is_comp(type) && !type_is_enum(type)) 
           error_row_col_exit(decl->offset, "Global definition must have a name\n");
       }
