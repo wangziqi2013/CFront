@@ -29,9 +29,11 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
     type_t *type = type_gettype(cxt, decl, basetype, TYPE_ALLOW_STGCLS); 
     
     if(DECL_ISTYPEDEF(basetype->decl_prop)) { // Typedef of a new type
-      if(type->size == TYPE_UNKNOWN_SIZE) 
+      if(type->size == TYPE_UNKNOWN_SIZE) {
         error_row_col_exit(decl->offset, "Incomplete type in typedef\n");
-      else if(name->type == T_) error_row_col_exit(decl->offset, "Typedef'ed type must have a name");
+      } else if(name->type == T_) {
+        error_row_col_exit(decl->offset, "Typedef'ed type must have a name");
+      }
       scope_top_insert(cxt, SCOPE_UDEF, name->str, type);
     } else if(DECL_ISREGISTER(basetype->decl_prop)) {
       error_row_col_exit(decl->offset, "Keyword \"register\" is not allowed for outer-most scope\n");
@@ -39,12 +41,13 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       error_row_col_exit(decl->offset, "Keyword \"auto\" is not allowed for outer-most scope\n");
     } else if((DECL_ISEXTERN(basetype->decl_prop) && !init) || (type_is_func(type))) { 
       // Declaration: has extern, no def, or is function type
-      if(name->type == T_) // Extern type must have a name to be imported
+      if(name->type == T_) {// Extern type must have a name to be imported
         error_row_col_exit(decl->offset, "External declaration must have a name\n");
-      else if(type_is_func(type) && DECL_ISEXTERN(basetype->decl_prop))
+      } else if(type_is_func(type) && DECL_ISEXTERN(basetype->decl_prop)) {
         error_row_col_exit(decl->offset, "You don't need \"extern\" to declare functions\n");
-      else if(type_is_func(type) && init)
+      } else if(type_is_func(type) && init) {
         error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
+      }
 
       value_t *value = value_init(cxt);
       value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
@@ -95,7 +98,7 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
 }
 
 void cgen_global_func(type_cxt_t *cxt, token_t *func) {
-  (void)cxt; (void)root;
+  (void)cxt; (void)func;
 }
 
 // Main entry point to code generation
@@ -110,7 +113,7 @@ void cgen(type_cxt_t *cxt, token_t *root) {
     } else {
       assert(0);   // Should not appear at global level
     }
-    t = t->sibling // Gets NULL if reaches the end
+    t = t->sibling; // Gets NULL if reaches the end
   }
   return;
 }
