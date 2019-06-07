@@ -139,18 +139,18 @@ typedef enum {
   LVALUES_BEGIN = 1, 
   ADDR_STACK, ADDR_HEAP, 
   ADDR_GLOBAL, // Offset field indicates the offset to data segment
-  ADDR_GLOBAL_PENDING, // Declarated variable, has an address, but is currently unknown (maybe till link time)
   LVALUES_END, RVALUES_BEGIN = 10,
-  ADDR_TEMP, // Unnamed variable (intermediate node of an expression)
-  ADDR_IMM,  // Immediate value (constants)
-  ADDR_SYMBOL, // Array name and function name. Taking the addr returns the symbol addr
-  ADDR_RES,    // Resource type, not having a name but must be stored
+  ADDR_TEMP,  // Unnamed variable (intermediate node of an expression)
+  ADDR_IMM,   // Immediate value (constants)
+  ADDR_LABEL, // Array name and function name. Taking the addr returns the symbol addr
+  ADDR_RES,   // Resource type, not having a name but must be stored
   RVALUES_END,
 } addrtype_t;
 
 typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
+  int pending;          // Set to 1 if the global var is declared using extern but not defined
   union {
     uint8_t  data[0];   // Starting pointer
     uint8_t  uint8;
