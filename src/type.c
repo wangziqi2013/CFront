@@ -241,6 +241,11 @@ void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_n
 void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
 void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { return ht_insert(scope_top_name(cxt, domain), key, value); }
 
+void *scope_top_remove(type_cxt_t *cxt, int domain, void *key) {
+  void *ht_ret = ht_remove(scope_top_name(cxt, domain), key);
+  return ht_ret == HT_NOTFOUND ? NULL : ht_ret;
+}
+
 // Return NULL if the key does not exist in the domain
 void *scope_top_find(type_cxt_t *cxt, int domain, void *key) { 
   void *ht_ret = ht_find(scope_top_name(cxt, domain), key); 

@@ -280,6 +280,7 @@ void scope_recurse(type_cxt_t *cxt);
 void scope_decurse(type_cxt_t *cxt);
 void *scope_top_find(type_cxt_t *cxt, int domain, void *key);
 void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value);
+void *scope_top_remove(type_cxt_t *cxt, int domain, void *key);
 void *scope_search(type_cxt_t *cxt, int domain, void *name);
 void scope_top_obj_insert(type_cxt_t *cxt, int domain, void *obj); // Adding an object into the topmost scope for memory mgmt
 
