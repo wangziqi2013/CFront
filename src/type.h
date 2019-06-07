@@ -158,7 +158,7 @@ typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
   int pending;          // Set to 1 if the global var is declared using extern but not defined
-  list_t *pending_list; // If pending == 1 this is a valid list (might be empty)
+  list_t *pending_list; // If pending == 1 this is a valid list (might be empty); Owns memory
   union {
     uint8_t  data[0];   // Starting pointer
     uint8_t  uint8;

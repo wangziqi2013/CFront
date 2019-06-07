@@ -352,6 +352,8 @@ value_t *value_init(type_cxt_t *cxt) {
 }
 
 void value_free(void *ptr) {
+  value_t *value = (value_t *)ptr;
+  if(value->pending_list) list_free(value->pending_list);
   free(ptr);
 }
 
