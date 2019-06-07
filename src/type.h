@@ -14,8 +14,8 @@
 #define SCOPE_LEVEL_GLOBAL  0
 
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl or void/func call
-#define TYPE_VOID_SIZE      TYPE_UNKNOWN_SIZE
-#define TYPE_FUNC_SIZE      TYPE_UNKNOWN_SIZE
+#define TYPE_VOID_SIZE      0
+#define TYPE_FUNC_SIZE      0
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_CHAR_SIZE      1
 #define TYPE_SHORT_SIZE     2
@@ -94,8 +94,8 @@ extern obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1]; // Registered cal
 
 typedef struct {
   stack_t *scopes;
-  int64_t global_ptr;    // Global data offset
-  int64_t global_import_id; // Global import ID, incremented for every imported object
+  int64_t global_data_ptr;   // Global data offset
+  int64_t global_import_id;  // Global import ID, incremented for every imported object
   list_t *import_list;       // Externally declared variable, function or array
   hashtable_t *import_index; // Index of the above list - we may remove from this list
   list_t *export_list; // Non-statically declared global variable, function or array
@@ -158,6 +158,7 @@ typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
   int pending;          // Set to 1 if the global var is declared using extern but not defined
+  list_t *pending_list; // If pending == 1 this is a valid list (might be empty)
   union {
     uint8_t  data[0];   // Starting pointer
     uint8_t  uint8;
@@ -204,6 +205,12 @@ typedef struct enum_t_struct {
 
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
+}
+
+static inline int64_t type_alloc_global_data(type_cxt_t *cxt, size_t size) {
+  int64_t ret = cxt->global_data_ptr;
+  cxt->global_data_ptr += (int64_t)size;
+  return ret;
 }
 
 // Returns 1 if it is integer types. Applies to any type object
