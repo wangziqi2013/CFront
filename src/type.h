@@ -92,7 +92,8 @@ extern obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1]; // Registered cal
 
 typedef struct {
   stack_t *scopes;
-  int64_t global_ptr;  // Global data offset
+  int64_t global_ptr;    // Global data offset
+  int64_t global_import_id; // Global import ID, incremented for every imported object
   list_t *import_list; // Externally declared variable, function or array
   list_t *export_list; // Non-statically declared global variable, function or array
 } type_cxt_t;
@@ -165,6 +166,7 @@ typedef struct value_t_struct {
     uint64_t uint64;
     int64_t  int64;
     int64_t  offset;    // Value is an offset
+    int64_t  import_id; // If pending == 1 this is the ID of the imported object
   };
 } value_t;
 
@@ -244,6 +246,9 @@ static inline int type_is_volatile(type_t *type) { // Returns 1 if the type has 
 // Returns 1 if it is struct or union type. Applies to any type object
 static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
+}
+static inline int type_is_enum(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) == BASETYPE_ENUM;
 }
 static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
 
