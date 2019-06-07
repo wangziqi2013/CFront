@@ -92,6 +92,9 @@ extern obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1]; // Registered cal
 
 typedef struct {
   stack_t *scopes;
+  int64_t global_ptr;  // Global data offset
+  list_t *import_list; // Externally declared variable, function or array
+  list_t *export_list; // Non-statically declared global variable, function or array
 } type_cxt_t;
 
 typedef uint64_t typeid_t;

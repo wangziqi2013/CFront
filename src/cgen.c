@@ -32,7 +32,9 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
       error_row_col_exit(decl->type, "Keyword \"auto\" is not allowed for outer-most scope\n");
     } else if(DECL_ISEXTERN(basetype->decl_prop) && !init) {
-      // TODO: INTRODUCING AN EXTERNALLY DEFINED VAR
+      value_t *value = value_init(cxt);
+      value->pending = 1;
+      value->addrtype = ADDR_GLOBAL; // Variables declares with "extern" must have storage
     } else if(DECL_ISSTATIC(basetype->decl_prop)) {
       // TODO: DO NOT EXPOSE THIS TO EXTERNAL WORLD
     }
