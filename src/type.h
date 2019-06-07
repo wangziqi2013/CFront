@@ -13,7 +13,9 @@
 
 #define SCOPE_LEVEL_GLOBAL  0
 
-#define TYPE_VOID_SIZE      0
+#define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl or void/func call
+#define TYPE_VOID_SIZE      TYPE_UNKNOWN_SIZE
+#define TYPE_FUNC_SIZE      TYPE_UNKNOWN_SIZE
 #define TYPE_PTR_SIZE       8  // A pointer has 8 bytes
 #define TYPE_CHAR_SIZE      1
 #define TYPE_SHORT_SIZE     2
@@ -21,7 +23,7 @@
 #define TYPE_LONG_SIZE      8
 #define TYPE_LLONG_SIZE     16
 #define TYPE_INT_SIZE_MAX   16 // This is the maximum size we support for constant evaluation
-#define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl
+
 
 #define TYPE_CHAR_MAX       ((1 << (TYPE_CHAR_SIZE * 8 - 1)) - 1)
 #define TYPE_UCHAR_MAX      ((1 << (TYPE_CHAR_SIZE * 8)) - 1)

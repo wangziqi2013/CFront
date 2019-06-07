@@ -8,7 +8,7 @@ void parse_free(parse_cxt_t *cxt) { parse_exp_free(cxt); }
 //  1. Base type + ';' must be a type declaration, most likely struct/union/enum
 //  2. Base type + decl + "," must be a type declaration or data definition
 //  3. Base type + decl + "=" must be a data definition with initializer
-//  4. Base type + decl + ";" must be a type declatation
+//  4. Base type + decl + ";" must be a global declatation, or function prototype
 //  5. Base type + func decl + '{' must be function definition
 token_t *parse(parse_cxt_t *cxt) {
   token_t *root = token_alloc_type(T_ROOT);

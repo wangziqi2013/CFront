@@ -436,7 +436,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       if((curr_type->decl_prop & DECL_CONST_MASK) || (curr_type->decl_prop & DECL_VOLATILE_MASK)) 
         error_row_col_exit(op->offset, "Function call return value cannot be const or volatile\n");
       parent_type->decl_prop |= TYPE_OP_FUNC_CALL;
-      parent_type->size = TYPE_PTR_SIZE;
+      parent_type->size = TYPE_FUNC_SIZE; // Function object is different from function pointer
       parent_type->arg_list = list_init();
       parent_type->arg_index = bt_str_init();
       type_t *arg_type;
