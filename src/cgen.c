@@ -32,11 +32,26 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
       error_row_col_exit(decl->type, "Keyword \"auto\" is not allowed for outer-most scope\n");
     } else if(DECL_ISEXTERN(basetype->decl_prop) && !init) {
+      if(name->type == T_) // Extern type must have a name to be imported
+        error_row_col_exit(decl->type, "Externally imported type must have a name\n");
       value_t *value = value_init(cxt);
-      value->pending = 1;
+      value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
       value->addrtype = ADDR_GLOBAL; // Variables declares with "extern" must have storage
-    } else if(DECL_ISSTATIC(basetype->decl_prop)) {
-      // TODO: DO NOT EXPOSE THIS TO EXTERNAL WORLD
+      value->import_id = cxt->global_import_id++;
+      value->type = type;
+      list_insert(cxt->import_list, name->str, value);
+    } else { // Defines a new global variable, function or array - may not have name
+      if(type->size == TYPE_UNKNOWN_SIZE) 
+        error_row_col_exit(decl->offset, "Incomplete type for global variables\n");
+      // If there is no name then it is a struct/union/enum
+      if(name->type != T_) {
+
+        if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
+          // We may override an externally defined var
+        }
+      } else {
+        if()
+      }
     }
     global_var = global_var->sibling; // Process the next global var
   }
