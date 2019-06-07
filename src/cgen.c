@@ -1,6 +1,11 @@
 
 #include "cgen.h"
 
+// Resolves pending references of the external declaration value
+void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
+  (void)cxt; (void)value;
+}
+
 // 1. typedef - must have a name
 // 2. extern - If there is init list then this is definition, otherwise just declaration
 //    2.1 Function objects must not be declared with extern
@@ -50,8 +55,13 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       value->type = type;
       list_insert(cxt->import_list, name->str, value);
       ht_insert(cxt->import_index, name->str, value);
+      // Also insert into the scope
+      if(scope_search(cxt, SCOPE_VALUE, name->str)) 
+        error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
+      scope_top_insert(cxt, SCOPE_VALUE, name->str, value);
     } else { // Defines a new global variable or array - may not have name
       assert(!type_is_func(type));
+      assert(type->size != 0UL);
       if(type->size == TYPE_UNKNOWN_SIZE) 
         error_row_col_exit(decl->offset, "Incomplete type for global definition\n");
       if(name->type != T_) { // Named global variable or array
@@ -59,7 +69,19 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
         if(type_is_array(type)) value->addrtype = ADDR_LABEL;
         else value->addrtype = ADDR_GLOBAL;  // Otherwise it must be a global variable (func are in the next branch)
         value->type = type;
-        value->offset = cxt->global_data_ptr
+        value->offset = type_alloc_global_data(cxt, type->size);
+        // Check whether there is already an declaration or func prototype
+        value_t *prev_value = (value_t *)scope_search(cxt, SCOPE_VALUE, name->str);
+        if(prev_value) {
+          if(prev_value->pending == 0) // Not a declaration - duplicated definition
+            error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
+          // Resolve all pending references, and then remove the old entry from global scope
+          cgen_resolve_extern(cxt, prev_value);
+          void *ret = scope_top_remove(cxt, SCOPE_VALUE, name->str);
+          assert(ret); (void)ret;
+        }
+        void *ret = scope_top_insert(cxt, SCOPE_VALUE, name->str, value);
+        assert(!ret); (void)ret;
         if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
           list_insert(cxt->export_list, name->str, value);
         }
