@@ -218,6 +218,7 @@ type_cxt_t *type_sys_init() {
   cxt->global_ptr = 0L;
   cxt->global_import_id = 0L;
   cxt->import_list = list_init();
+  cxt->import_index = ht_str_init();
   cxt->export_list = list_init();
   return cxt;
 }
@@ -226,6 +227,7 @@ void type_sys_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
   list_free(cxt->import_list);
+  ht_free(cxt->import_index);
   list_free(cxt->export_list);
   free(cxt);
 }

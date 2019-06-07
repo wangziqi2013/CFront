@@ -96,7 +96,8 @@ typedef struct {
   stack_t *scopes;
   int64_t global_ptr;    // Global data offset
   int64_t global_import_id; // Global import ID, incremented for every imported object
-  list_t *import_list; // Externally declared variable, function or array
+  list_t *import_list;       // Externally declared variable, function or array
+  hashtable_t *import_index; // Index of the above list - we may remove from this list
   list_t *export_list; // Non-statically declared global variable, function or array
 } type_cxt_t;
 
