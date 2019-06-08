@@ -807,8 +807,7 @@ int type_cmp(type_t *to, type_t *from) {
 //   5. Any type to void is allowed, returns TYPE_CAST_VOID
 //   6. Function type to pointer of the same function type
 // Implicit cast rules:
-//   1.1 Implicit cast does not allow casting longer integer to shorter integer, casting signed to unsigned of 
-//       the same length
+//   1.1 Implicit cast does not allow casting longer integer to shorter integer
 //   1.2 Casting signed shorter int to longer types always use sign extension
 //   2.1 Do not allow casting pointers from/to different sized integer types
 //   4.1 Implicit cast does not allow casting between pointers, except to and from void * type
@@ -836,10 +835,10 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
     } else {
       int from_sign = type_is_signed(from);
       int to_sign = type_is_signed(to);
-      if(to->size < from->size) { 
-        error_row_col_exit(offset, "Cannot cast to shorter integer type implicitly\n"); 
-      } else if(to->size == from->size && (!to_sign && from_sign)) {
-        error_row_col_exit(offset, "Cannot cast from signed to unsigned of the same size\n");
+      if(to->size < from->size)
+        error_row_col_exit(offset, "Cannot cast from longer integer type to shorter integer type implicitly\n"); 
+      if(to->size == from->size) { // No bit change
+        return TYPE_CAST_NO_OP;
       }
       // To longer type - same as explicit
       if(from_sign) return TYPE_CAST_SIGN_EXT;
@@ -853,9 +852,9 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
     return TYPE_CAST_NO_OP;
   } else if(type_is_ptr(to) && type_is_int(from)) { // Case 2, the other direction
     if(cast_type != TYPE_CAST_EXPLICIT) 
-      error_row_col_exit(offset, "Could not cast pointer to integer implicitly\n");
+      error_row_col_exit(offset, "Could not cast integer to pointer implicitly\n");
     if(type_get_int_size(from) != TYPE_PTR_SIZE) 
-      error_row_col_exit(offset, "Could not cast pointer to integer of different sizes\n");
+      error_row_col_exit(offset, "Could not cast integer to pointer of different sizes\n");
     return TYPE_CAST_NO_OP;
   } else if(type_is_ptr(to) && type_is_array(from)) { // Case 3
     if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
