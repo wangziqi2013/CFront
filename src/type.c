@@ -906,7 +906,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     type_error_not_supported(exp->offset, exp->decl_prop);
   } else if(exp->type == T_IDENT) {
     value_t *value = scope_search(cxt, SCOPE_VALUE, exp->str);
-    if(!value) error_row_col_exit(exp->offset, "Name \"%s\" cannot be found for type information\n", exp->str);
+    if(!value) error_row_col_exit(exp->offset, "Name \"%s\" does not exist in current scope\n", exp->str);
     return value->type;
   }
 

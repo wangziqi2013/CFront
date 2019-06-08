@@ -838,10 +838,10 @@ test_cxt_t *test_set_up() {
   test_cxt->type_cxt = type_sys_init();
   test_cxt->token_list = list_init();
   static token_t udef_tokens[4] = {
-    {T_IDENT, T_IDENT, "udef1", NULL, {NULL}, NULL, NULL, {0}},
-    {T_IDENT, T_IDENT, "udef2", NULL, {NULL}, NULL, NULL, {0}},
-    {T_IDENT, T_IDENT, "udef3", NULL, {NULL}, NULL, NULL, {0}},
-    {T_IDENT, T_IDENT, "udef4", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, "udef1", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, "udef2", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, "udef3", NULL, {NULL}, NULL, NULL, {0}},
+    {T_IDENT, "udef4", NULL, {NULL}, NULL, NULL, {0}},
   };
   token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[0]);
   token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[1]);

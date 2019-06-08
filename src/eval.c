@@ -6,8 +6,8 @@
 // The following functions perform constant evaluation
 // value type is not altered
 
-/*
 // If signed == 1 and to > from, it is sign extension
+/*
 void eval_const_adjust_size(value_t *value, int to, int from, int signed) {
   assert(to <= TYPE_INT_SIZE_MAX && to > 0 && from <= TYPE_INT_SIZE_MAX && from > 0);
   //value_t *ret = value_init();
@@ -20,6 +20,7 @@ void eval_const_adjust_size(value_t *value, int to, int from, int signed) {
   return;
 }
 */
+
 
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
@@ -267,4 +268,31 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
       break;
   }
   return ret;
+}
+
+// This function evaluates a constant expression
+value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
+  // Leaf types: Integer literal, string literal and identifiers
+  if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
+    value_t *value = value_init(cxt);
+    value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)], exp->offset);
+  } else if(exp->type == T_STR_CONST) {
+    error_row_col_exit(exp->offset, "String literal is not allowed in a constant expression\n");
+  } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
+    type_error_not_supported(exp->offset, exp->decl_prop);
+  } else if(exp->type == T_IDENT) { // Might be of type ADDR_IMM, in which case we take int32
+    value_t *value = scope_search(cxt, SCOPE_VALUE, exp->str);
+    if(!value) {
+      error_row_col_exit(exp->offset, "Name \"%s\" does not exist in current scope\n", exp->str);
+    } else if(value->addrtype != ADDR_IMM) {
+      error_row_col_exit(exp->offset, "Name \"%s\" is not a compile-time constant\n", exp->str);
+    }
+    // Make a copy and return
+    value_t *ret = value_init(cxt);
+    ret->int32 = value->int32;
+    ret->type = value->type;
+    ret->addrtype = ADDR_IMM;
+    return ret;
+  }
+  return NULL;
 }
