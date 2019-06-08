@@ -62,6 +62,9 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       if(scope_search(cxt, SCOPE_VALUE, name->str)) 
         error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
       scope_top_insert(cxt, SCOPE_VALUE, name->str, value);
+      if(init) {
+        // TODO: INIT LIST & CONSTANT EVALUATION
+      }
     } else { // Defines a new global variable or array - may not have name
       assert(!type_is_func(type));
       assert(type->size != 0UL);
