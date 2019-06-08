@@ -195,7 +195,6 @@ typedef uint32_t decl_prop_t;
 #define TYPE_EMPTY_BODY        0x01000000 // Struct or union has body but it is empty; Valid only with T_STRUCT, T_UNION
 
 typedef struct token_t {
-  token_type_t raw_type;     // This remains as raw token type during parsing
   token_type_t type;         // This will be written during parsing to AST type
   char *str;                 // Only valid for literals and identifiers; Owned by the token object
   struct token_t *child;
