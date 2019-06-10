@@ -11,7 +11,14 @@ uint64_t eval_int_masks[9] = {
 // The following functions perform constant evaluation
 // value type is not altered
 
-
+void eval_const_get_mask(int op1, int op2, uint64_t *op1_mask, uint64_t *op2_mask) {
+  assert(op1 <= TYPE_INT_SIZE_MAX && op1 > 0 && op2 <= TYPE_INT_SIZE_MAX && op2 > 0);
+  assert(op1 <= EVAL_MAX_CONST_SIZE && op2 <= EVAL_MAX_CONST_SIZE);
+  *op1_mask = eval_int_masks[op1];
+  *op2_mask = eval_int_masks[op2];
+  assert(!*op1_mask && !*op2_mask);
+  return;
+}
 
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type
 void eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
