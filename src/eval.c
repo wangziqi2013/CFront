@@ -13,10 +13,13 @@ uint64_t eval_int_masks[9] = {
 
 // If signed == 1 and to > from, it is sign extension
 
-void eval_const_adjust_size(value_t *value, int to, int from, int signed) {
+void eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
   assert(to <= TYPE_INT_SIZE_MAX && to > 0 && from <= TYPE_INT_SIZE_MAX && from > 0);
   assert(from <= EVAL_MAX_CONST_SIZE && to <= EVAL_MAX_CONST_SIZE);
   if(from == to) return;
+  uint64_t to_mask = eval_int_masks[to];
+  uint64_t from_mask = eval_int_masks[from];
+  assert(!to_mask && !from_mask);
   if(to < from) { // truncation
 
   } else { // Extension
