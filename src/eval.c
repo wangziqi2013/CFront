@@ -339,6 +339,7 @@ str_t *eval_const_str_token(token_t *token) {
   return s;
 }
 
+// TODO: REMOVE THIS SOON
 int eval_const_int_token(token_t *token) {
   char *s = token->str;
   int base;
@@ -356,49 +357,6 @@ int eval_const_int_token(token_t *token) {
       token_decl_print(token->decl_prop));
   return token->type == T_CHAR_CONST ? \
     (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, ATOI_NO_MAX_CHAR, ATOI_CHECK_END, NULL);
-}
-
-value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
-  char *s = token->str;
-  int base;
-  switch(token->type) {
-    case T_HEX_INT_CONST: base = 16; break;
-    case T_OCT_INT_CONST: base = 8; break;
-    case T_CHAR_CONST: // Fall through
-    case T_DEC_INT_CONST: base = 10; break;
-    default: error_row_col_exit(token->offset, "Must be integer constant type in this context\n"); break;
-  }
-  value_t *value = value_init(cxt);
-  value->addrtype = ADDR_IMM;
-  value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(token->decl_prop)], token->offset);
-  if(token->type == T_CHAR_CONST) { // Char const is directly evaluated because we know the size
-    assert(token->decl_prop == BASETYPE_CHAR);
-    value->int8 = (int8_t)eval_const_char_token(token);
-  } else {
-    // Build the integer using value_t arithmetic
-    decl_prop_t basetype = BASETYPE_GET(token->decl_prop);
-    int_prop_t prop = ints[BASETYPE_INDEX(basetype)];
-    int size = prop.size; int sign = prop.sign;
-    value_t base_value, digit_value;
-    base_value.int32 = base;
-    while(*s) {
-      char ch = *s;
-      int digit = 100; // Always > base if none of the below satisfies
-      if(ch >= '0' && ch <= '9') digit = (int)(ch - '0');
-      else if(ch >= 'A' && ch <= 'F') digit = (int)(ch - 'A' + 10);
-      else if(ch >= 'a' && ch <= 'f') digit = (int)(ch - 'a' + 10);
-      if(digit >= base) 
-        error_row_col_exit(token->offset, "Invalid character %s for base %d\n", eval_hex_char(ch), base);
-      digit_value.int32 = digit;
-      int of1, of2;
-      value->uint64 = eval_const_mul(value, &base_value, size, sign, &of1);
-      value->uint64 = eval_const_add(value, &digit_value, size, sign, &of2);
-      if(of1 || of2) warn_row_col_exit(token->offset, "Integer literal \"%s\" overflows for type \"%s\"\n", 
-          token->str, token_decl_print(token->decl_prop));
-      s++;
-    }
-  }
-  return value;
 }
 
 int eval_const_int(type_cxt_t *cxt, token_t *token) {
@@ -490,12 +448,56 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
   return ret;
 }
 
+value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
+  char *s = token->str;
+  int base;
+  switch(token->type) {
+    case T_HEX_INT_CONST: base = 16; break;
+    case T_OCT_INT_CONST: base = 8; break;
+    case T_CHAR_CONST: // Fall through
+    case T_DEC_INT_CONST: base = 10; break;
+    default: error_row_col_exit(token->offset, "Must be integer constant type in this context\n"); break;
+  }
+  value_t *value = value_init(cxt);
+  value->addrtype = ADDR_IMM;
+  value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(token->decl_prop)], token->offset);
+  if(token->type == T_CHAR_CONST) { // Char const is directly evaluated because we know the size
+    assert(token->decl_prop == BASETYPE_CHAR);
+    value->int8 = (int8_t)eval_const_char_token(token);
+  } else {
+    // Build the integer using value_t arithmetic
+    decl_prop_t basetype = BASETYPE_GET(token->decl_prop);
+    int_prop_t prop = ints[BASETYPE_INDEX(basetype)];
+    int size = prop.size; int sign = prop.sign;
+    if(size > EVAL_MAX_CONST_SIZE)
+      error_row_col_exit(token->offset, "Currently only support constants within %d bytes\n", EVAL_MAX_CONST_SIZE);
+    value_t base_value, digit_value;
+    base_value.int32 = base;
+    while(*s) {
+      char ch = *s;
+      int digit = 100; // Always > base if none of the below satisfies
+      if(ch >= '0' && ch <= '9') digit = (int)(ch - '0');
+      else if(ch >= 'A' && ch <= 'F') digit = (int)(ch - 'A' + 10);
+      else if(ch >= 'a' && ch <= 'f') digit = (int)(ch - 'a' + 10);
+      if(digit >= base) 
+        error_row_col_exit(token->offset, "Invalid character %s for base %d\n", eval_hex_char(ch), base);
+      digit_value.int32 = digit;
+      int of1, of2;
+      value->uint64 = eval_const_mul(value, &base_value, size, sign, &of1);
+      value->uint64 = eval_const_add(value, &digit_value, size, sign, &of2);
+      if(of1 || of2) warn_row_col_exit(token->offset, "Integer literal \"%s\" overflows for type \"%s\"\n", 
+          token->str, token_decl_print(token->decl_prop));
+      s++;
+    }
+  }
+  return value;
+}
+
 // This function evaluates a constant expression
 value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
-    value_t *value = value_init(cxt);
-    value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(exp->decl_prop)], exp->offset);
+    return eval_const_get_int_value(cxt, token);
   } else if(exp->type == T_STR_CONST) {
     error_row_col_exit(exp->offset, "String literal is not allowed in a constant expression\n");
   } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
