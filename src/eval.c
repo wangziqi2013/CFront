@@ -3,14 +3,19 @@
 #include "eval.h"
 #include "type.h"
 
+// Indicex are number of bytes in the number; 0UL is undefined
+uint64_t eval_int_masks[9] = {
+  0UL, 0xFFUL, 0xFFFFUL, 0UL, 0xFFFFFFFFUL, 0UL, 0UL, 0UL, 0xFFFFFFFFFFFFFFFF, // 0 - 8
+};
+
 // The following functions perform constant evaluation
 // value type is not altered
 
 // If signed == 1 and to > from, it is sign extension
-/*
+
 void eval_const_adjust_size(value_t *value, int to, int from, int signed) {
   assert(to <= TYPE_INT_SIZE_MAX && to > 0 && from <= TYPE_INT_SIZE_MAX && from > 0);
-  //value_t *ret = value_init();
+  assert(from <= EVAL_MAX_CONST_SIZE && to <= EVAL_MAX_CONST_SIZE);
   if(from == to) return;
   if(to < from) { // truncation
 
@@ -19,8 +24,11 @@ void eval_const_adjust_size(value_t *value, int to, int from, int signed) {
   }
   return;
 }
-*/
 
+// Argument imm is between 0 and 15
+void eval_const_add_digit(value_t *value, int imm) {
+  assert(imm >= 0 && imm < 16);
+}
 
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {

@@ -10,9 +10,13 @@
 #define EVAL_MIN(a, b) (a < b ? a : b)
 
 // Used as the parameter to eval_const_atoi()
-#define ATOI_NO_CHECK_END 0
-#define ATOI_CHECK_END    1    // Do not report error if there is still char after the int literal
-#define ATOI_NO_MAX_CHAR  0    // For \xhh \ooo we only eat 2 and 3 chars respectively
+#define ATOI_NO_CHECK_END   0
+#define ATOI_CHECK_END      1  // Do not report error if there is still char after the int literal
+#define ATOI_NO_MAX_CHAR    0  // For \xhh \ooo we only eat 2 and 3 chars respectively
+
+#define EVAL_MAX_CONST_SIZE 8  // We only support evaluating constants smaller than this size
+
+uint64_t eval_int_masks[9];
 
 char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);
