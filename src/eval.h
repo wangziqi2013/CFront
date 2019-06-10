@@ -27,6 +27,7 @@ uint64_t eval_const_neg(value_t *value, int size);
 uint64_t eval_const_mul(value_t *op1, value_t *op2, int size, int is_signed, int *overflow);
 uint64_t eval_const_div_mod(int is_div, value_t *op1, value_t *op2, int size, int is_signed, int *div_zero);
 uint64_t eval_const_shift(int is_left, value_t *op1, value_t *op2, int size, int is_signed, int *shift_overflow);
+int eval_const_cmp(token_type_t op, value_t *op1, value_t *op2, int size, int is_signed);
 
 char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);

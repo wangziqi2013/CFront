@@ -170,7 +170,7 @@ int eval_const_cmp(token_type_t op, value_t *op1, value_t *op2, int size, int is
     case EXP_LEQ: ret = is_signed ? op1_value <= op2_value : (int64_t)op1_value <= (int64_t)op2_value; break;
     case EXP_GREATER: ret = is_signed ? op1_value > op2_value : (int64_t)op1_value > (int64_t)op2_value; break;
     case EXP_GEQ: ret = is_signed ? op1_value >= op2_value : (int64_t)op1_value >= (int64_t)op2_value; break;
-    case EXP_EQ: ret = op1_value == op2_value; break; // == and != ignores sign bit
+    case EXP_EQ: ret = op1_value == op2_value; break; // == and != ignores sign
     case EXP_NEQ: ret = op1_value != op2_value; break;
     default: assert(0); break;
   }
