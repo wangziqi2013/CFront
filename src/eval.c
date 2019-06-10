@@ -154,6 +154,27 @@ uint64_t eval_const_shift(int is_left, value_t *op1, value_t *op2, int size, int
   return op1_value;
 }
 
+// Note: This function returns integer because logical operations always returns integer
+// The first argument indicates the type of operation
+int eval_const_cmp(token_type_t op, value_t *op1, value_t *op2, int size, int is_signed) {
+  uint64_t mask = eval_const_get_mask(size);
+  uint64_t op1_value = op1->uint64 & mask;
+  uint64_t op2_value = op2->uint64 & mask;
+  int ret;
+  int shift_bits = (8 * (TYPE_LONG_SIZE - size)); // We shift all valid bits of this size to MSB and use native cmp
+  op1_value <<= shift_bits;
+  op2_value <<= shift_bits;
+  switch(op) {
+    case EXP_LESS: ret = is_signed ? op1_value < op2_value : (int64_t)op1_value < (int64_t)op2_value; break;
+    case EXP_LEQ: ret = is_signed ? op1_value <= op2_value : (int64_t)op1_value <= (int64_t)op2_value; break;
+    case EXP_GREATER: ret = is_signed ? op1_value > op2_value : (int64_t)op1_value > (int64_t)op2_value; break;
+    case EXP_GEQ: ret = is_signed ? op1_value >= op2_value : (int64_t)op1_value >= (int64_t)op2_value; break;
+    case EXP_EQ: ret = is_signed ? op1_value < op2_value : (int64_t)op1_value < (int64_t)op2_value; break;
+    case EXP_NEQ: ret = is_signed ? op1_value < op2_value : (int64_t)op1_value < (int64_t)op2_value; break;
+  }
+  return ret;
+}
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];
