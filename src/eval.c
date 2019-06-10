@@ -366,6 +366,36 @@ int eval_const_int_token(token_t *token) {
     (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, ATOI_NO_MAX_CHAR, ATOI_CHECK_END, NULL);
 }
 
+value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
+  char *s = token->str;
+  int base;
+  switch(token->type) {
+    case T_HEX_INT_CONST: base = 16; break;
+    case T_OCT_INT_CONST: base = 8; break;
+    case T_CHAR_CONST: // Fall through
+    case T_DEC_INT_CONST: base = 10; break;
+    default: error_row_col_exit(token->offset, "Must be integer constant type in this context\n"); break;
+  }
+  value_t *value = value_init(cxt);
+  if(token->type == T_CHAR_CONST) {
+    value->type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_CHAR)], token->offset);
+    value->int8 = (int8_t)eval_const_char_token(token);
+    value->addrtype = ADDR_IMM;
+    return value;
+  }
+  // Build the integer using value_t arithmetic
+  decl_prop_t basetype = BASETYPE_GET(token->decl_prop);
+  int_prop_t prop = ints[BASETYPE_INDEX(basetype)];
+  int size = prop.size; int sign = prop.sign;
+  while(*s) {
+    char ch = *s;
+    int digit;
+    if(ch >= '0' && ch <= '9') digit = (int)(ch - '0');
+    else if(ch >= 'A' && ch <= 'F') digit = (int)(ch - 'A' + 10);
+    else if(ch >= 'a' && ch <= 'f') digit = (int)(ch - 'a' + 10);
+  }
+}
+
 int eval_const_int(type_cxt_t *cxt, token_t *token) {
   int ret = 0;
   switch(token->type) {
