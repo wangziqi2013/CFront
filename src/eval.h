@@ -24,6 +24,7 @@ value_t *eval_const_adjust_size(value_t *value, int to, int from, int is_signed)
 uint64_t eval_const_add(value_t *op1, value_t *op2, int size, int is_signed, int *overflow);
 uint64_t eval_const_sub(value_t *op1, value_t *op2, int size, int is_signed, int *overflow);
 uint64_t eval_const_neg(value_t *value, int size);
+uint64_t eval_const_mul(value_t *op1, value_t *op2, int size, int is_signed, int *overflow);
 
 char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);
