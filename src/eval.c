@@ -43,26 +43,36 @@ value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int fro
   return value; (void)cxt;
 }
 
-// Return NULL if operation overflows; Otherwise return a new value object (type is set as op1's type)
-value_t *eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed) {
+// Return NULL if operation overflows; Return result raw binary representation
+uint64_t eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
+  *overflow = 0;
   uint64_t mask = eval_const_get_mask(size);
-  uint64_t result = (op1->uint64 & mask) + (op2->uint64 & mask);
+  uint64_t result = ((op1->uint64 & mask) + (op2->uint64 & mask)) & mask;
   // If result is less than one of them, we have seen a carry
   int carry = ((result & mask) < (op1->uint64 & mask)) || ((result & mask) < (op2->uint64 & mask)); 
-  if(carry && !is_signed) return NULL; // Overflow - unsigned addition, and we see a carray bit
-  if(is_signed) {
+  if(!is_signed && carry) { // Overflow - unsigned addition, and we see a carray bit
+    *overflow = 1;
+  } else if(is_signed) {
     uint64_t sign_mask = eval_const_get_sign_mask(size);
     uint64_t op1_sign = op1->uint64 & sign_mask;
     uint64_t op2_sign = op2->uint64 & sign_mask;
     uint64_t result_sign = result & sign_mask;
-    if(op1_sign && op2_sign && !result_sign) return NULL; // Underflow - neg + neg = pos
-    if(!op1_sign && !op2_sign && result_sign) return NULL; // Overflow - pos + pos = neg
+    if(op1_sign && op2_sign && !result_sign) *overflow = 1; // Underflow - neg + neg = pos
+    else if(!op1_sign && !op2_sign && result_sign) *overflow = 1; // Overflow - pos + pos = neg
   }
-  value_t *ret = value_init(cxt);
-  ret->type = op1->type;
-  ret->addrtype = ADDR_IMM;
-  ret->uint64 = result;
-  return ret;
+  return result;
+}
+
+uint64_t eval_const_sub(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
+  *overflow = 0;
+  uint64_t mask = eval_const_get_mask(size);
+  if(!is_signed) {
+    if((op1->uint64 & mask) < (op2->uint64 & mask)) *overflow = 1; // Unsigned overflow
+    return ((op1->uint64 & mask) - (op2->uint64 & mask)) & mask;
+  }
+  value_t temp;
+  temp.uint64 = (~op2->uint64 + 1) & mask; // 2's complement
+  return eval_const_add(cxt, op1, &temp, size, is_signed, overflow);
 }
 
 // Argument imm is between 0 and 15
