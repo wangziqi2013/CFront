@@ -177,6 +177,21 @@ int eval_const_cmp(token_type_t op, value_t *op1, value_t *op2, int size, int is
   return ret;
 }
 
+// Binary bitwise operations: AND/OR/XOR
+uint64_t eval_const_bitwise(token_type_t op, value_t *op1, value_t *op2, int size) {
+  uint64_t mask = eval_const_get_mask(size);
+  uint64_t op1_value = op1->uint64 & mask;
+  uint64_t op2_value = op2->uint64 & mask;
+  uint64_t ret = 0;
+  switch(op) {
+    case EXP_BIT_AND: ret = op1_value & op2_value; break;
+    case EXP_BIT_OR: ret = op1_value | op2_value; break;
+    case EXP_BIT_XOR: ret = op1_value ^ op2_value; break;
+    default: assert(0); break;
+  }
+  return ret & mask;
+}
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];
