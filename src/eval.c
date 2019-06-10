@@ -27,7 +27,7 @@ uint64_t eval_const_get_sign_mask(int op) {
 
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type
 // Returns the value itself
-value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int from, int is_signed) {
+value_t *eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
   if(from == to) return value;
   uint64_t to_mask = eval_const_get_mask(to), from_mask = eval_const_get_mask(from);
   if(to < from) { // truncation
@@ -40,11 +40,11 @@ value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int fro
       value->uint64 &= to_mask; // Clear higher bits
     }
   }
-  return value; (void)cxt;
+  return value;
 }
 
 // Return NULL if operation overflows; Return result raw binary representation
-uint64_t eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
+uint64_t eval_const_add(value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
   *overflow = 0;
   uint64_t mask = eval_const_get_mask(size);
   uint64_t result = ((op1->uint64 & mask) + (op2->uint64 & mask)) & mask;
@@ -63,7 +63,7 @@ uint64_t eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, i
   return result;
 }
 
-uint64_t eval_const_sub(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
+uint64_t eval_const_sub(value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
   *overflow = 0;
   uint64_t mask = eval_const_get_mask(size);
   if(!is_signed) {
@@ -72,12 +72,15 @@ uint64_t eval_const_sub(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, i
   }
   value_t temp;
   temp.uint64 = (~op2->uint64 + 1) & mask; // 2's complement
-  return eval_const_add(cxt, op1, &temp, size, is_signed, overflow);
+  return eval_const_add(op1, &temp, size, is_signed, overflow);
 }
 
 // Argument imm is between 0 and 15
-void eval_const_add_digit(value_t *value, int imm) {
+uint64_t eval_const_add_digit(value_t *value, int imm, int size, int is_signed, int *overflow) {
   assert(imm >= 0 && imm < 16);
+  value_t temp;
+  temp.uint64 = (uint64_t)imm;
+  return eval_const_add(value, &temp, size, is_signed, overflow);
 }
 
 // Represent a character as \xhh
