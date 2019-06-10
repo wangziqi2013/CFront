@@ -192,6 +192,21 @@ uint64_t eval_const_bitwise(token_type_t op, value_t *op1, value_t *op2, int siz
   return ret & mask;
 }
 
+// Unary operator: logical AND, bitwise AND, negate, plus (which does not change the value)
+// Note that logical not returns uint64_t which is different from comparison
+uint64_t eval_const_unary(token_type_t op, value_t *value, int size) {
+  uint64_t mask = eval_const_get_mask(size);
+  uint64_t ret = 0UL;
+  switch(op) {
+    case EXP_PLUS: ret = value->uint64 & mask; break;
+    case EXP_MINUS: ret = (~value->uint64 + 1) & mask; break;
+    case EXP_BIT_NOT: ret = ~value->uint64 & mask; break;
+    case EXP_LOGICAL_NOT: ret = !value->uint64; break;
+    default: assert(0); break;
+  }
+  return ret;
+}
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];
