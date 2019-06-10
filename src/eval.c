@@ -75,14 +75,6 @@ uint64_t eval_const_sub(value_t *op1, value_t *op2, int size, int is_signed, int
   return eval_const_add(op1, &temp, size, is_signed, overflow);
 }
 
-// Argument imm is between 0 and 15
-uint64_t eval_const_add_digit(value_t *value, int imm, int size, int is_signed, int *overflow) {
-  assert(imm >= 0 && imm < 16);
-  value_t temp;
-  temp.uint64 = (uint64_t)imm;
-  return eval_const_add(value, &temp, size, is_signed, overflow);
-}
-
 uint64_t eval_const_neg(value_t *value, int size) {
   uint64_t mask = eval_const_get_mask(size);
   return (~value->uint64 + 1) & mask;
