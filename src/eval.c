@@ -83,6 +83,16 @@ uint64_t eval_const_add_digit(value_t *value, int imm, int size, int is_signed, 
   return eval_const_add(value, &temp, size, is_signed, overflow);
 }
 
+uint64_t eval_const_neg(value_t *value, int size) {
+  uint64_t mask = eval_const_get_mask(size);
+  return (~value->uint64 + 1) & mask;
+}
+
+uint64_t eval_const_mul(value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
+  int final_invert_sign = 0;
+  if(is_signed)
+}
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];
