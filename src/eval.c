@@ -149,9 +149,10 @@ uint64_t eval_const_shift(int is_left, value_t *op1, value_t *op2, int size, int
       return op1_sign ? mask : 0UL; // All 1's, because the sign bit
     }
   }
-  op1_value >>= op2_value; // This is unsigned shift
+  if(is_left) op1_value <<= op2_value;
+  else op1_value >>= op2_value; // This is unsigned shift
   if(!is_left && op1_sign && is_signed) op1_value |= (mask - (mask >> op2_value)); // Fill high bits with all 1's
-  return op1_value;
+  return op1_value & mask;
 }
 
 // Note: This function returns integer because logical operations always returns integer
@@ -160,7 +161,7 @@ int eval_const_cmp(token_type_t op, value_t *op1, value_t *op2, int size, int is
   uint64_t mask = eval_const_get_mask(size);
   uint64_t op1_value = op1->uint64 & mask;
   uint64_t op2_value = op2->uint64 & mask;
-  int ret;
+  int ret = 0;
   int shift_bits = (8 * (TYPE_LONG_SIZE - size)); // We shift all valid bits of this size to MSB and use native cmp
   op1_value <<= shift_bits;
   op2_value <<= shift_bits;
@@ -169,8 +170,9 @@ int eval_const_cmp(token_type_t op, value_t *op1, value_t *op2, int size, int is
     case EXP_LEQ: ret = is_signed ? op1_value <= op2_value : (int64_t)op1_value <= (int64_t)op2_value; break;
     case EXP_GREATER: ret = is_signed ? op1_value > op2_value : (int64_t)op1_value > (int64_t)op2_value; break;
     case EXP_GEQ: ret = is_signed ? op1_value >= op2_value : (int64_t)op1_value >= (int64_t)op2_value; break;
-    case EXP_EQ: ret = is_signed ? op1_value < op2_value : (int64_t)op1_value < (int64_t)op2_value; break;
-    case EXP_NEQ: ret = is_signed ? op1_value < op2_value : (int64_t)op1_value < (int64_t)op2_value; break;
+    case EXP_EQ: ret = op1_value == op2_value; break; // == and != ignores sign bit
+    case EXP_NEQ: ret = op1_value != op2_value; break;
+    default: assert(0); break;
   }
   return ret;
 }
