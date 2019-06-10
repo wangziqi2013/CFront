@@ -11,19 +11,22 @@ uint64_t eval_int_masks[9] = {
 // The following functions perform constant evaluation
 // value type is not altered
 
-// If signed == 1 and to > from, it is sign extension
 
+
+// If signed == 1 and to > from, it is sign extension; We do not use or change value->type
 void eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
-  assert(to <= TYPE_INT_SIZE_MAX && to > 0 && from <= TYPE_INT_SIZE_MAX && from > 0);
-  assert(from <= EVAL_MAX_CONST_SIZE && to <= EVAL_MAX_CONST_SIZE);
   if(from == to) return;
-  uint64_t to_mask = eval_int_masks[to];
-  uint64_t from_mask = eval_int_masks[from];
-  assert(!to_mask && !from_mask);
+  uint64_t to_mask, from_mask;
+  eval_const_get_mask(to, from, &to_mask, &from_mask);
   if(to < from) { // truncation
-
+    value->uint64 &= to_mask;
   } else { // Extension
-
+    uint64_t from_sign_mask = from_mask - (from_mask >> 1); // Only leave the highest bit
+    if((value->uint64 & from_sign_mask) && is_signed) { // Sign extension
+      value->uint64 |= (to_mask - from_mask);
+    } else { // Zero extension
+      value->uint64 &= to_mask; // Clear higher bits
+    }
   }
   return;
 }
