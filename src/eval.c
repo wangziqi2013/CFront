@@ -449,6 +449,7 @@ int eval_const_int(type_cxt_t *cxt, token_t *token) {
 }
 
 value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
+  assert(BASETYPE_GET(token->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(token->decl_prop) <= BASETYPE_ULLONG);
   char *s = token->str;
   int base;
   switch(token->type) {
@@ -456,7 +457,7 @@ value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
     case T_OCT_INT_CONST: base = 8; break;
     case T_CHAR_CONST: // Fall through
     case T_DEC_INT_CONST: base = 10; break;
-    default: error_row_col_exit(token->offset, "Must be integer constant type in this context\n"); break;
+    default: assert(0); break;
   }
   value_t *value = value_init(cxt);
   value->addrtype = ADDR_IMM;
@@ -497,7 +498,7 @@ value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
 value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
-    return eval_const_get_int_value(cxt, token);
+    return eval_const_get_int_value(cxt, exp);
   } else if(exp->type == T_STR_CONST) {
     error_row_col_exit(exp->offset, "String literal is not allowed in a constant expression\n");
   } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
