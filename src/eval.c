@@ -11,20 +11,19 @@ uint64_t eval_int_masks[9] = {
 // The following functions perform constant evaluation
 // value type is not altered
 
-void eval_const_get_mask(int op1, int op2, uint64_t *op1_mask, uint64_t *op2_mask) {
-  assert(op1 <= TYPE_INT_SIZE_MAX && op1 > 0 && op2 <= TYPE_INT_SIZE_MAX && op2 > 0);
-  assert(op1 <= EVAL_MAX_CONST_SIZE && op2 <= EVAL_MAX_CONST_SIZE);
-  *op1_mask = eval_int_masks[op1];
-  *op2_mask = eval_int_masks[op2];
-  assert(!*op1_mask && !*op2_mask);
-  return;
+uint64_t eval_const_get_mask(int op) {
+  assert(op <= TYPE_INT_SIZE_MAX && op > 0);
+  assert(op <= EVAL_MAX_CONST_SIZE);
+  uint64_t op_mask = eval_int_masks[op];
+  assert(!op_mask);
+  return op_mask;
 }
 
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type
-void eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
-  if(from == to) return;
-  uint64_t to_mask, from_mask;
-  eval_const_get_mask(to, from, &to_mask, &from_mask);
+// Returns the value itself
+value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int from, int is_signed) {
+  if(from == to) return value;
+  uint64_t to_mask = eval_const_get_mask(to), from_mask = eval_const_get_mask(from);
   if(to < from) { // truncation
     value->uint64 &= to_mask;
   } else { // Extension
@@ -35,7 +34,14 @@ void eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
       value->uint64 &= to_mask; // Clear higher bits
     }
   }
-  return;
+  return value; (void)cxt;
+}
+
+// Return NULL if operation overflows; Otherwise return a new value object
+value_t *eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size) {
+  value_t *ret = value_init(cxt);
+  uint64_t mask = eval_const_get_mask(size);
+  return NULL;
 }
 
 // Argument imm is between 0 and 15
