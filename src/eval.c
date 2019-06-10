@@ -131,6 +131,29 @@ uint64_t eval_const_div_mod(int is_div, value_t *op1, value_t *op2, int size, in
   return final_invert_sign ? (~result + 1) & mask : result;
 }
 
+// If first arg is 1 then we left shift and ignore sign; Otherwise right shift and may propagate sign bit
+// op2 is always treated as an unsigned number; If it is larger than size of op1, and it is left shift or right unsigned shift
+// we set overflow flag to 1
+uint64_t eval_const_shift(int is_left, value_t *op1, value_t *op2, int size, int is_signed, int *shift_overflow) {
+  *shift_overflow = 0;
+  uint64_t mask = eval_const_get_mask(size);
+  uint64_t sign_mask = eval_const_get_sign_mask(size);
+  uint64_t op1_value = op1->uint64 & mask;
+  uint64_t op2_value = op2->uint64 & mask;
+  uint64_t op1_sign = op1_value & sign_mask;
+  if(op2_value >= (uint64_t)size) {
+    if(is_left || (!is_left && !is_signed)) { // Always result in zero
+      *shift_overflow = 1;
+      return 0UL;
+    } else if(!is_left && is_signed) {
+      return op1_sign ? mask : 0UL; // All 1's, because the sign bit
+    }
+  }
+  op1_value >>= op2_value; // This is unsigned shift
+  if(!is_left && op1_sign && is_signed) op1_value |= (mask - (mask >> op2_value)); // Fill high bits with all 1's
+  return op1_value;
+}
+
 // Represent a character as \xhh
 char *eval_hex_char(char ch) {
   static char buffer[5];
