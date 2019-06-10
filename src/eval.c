@@ -382,30 +382,31 @@ value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
   if(token->type == T_CHAR_CONST) { // Char const is directly evaluated because we know the size
     assert(token->decl_prop == BASETYPE_CHAR);
     value->int8 = (int8_t)eval_const_char_token(token);
-    return value;
-  } 
-  // Build the integer using value_t arithmetic
-  decl_prop_t basetype = BASETYPE_GET(token->decl_prop);
-  int_prop_t prop = ints[BASETYPE_INDEX(basetype)];
-  int size = prop.size; int sign = prop.sign;
-  value_t base_value, digit_value;
-  base_value.int32 = base;
-  while(*s) {
-    char ch = *s;
-    int digit = 100; // Always > base if none of the below satisfies
-    if(ch >= '0' && ch <= '9') digit = (int)(ch - '0');
-    else if(ch >= 'A' && ch <= 'F') digit = (int)(ch - 'A' + 10);
-    else if(ch >= 'a' && ch <= 'f') digit = (int)(ch - 'a' + 10);
-    if(digit >= base) 
-      error_row_col_exit(token->offset, "Invalid character %s for base %d\n", eval_hex_char(ch), base);
-    digit_value.int32 = digit;
-    int of1, of2;
-    eval_const_mul(value, &base_value, size, sign, &of1);
-    eval_const_add(value, &digit_value, size, sign, &of2);
-    if(of1 || of2) warn_row_col_exit(token->offset, "Integer literal \"%s\" overflows for type \"%s\"\n", 
-        token->str, token_decl_print(token->decl_prop));
-    s++;
+  } else {
+    // Build the integer using value_t arithmetic
+    decl_prop_t basetype = BASETYPE_GET(token->decl_prop);
+    int_prop_t prop = ints[BASETYPE_INDEX(basetype)];
+    int size = prop.size; int sign = prop.sign;
+    value_t base_value, digit_value;
+    base_value.int32 = base;
+    while(*s) {
+      char ch = *s;
+      int digit = 100; // Always > base if none of the below satisfies
+      if(ch >= '0' && ch <= '9') digit = (int)(ch - '0');
+      else if(ch >= 'A' && ch <= 'F') digit = (int)(ch - 'A' + 10);
+      else if(ch >= 'a' && ch <= 'f') digit = (int)(ch - 'a' + 10);
+      if(digit >= base) 
+        error_row_col_exit(token->offset, "Invalid character %s for base %d\n", eval_hex_char(ch), base);
+      digit_value.int32 = digit;
+      int of1, of2;
+      value->uint64 = eval_const_mul(value, &base_value, size, sign, &of1);
+      value->uint64 = eval_const_add(value, &digit_value, size, sign, &of2);
+      if(of1 || of2) warn_row_col_exit(token->offset, "Integer literal \"%s\" overflows for type \"%s\"\n", 
+          token->str, token_decl_print(token->decl_prop));
+      s++;
+    }
   }
+  return value;
 }
 
 int eval_const_int(type_cxt_t *cxt, token_t *token) {
