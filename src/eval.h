@@ -19,7 +19,9 @@
 uint64_t eval_int_masks[9];
 
 uint64_t eval_const_get_mask(int op);
+uint64_t eval_const_get_sign_mask(int op);
 value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int from, int is_signed);
+value_t *eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed);
 
 char *eval_hex_char(char ch);
 str_t *eval_print_const_str(str_t *s);

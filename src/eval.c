@@ -19,6 +19,12 @@ uint64_t eval_const_get_mask(int op) {
   return op_mask;
 }
 
+uint64_t eval_const_get_sign_mask(int op) {
+  uint64_t sign_mask = eval_int_masks[op];
+  sign_mask -= (sign_mask >> 1);
+  return sign_mask;
+}
+
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type
 // Returns the value itself
 value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int from, int is_signed) {
@@ -27,7 +33,7 @@ value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int fro
   if(to < from) { // truncation
     value->uint64 &= to_mask;
   } else { // Extension
-    uint64_t from_sign_mask = from_mask - (from_mask >> 1); // Only leave the highest bit
+    uint64_t from_sign_mask = eval_const_get_sign_mask(from);
     if((value->uint64 & from_sign_mask) && is_signed) { // Sign extension
       value->uint64 |= (to_mask - from_mask);
     } else { // Zero extension
@@ -37,11 +43,26 @@ value_t *eval_const_adjust_size(type_cxt_t *cxt, value_t *value, int to, int fro
   return value; (void)cxt;
 }
 
-// Return NULL if operation overflows; Otherwise return a new value object
-value_t *eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size) {
-  value_t *ret = value_init(cxt);
+// Return NULL if operation overflows; Otherwise return a new value object (type is set as op1's type)
+value_t *eval_const_add(type_cxt_t *cxt, value_t *op1, value_t *op2, int size, int is_signed) {
   uint64_t mask = eval_const_get_mask(size);
-  return NULL;
+  uint64_t result = (op1->uint64 & mask) + (op2->uint64 & mask);
+  // If result is less than one of them, we have seen a carry
+  int carry = ((result & mask) < (op1->uint64 & mask)) || ((result & mask) < (op2->uint64 & mask)); 
+  if(carry && !is_signed) return NULL; // Overflow - unsigned addition, and we see a carray bit
+  if(is_signed) {
+    uint64_t sign_mask = eval_const_get_sign_mask(size);
+    uint64_t op1_sign = op1->uint64 & sign_mask;
+    uint64_t op2_sign = op2->uint64 & sign_mask;
+    uint64_t result_sign = result & sign_mask;
+    if(op1_sign && op2_sign && !result_sign) return NULL; // Underflow - neg + neg = pos
+    if(!op1_sign && !op2_sign && result_sign) return NULL; // Overflow - pos + pos = neg
+  }
+  value_t *ret = value_init(cxt);
+  ret->type = op1->type;
+  ret->addrtype = ADDR_IMM;
+  ret->uint64 = result;
+  return ret;
 }
 
 // Argument imm is between 0 and 15
