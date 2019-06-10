@@ -279,6 +279,7 @@ type_t *type_init(type_cxt_t *cxt) {
 }
 
 // Init a type object from a given object (only shallow copy); Do not set offset field
+// Type objects must not be shared because we assign offsets for better error reporting
 type_t *type_init_from(type_cxt_t *cxt, type_t *from, char *offset) {
   type_t *ret = type_init(cxt);
   memcpy(ret, from, sizeof(type_t));
