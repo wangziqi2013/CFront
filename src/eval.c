@@ -524,20 +524,35 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   // to that type
   token_t *op1 = ast_getchild(exp, 0);
   token_t *op2 = ast_getchild(exp, 1); // Might be NULL for unary operators
+  value_t *op1_value, *op2_value;      // Operand values of binary operators (after cast)
+  type_t *target_type;                 // Type of both operands after convension
   switch(exp->type) {
     case EXP_ADD: case EXP_SUB: case EXP_MUL: case EXP_DIV: case EXP_MOD:
     case EXP_LSHIFT: case EXP_RSHIFT:
     case EXP_LESS: case EXP_LEQ: case EXP_GREATER: case EXP_GEQ:
-    case EXP_EQ: case EXP_NEQ: case EXP_AND: case EXP_OR: case EXP_XOR: {
+    case EXP_EQ: case EXP_NEQ: case EXP_BIT_AND: case EXP_BIT_OR: case EXP_BIT_XOR: {
       assert(op1 && op2);
-      value_t *op1_value = eval_const_exp(cxt, op1);
-      value_t *op2_value = eval_const_exp(cxt, op2);
+      op1_value = eval_const_exp(cxt, op1);
+      op2_value = eval_const_exp(cxt, op2);
+      target_type = type_int_convert(op1_value->type, op2_value->type);
+      int op1_cast = type_cast(target_type, op1_value->type, TYPE_CAST_IMPLICIT, op1->offset);
+      int op2_cast = type_cast(target_type, op2_value->type, TYPE_CAST_IMPLICIT, op2->offset);
+      int op1_signed = op1_cast == TYPE_CAST_SIGN_EXT;
+      int op2_signed = op2_cast == TYPE_CAST_SIGN_EXT;
+      op1_value->uint64 = eval_const_adjust_size(op1_value, target_type->size, op1_value->type->size, op1_signed);
+      op2_value->uint64 = eval_const_adjust_size(op2_value, target_type->size, op2_value->type->size, op2_signed);
+      op1_value->type = target_type;
+      op2_value->type = target_type;
     }
+    default: break;
   }
-
   
+  value_t *ret = value_init(cxt);
+  ret->addrtype = ADDR_IMM;
+  ret->type = target_type; // This might be changed below in case branches
   switch(exp->type) {
-    case EXP_PLUS: 
+    case EXP_ADD: 
+    default: break;
   }
   return NULL;
 }
