@@ -25,8 +25,10 @@ uint64_t eval_const_get_sign_mask(int size) {
   return sign_mask;
 }
 
+// Returns 1 if the underlying literal is zero
 int eval_const_is_zero(value_t *value, int size) {
   uint64_t mask = eval_const_get_mask(size);
+  return (value->uint64 & mask) == 0;
 }
 
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type

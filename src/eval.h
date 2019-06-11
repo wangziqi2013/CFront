@@ -20,6 +20,7 @@ uint64_t eval_int_masks[9];
 
 uint64_t eval_const_get_mask(int size);
 uint64_t eval_const_get_sign_mask(int size);
+int eval_const_is_zero(value_t *value, int size);
 uint64_t eval_const_adjust_size(value_t *value, int to, int from, int is_signed);
 uint64_t eval_const_add(value_t *op1, value_t *op2, int size, int is_signed, int *overflow);
 uint64_t eval_const_sub(value_t *op1, value_t *op2, int size, int is_signed, int *overflow);

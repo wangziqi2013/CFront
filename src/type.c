@@ -1004,7 +1004,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       token_t *basetype_token = ast_getchild(decl_token, 0);
       // Allow casting to void or functions returning void
       type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID); 
-      type_cast(target, lhs, TYPE_CAST_EXPLICIT, exp->offset); // Try explicit cast and see if it works
+      type_cast(target, lhs, TYPE_CAST_EXPLICIT, exp->offset);
       return target;
     } break;
     case EXP_ADDR: { // This works even for the two symbol types: ARRAY_SUB and FUNC_CALL
