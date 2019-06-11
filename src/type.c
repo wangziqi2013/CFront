@@ -819,14 +819,16 @@ int type_cmp(type_t *to, type_t *from) {
 // See TYPE_CAST_ series for return values
 // This function will report error and exit if an error is detected
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
-  // Handle easy cases first:
-  if(type_is_void(from)) error_row_col_exit(pffset, "Casting void type is disallowed\n"); // Case 7
-  else if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP; // Case 0: self-cast
-  else if(type_is_void(to)) return TYPE_CAST_VOID; // Case 5: to void
-
-  //if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
-  //  error_row_col_exit(offset, "Implicit cast cannot drop \"const\" qualifier\n");
   assert(cast_type == TYPE_CAST_EXPLICIT || cast_type == TYPE_CAST_IMPLICIT);
+  // Handle easy cases first:
+  if(type_is_void(from)) {  // Case 7: from void
+    error_row_col_exit(offset, "Casting void type is disallowed\n"); 
+  } else if(type_cmp(to, from) == TYPE_CMP_EQ) { // Case 0: self-cast
+    return TYPE_CAST_NO_OP; 
+  } else if(type_is_void(to)) { // Case 5: to void
+    return TYPE_CAST_VOID; 
+  }
+
   if(type_is_int(to) && type_is_int(from)) { // Case 1: int to int
     if(cast_type == TYPE_CAST_EXPLICIT) {
       if(to->size == from->size) return TYPE_CAST_NO_OP;        // Same size cast - always allowed for explicit casting
@@ -860,7 +862,7 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   } else if(type_is_ptr(to) && type_is_array(from)) { // Case 3
     if(type_is_void_ptr(to)) return TYPE_CAST_GEN_PTR; // Case 5
     if(cast_type == TYPE_CAST_IMPLICIT) { // Only check pointed type for compatibility if it is implicit
-      int ret = type_cmp(to->next, from->next);
+      int ret = type_cmp(to->next, from); // i.e. to->next should be an array type
       if(ret == TYPE_CMP_NEQ) { error_row_col_exit(offset, "Cannot cast array to pointer type of different base types\n"); }
       else if(ret == TYPE_CMP_LOSSY) { error_row_col_exit(offset, "Cannot cast array to incompatible pointer type\n"); }
     }
