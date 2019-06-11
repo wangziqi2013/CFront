@@ -531,7 +531,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   token_t *op1 = ast_getchild(exp, 0);
   token_t *op2 = ast_getchild(exp, 1); // Might be NULL for unary operators
   value_t *op1_value, *op2_value;      // Operand values of binary operators (after cast)
-  type_t *target_type;                 // Type of both operands after convension
+  type_t *target_type = NULL;          // Type of both operands after convension
   switch(exp->type) {
     case EXP_ADD: case EXP_SUB: case EXP_MUL: case EXP_DIV: case EXP_MOD:
     case EXP_LSHIFT: case EXP_RSHIFT:
@@ -558,9 +558,15 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       value_t *op3_value = eval_const_exp(cxt, op3);
       if(type_cmp(op3_value->type, op2_value->type) != TYPE_CMP_EQ) 
         error_row_col_exit(exp->offset, "Condition operator must return two identical types\n");
+      int cond = eval_const_is_zero(op1_value, op1_value->type->size);
+      if(cond) return op3_value;
+      else return op2_value;
     }
     case EXP_PLUS: case EXP_MINUS: case EXP_BIT_NOT: case EXP_LOGICAL_NOT: {
-
+      assert(op1);
+      op1_value = eval_const_exp(cxt, op1);
+      op1_value->uint64 = eval_const_unary(exp->type, op1_value, op1_value->type->size);
+      return op1_value;
     }
     case EXP_CAST: {
       // TODO: EXPLICIT TYPE CAST
