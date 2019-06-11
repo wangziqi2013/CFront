@@ -520,8 +520,22 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
     return ret;
   }
 
+  // For supported binary operands, first determine result type, and cast operands
+  // to that type
   token_t *op1 = ast_getchild(exp, 0);
   token_t *op2 = ast_getchild(exp, 1); // Might be NULL for unary operators
+  switch(exp->type) {
+    case EXP_ADD: case EXP_SUB: case EXP_MUL: case EXP_DIV: case EXP_MOD:
+    case EXP_LSHIFT: case EXP_RSHIFT:
+    case EXP_LESS: case EXP_LEQ: case EXP_GREATER: case EXP_GEQ:
+    case EXP_EQ: case EXP_NEQ: case EXP_AND: case EXP_OR: case EXP_XOR: {
+      assert(op1 && op2);
+      value_t *op1_value = eval_const_exp(cxt, op1);
+      value_t *op2_value = eval_const_exp(cxt, op2);
+    }
+  }
+
+  
   switch(exp->type) {
     case EXP_PLUS: 
   }
