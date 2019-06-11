@@ -544,15 +544,22 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       op1_value->type = target_type;
       op2_value->type = target_type;
     }
-    default: break;
+    case EXP_COND: { // It has three operands: op1 (cond), op2, op3
+
+    }
+    case EXP_PLUS: case EXP_MINUS: case EXP_BIT_NOT: case EXP_LOGICAL_NOT: {
+      
+    }
+    default: error_row_col_exit(exp->offset, "Operand \"%s\" is not supported for constant expression\n", 
+      token_symstr(exp->type));
   }
   
-  value_t *ret = value_init(cxt);
+  value_t *ret = value_init(cxt); // Value will be set below
   ret->addrtype = ADDR_IMM;
   ret->type = target_type; // This might be changed below in case branches
   switch(exp->type) {
     case EXP_ADD: 
     default: break;
   }
-  return NULL;
+  return ret;
 }
