@@ -27,20 +27,22 @@ uint64_t eval_const_get_sign_mask(int op) {
 
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type
 // Returns the value itself
-value_t *eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
-  if(from == to) return value;
+uint64_t eval_const_adjust_size(value_t *value, int to, int from, int is_signed) {
   uint64_t to_mask = eval_const_get_mask(to), from_mask = eval_const_get_mask(from);
-  if(to < from) { // truncation
-    value->uint64 &= to_mask;
+  uint64_t ret = value->uint64;
+  if(from == to) {
+    return ret;
+  } else if(to < from) { // Truncation
+    ret &= to_mask;
   } else { // Extension
     uint64_t from_sign_mask = eval_const_get_sign_mask(from);
-    if((value->uint64 & from_sign_mask) && is_signed) { // Sign extension
-      value->uint64 |= (to_mask - from_mask);
+    if((ret & from_sign_mask) && is_signed) { // Sign extension
+      ret |= (to_mask - from_mask);
     } else { // Zero extension
-      value->uint64 &= to_mask; // Clear higher bits
+      ret &= from_mask; // Clear higher bits
     }
   }
-  return value;
+  return ret;
 }
 
 // Return NULL if operation overflows; Return result raw binary representation
@@ -499,7 +501,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
     return eval_const_get_int_value(cxt, exp);
-  } else if(exp->type == T_STR_CONST) {
+  } else if(exp->type == T_STR_CONST) { // I tested with GCC and it does not support this, so let's keep it consistent
     error_row_col_exit(exp->offset, "String literal is not allowed in a constant expression\n");
   } else if(BASETYPE_GET(exp->decl_prop)) {  // Unsupported base type literal
     type_error_not_supported(exp->offset, exp->decl_prop);
@@ -510,12 +512,18 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
     } else if(value->addrtype != ADDR_IMM) {
       error_row_col_exit(exp->offset, "Name \"%s\" is not a compile-time constant\n", exp->str);
     }
-    // Make a copy and return
+    // Make a copy and return - we may modify this object, so a copy is required
     value_t *ret = value_init(cxt);
     ret->int32 = value->int32;
     ret->type = value->type;
     ret->addrtype = ADDR_IMM;
     return ret;
+  }
+
+  token_t *op1 = ast_getchild(exp, 0);
+  token_t *op2 = ast_getchild(exp, 1); // Might be NULL for unary operators
+  switch(exp->type) {
+    case EXP_PLUS: 
   }
   return NULL;
 }
