@@ -807,6 +807,7 @@ int type_cmp(type_t *to, type_t *from) {
 //   4. ptr <-> ptr (see below)
 //   5. Any type to void is allowed, returns TYPE_CAST_VOID
 //   6. Function type to pointer of the same function type
+//   7. Could not cast void to any type
 // Implicit cast rules:
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer
 //   1.2 Casting signed shorter int to longer types always use sign extension
@@ -818,10 +819,9 @@ int type_cmp(type_t *to, type_t *from) {
 // See TYPE_CAST_ series for return values
 // This function will report error and exit if an error is detected
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
-  // TODO: CONST MODIFIER ON POINTER
-  // TODO: SELF-CASTING (TYPE COMPARISON?) -> This is needed for all assignments
   // Handle easy cases first:
-  if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP; // Case 0: self-cast
+  if(type_is_void(from)) error_row_col_exit(pffset, "Casting void type is disallowed\n"); // Case 7
+  else if(type_cmp(to, from) == TYPE_CMP_EQ) return TYPE_CAST_NO_OP; // Case 0: self-cast
   else if(type_is_void(to)) return TYPE_CAST_VOID; // Case 5: to void
 
   //if(cast_type == TYPE_CAST_IMPLICIT && type_is_const(from) && !type_is_const(to)) 
