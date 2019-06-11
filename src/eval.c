@@ -11,18 +11,22 @@ uint64_t eval_int_masks[9] = {
 // The following functions perform constant evaluation
 // value type is not altered
 
-uint64_t eval_const_get_mask(int op) {
-  assert(op <= TYPE_INT_SIZE_MAX && op > 0);
-  assert(op <= EVAL_MAX_CONST_SIZE);
-  uint64_t op_mask = eval_int_masks[op];
+uint64_t eval_const_get_mask(int size) {
+  assert(size <= TYPE_INT_SIZE_MAX && size > 0);
+  assert(size <= EVAL_MAX_CONST_SIZE);
+  uint64_t op_mask = eval_int_masks[size];
   assert(!op_mask);
   return op_mask;
 }
 
-uint64_t eval_const_get_sign_mask(int op) {
-  uint64_t sign_mask = eval_int_masks[op];
+uint64_t eval_const_get_sign_mask(int size) {
+  uint64_t sign_mask = eval_int_masks[size];
   sign_mask -= (sign_mask >> 1);
   return sign_mask;
+}
+
+int eval_const_is_zero(value_t *value, int size) {
+  uint64_t mask = eval_const_get_mask(size);
 }
 
 // If signed == 1 and to > from, it is sign extension; We do not use or change value->type
@@ -545,10 +549,19 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       op2_value->type = target_type;
     }
     case EXP_COND: { // It has three operands: op1 (cond), op2, op3
-
+      token_t *op3 = ast_getchild(exp, 2);
+      assert(op1 && op2 && op3);
+      op1_value = eval_const_exp(cxt, op1);
+      op2_value = eval_const_exp(cxt, op2);
+      value_t *op3_value = eval_const_exp(cxt, op3);
+      if(type_cmp(op3_value->type, op2_value->type) != TYPE_CMP_EQ) 
+        error_row_col_exit(exp->offset, "Condition operator must return two identical types\n");
     }
     case EXP_PLUS: case EXP_MINUS: case EXP_BIT_NOT: case EXP_LOGICAL_NOT: {
-      
+
+    }
+    case EXP_CAST: {
+      // TODO: EXPLICIT TYPE CAST
     }
     default: error_row_col_exit(exp->offset, "Operand \"%s\" is not supported for constant expression\n", 
       token_symstr(exp->type));
