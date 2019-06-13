@@ -23,7 +23,6 @@
 #define TYPE_LLONG_SIZE     16
 #define TYPE_INT_SIZE_MAX   16 // This is the maximum size we support for constant evaluation
 
-
 #define TYPE_CHAR_MAX       ((1 << (TYPE_CHAR_SIZE * 8 - 1)) - 1)
 #define TYPE_UCHAR_MAX      ((1 << (TYPE_CHAR_SIZE * 8)) - 1)
 
