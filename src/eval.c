@@ -576,7 +576,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       op1_value->type = target; // Might cast to void, but this will be detected at higher level
       return op1_value;
     }
-    default: error_row_col_exit(exp->offset, "Operand \"%s\" is not supported for constant expression\n", 
+    default: error_row_col_exit(exp->offset, "Operator \"%s\" is not supported for constant expression\n", 
       token_symstr(exp->type));
   }
   
@@ -607,9 +607,15 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
     case EXP_LSHIFT: case EXP_RSHIFT: {
       ret->uint64 = eval_const_shift(exp->type == EXP_LSHIFT, op1_value, op2_value, target_size, is_signed, &flag);
       if(flag) warn_row_col_exit(exp->offset, "Shift length is greater than integer size\n");
-    }
-    case EXP
-    default: break;
+    } break;
+    case EXP_LESS: case EXP_GREATER: case EXP_LEQ: case EXP_GEQ: case EXP_EQ: case EXP_NEQ: {
+      ret->type = type_getint(BASETYPE_INT);
+      ret->int32 = eval_const_cmp(exp->type, op1_value, op2_value, target_size, is_signed);
+    } break;
+    case EXP_BIT_AND: case EXP_BIT_OR: case EXP_BIT_XOR: {  
+      ret->uint64 = eval_const_bitwise(exp->type, op1_value, op2_value, target_size);
+    } break;
+    default: assert(0); break; // If there is an unknown op it must not pass the previous switch stmt
   }
   return ret;
 }
