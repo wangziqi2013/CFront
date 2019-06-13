@@ -1063,7 +1063,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         int ret = type_cmp(lhs->next, rhs->next); // Don't care about const/volatile bc they do not affect type size
         if(ret == TYPE_CMP_NEQ) error_row_col_exit(exp->offset, 
           "Pointer subtraction can only be applied to pointers of the same base type\n");
-        return TYPE_GETINT(TYPE_PTR_DIFF_TYPE);
+        return type_getint(TYPE_PTR_DIFF_TYPE);
       }
       error_row_col_exit(exp->offset, "Operator \"%s\" cannot be applied here", op_str);
     } break;
@@ -1089,7 +1089,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
             "Pointer comparison must have the same base type (except const/volatile)\n");
         }
       }
-      return TYPE_GETINT(BASETYPE_INT); // Comparison result is always signed int
+      return type_getint(BASETYPE_INT); // Comparison result is always signed int
     } break;
     case EXP_LOGICAL_AND: case EXP_LOGICAL_OR: { // && || accepts both pointer and integer as operands
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 

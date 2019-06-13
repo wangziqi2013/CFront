@@ -8,9 +8,6 @@
 #include "token.h"
 #include "str.h"
 
-// Given BASETYPE_ constant return type *, only for integers
-#define TYPE_GETINT(decl_prop) (&type_builtin_ints[BASETYPE_INDEX(decl_prop)])
-
 #define SCOPE_LEVEL_GLOBAL  0
 
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl or void/func call
