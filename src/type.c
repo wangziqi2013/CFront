@@ -65,11 +65,13 @@ type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size, char *offset) {
 
 // We provide 4 channels such that they can be used in the same printf function call
 // (C semsntics require that arguments be fully evaluated before function call)
-char *type_print_str(int channel, type_t *type, int print_comp_body, int level) {
+char *type_print_str(int channel, type_t *type, const char *name, int print_comp_body) {
   static str_t *channels[TYPE_PRINT_CHANNEL_MAX] = {NULL, }; // All NULL
   assert(channel >= 0 && channel < TYPE_PRINT_CHANNEL_MAX);
-  if(!channels[channel]) channels[channel] = str_init();
-  else channels[channel]->clear();
+  if(channels[channel]) str_free(channels[channel]);
+  channels[channel] = str_init();
+  type_print(type, name, channels[channel], print_comp_body, 0);
+  return str_cstr(channels[channel]);
 }
 
 // Prints a type in string on stdout

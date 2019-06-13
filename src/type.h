@@ -269,6 +269,7 @@ static inline const char *type_printable_name(const char *name) { return name ? 
 // Returns a const char[full_size] type object
 type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size, char *offset); 
 
+char *type_print_str(int channel, type_t *type, const char *name, int print_comp_body);
 str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body, int level);
 
 scope_t *scope_init(int level);
