@@ -585,7 +585,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         } else if(bf_size_value->uint32 != bf_size_value->uint64) {
           error_row_col_exit(bf->offset, "Bit field size too large to be represented by 32 bit int\n");
         } else if(bf_size_value->int32 < 0) {
-          error_row_col_exit(index->offset, "Bit field size in declaration must be non-negative\n");
+          error_row_col_exit(bf->offset, "Bit field size in declaration must be non-negative\n");
         }
         field->bitfield_size = bf_size_value->int32; // Evaluate the constant expression
         f->bitfield_size = field->bitfield_size; 
@@ -696,8 +696,17 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
     token_t *entry_name = ast_getchild(field, 0);
     assert(entry_name->type == T_IDENT); // Enum field must have a name
     token_t *enum_exp = ast_getchild(field, 1);
-    if(enum_exp) field->enum_const = curr_value = eval_const_int(cxt, enum_exp);
-    else field->enum_const = curr_value;
+    if(enum_exp) {
+      value_t *enum_value = eval_const_exp(cxt, enum_exp);
+      if(!type_is_int(enum_value->type)) {
+        error_row_col_exit(enum_exp->offset, "Enum constant must be of integer type\n");
+      } else if(enum_value->uint32 != enum_value->uint64) {
+        error_row_col_exit(enum_exp->offset, "Enum constant value too large to be represented by 32 bit int\n");
+      } 
+      field->enum_const = curr_value = enum_value->int32;
+    } else {
+      field->enum_const = curr_value;
+    }
     char *name_str = entry_name->str;
     list_insert(enu->field_list, name_str, (void *)(long)curr_value); // Directly store the integer as value
     if(bt_find(enu->field_index, name_str) != BT_NOTFOUND) {
