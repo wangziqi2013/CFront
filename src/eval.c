@@ -15,7 +15,7 @@ uint64_t eval_const_get_mask(int size) {
   assert(size <= TYPE_INT_SIZE_MAX && size > 0);
   assert(size <= EVAL_MAX_CONST_SIZE);
   uint64_t op_mask = eval_int_masks[size];
-  assert(!op_mask);
+  assert(op_mask);
   return op_mask;
 }
 
