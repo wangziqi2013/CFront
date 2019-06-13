@@ -530,7 +530,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   // to that type
   token_t *op1 = ast_getchild(exp, 0);
   token_t *op2 = ast_getchild(exp, 1); // Might be NULL for unary operators
-  value_t *op1_value, *op2_value;      // Operand values of binary operators (after cast)
+  value_t *op1_value = NULL, *op2_value = NULL; // Operand values of binary operators (after cast)
   type_t *target_type = NULL;          // Type of both operands after convension
   switch(exp->type) {
     case EXP_ADD: case EXP_SUB: case EXP_MUL: case EXP_DIV: case EXP_MOD:
@@ -585,11 +585,26 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       token_symstr(exp->type));
   }
   
-  value_t *ret = value_init(cxt); // Value will be set below
+  value_t *ret = value_init(cxt); // Value will be set in switch statement
   ret->addrtype = ADDR_IMM;
   ret->type = target_type; // This might be changed below in case branches
+  int target_size = (int)target_type->size;
+  int flag = 0; // Overflow or div-by-zero
+  int is_signed = type_is_signed(target_type);
+  assert(op1_value && op2_value);
   switch(exp->type) {
-    case EXP_ADD: 
+    case EXP_ADD: {
+      ret->uint64 = eval_const_add(op1_value, op2_value, target_size, is_signed, &flag);
+      if(flag) warn_row_col_exit(exp->offset, "Operator '+' overflows during constant evaluation\n");
+    } break;
+    case EXP_SUB: {
+      ret->uint64 = eval_const_sub(op1_value, op2_value, target_size, is_signed, &flag);
+      if(flag) warn_row_col_exit(exp->offset, "Operator '-' overflows during constant evaluation\n");
+    } break;
+    case EXP_MUL: case EXP_MOD: {
+      ret->uint64 = eval_const_div_mod(exp->type == EXP_DIV, op1_value, op2_value, target_size, is_signed, &flag);
+      if(flag) warn_row_col_exit(exp->offset, "Operator '-' overflows during constant evaluation\n");
+    } break;
     default: break;
   }
   return ret;
