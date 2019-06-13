@@ -83,11 +83,6 @@ uint64_t eval_const_sub(value_t *op1, value_t *op2, int size, int is_signed, int
   return eval_const_add(op1, &temp, size, is_signed, overflow);
 }
 
-uint64_t eval_const_neg(value_t *value, int size) {
-  uint64_t mask = eval_const_get_mask(size);
-  return (~value->uint64 + 1) & mask;
-}
-
 uint64_t eval_const_mul(value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
   *overflow = 0;
   int final_invert_sign = 0;
@@ -601,10 +596,19 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       ret->uint64 = eval_const_sub(op1_value, op2_value, target_size, is_signed, &flag);
       if(flag) warn_row_col_exit(exp->offset, "Operator '-' overflows during constant evaluation\n");
     } break;
-    case EXP_MUL: case EXP_MOD: {
-      ret->uint64 = eval_const_div_mod(exp->type == EXP_DIV, op1_value, op2_value, target_size, is_signed, &flag);
-      if(flag) warn_row_col_exit(exp->offset, "Operator '-' overflows during constant evaluation\n");
+    case EXP_MUL: {
+      ret->uint64 = eval_const_mul(op1_value, op2_value, target_size, is_signed, &flag);
+      if(flag) warn_row_col_exit(exp->offset, "Operator '*' overflows during constant evaluation\n");
     } break;
+    case EXP_DIV: case EXP_MOD: {
+      ret->uint64 = eval_const_div_mod(exp->type == EXP_DIV, op1_value, op2_value, target_size, is_signed, &flag);
+      if(flag) warn_row_col_exit(exp->offset, "Divide-by-zero during constant evaluation\n");
+    } break;
+    case EXP_LSHIFT: case EXP_RSHIFT: {
+      ret->uint64 = eval_const_shift(exp->type == EXP_LSHIFT, op1_value, op2_value, target_size, is_signed, &flag);
+      if(flag) warn_row_col_exit(exp->offset, "Shift length is greater than integer size\n");
+    }
+    case EXP
     default: break;
   }
   return ret;
