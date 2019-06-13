@@ -91,7 +91,8 @@ void test_eval_const_exp() {
   type_cxt = type_sys_init();
   parse_cxt = parse_exp_init("(1 + 2 * 3) << 4"); // This will be unsigned, overflow
   token = parse_exp(parse_cxt, PARSE_EXP_ALLOWALL);
-  value = eval_const_get_int_value(type_cxt, token);
+  ast_print(token, 0);
+  value = eval_const_exp(type_cxt, token);
   printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
   parse_exp_free(parse_cxt);
   type_sys_free(type_cxt);

@@ -47,5 +47,6 @@ int eval_const_int_token(token_t *token); // Evaluates an integer type or char t
 int eval_const_int(type_cxt_t *cxt, token_t *token); // Integer expression, no type info, only used for array range expression
 
 value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token); // Evaluates int literal and returns value object
+value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp);
 
 #endif
