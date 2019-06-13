@@ -444,7 +444,13 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       token_t *index = ast_getchild(op, 1);
       assert(index);
       if(index->type != T_) {
-        op->array_size = eval_const_int(cxt, index);
+        value_t *array_size_value = eval_const_get_int_value(cxt, index);
+        if(!type_is_int(array_size_value->type)) {
+          error_row_col_exit(index->offset, "Array size in declaration must be of integer type\n");
+        } else if(array_size_value->int32 != array_size_value->int64) {
+          error_row_col_exit(index->offset, "Array size too larger to be represented by 32 bit int\n");
+        }
+        op->array_size = array_size_value->int32; // Do a cast here
         if(op->array_size < 0) error_row_col_exit(op->offset, "Array size in declaration must be non-negative\n");
       } else { op->array_size = -1; }
       parent_type->array_size = op->array_size;
