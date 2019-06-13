@@ -343,26 +343,6 @@ str_t *eval_const_str_token(token_t *token) {
   return s;
 }
 
-// TODO: REMOVE THIS SOON
-int eval_const_int_token(token_t *token) {
-  char *s = token->str;
-  int base;
-  switch(token->type) {
-    case T_HEX_INT_CONST: base = 16; break;
-    case T_OCT_INT_CONST: base = 8; break;
-    case T_CHAR_CONST: // Fall through
-    case T_DEC_INT_CONST: base = 10; break;
-    default: error_row_col_exit(token->offset, "Must be integer constant type in this context\n"); break;
-  }
-  // Throw warning if literal type is not int (i.e. no U/L modifiers after the literal)
-  if(BASETYPE_GET(token->decl_prop) != BASETYPE_INT) 
-    warn_row_col_exit(token->offset, 
-      "Integer constant will be implicitly converted to \"int\" type in this context (was \"%s\")\n", 
-      token_decl_print(token->decl_prop));
-  return token->type == T_CHAR_CONST ? \
-    (int)eval_const_char_token(token) : eval_const_atoi(s, base, token, ATOI_NO_MAX_CHAR, ATOI_CHECK_END, NULL);
-}
-
 value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token) {
   assert(BASETYPE_GET(token->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(token->decl_prop) <= BASETYPE_ULLONG);
   char *s = token->str;
