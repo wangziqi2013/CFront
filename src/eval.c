@@ -86,19 +86,20 @@ uint64_t eval_const_sub(value_t *op1, value_t *op2, int size, int is_signed, int
 uint64_t eval_const_mul(value_t *op1, value_t *op2, int size, int is_signed, int *overflow) {
   *overflow = 0;
   int final_invert_sign = 0;
-  uint64_t mask = eval_const_get_mask(size);
-  uint64_t sign_mask = eval_const_get_sign_mask(size);
-  uint64_t op1_value = op1->uint64 & mask;
-  uint64_t op2_value = op2->uint64 & mask;
+  __uint128_t mask = (__uint128_t)eval_const_get_mask(size);
+  __uint128_t sign_mask = (__uint128_t)eval_const_get_sign_mask(size);
+  __uint128_t op1_value = (__uint128_t)op1->uint64 & mask;
+  __uint128_t op2_value = (__uint128_t)op2->uint64 & mask;
   if(op1_value == 0 || op2_value == 0) return 0UL; // Special handling for zero
   uint64_t op1_sign = op1_value & sign_mask;
   uint64_t op2_sign = op2_value & sign_mask;
-  if(op1_sign) { op1_value = (~op1_value + 1) & mask; final_invert_sign++; }
-  if(op2_sign) { op2_value = (~op2_value + 1) & mask; final_invert_sign++; }
+  if(is_signed && op1_sign) { op1_value = (~op1_value + 1) & mask; final_invert_sign++; }
+  if(is_signed && op2_sign) { op2_value = (~op2_value + 1) & mask; final_invert_sign++; }
   final_invert_sign %= 2; // This is 1 if we need to invert the sign after MUL
-  // Set overflow flag if one is larger than the maximum non-overflow operand
-  if(op1_value > (uint64_t)-1 / op2_value) *overflow = 1; 
-  uint64_t result = (op1_value * op2_value) & mask;
+  __uint128_t result = op1_value * op2_value;
+  if(result & ~mask) *overflow = 1;
+  else if(is_signed && (result & sign_mask)) *overflow = 1; // Result is negative number
+  result &= mask;
   return final_invert_sign ? (~result + 1) & mask : result;
 }
 
@@ -106,24 +107,24 @@ uint64_t eval_const_mul(value_t *op1, value_t *op2, int size, int is_signed, int
 uint64_t eval_const_div_mod(int is_div, value_t *op1, value_t *op2, int size, int is_signed, int *div_zero) {
   *div_zero = 0;
   int final_invert_sign = 0;
-  uint64_t mask = eval_const_get_mask(size);
-  uint64_t sign_mask = eval_const_get_sign_mask(size);
-  uint64_t op1_value = op1->uint64 & mask;
-  uint64_t op2_value = op2->uint64 & mask;
+  __uint128_t mask = (__uint128_t)eval_const_get_mask(size);
+  __uint128_t sign_mask = (__uint128_t)eval_const_get_sign_mask(size);
+  __uint128_t op1_value = (__uint128_t)op1->uint64 & mask;
+  __uint128_t op2_value = (__uint128_t)op2->uint64 & mask;
   if(op1_value == 0 || op2_value == 0) return 0UL; // Special handling for zero
   uint64_t op1_sign = op1_value & sign_mask;
   uint64_t op2_sign = op2_value & sign_mask;
-  if(op1_sign) { op1_value = (~op1_value + 1) & mask; final_invert_sign++; }
-  if(op2_sign) { op2_value = (~op2_value + 1) & mask; final_invert_sign++; }
+  if(is_signed && op1_sign) { op1_value = (~op1_value + 1) & mask; final_invert_sign++; }
+  if(is_signed && op2_sign) { op2_value = (~op2_value + 1) & mask; final_invert_sign++; }
   final_invert_sign %= 2; // This is 1 if we need to invert the sign after MUL
-  if(op2_value == 0UL) { // Check div by zero error and returns 0 if it is the case
+  if(op2_value == (__uint128_t)0UL) { // Check div by zero error and returns 0 if it is the case
     *div_zero = 1; 
     return 0;
   }
-  uint64_t result;
+  __uint128_t result;
   if(is_div) result = (op1_value / op2_value) & mask;
   else result = (op1_value % op2_value) & mask;
-  return final_invert_sign ? (~result + 1) & mask : result;
+  return final_invert_sign ? (uint64_t)((~result + 1) & mask) : (uint64_t)result;
 }
 
 // If first arg is 1 then we left shift and ignore sign; Otherwise right shift and may propagate sign bit
