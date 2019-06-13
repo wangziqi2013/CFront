@@ -447,11 +447,12 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
         value_t *array_size_value = eval_const_exp(cxt, index);
         if(!type_is_int(array_size_value->type)) {
           error_row_col_exit(index->offset, "Array size in declaration must be of integer type\n");
-        } else if(array_size_value->int32 != array_size_value->int64) {
-          error_row_col_exit(index->offset, "Array size too larger to be represented by 32 bit int\n");
+        } else if(array_size_value->uint32 != array_size_value->uint64) {
+          error_row_col_exit(index->offset, "Array size too large to be represented by 32 bit int\n");
+        } else if(array_size_value->int32 < 0) {
+          error_row_col_exit(index->offset, "Array size in declaration must be non-negative\n");
         }
-        op->array_size = array_size_value->int32; // Do a cast here
-        if(op->array_size < 0) error_row_col_exit(op->offset, "Array size in declaration must be non-negative\n");
+        op->array_size = array_size_value->int32; // Only use low 31 bits
       } else { op->array_size = -1; }
       parent_type->array_size = op->array_size;
       // If lower type is unknown size (e.g. another array or struct without definition), or the array size not given 
@@ -576,9 +577,17 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
-        if(!type_is_int(f->type)) error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
-        field->bitfield_size = eval_const_int(cxt, ast_getchild(bf, 0)); // Evaluate the constant expression
-        if(field->bitfield_size < 0) error_row_col_exit(field->offset, "Bit field size in declaration must be non-negative\n");
+        if(!type_is_int(f->type))  // Check whether base type is integer
+          error_row_col_exit(bf->offset, "Bit field can only be defined with integers\n");
+        value_t *bf_size_value = eval_const_exp(cxt, ast_getchild(bf, 0));
+        if(!type_is_int(bf_size_value->type)) {
+          error_row_col_exit(bf->offset, "Bit field size in declaration must be of integer type\n");
+        } else if(bf_size_value->uint32 != bf_size_value->uint64) {
+          error_row_col_exit(bf->offset, "Bit field size too large to be represented by 32 bit int\n");
+        } else if(bf_size_value->int32 < 0) {
+          error_row_col_exit(index->offset, "Bit field size in declaration must be non-negative\n");
+        }
+        field->bitfield_size = bf_size_value->int32; // Evaluate the constant expression
         f->bitfield_size = field->bitfield_size; 
         f->type->bitfield_size = f->bitfield_size;
         if((size_t)f->bitfield_size > f->type->size * 8) 
