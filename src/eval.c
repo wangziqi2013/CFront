@@ -518,7 +518,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
     } else if(value->addrtype != ADDR_IMM) {
       error_row_col_exit(exp->offset, "Name \"%s\" is not a compile-time constant\n", exp->str);
     }
-    // Make a copy and return - we may modify this object, so a copy is required
+    // Make a copy and return - we may modify this object, so a copy is needed
     value_t *ret = value_init(cxt);
     ret->int32 = value->int32;
     ret->type = value->type;
@@ -540,6 +540,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       assert(op1 && op2);
       op1_value = eval_const_exp(cxt, op1);
       op2_value = eval_const_exp(cxt, op2);
+      assert(type_is_int(op1_value->type) && type_is_int(op2_value->type));
       target_type = type_int_convert(op1_value->type, op2_value->type);
       int op1_cast = type_cast(target_type, op1_value->type, TYPE_CAST_IMPLICIT, op1->offset);
       int op2_cast = type_cast(target_type, op2_value->type, TYPE_CAST_IMPLICIT, op2->offset);
@@ -569,7 +570,16 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       return op1_value;
     }
     case EXP_CAST: {
-      // TODO: EXPLICIT TYPE CAST
+      token_t *decl_token = ast_getchild(exp, 1); // This is the second child
+      token_t *basetype_token = ast_getchild(decl_token, 0);
+      // Allow casting to void or functions returning void
+      type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID); 
+      op1_value = eval_const_exp(cxt, op1);
+      int cast = type_cast(target, op1_value->type, TYPE_CAST_EXPLICIT, exp->offset);
+      int op_signed = cast == TYPE_CAST_SIGN_EXT;
+      op1_value->uint64 = eval_const_adjust_size(op1_value, target->size, op1_value->type->size, op_signed);
+      op1_value->type = target; // Might cast to void, but this will be detected at higher level
+      return op1_value;
     }
     default: error_row_col_exit(exp->offset, "Operand \"%s\" is not supported for constant expression\n", 
       token_symstr(exp->type));
