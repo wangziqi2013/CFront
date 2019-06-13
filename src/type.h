@@ -213,6 +213,11 @@ static inline int64_t type_alloc_global_data(type_cxt_t *cxt, size_t size) {
   return ret;
 }
 
+static inline type_t *type_getint(decl_prop_t decl_prop) {
+  assert(BASETYPE_GET(decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(decl_prop) <= BASETYPE_ULLONG);
+  return &type_builtin_ints[BASETYPE_INDEX(decl_prop)];
+}
+
 // Returns 1 if it is integer types. Applies to any type object
 static inline int type_is_int(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
