@@ -42,10 +42,8 @@ char eval_escaped_char(char escaped, token_t *token);
 
 char eval_const_char_token(token_t *token); // Evaluates char type token to char
 str_t *eval_const_str_token(token_t *token); // Evaluates string token to str_t *
-// Evaluating const expression using native int types (or convert other types to int)
-int eval_const_int_token(token_t *token); // Evaluates an integer type or char type token to int
-int eval_const_int(type_cxt_t *cxt, token_t *token); // Integer expression, no type info, only used for array range expression
 
+// Evaluating const expression using value_t objects
 value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token); // Evaluates int literal and returns value object
 value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp);
 
