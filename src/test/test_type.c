@@ -237,42 +237,6 @@ void test_vector() {
   printf("Pass!\n");
 }
 
-void test_eval_const_int() {
-  printf("=== Test eval_const_int() ===\n");
-  parse_exp_cxt_t *cxt;
-  type_cxt_t *type_cxt = type_sys_init();
-  token_t *token;
-  char test1[] = "1 + 2 * 3 + 6 / 2";
-  cxt = parse_exp_init(test1);
-  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
-  assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
-  printf("Eval = %d\n", eval_const_int(type_cxt, token));
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("=====================================\n");
-  char test2[] = "((0x10 << 16) >> 4) | 0x2345";
-  cxt = parse_exp_init(test2);
-  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
-  assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
-  printf("Eval = %d (%X)\n", eval_const_int(type_cxt, token), eval_const_int(type_cxt, token));
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("=====================================\n");
-  char test3[] = "0x2345AbCd";
-  cxt = parse_exp_init(test3);
-  token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
-  assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
-  printf("Eval = %d (%X)\n", eval_const_int(type_cxt, token), eval_const_int(type_cxt, token));
-  parse_exp_free(cxt);
-  ast_free(token);
-  printf("=====================================\n");
-  type_sys_free(type_cxt);
-  printf("Pass!\n");
-}
-
 void test_eval_const_token_errors() {
   printf("=== Test eval_const_(type)_token errors() ===\n");
   parse_exp_cxt_t *cxt;
@@ -927,7 +891,6 @@ int main() {
   test_eval_const_char_token();
   test_eval_const_token_errors(); // Memory leak
   test_type_int_convert();
-  test_eval_const_int();
   test_type_getcomp();
   test_type_getenum();
   test_type_anomaly();
