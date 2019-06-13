@@ -137,7 +137,7 @@ uint64_t eval_const_shift(int is_left, value_t *op1, value_t *op2, int size, int
   uint64_t op1_value = op1->uint64 & mask;
   uint64_t op2_value = op2->uint64 & mask;
   uint64_t op1_sign = op1_value & sign_mask;
-  if(op2_value >= (uint64_t)size) {
+  if(op2_value >= 8 * (uint64_t)size) { // Note that we compare bit size
     if(is_left || (!is_left && !is_signed)) { // Always result in zero
       *shift_overflow = 1;
       return 0UL;
@@ -550,7 +550,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       op2_value->uint64 = eval_const_adjust_size(op2_value, target_type->size, op2_value->type->size, op2_signed);
       op1_value->type = target_type;
       op2_value->type = target_type;
-    }
+    } break;
     case EXP_COND: { // It has three operands: op1 (cond), op2, op3
       token_t *op3 = ast_getchild(exp, 2);
       assert(op1 && op2 && op3);
@@ -562,13 +562,13 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       int cond = eval_const_is_zero(op1_value, op1_value->type->size);
       if(cond) return op3_value;
       else return op2_value;
-    }
+    } break;
     case EXP_PLUS: case EXP_MINUS: case EXP_BIT_NOT: case EXP_LOGICAL_NOT: {
       assert(op1);
       op1_value = eval_const_exp(cxt, op1);
       op1_value->uint64 = eval_const_unary(exp->type, op1_value, op1_value->type->size);
       return op1_value;
-    }
+    } break;
     case EXP_CAST: {
       token_t *decl_token = ast_getchild(exp, 1); // This is the second child
       token_t *basetype_token = ast_getchild(decl_token, 0);
@@ -580,15 +580,18 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       op1_value->uint64 = eval_const_adjust_size(op1_value, target->size, op1_value->type->size, op_signed);
       op1_value->type = target; // Might cast to void, but this will be detected at higher level
       return op1_value;
-    }
+    } break;
     default: error_row_col_exit(exp->offset, "Operator \"%s\" is not supported for constant expression\n", 
       token_symstr(exp->type));
+      break;
   }
   
   value_t *ret = value_init(cxt); // Value will be set in switch statement
   ret->addrtype = ADDR_IMM;
   ret->type = target_type; // This might be changed below in case branches
   int target_size = (int)target_type->size;
+  printf("exp %s target type %s target size %d\n", token_typestr(exp->type), type_print_str(0, target_type, 0, 0), target_size);
+  printf("op1 0x%lX op2 0x%lX\n", op1_value->uint64, op2_value->uint64);
   int flag = 0; // Overflow or div-by-zero
   int is_signed = type_is_signed(target_type);
   assert(op1_value && op2_value);
