@@ -540,7 +540,8 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       assert(op1 && op2);
       op1_value = eval_const_exp(cxt, op1);
       op2_value = eval_const_exp(cxt, op2);
-      assert(type_is_int(op1_value->type) && type_is_int(op2_value->type));
+      if(!type_is_int(op1_value->type) || !type_is_int(op2_value->type))
+        error_row_col_exit(exp->offset, "Consant expression operator must only have integer operands\n");
       target_type = type_int_convert(op1_value->type, op2_value->type);
       int op1_cast = type_cast(target_type, op1_value->type, TYPE_CAST_IMPLICIT, op1->offset);
       int op2_cast = type_cast(target_type, op2_value->type, TYPE_CAST_IMPLICIT, op2->offset);
@@ -556,6 +557,8 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       assert(op1 && op2 && op3);
       op1_value = eval_const_exp(cxt, op1);
       op2_value = eval_const_exp(cxt, op2);
+      if(!type_is_int(op1_value->type)) // Only check the condition; op2 and op3 will be checked by upper levels
+        error_row_col_exit(exp->offset, "Consant expression operator must only have integer operands\n");
       value_t *op3_value = eval_const_exp(cxt, op3);
       if(type_cmp(op3_value->type, op2_value->type) != TYPE_CMP_EQ) 
         error_row_col_exit(exp->offset, "Condition operator must return two identical types\n");
@@ -566,6 +569,8 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
     case EXP_PLUS: case EXP_MINUS: case EXP_BIT_NOT: case EXP_LOGICAL_NOT: {
       assert(op1);
       op1_value = eval_const_exp(cxt, op1);
+      if(!type_is_int(op1_value->type))
+        error_row_col_exit(exp->offset, "Consant expression operator must only have integer operands\n");
       op1_value->uint64 = eval_const_unary(exp->type, op1_value, op1_value->type->size);
       return op1_value;
     } break;
