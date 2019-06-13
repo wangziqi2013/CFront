@@ -477,24 +477,29 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       op1_value->type = target; // Might cast to void, but this will be detected at higher level
       return op1_value;
     } break;
-    /*
     case EXP_SIZEOF: {
-      token_t *decl = ast_getchild(token, 0);
-      assert(decl);
-      if(decl->type == T_DECL) {
-        token_t *basetype = ast_getchild(decl, 0);
+      assert(op1);
+      type_t *type = NULL;
+      if(op1->type == T_DECL) {
+        token_t *basetype = ast_getchild(op1, 0);
         assert(basetype);
-        type_t *type = type_gettype(cxt, decl, basetype, TYPE_ALLOW_VOID); // Allow void but not storage class
-        if(type->size == TYPE_UNKNOWN_SIZE) error_row_col_exit(token->offset, "Sizeof operator with an incomplete type\n");
-        ret = type->size;
+        type = type_gettype(cxt, op1, basetype, TYPE_ALLOW_VOID); // Allow void but not storage class
+        if(type_is_void(type)) {
+          error_row_col_exit(exp->offset, "\"void\" cannot be used in sizeof() expression\n");
+        } else if(type_is_func(type)) {
+          error_row_col_exit(exp->offset, "Function type cannot be used in sizeof() expression\n");
+        } else if(type->size == TYPE_UNKNOWN_SIZE) {
+          error_row_col_exit(exp->offset, "Sizeof operator with an incomplete type\n");
+        }
       } else {
-        token_t *exp = decl; // If not then must be an expression
-        type_t *type = type_typeof(cxt, exp, TYPEOF_IGNORE_FUNC_ARG | TYPEOF_IGNORE_ARRAY_INDEX);
-        ret = type->size;
+        type = type_typeof(cxt, op1, TYPEOF_IGNORE_FUNC_ARG | TYPEOF_IGNORE_ARRAY_INDEX);
       }
-      break;
-    }
-    */
+      value_t *value = value_init(cxt);
+      value->addrtype = ADDR_IMM;
+      value->type = type_getint(TYPE_SIZEOF_TYPE);
+      value->uint64 = type->size;
+      return value;
+    } break;
     default: error_row_col_exit(exp->offset, "Operator \"%s\" is not supported for constant expression\n", 
       token_symstr(exp->type));
       break;
