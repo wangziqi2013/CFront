@@ -10,6 +10,8 @@
 
 #define SCOPE_LEVEL_GLOBAL  0
 
+#define TYPE_PRINT_CHANNEL_MAX 4 // Argument check for function type_print_str
+
 #define TYPE_UNKNOWN_SIZE   ((size_t)-1) // Array decl without concrete size or struct/union forward decl or void/func call
 #define TYPE_VOID_SIZE      0
 #define TYPE_FUNC_SIZE      0
