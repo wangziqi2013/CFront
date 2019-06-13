@@ -16,7 +16,7 @@ str_t *str_init() {
   return str;
 }
 void str_free(str_t *str) { free(str->s); free(str); }
-void str_clear(str_t *str) { str_s[0] = '\0'; str->size = 0; }
+void str_clear(str_t *str) { str->s[0] = '\0'; str->size = 0; }
 int str_size(str_t *str) { return str->size; }
 
 // Realloc the buffer to hold at least size + 1 bytes

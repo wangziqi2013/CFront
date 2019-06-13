@@ -22,6 +22,7 @@ token_t *parse(parse_cxt_t *cxt) {
     }
     token_t *decl = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
     token_t *la = token_lookahead_notnull(cxt->token_cxt, 1);
+    //printf("la type %s\n", token_typestr(la->type));
     if(la->type == T_LCPAREN) { // Case 5
       assert(ast_getchild(decl, 0) != NULL);
       //ast_print(decl, 0);
