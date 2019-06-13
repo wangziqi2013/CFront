@@ -14,7 +14,7 @@
 #include "eval.h"
 
 void test_const_eval_int() {
-  printf("=== Test const_eval_int ===\n");
+  printf("=== Test eval_const_get_int_value ===\n");
   parse_exp_cxt_t *parse_cxt;
   type_cxt_t *type_cxt;
   token_t *token;
@@ -66,6 +66,36 @@ void test_const_eval_int() {
   parse_exp_free(parse_cxt);
   type_sys_free(type_cxt);
   printf("=====================================\n");
+  type_cxt = type_sys_init();
+  parse_cxt = parse_exp_init("'\xfe'"); // Although it overflows for char type, it is evaluated by another function, no warning
+  token = token_get_next(parse_cxt->token_cxt);
+  assert(token);
+  value = eval_const_get_int_value(type_cxt, token);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
+  parse_exp_free(parse_cxt);
+  type_sys_free(type_cxt);
+  printf("=====================================\n");
+
+  printf("Pass!\n");
+  return;
+}
+
+void test_eval_const_exp() {
+  printf("=== Test eval_const_exp ===\n");
+  parse_exp_cxt_t *parse_cxt;
+  type_cxt_t *type_cxt;
+  token_t *token;
+  type_t *type;
+  value_t *value;
+
+  type_cxt = type_sys_init();
+  parse_cxt = parse_exp_init("(1 + 2 * 3) << 4"); // This will be unsigned, overflow
+  token = parse_exp(parse_cxt, PARSE_EXP_ALLOWALL);
+  value = eval_const_get_int_value(type_cxt, token);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
+  parse_exp_free(parse_cxt);
+  type_sys_free(type_cxt);
+  printf("=====================================\n");
 
   printf("Pass!\n");
   return;
@@ -73,5 +103,6 @@ void test_const_eval_int() {
 
 int main() {
   test_const_eval_int();
+  test_eval_const_exp();
   return 0;
 }
