@@ -26,7 +26,43 @@ void test_const_eval_int() {
   token = token_get_next(parse_cxt->token_cxt);
   assert(token);
   value = eval_const_get_int_value(type_cxt, token);
-  printf("Type: %s Value: 0x%016lX", type_print_str(0, value->type, NULL, 0), value->uint64);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
+  parse_exp_free(parse_cxt);
+  type_sys_free(type_cxt);
+  printf("=====================================\n");
+  type_cxt = type_sys_init();
+  parse_cxt = parse_exp_init("0x80000000"); // This will be signed overflow
+  token = token_get_next(parse_cxt->token_cxt);
+  assert(token);
+  value = eval_const_get_int_value(type_cxt, token);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
+  parse_exp_free(parse_cxt);
+  type_sys_free(type_cxt);
+  printf("=====================================\n");
+  type_cxt = type_sys_init();
+  parse_cxt = parse_exp_init("0x80000000U"); // This will be unsigned, no overflow
+  token = token_get_next(parse_cxt->token_cxt);
+  assert(token);
+  value = eval_const_get_int_value(type_cxt, token);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
+  parse_exp_free(parse_cxt);
+  type_sys_free(type_cxt);
+  printf("=====================================\n");
+  type_cxt = type_sys_init();
+  parse_cxt = parse_exp_init("0xFFFFFFFFU"); // This will be unsigned, no overflow
+  token = token_get_next(parse_cxt->token_cxt);
+  assert(token);
+  value = eval_const_get_int_value(type_cxt, token);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
+  parse_exp_free(parse_cxt);
+  type_sys_free(type_cxt);
+  printf("=====================================\n");
+  type_cxt = type_sys_init();
+  parse_cxt = parse_exp_init("0x1FFFFFFFFU"); // This will be unsigned, overflow
+  token = token_get_next(parse_cxt->token_cxt);
+  assert(token);
+  value = eval_const_get_int_value(type_cxt, token);
+  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
   parse_exp_free(parse_cxt);
   type_sys_free(type_cxt);
   printf("=====================================\n");
