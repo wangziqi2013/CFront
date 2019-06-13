@@ -14,6 +14,7 @@ typedef struct {
 
 str_t *str_init();
 void str_free(str_t *str);
+void str_clear(str_t *str); // This does not free memory
 int str_size(str_t *str);
 void str_extend(str_t *str, int size);
 void str_append(str_t *str, char ch);
