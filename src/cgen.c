@@ -6,17 +6,23 @@ void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
   (void)cxt; (void)value;
 }
 
-// Processes and materializes initialization list, returns a pointer to the actual raw data
-// The size of data is already given by the type
+// Processes and materializes initialization list, returns a pointer to the next write position
+// 1. Top level function should call with parent_p = NULL and parent_offset equals any value
+// 2. The size of data is already given by the type
+// 3. Return value points to the end of the buffer after processing the current list; To obtain the 
+//    head, just subtract the type size from the pointer value
 void *cgen_init_list(type_t *type, token_t *init, void *parent_p, int parent_offset) {
   assert(init->type == T_INIT_LIST);
   if(!type_is_array(type) && !type_is_comp(type))
     error_row_col_exit(init->offset, "Initializer list can only be used to initialize array or composite types\n");
   // If it is array type, and the size of the first dimension is not defined, we fill the value using the 
   // length of the init list
-  if(type_is_array(type) && type->size == TYPE_UNKNOWN_SIZE) {
-    assert(type->array_size == -1);
-    int child_count = ast_child_count(init);
+  if(type->size == TYPE_UNKNOWN_SIZE) {
+    if(type_is_array(type)) {
+     
+    } else {
+      error_row_col_exit(type->offset, "Could not initialize incomplete composite type\n");
+    }
   }
   uint8_t *ret = (uint8_t *)parent_p;
   int offset = parent_offset;
@@ -94,10 +100,21 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
         // TODO: INIT LIST & CONSTANT EVALUATION
       }
     } else { // Defines a new global variable or array - may not have name
-      assert(!type_is_func(type));
-      assert(type->size != 0UL);
-      if(type->size == TYPE_UNKNOWN_SIZE) 
-        error_row_col_exit(decl->offset, "Incomplete type for global definition\n");
+      assert(!type_is_func(type) && !type_is_void(type));
+      // If the array has an initializer list, we could derive its element count and size
+      if(type->size == TYPE_UNKNOWN_SIZE) {
+        if(type_is_array && init) {
+          assert(type->array_size == -1);
+          if(type->next->size == TYPE_UNKNOWN_SIZE) // The element size must be known
+            error_row_col_exit(type->offset, "Array initialization with incomplete element type\n");
+          int child_count = ast_child_count(init);
+          assert(child_count >= 0);
+          type->array_size = child_count;
+          type->size = type->next->size * child_count;
+        } else {
+          error_row_col_exit(decl->offset, "Could not define global variable with incomplete type\n");
+        }
+      }
       if(name->type != T_) { // Named global variable or array
         value_t *value = value_init(cxt);
         if(type_is_array(type)) value->addrtype = ADDR_LABEL;
