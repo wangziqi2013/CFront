@@ -6,6 +6,25 @@ void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
   (void)cxt; (void)value;
 }
 
+// Processes and materializes initialization list, returns a pointer to the actual raw data
+// The size of data is already given by the type
+void *cgen_init_list(type_t *type, token_t *init) {
+  assert(init->type == T_INIT_LIST);
+  assert(type->size != TYPE_UNKNOWN_SIZE);
+  if(!type_is_array(type) && !type_is_comp(type))
+    error_row_col_exit(init->offset, "Initializer list can only be used to initialize array or composite types\n");
+  uint8_t *ret = (uint8_t *)malloc(type->size);
+  SYSEXPECT(ret != NULL);
+  memset(ret, 0x00, type->size);
+  int offset = 0;
+  token_t *entry = ast_getchild(init, 0);
+  while(entry) {
+    
+    entry = entry->sibling;
+  }
+  return (void *)ret;
+}
+
 // 1. typedef - must have a name
 // 2. extern - If there is init list then this is definition, otherwise just declaration
 //    2.1 Function objects must not be declared with extern
@@ -44,7 +63,7 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       if(name->type == T_) {// Extern type must have a name to be imported
         error_row_col_exit(decl->offset, "External declaration must have a name\n");
       } else if(type_is_func(type) && DECL_ISEXTERN(basetype->decl_prop)) {
-        error_row_col_exit(decl->offset, "You don't need \"extern\" to declare functions\n");
+        error_row_col_exit(decl->offset, "You don't need \"extern\" to declare function prototypes\n");
       } else if(type_is_func(type) && init) {
         error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
       }
