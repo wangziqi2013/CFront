@@ -86,6 +86,16 @@ void ast_free(token_t *token) {
   token_free(token);
 }
 
+int ast_child_count(token_t *token) {
+  int count = 0;
+  token_t *child = token->child;
+  while(child) {
+    count++;
+    child = child->sibling;
+  }
+  return count;
+}
+
 // Get n-th child; Return NULL if index is larger than the number of children
 token_t *ast_getchild(token_t *token, int index) {
   assert(index >= 0 && token != NULL);
