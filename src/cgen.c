@@ -8,15 +8,24 @@ void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
 
 // Processes and materializes initialization list, returns a pointer to the actual raw data
 // The size of data is already given by the type
-void *cgen_init_list(type_t *type, token_t *init) {
+void *cgen_init_list(type_t *type, token_t *init, void *parent_p, int parent_offset) {
   assert(init->type == T_INIT_LIST);
-  assert(type->size != TYPE_UNKNOWN_SIZE);
   if(!type_is_array(type) && !type_is_comp(type))
     error_row_col_exit(init->offset, "Initializer list can only be used to initialize array or composite types\n");
-  uint8_t *ret = (uint8_t *)malloc(type->size);
-  SYSEXPECT(ret != NULL);
-  memset(ret, 0x00, type->size);
-  int offset = 0;
+  // If it is array type, and the size of the first dimension is not defined, we fill the value using the 
+  // length of the init list
+  if(type_is_array(type) && type->size == TYPE_UNKNOWN_SIZE) {
+    assert(type->array_size == -1);
+    int child_count = ast_child_count(init);
+  }
+  uint8_t *ret = (uint8_t *)parent_p;
+  int offset = parent_offset;
+  if(parent_p == NULL) {
+    ret = (uint8_t *)malloc(type->size); 
+    SYSEXPECT(ret != NULL);
+    memset(ret, 0x00, type->size);
+    offset = 0;
+  }
   token_t *entry = ast_getchild(init, 0);
   while(entry) {
     
