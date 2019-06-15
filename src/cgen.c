@@ -96,9 +96,6 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       if(scope_search(cxt, SCOPE_VALUE, name->str)) 
         error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
       scope_top_insert(cxt, SCOPE_VALUE, name->str, value);
-      if(init) {
-        // TODO: INIT LIST & CONSTANT EVALUATION
-      }
     } else { // Defines a new global variable or array - may not have name
       assert(!type_is_func(type) && !type_is_void(type));
       // If the array has an initializer list, we could derive its element count and size
@@ -126,6 +123,7 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
         if(prev_value) {
           if(prev_value->pending == 0) // Not a declaration - duplicated definition
             error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
+          // TODO: CHECK WHETHER ARRAY RANGE ARE CONSISTENT
           // Resolve all pending references, and then remove the old entry from global scope
           cgen_resolve_extern(cxt, prev_value);
           void *ret = scope_top_remove(cxt, SCOPE_VALUE, name->str);
@@ -136,9 +134,9 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
         if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
           list_insert(cxt->export_list, name->str, value);
         }
-      } else { // Otherwise we only allow comp type or enum with no name
-        if(!type_is_comp(type) && !type_is_enum(type)) 
-          error_row_col_exit(decl->offset, "Global definition must have a name\n");
+        // TODO: PROCESS INIT LIST
+      } else if(!type_is_comp(type) && !type_is_enum(type)) { // Otherwise we only allow comp type or enum with no name
+        error_row_col_exit(decl->offset, "Global variable must have a name\n");
       }
     }
     global_var = global_var->sibling; // Process the next global var
