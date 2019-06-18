@@ -161,7 +161,6 @@ typedef struct value_t_struct {
     uint64_t uint64;
     int64_t  int64;
     int64_t  offset;    // Value is an offset
-    int64_t  import_id; // If pending == 1 this is the ID of the imported object
   };
 } value_t;
 
