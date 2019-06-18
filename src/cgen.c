@@ -60,11 +60,6 @@ cgen_gdata_t *cgen_gdata_init() {
 }
 void cgen_gdata_free(cgen_gdata_t *gdata) { free(gdata); }
 
-// Resolves pending references of the external declaration value
-void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
-  (void)cxt; (void)value;
-}
-
 // Processes and materializes initialization list, returns a pointer to the next write position
 // 1. Top level function should call with parent_p = NULL and parent_offset equals any value
 // 2. The size of data is already given by the type
@@ -109,6 +104,31 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
   memcpy(gdata->data, value->data, type->size);
   return gdata;
+}
+
+// Resolves pending references of the external declaration value
+void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
+  (void)cxt; (void)value;
+}
+
+// This function resolves the array size in case one of the decl or def is incomplete
+// 0. If underlying types are non-equivalent or incomplete, report error
+// 1. If there is no decl_type (NULL) either def_type has a dimension, or init implies the dimension
+// 1. If decl_type specifies all dimensions
+//    1.1 If init is longer report error; shorter init is fine
+//    1.2 If def_type does not have the first dimension, we set it
+void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init) {
+  assert(type_is_array(def_type) && (!decl_type || type_is_array(decl_type)));
+  assert(init->type == T_INIT_LIST);
+  if(!decl_type) {
+    if(def_type->next->size == TYPE_UNKNOWN_SIZE) 
+      error_row_col_exit(def_type->next->offset, "Incomplete array base type\n");
+    if(def_type->array_size == -1) {
+      if(!init) error_row_col_exit(def->type->offset, "Incomplete array type\n");
+      def_type->array_size = ast_child_count(init);
+      def_type->size = def_type->array_size * def_type->next->size;
+    }
+  }
 }
 
 // Processes global declaration, including normal declaration and function prototype
@@ -162,20 +182,27 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
   
   // Check whether there is already an declaration or func prototype
   value_t *value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
+  int has_decl = 0;
   if(value) {
-    if(value->pending == 0) // Not a declaration - duplicated definition
+    if(value->pending == 0) { // Not a declaration - duplicated definition
       error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
+    } else if(type_cmp(value->type, type) != TYPE_CMP_EQ) {
+      if(type_is_array(value->type) && type_is_array(type)) {
+
+      }
+      error_row_col_exit(decl->offset, "Global variable definition inconsistent with previous declaration\n");
+    }
     // TODO: CHECK TYPE EQUIVALENCE
     // Resolve all pending references, and then remove the old entry from global scope
     cgen_resolve_extern(cxt, value);
+    value->pending = 0;
+    has_decl = 1;
   } else {
     value = value_init(cxt->type_cxt);
     value->addrtype = ADDR_GLOBAL; 
     value->type = type;
     scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
-    if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
-      list_insert(cxt->export_list, name->str, value);
-    }
+    if(!DECL_ISSTATIC(basetype->decl_prop)) list_insert(cxt->export_list, name->str, value);
   }
   // TODO: PROCESS ARRAY SIZE
   // TODO: PROCESS INIT LIST
@@ -201,12 +228,12 @@ void cgen_global(cgen_cxt_t *cxt, token_t *global_decl) {
     token_t *name = ast_getchild(decl, 2); // This could be T_ if it is struct/union/enum
     assert(name);
     // Global var could have storage class but could not be void without derivation
+    // Note that we have one type variable for each declaration
+    // This type might have unknown size, but we will resolve them later
     type_t *type = type_gettype(cxt->type_cxt, decl, basetype, TYPE_ALLOW_STGCLS); 
     
     if(DECL_ISTYPEDEF(basetype->decl_prop)) { // Typedef of a new type
-      if(type->size == TYPE_UNKNOWN_SIZE) {
-        error_row_col_exit(decl->offset, "Incomplete type in typedef\n");
-      } else if(name->type == T_) {
+      if(name->type == T_) {
         error_row_col_exit(decl->offset, "Typedef'ed type must have a name");
       }
       scope_top_insert(cxt->type_cxt, SCOPE_UDEF, name->str, type);
