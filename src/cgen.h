@@ -9,8 +9,7 @@
 
 typedef struct {
   type_cxt_t *type_cxt; // Owns memory; will automatically init and free
-  list_t *import_list;       // Externally declared variable, function or array
-  hashtable_t *import_index; // Index of the above list - we may remove from this list
+  list_t *import_list;       // Externally declared variable, function or array - only valid import is pending is 1
   list_t *export_list; // Non-statically declared global variable, function or array
   list_t *gdata_list;  // A list of global data, i.e. actual storage
 } cgen_cxt_t;

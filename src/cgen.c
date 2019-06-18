@@ -33,7 +33,6 @@ cgen_cxt_t *cgen_init() {
   memset(cxt, 0x00, sizeof(cgen_cxt_t));
   cxt->type_cxt = type_sys_init();
   cxt->import_list = list_init();
-  cxt->import_index = ht_str_init();
   cxt->export_list = list_init();
   cxt->gdata_list = list_init();
   return cxt;
@@ -42,7 +41,6 @@ cgen_cxt_t *cgen_init() {
 void cgen_free(cgen_cxt_t *cxt) { 
   type_sys_free(cxt->type_cxt);
   list_free(cxt->import_list);
-  ht_free(cxt->import_index);
   list_free(cxt->export_list);
   // Free all nodes in the global data list
   listnode_t *node = list_head(cxt->gdata_list);
@@ -130,7 +128,6 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   value->addrtype = ADDR_GLOBAL;
   value->type = type;
   list_insert(cxt->import_list, name->str, value);
-  ht_insert(cxt->import_index, name->str, value);
   // Also insert into the scope
   if(scope_search(cxt->type_cxt, SCOPE_VALUE, name->str)) 
     error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
@@ -156,30 +153,32 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
     }
   }
 
-  if(name->type != T_) { // Named global variable or array
-    value_t *value = value_init(cxt->type_cxt);
+  // Unnamed struct, union and enum declaration - do not reserve space
+  if(name->type == T_) {
+    if(!type_is_comp(type) && !type_is_enum(type)) 
+      error_row_col_exit(decl->offset, "Global variable must have a name\n");
+    return;
+  }
+  
+  // Check whether there is already an declaration or func prototype
+  value_t *value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
+  if(value) {
+    if(value->pending == 0) // Not a declaration - duplicated definition
+      error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
+    // TODO: CHECK TYPE EQUIVALENCE
+    // Resolve all pending references, and then remove the old entry from global scope
+    cgen_resolve_extern(cxt, value);
+  } else {
+    value = value_init(cxt->type_cxt);
     value->addrtype = ADDR_GLOBAL; 
     value->type = type;
-    // Check whether there is already an declaration or func prototype
-    value_t *prev_value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
-    if(prev_value) {
-      if(prev_value->pending == 0) // Not a declaration - duplicated definition
-        error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
-      // TODO: CHECK WHETHER ARRAY RANGE ARE CONSISTENT
-      // Resolve all pending references, and then remove the old entry from global scope
-      cgen_resolve_extern(cxt, prev_value);
-      void *ret = scope_top_remove(cxt->type_cxt, SCOPE_VALUE, name->str);
-      assert(ret); (void)ret;
-    }
-    void *ret = scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
-    assert(!ret); (void)ret;
+    scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
     if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
       list_insert(cxt->export_list, name->str, value);
     }
-    // TODO: PROCESS INIT LIST
-  } else if(!type_is_comp(type) && !type_is_enum(type)) { // Otherwise we only allow comp type or enum with no name
-    error_row_col_exit(decl->offset, "Global variable must have a name\n");
   }
+  // TODO: PROCESS ARRAY SIZE
+  // TODO: PROCESS INIT LIST
   return;
 }
 
