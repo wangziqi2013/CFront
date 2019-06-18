@@ -123,7 +123,7 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 //    2.1 If init is longer report error; shorter init is fine
 //    2.2 If def_type does not have the first dimension, we set it
 // Final result is that we modify decl_type and def_type such that they are consistent in size
-void def_type->size(type_t *decl_type, type_t *def_type, token_t *init) {
+void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init) {
   assert(def_type && type_is_array(def_type));
   assert(!init || init->type == T_INIT_LIST);
   if(def_type->next->size == TYPE_UNKNOWN_SIZE) // Always check this for both cases
@@ -170,8 +170,11 @@ void def_type->size(type_t *decl_type, type_t *def_type, token_t *init) {
       error_row_col_exit(def_type->offset, "Incomplete global array size\n");
     }
   }
-  if(init_size != -1 && init_size > decl_size) 
-        error_row_col_exit(init->offset, "Array initializer list is longer than array type\n");
+  if(init_size != -1 && init_size > final_size) 
+    error_row_col_exit(init->offset, "Array initializer list is longer than array type\n");
+  assert(decl_type->array_size == def_type->array_size);
+  assert(decl_type->size == def_type->size);
+  return;
 }
 
 // Processes global declaration, including normal declaration and function prototype
