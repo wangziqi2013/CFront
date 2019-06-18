@@ -37,7 +37,7 @@ cgen_gdata_t *cgen_gdata_init() {
 void cgen_gdata_free(cgen_gdata_t *gdata) { free(gdata); }
 
 // Resolves pending references of the external declaration value
-void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
+void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
   (void)cxt; (void)value;
 }
 
@@ -95,7 +95,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
     token_t *name = ast_getchild(decl, 2); // This could be T_ if it is struct/union/enum
     assert(exp && name);
     // Global var could have storage class but could not be void without derivation
-    type_t *type = type_gettype(cxt, decl, basetype, TYPE_ALLOW_STGCLS); 
+    type_t *type = type_gettype(cxt->type_cxt, decl, basetype, TYPE_ALLOW_STGCLS); 
     
     if(DECL_ISTYPEDEF(basetype->decl_prop)) { // Typedef of a new type
       if(type->size == TYPE_UNKNOWN_SIZE) {
@@ -103,7 +103,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
       } else if(name->type == T_) {
         error_row_col_exit(decl->offset, "Typedef'ed type must have a name");
       }
-      scope_top_insert(cxt, SCOPE_UDEF, name->str, type);
+      scope_top_insert(cxt->type_cxt, SCOPE_UDEF, name->str, type);
     } else if(DECL_ISREGISTER(basetype->decl_prop)) {
       error_row_col_exit(decl->offset, "Keyword \"register\" is not allowed for outer-most scope\n");
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
@@ -118,7 +118,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
         error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
       }
 
-      value_t *value = value_init(cxt);
+      value_t *value = value_init(cxt->type_cxt);
       value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
       value->pending_list = list_init();
       value->addrtype = ADDR_GLOBAL;
@@ -126,9 +126,9 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
       list_insert(cxt->import_list, name->str, value);
       ht_insert(cxt->import_index, name->str, value);
       // Also insert into the scope
-      if(scope_search(cxt, SCOPE_VALUE, name->str)) 
+      if(scope_search(cxt->type_cxt, SCOPE_VALUE, name->str)) 
         error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
-      scope_top_insert(cxt, SCOPE_VALUE, name->str, value);
+      scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
     } else { // Defines a new global variable or array - may not have name
       assert(!type_is_func(type) && !type_is_void(type));
       // If the array has an initializer list, we could derive its element count and size
@@ -146,22 +146,21 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
         }
       }
       if(name->type != T_) { // Named global variable or array
-        value_t *value = value_init(cxt);
+        value_t *value = value_init(cxt->type_cxt);
         value->addrtype = ADDR_GLOBAL; 
         value->type = type;
-        value->offset = type_alloc_global_data(cxt, type->size);
         // Check whether there is already an declaration or func prototype
-        value_t *prev_value = (value_t *)scope_search(cxt, SCOPE_VALUE, name->str);
+        value_t *prev_value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
         if(prev_value) {
           if(prev_value->pending == 0) // Not a declaration - duplicated definition
             error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
           // TODO: CHECK WHETHER ARRAY RANGE ARE CONSISTENT
           // Resolve all pending references, and then remove the old entry from global scope
-          cgen_resolve_extern(cxt, prev_value);
-          void *ret = scope_top_remove(cxt, SCOPE_VALUE, name->str);
+          cgen_resolve_extern(cxt->type_cxt, prev_value);
+          void *ret = scope_top_remove(cxt->type_cxt, SCOPE_VALUE, name->str);
           assert(ret); (void)ret;
         }
-        void *ret = scope_top_insert(cxt, SCOPE_VALUE, name->str, value);
+        void *ret = scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
         assert(!ret); (void)ret;
         if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
           list_insert(cxt->export_list, name->str, value);
