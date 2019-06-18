@@ -229,6 +229,7 @@ type_cxt_t *type_sys_init() {
   cxt->import_list = list_init();
   cxt->import_index = ht_str_init();
   cxt->export_list = list_init();
+  cxt->gdata_list = list_init();
   return cxt;
 }
 
