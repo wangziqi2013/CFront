@@ -197,7 +197,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   }
   value_t *value = value_init(cxt->type_cxt);
   value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
-  value->pending_list = list_init();
+  value->pending_list = list_init(); // Destroyed when we resolve the reference
   value->addrtype = ADDR_GLOBAL;
   value->type = type;
   list_insert(cxt->import_list, name->str, value);
@@ -236,30 +236,33 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
   
   // Check whether there is already an declaration or func prototype
   value_t *value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
-  int has_decl = 0;
   if(value) {
     if(value->pending == 0) { // Not a declaration - duplicated definition
       error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
-    } else if(type_cmp(value->type, type) != TYPE_CMP_EQ) {
-      if(type_is_array(value->type) && type_is_array(type)) {
-
-      }
+    } 
+    // Resolve decl and def array type
+    if(type_is_array(value->type) && type_is_array(type))
+      cgen_resolve_array_size(value->type, type, init);
+    if(type_cmp(value->type, type) != TYPE_CMP_EQ)
       error_row_col_exit(decl->offset, "Global variable definition inconsistent with previous declaration\n");
-    }
-    // TODO: CHECK TYPE EQUIVALENCE
-    // Resolve all pending references, and then remove the old entry from global scope
-    cgen_resolve_extern(cxt, value);
-    value->pending = 0;
-    has_decl = 1;
   } else {
+    // Set array size from either type or init
+    if(type_is_array(type)) cgen_resolve_array_size(NULL, type, init);
     value = value_init(cxt->type_cxt);
     value->addrtype = ADDR_GLOBAL; 
     value->type = type;
+    value->pending = 0;
     scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
     if(!DECL_ISSTATIC(basetype->decl_prop)) list_insert(cxt->export_list, name->str, value);
   }
-  // TODO: PROCESS ARRAY SIZE
+
   // TODO: PROCESS INIT LIST
+
+  // Resolve all pending references, and then remove the old entry from global scope
+  if(value->pending) {
+    cgen_resolve_extern(cxt, value);
+    value->pending = 0;
+  }
   return;
 }
 
