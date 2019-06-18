@@ -113,6 +113,49 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   return;
 }
 
+void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *decl, token_t *init) {
+  assert(!type_is_func(type) && !type_is_void(type));
+  // If the array has an initializer list, we could derive its element count and size
+  if(type->size == TYPE_UNKNOWN_SIZE) {
+    if(type_is_array(type) && init) {
+      assert(type->array_size == -1);
+      if(type->next->size == TYPE_UNKNOWN_SIZE) // The element size must be known
+        error_row_col_exit(type->offset, "Array initialization with incomplete element type\n");
+      int child_count = ast_child_count(init);
+      assert(child_count >= 0);
+      type->array_size = child_count;
+      type->size = type->next->size * child_count;
+    } else {
+      error_row_col_exit(decl->offset, "Could not define global variable with incomplete type\n");
+    }
+  }
+  if(name->type != T_) { // Named global variable or array
+    value_t *value = value_init(cxt->type_cxt);
+    value->addrtype = ADDR_GLOBAL; 
+    value->type = type;
+    // Check whether there is already an declaration or func prototype
+    value_t *prev_value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
+    if(prev_value) {
+      if(prev_value->pending == 0) // Not a declaration - duplicated definition
+        error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
+      // TODO: CHECK WHETHER ARRAY RANGE ARE CONSISTENT
+      // Resolve all pending references, and then remove the old entry from global scope
+      cgen_resolve_extern(cxt, prev_value);
+      void *ret = scope_top_remove(cxt->type_cxt, SCOPE_VALUE, name->str);
+      assert(ret); (void)ret;
+    }
+    void *ret = scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
+    assert(!ret); (void)ret;
+    if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
+      list_insert(cxt->export_list, name->str, value);
+    }
+    // TODO: PROCESS INIT LIST
+  } else if(!type_is_comp(type) && !type_is_enum(type)) { // Otherwise we only allow comp type or enum with no name
+    error_row_col_exit(decl->offset, "Global variable must have a name\n");
+  }
+  return;
+}
+
 // 1. typedef - must have a name
 // 2. extern - If there is init list then this is definition, otherwise just declaration
 //    2.1 Function objects must not be declared with extern
@@ -146,48 +189,11 @@ void cgen_global(cgen_cxt_t *cxt, token_t *global_decl) {
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
       error_row_col_exit(decl->offset, "Keyword \"auto\" is not allowed for outer-most scope\n");
     } else if((DECL_ISEXTERN(basetype->decl_prop) && !init) || (type_is_func(type))) { 
+      // Declaration or function prototype
       cgen_global_decl(cxt, type, basetype, decl, init);
     } else { // Defines a new global variable or array - may not have name
-      assert(!type_is_func(type) && !type_is_void(type));
-      // If the array has an initializer list, we could derive its element count and size
-      if(type->size == TYPE_UNKNOWN_SIZE) {
-        if(type_is_array(type) && init) {
-          assert(type->array_size == -1);
-          if(type->next->size == TYPE_UNKNOWN_SIZE) // The element size must be known
-            error_row_col_exit(type->offset, "Array initialization with incomplete element type\n");
-          int child_count = ast_child_count(init);
-          assert(child_count >= 0);
-          type->array_size = child_count;
-          type->size = type->next->size * child_count;
-        } else {
-          error_row_col_exit(decl->offset, "Could not define global variable with incomplete type\n");
-        }
-      }
-      if(name->type != T_) { // Named global variable or array
-        value_t *value = value_init(cxt->type_cxt);
-        value->addrtype = ADDR_GLOBAL; 
-        value->type = type;
-        // Check whether there is already an declaration or func prototype
-        value_t *prev_value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
-        if(prev_value) {
-          if(prev_value->pending == 0) // Not a declaration - duplicated definition
-            error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
-          // TODO: CHECK WHETHER ARRAY RANGE ARE CONSISTENT
-          // Resolve all pending references, and then remove the old entry from global scope
-          cgen_resolve_extern(cxt, prev_value);
-          void *ret = scope_top_remove(cxt->type_cxt, SCOPE_VALUE, name->str);
-          assert(ret); (void)ret;
-        }
-        void *ret = scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
-        assert(!ret); (void)ret;
-        if(!DECL_ISSTATIC(basetype->decl_prop)) { // Only export when it is non-globally static
-          list_insert(cxt->export_list, name->str, value);
-        }
-        // TODO: PROCESS INIT LIST
-      } else if(!type_is_comp(type) && !type_is_enum(type)) { // Otherwise we only allow comp type or enum with no name
-        error_row_col_exit(decl->offset, "Global variable must have a name\n");
-      }
-    }
+      cgen_global_def(cxt, type, basetype, decl, init);
+    } 
     global_var = global_var->sibling; // Process the next global var
   }
 }
