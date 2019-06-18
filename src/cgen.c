@@ -5,7 +5,7 @@
 // This function dumps all context info to stdout
 void cgen_print_cxt(cgen_cxt_t *cxt) {
   listnode_t *node;
-  printf("Context Object @ 0x%016lX\n", cxt);
+  printf("Context Object @ 0x%016lX\n", (uint64_t)cxt);
   printf("===================================\n");
   printf("Import List\n");
   printf("-----------\n");
@@ -16,7 +16,7 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
     printf("%s\n", type_print_str(0, value->type, name, 0));
     node = list_next(node);
   }
-  
+
 }
 
 cgen_cxt_t *cgen_init() {
@@ -131,6 +131,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
 }
 
 void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *decl, token_t *init) {
+  token_t *name = ast_getchild(decl, 2);
   assert(!type_is_func(type) && !type_is_void(type));
   // If the array has an initializer list, we could derive its element count and size
   if(type->size == TYPE_UNKNOWN_SIZE) {
