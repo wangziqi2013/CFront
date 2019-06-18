@@ -21,20 +21,20 @@ void cgen_free(cgen_cxt_t *cxt) {
   // Free all nodes in the global data list
   listnode_t *node = list_head(cxt->gdata_list);
   while(node) {
-    cgen_free_gdata((cgen_gdata_t *)list_value(node));
+    cgen_gdata_free((cgen_gdata_t *)list_value(node));
     node = list_next(node);
   }
   list_free(cxt->gdata_list);
   free(cxt); 
 }
 
-cgen_gdata_t *cgen_init_gdata() {
+cgen_gdata_t *cgen_gdata_init() {
   cgen_gdata_t *gdata = (cgen_gdata_t *)malloc(sizeof(cgen_gdata_t));
   SYSEXPECT(gdata != NULL);
   memset(gdata, 0x00, sizeof(cgen_gdata_t));
   return gdata;
 }
-void cgen_free_gdata(cgen_gdata_t *gdata) { free(gdata); }
+void cgen_gdata_free(cgen_gdata_t *gdata) { free(gdata); }
 
 // Resolves pending references of the external declaration value
 void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
