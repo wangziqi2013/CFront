@@ -13,6 +13,9 @@ typedef struct {
   list_t *gdata_list;  // A list of global data, i.e. actual storage
 } cgen_cxt_t;
 
+cgen_cxt_t *cgen_init();
+void cgen_free(cgen_cxt_t *cxt);
+
 void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl);
 void cgen_global_func(type_cxt_t *cxt, token_t *func);
 void cgen(type_cxt_t *cxt, token_t *root);
