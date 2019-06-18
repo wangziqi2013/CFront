@@ -1,6 +1,14 @@
 
 #include "cgen.h"
 
+cgen_gdata_t *cgen_init_gdata() {
+  cgen_gdata_t *gdata = (cgen_gdata_t *)malloc(sizeof(cgen_gdata_t));
+  SYSEXPECT(gdata != NULL);
+  memset(gdata, 0x00, sizeof(cgen_gdata_t));
+  return gdata;
+}
+void cgen_free_gdata(cgen_gdata_t *gdata) { free(gdata); }
+
 // Resolves pending references of the external declaration value
 void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
   (void)cxt; (void)value;
