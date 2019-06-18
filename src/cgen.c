@@ -120,8 +120,13 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 //    1.3 If there is init list, and def_type has no dimension, then use init size
 //    1.4 If none is present, report error
 // 2. If decl_type specifies all dimensions
-//    2.1 If init is longer report error; shorter init is fine
-//    2.2 If def_type does not have the first dimension, we set it
+//    2.1 If def_type does not have the first dimension, we set it
+//    2.2 If def_type has dimension we compare them, and report error if they are inconsistent
+// 3. If decl_type has no dimension
+//    3.1 If def_type has dimension we set it
+//    3.2 If def_type does not have dimension
+//        3.2.1 If init exists use init
+//        3.2.2 If init does not exist, report error
 // Final result is that we modify decl_type and def_type such that they are consistent in size
 void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init) {
   assert(def_type && type_is_array(def_type));
