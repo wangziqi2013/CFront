@@ -21,7 +21,7 @@ typedef struct {
   token_cxt_t *token_cxt;
 } test_cxt_t;
 
-tets_cxt_t *test_init(const char *s) {
+test_cxt_t *test_init(char *s) {
   test_cxt_t *cxt = (test_cxt_t *)malloc(sizeof(test_cxt_t));
   SYSEXPECT(cxt != NULL);
   memset(cxt, 0x00, sizeof(test_cxt_t));
@@ -38,33 +38,26 @@ void test_free(test_cxt_t *cxt) {
   return;
 }
 
-/* 
-void test_eval_const_exp() {
-  printf("=== Test eval_const_exp ===\n");
-  parse_exp_cxt_t *parse_cxt;
-  type_cxt_t *type_cxt;
-  token_t *token;
-  type_t *type;
-  value_t *value;
+void test_cgen_global_decl() {
+  printf("=== Test cgen_global_decl ===\n");
 
-  type_cxt = type_sys_init();
-  parse_cxt = parse_exp_init("(1000 + 2 * 3) << 4"); 
-  token = parse_exp(parse_cxt, PARSE_EXP_ALLOWALL);
-  ast_print(token, 0);
-  value = eval_const_exp(type_cxt, token);
-  printf("Type: %s Value: 0x%016lX (%ld)\n", type_print_str(0, value->type, NULL, 0), value->uint64, value->int64);
-  assert(value->int32 == 16096);
-  parse_exp_free(parse_cxt);
-  type_sys_free(type_cxt);
+  test_cxt_t *cxt;
+  token_t *token;
+
+  cxt = test_init("extern const int array[120 + 20];");
+  token = parse(cxt->parse_cxt);
+  ast_print(token);
+  test_free(cxt);
   printf("=====================================\n");
   
 
   printf("Pass!\n");
   return;
 }
-*/
+
 
 int main() {
   printf("Hello World!\n");
+  test_cgen_global_decl();
   return 0;
 }
