@@ -35,6 +35,7 @@ test_cxt_t *test_init(char *s) {
 void test_free(test_cxt_t *cxt) {
   cgen_free(cxt->cgen_cxt);
   parse_exp_free(cxt->parse_cxt);
+  free(cxt);
   return;
 }
 
@@ -47,6 +48,7 @@ void test_cgen_global_decl() {
   cxt = test_init("extern const int array[120 + 20];");
   token = parse(cxt->parse_cxt);
   ast_print(token);
+  ast_free(token);
   test_free(cxt);
   printf("=====================================\n");
   
