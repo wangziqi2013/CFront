@@ -16,7 +16,15 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
     printf("%s\n", type_print_str(0, value->type, name, 0));
     node = list_next(node);
   }
-
+  printf("Export List\n");
+  printf("-----------\n");
+  node = list_head(cxt->export_list);
+  while(node) {
+    char *name = (char *)list_key(node);
+    value_t *value = (value_t *)list_value(node);
+    printf("%s\n", type_print_str(0, value->type, name, 0));
+    node = list_next(node);
+  }
 }
 
 cgen_cxt_t *cgen_init() {
