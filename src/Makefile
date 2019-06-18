@@ -10,19 +10,21 @@ ifeq ($(OPT), 1)
 	CFLAGS=-O3 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 endif
 
-all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_eval
+all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_eval ./bin/test_cgen
 
 test: all
 	./bin/test_lex
 	./bin/test_parse
 	./bin/test_type
 	./bin/test_eval
+	./bin/test_cgen
 
 mem-test: all
 	valgrind --leak-check=full ./bin/test_lex
 	valgrind --leak-check=full ./bin/test_parse
 	valgrind --leak-check=full ./bin/test_type
 	valgrind --leak-check=full ./bin/test_eval
+	valgrind --leak-check=full ./bin/test_cgen
 
 ./bin/test_parse: test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o
 	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o -o ./bin/test_parse $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
@@ -32,10 +34,12 @@ mem-test: all
 
 ./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
 	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
-
 	
 ./bin/test_eval: test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
 	$(CC) test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_eval $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+
+./bin/test_cgen: test_cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
+	$(CC) test_cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_cgen $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
@@ -48,6 +52,9 @@ test_type.o: ./test/test_type.c token.h
 
 test_eval.o: ./test/test_eval.c token.h
 	$(CC) ./test/test_eval.c -c -o $(PWD)/test_eval.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+
+test_cgen.o: ./test/test_cgen.c token.h
+	$(CC) ./test/test_cgen.c -c -o $(PWD)/test_cgen.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h token.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)
