@@ -113,21 +113,49 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 
 // This function resolves the array size in case one of the decl or def is incomplete
 // 0. If underlying types are non-equivalent or incomplete, report error
-// 1. If there is no decl_type (NULL) either def_type has a dimension, or init implies the dimension
-// 1. If decl_type specifies all dimensions
-//    1.1 If init is longer report error; shorter init is fine
-//    1.2 If def_type does not have the first dimension, we set it
+// 1. If there is no decl_type (NULL) 
+//    1.1 If there is no init list, and def_type has a dimension, then use it
+//    1.2 If there is init list, and def_type has a dimension, and init size is larger than this number
+//        report error
+//    1.3 If there is init list, and def_type has no dimension, then use init size
+//    1.4 If none is present, report error
+// 2. If decl_type specifies all dimensions
+//    2.1 If init is longer report error; shorter init is fine
+//    2.2 If def_type does not have the first dimension, we set it
 void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init) {
-  assert(type_is_array(def_type) && (!decl_type || type_is_array(decl_type)));
-  assert(init->type == T_INIT_LIST);
+  assert(def_type && type_is_array(def_type));
+  assert(!init || init->type == T_INIT_LIST);
+  if(def_type->next->size == TYPE_UNKNOWN_SIZE) // Always check this for both cases
+    error_row_col_exit(def_type->next->offset, "Incomplete array base type\n");
+
   if(!decl_type) {
-    if(def_type->next->size == TYPE_UNKNOWN_SIZE) 
-      error_row_col_exit(def_type->next->offset, "Incomplete array base type\n");
     if(def_type->array_size == -1) {
-      if(!init) error_row_col_exit(def->type->offset, "Incomplete array type\n");
+      if(!init) error_row_col_exit(def_type->offset, "Incomplete array type\n"); // Case 1.4
       def_type->array_size = ast_child_count(init);
-      def_type->size = def_type->array_size * def_type->next->size;
+      def_type->size = def_type->array_size * def_type->next->size; // Case 1.3
+    } else { // Case 1.1 if no error
+      if(init && ast_child_count(init) > def_type->array_size) // Case 1.2
+        error_row_col_exit(def_type->offset, "Array initializer list is longer than array type\n");
     }
+    return;
+  }
+
+  assert(type_is_array(decl_type));
+  if(type_cmp(decl_type->next, def_type->next) != TYPE_CMP_EQ) // Case 0
+    error_row_col_exit(def_type->offset, "Global array definition is inconsistent with previous declaration\n");
+  int decl_size = decl_type->array_size;
+  int def_size = def_type->array_size;
+  int init_size = init ? ast_child_count(init) : -1;
+  if(decl_size != -1) {
+    if(def_size != -1) {
+      if(def_size != decl_size) 
+        error_row_col_exit(def_type->offset, "Global array size inconsistent with declaration\n");
+      if(init_size != -1 && init_size > def_size) 
+        error_row_col_exit(def_type->offset, "Array initializer list is longer than array type\n");
+    } else {
+      
+    }
+
   }
 }
 
@@ -141,6 +169,8 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
     error_row_col_exit(decl->offset, "You don't need \"extern\" to declare function prototypes\n");
   } else if(type_is_func(type) && init) {
     error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
+  } else if(type_is_array(type) && type->next->size == TYPE_UNKNOWN_SIZE) {
+    error_row_col_exit(decl->offset, "Array declaration using incomplete base type\n");
   }
   value_t *value = value_init(cxt->type_cxt);
   value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
