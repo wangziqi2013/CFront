@@ -122,7 +122,8 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 // 2. If decl_type specifies all dimensions
 //    2.1 If init is longer report error; shorter init is fine
 //    2.2 If def_type does not have the first dimension, we set it
-void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init) {
+// Final result is that we modify decl_type and def_type such that they are consistent in size
+void def_type->size(type_t *decl_type, type_t *def_type, token_t *init) {
   assert(def_type && type_is_array(def_type));
   assert(!init || init->type == T_INIT_LIST);
   if(def_type->next->size == TYPE_UNKNOWN_SIZE) // Always check this for both cases
@@ -146,17 +147,31 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init)
   int decl_size = decl_type->array_size;
   int def_size = def_type->array_size;
   int init_size = init ? ast_child_count(init) : -1;
+  int final_size;
   if(decl_size != -1) {
-    if(def_size != -1) {
+    final_size = decl_size;
+    if(def_size != -1) { // Both are valid sizes
       if(def_size != decl_size) 
         error_row_col_exit(def_type->offset, "Global array size inconsistent with declaration\n");
-      if(init_size != -1 && init_size > def_size) 
-        error_row_col_exit(def_type->offset, "Array initializer list is longer than array type\n");
-    } else {
-      
+    } else { // Only decl size is valid, set def size, and check init
+      def_type->array_size = decl_size;
+      def_type->size = decl_size * def_type->next->size;
     }
-
+  } else {
+    if(def_size != -1) {
+      final_size = def_size;
+      decl_type->array_size = def_size;
+      decl_type->size = def_size * decl_type->next->size;
+    } else if(init_size != -1) {
+      final_size = init_size;
+      decl_type->array_size = def_type->array_size = init_size;
+      decl_type->size = def_type->size = init_size * decl_type->next->size;
+    } else {
+      error_row_col_exit(def_type->offset, "Incomplete global array size\n");
+    }
   }
+  if(init_size != -1 && init_size > decl_size) 
+        error_row_col_exit(init->offset, "Array initializer list is longer than array type\n");
 }
 
 // Processes global declaration, including normal declaration and function prototype
@@ -178,9 +193,10 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   value->addrtype = ADDR_GLOBAL;
   value->type = type;
   list_insert(cxt->import_list, name->str, value);
-  // Also insert into the scope
+  // Declaration must not be after a definition or another declaration of the same name
+  // TODO: RESOLVE NAME CLASH
   if(scope_search(cxt->type_cxt, SCOPE_VALUE, name->str)) 
-    error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
+    error_row_col_exit(decl->offset, "Name clash in global declaration of \"%s\"\n", name->str);
   scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
   return;
 }
