@@ -203,8 +203,15 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   list_insert(cxt->import_list, name->str, value);
   // Declaration must not be after a definition or another declaration of the same name
   // TODO: RESOLVE NAME CLASH
-  if(scope_search(cxt->type_cxt, SCOPE_VALUE, name->str)) 
-    error_row_col_exit(decl->offset, "Name clash in global declaration of \"%s\"\n", name->str);
+  value_t *prev_value = scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
+  if(prev_value) {
+    type_t *prev_type = prev_value->type;
+    if(type_is_array(type) && type_is_array(prev_type)) { // Array types are compared more carefully
+      
+    } else if(type_cmp(type, prev_type) != TYPE_CMP_EQ) {
+      error_row_col_exit(decl->offset, "Incompatible global declaration with a previous declaration);
+    }
+  } 
   scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
   return;
 }
@@ -237,11 +244,9 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
   // Check whether there is already an declaration or func prototype
   value_t *value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
   if(value) {
-    if(value->pending == 0) { // Not a declaration - duplicated definition
+    if(value->pending == 0) // Not a declaration - duplicated definition
       error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
-    } 
-    // Resolve decl and def array type
-    if(type_is_array(value->type) && type_is_array(type))
+    if(type_is_array(value->type) && type_is_array(type)) // Resolve decl and def array type
       cgen_resolve_array_size(value->type, type, init);
     if(type_cmp(value->type, type) != TYPE_CMP_EQ)
       error_row_col_exit(decl->offset, "Global variable definition inconsistent with previous declaration\n");
