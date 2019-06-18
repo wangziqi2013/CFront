@@ -366,7 +366,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test1);
@@ -381,7 +381,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test2);
@@ -395,7 +395,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test3);
@@ -409,7 +409,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test4);
@@ -423,7 +423,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test5);
@@ -437,7 +437,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init(); 
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test6);
@@ -451,7 +451,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init(); 
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test7);
@@ -465,7 +465,7 @@ void test_type_getcomp() {
   type_cxt = type_sys_init(); 
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test8);
@@ -489,7 +489,7 @@ void test_type_getenum() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test1);
@@ -504,7 +504,7 @@ void test_type_getenum() {
   type_cxt = type_sys_init();
   token = parse_decl(parse_cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(parse_cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
   s = type_print(type, NULL, NULL, 1, 0);
   printf("%s\n", test2);
@@ -605,7 +605,7 @@ void test_type_anomaly() {
   if(error_trycatch()) {
     token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
     type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
-    //ast_print(token, 0); // Print after this to get array size info
+    //ast_print_(token, 0); // Print after this to get array size info
   } else { err = 1; }
   assert(err == 1);
   parse_exp_free(cxt);
@@ -618,7 +618,7 @@ void test_type_anomaly() {
   if(error_trycatch()) {
     token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
     type = type_gettype(type_cxt, token, ast_getchild(token, 0), 0);
-    //ast_print(token, 0); // Print after this to get array size info
+    //ast_print_(token, 0); // Print after this to get array size info
   } else { err = 1; }
   assert(err == 1);
   parse_exp_free(cxt);

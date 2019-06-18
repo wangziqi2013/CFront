@@ -53,7 +53,7 @@ void test_ast() {
   ast_append_child(&token3, &token7);
   ast_push_child(&token5, &token8);
 
-  ast_print(&token1, 0);
+  ast_print_(&token1, 0);
   printf("Pass!\n");
   return;
 }
@@ -75,7 +75,7 @@ void test_decl_prop() {
     token_t *basetype = parse_decl_basetype(cxt);
     assert(token_get_next(cxt->token_cxt) == NULL);
     printf("--> Reconstruct: %s\n", token_decl_print(basetype->decl_prop));
-    if(iter == 6) ast_print(basetype, 0);
+    if(iter == 6) ast_print_(basetype, 0);
     ast_free(basetype);
     parse_exp_free(cxt);
   }
@@ -205,7 +205,7 @@ void test_simple_exp_parse() {
   parse_exp_cxt_t *cxt = parse_exp_init(test);
   token_t *token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -213,7 +213,7 @@ void test_simple_exp_parse() {
   cxt = parse_exp_init(test2);
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -221,7 +221,7 @@ void test_simple_exp_parse() {
   cxt = parse_exp_init(test3);
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -229,7 +229,7 @@ void test_simple_exp_parse() {
   cxt = parse_exp_init(test4);
   token = parse_exp(cxt, PARSE_EXP_ALLOWALL);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -237,7 +237,7 @@ void test_simple_exp_parse() {
   cxt = parse_exp_init(test5);
   token = parse_exp(cxt, PARSE_EXP_NOCOMMA);
   assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_COMMA);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("Pass!\n");
@@ -252,7 +252,7 @@ void test_parse_decl() {
   cxt = parse_exp_init(test1);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -260,7 +260,7 @@ void test_parse_decl() {
   cxt = parse_exp_init(test2);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -268,7 +268,7 @@ void test_parse_decl() {
   cxt = parse_exp_init(test3);
   token = parse_decl(cxt, PARSE_DECL_NOBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("Pass!\n");
@@ -277,7 +277,7 @@ void test_parse_decl() {
   cxt = parse_exp_init(test4);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("Pass!\n");
@@ -292,7 +292,7 @@ void test_parse_struct_union() {
   cxt = parse_exp_init(test1);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -300,7 +300,7 @@ void test_parse_struct_union() {
   cxt = parse_exp_init(test2);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -308,7 +308,7 @@ void test_parse_struct_union() {
   cxt = parse_exp_init(test3);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests nesting of struct and union
@@ -316,7 +316,7 @@ void test_parse_struct_union() {
   cxt = parse_exp_init(test4);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n"); // Tests whether anonymous struct/union is allowed
@@ -324,7 +324,7 @@ void test_parse_struct_union() {
   cxt = parse_exp_init(test5);
   token = parse_comp(cxt);
   assert(token_lookahead_notnull(cxt->token_cxt, 1)->type == T_SEMICOLON);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("Pass!\n");
@@ -339,7 +339,7 @@ void test_parse_enum() {
   cxt = parse_exp_init(test1);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -347,7 +347,7 @@ void test_parse_enum() {
   cxt = parse_exp_init(test2);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -355,7 +355,7 @@ void test_parse_enum() {
   cxt = parse_exp_init(test3);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -363,7 +363,7 @@ void test_parse_enum() {
   cxt = parse_exp_init(test4);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -371,7 +371,7 @@ void test_parse_enum() {
   cxt = parse_exp_init(test5);
   token = parse_comp(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("Pass!\n");
@@ -386,7 +386,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test1);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -394,7 +394,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test2);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -402,7 +402,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test3);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -410,7 +410,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -418,7 +418,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test5);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -426,7 +426,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test6);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -434,7 +434,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test7);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -442,7 +442,7 @@ void test_parse_stmt() {
   cxt = parse_exp_init(test8);
   token = parse_init_list(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -458,7 +458,7 @@ void test_parse_comp_stmt() {
   cxt = parse_exp_init(test1);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -466,7 +466,7 @@ void test_parse_comp_stmt() {
   cxt = parse_exp_init(test2);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -474,7 +474,7 @@ void test_parse_comp_stmt() {
   cxt = parse_exp_init(test3);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n"); 
@@ -482,7 +482,7 @@ void test_parse_comp_stmt() {
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -498,7 +498,7 @@ void test_parse_select_stmt() {
   cxt = parse_exp_init(test1);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -506,7 +506,7 @@ void test_parse_select_stmt() {
   cxt = parse_exp_init(test2);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -514,7 +514,7 @@ void test_parse_select_stmt() {
   cxt = parse_exp_init(test3);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n"); 
@@ -522,7 +522,7 @@ void test_parse_select_stmt() {
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -538,7 +538,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test1);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -546,7 +546,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test2);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -554,7 +554,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test3);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n"); 
@@ -562,7 +562,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test4);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -570,7 +570,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test5);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -578,7 +578,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test6);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -586,7 +586,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test7);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -594,7 +594,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test8);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -602,7 +602,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test9);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -610,7 +610,7 @@ void test_parse_loop_stmt() {
   cxt = parse_exp_init(test10);
   token = parse_stmt(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -626,7 +626,7 @@ void test_vararg_func() {
   cxt = parse_exp_init(test1);
   token = parse_decl(cxt, PARSE_DECL_HASBASETYPE);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -642,7 +642,7 @@ void test_parse() {
   cxt = parse_exp_init(test1);
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -650,7 +650,7 @@ void test_parse() {
   cxt = parse_exp_init(test2);
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -658,7 +658,7 @@ void test_parse() {
   cxt = parse_exp_init(test3);
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -675,7 +675,7 @@ void test_udef() {
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   puts(test1);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -684,7 +684,7 @@ void test_udef() {
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
   puts(test2);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   printf("=====================================\n");
@@ -711,7 +711,7 @@ void final_test() {
   ht_insert(stack_peek(cxt->token_cxt->udef_types), "token_type_t", NULL);
   token = parse(cxt);
   assert(token_get_next(cxt->token_cxt) == NULL);
-  ast_print(token, 0);
+  ast_print_(token, 0);
   parse_exp_free(cxt);
   ast_free(token);
   free(s);
