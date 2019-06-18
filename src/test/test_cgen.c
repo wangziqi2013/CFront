@@ -32,6 +32,12 @@ tets_cxt_t *test_init(const char *s) {
   return cxt;
 }
 
+void test_free(test_cxt_t *cxt) {
+  cgen_free(cxt->cgen_cxt);
+  parse_exp_free(cxt->parse_cxt);
+  return;
+}
+
 /* 
 void test_eval_const_exp() {
   printf("=== Test eval_const_exp ===\n");
