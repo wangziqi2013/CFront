@@ -45,8 +45,9 @@ void test_cgen_global_decl() {
   test_cxt_t *cxt;
   token_t *token;
 
-  cxt = test_init("extern const int array[120 + 20];");
+  cxt = test_init("extern const int array[120 + 20]; int array;");
   token = parse(cxt->parse_cxt);
+  cgen(cxt->cgen_cxt, token);
   ast_print(token);
   ast_free(token);
   test_free(cxt);
