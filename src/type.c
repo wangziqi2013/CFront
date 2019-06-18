@@ -226,19 +226,12 @@ type_cxt_t *type_sys_init() {
   SYSEXPECT(cxt != NULL);
   cxt->scopes = stack_init();
   scope_recurse(cxt);
-  cxt->import_list = list_init();
-  cxt->import_index = ht_str_init();
-  cxt->export_list = list_init();
-  cxt->gdata_list = list_init();
   return cxt;
 }
 
 void type_sys_free(type_cxt_t *cxt) {
   while(scope_numlevel(cxt)) scope_decurse(cxt); // First pop all scopes
   stack_free(cxt->scopes);
-  list_free(cxt->import_list);
-  ht_free(cxt->import_index);
-  list_free(cxt->export_list);
   free(cxt);
 }
 

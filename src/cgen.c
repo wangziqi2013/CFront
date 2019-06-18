@@ -6,11 +6,18 @@ cgen_cxt_t *cgen_init() {
   SYSEXPECT(cxt != NULL);
   memset(cxt, 0x00, sizeof(cgen_cxt_t));
   cxt->type_cxt = type_sys_init();
+  cxt->import_list = list_init();
+  cxt->import_index = ht_str_init();
+  cxt->export_list = list_init();
+  cxt->gdata_list = list_init();
   return cxt;
 }
+
 void cgen_free(cgen_cxt_t *cxt) { 
   type_sys_free(cxt->type_cxt);
-  
+  list_free(cxt->import_list);
+  ht_free(cxt->import_index);
+  list_free(cxt->export_list);
   // Free all nodes in the global data list
   listnode_t *node = list_head(cxt->gdata_list);
   while(node) {
