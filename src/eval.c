@@ -546,3 +546,14 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   }
   return ret;
 }
+
+// This function uses implicit type cast
+value_t *eval_const_to(type_cxt_t *cxt, token_t *exp, type_t *type, int cast_type) {
+  assert(cast_type == TYPE_CAST_IMPLICIT || cast_type == TYPE_CAST_EXPLICIT);
+  value_t *value = eval_const_exp(cxt, exp);
+  int cast_action = type_cast(type, value->type, cast_type, exp->offset);
+  int sign_ext = cast_action == TYPE_CAST_SIGN_EXT;
+  value->uint64 = eval_const_adjust_size(value, type->size, value->type->size, sign_ext);
+  value->type = type; // Assign the new type
+  return value;
+}
