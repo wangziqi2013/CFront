@@ -470,11 +470,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       token_t *basetype_token = ast_getchild(decl_token, 0);
       // Allow casting to void or functions returning void
       type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID); 
-      op1_value = eval_const_exp(cxt, op1);
-      int cast = type_cast(target, op1_value->type, TYPE_CAST_EXPLICIT, exp->offset);
-      int op_signed = cast == TYPE_CAST_SIGN_EXT;
-      op1_value->uint64 = eval_const_adjust_size(op1_value, target->size, op1_value->type->size, op_signed);
-      op1_value->type = target; // Might cast to void, but this will be detected at higher level
+      op1_value = eval_const_to_type(cxt, op1, target, TYPE_CAST_EXPLICIT);
       return op1_value;
     } break;
     case EXP_SIZEOF: {
@@ -547,8 +543,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   return ret;
 }
 
-// This function uses implicit type cast
-value_t *eval_const_to(type_cxt_t *cxt, token_t *exp, type_t *type, int cast_type) {
+value_t *eval_const_to_type(type_cxt_t *cxt, token_t *exp, type_t *type, int cast_type) {
   assert(cast_type == TYPE_CAST_IMPLICIT || cast_type == TYPE_CAST_EXPLICIT);
   value_t *value = eval_const_exp(cxt, exp);
   int cast_action = type_cast(type, value->type, cast_type, exp->offset);
