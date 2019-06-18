@@ -92,8 +92,6 @@ extern obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1]; // Registered cal
 
 typedef struct {
   stack_t *scopes;
-  int64_t global_data_ptr;   // Global data offset
-  int64_t global_import_id;  // Global import ID, incremented for every imported object
   list_t *import_list;       // Externally declared variable, function or array
   hashtable_t *import_index; // Index of the above list - we may remove from this list
   list_t *export_list; // Non-statically declared global variable, function or array
@@ -201,12 +199,6 @@ typedef struct enum_t_struct {
 
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
-}
-
-static inline int64_t type_alloc_global_data(type_cxt_t *cxt, size_t size) {
-  int64_t ret = cxt->global_data_ptr;
-  cxt->global_data_ptr += (int64_t)size;
-  return ret;
 }
 
 static inline type_t *type_getint(decl_prop_t decl_prop) {

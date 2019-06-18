@@ -87,7 +87,6 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
       value->pending_list = list_init();
       value->addrtype = ADDR_GLOBAL;
-      value->import_id = cxt->global_import_id++;
       value->type = type;
       list_insert(cxt->import_list, name->str, value);
       ht_insert(cxt->import_index, name->str, value);
