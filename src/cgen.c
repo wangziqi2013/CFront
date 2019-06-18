@@ -9,6 +9,14 @@ cgen_gdata_t *cgen_init_gdata() {
 }
 void cgen_free_gdata(cgen_gdata_t *gdata) { free(gdata); }
 
+// Free all nodes in the global data list
+  listnode_t *node = list_head(cxt->gdata_list);
+  while(node) {
+    cgen_free_gdata((cgen_gdata_t *)list_value(node));
+    node = list_next(node);
+  }
+  list_free(cxt->gdata_list);
+
 // Resolves pending references of the external declaration value
 void cgen_resolve_extern(type_cxt_t *cxt, value_t *value) {
   (void)cxt; (void)value;
