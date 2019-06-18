@@ -61,7 +61,9 @@ token_t *ast_remove(token_t *token) {
   return token;
 }
 
-void ast_print(token_t *token, int depth) {
+void ast_print(token_t *token) { ast_print_(token, 0); }
+
+void ast_print_(token_t *token, int depth) {
   for(int i = 0;i < depth * 2;i++) if(i % 2 == 0) printf("|"); else printf(" ");
   const char *symstr = token_symstr(token->type);
   char array_size[16];
