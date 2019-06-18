@@ -89,7 +89,8 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 }
 
 // Processes global declaration, including normal declaration and function prototype
-void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *name, token_t *global_var) {
+void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *name, token_t *global_var, token_t *basetype) {
+  token_t *decl = ast_getchild(global_var, 0);
   token_t *init = ast_getchild(global_var, 1);
   // Declaration: has extern, no def, or is function type
   if(name->type == T_) {// Extern type must have a name to be imported
@@ -146,7 +147,7 @@ void cgen_global(cgen_cxt_t *cxt, token_t *global_decl) {
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
       error_row_col_exit(decl->offset, "Keyword \"auto\" is not allowed for outer-most scope\n");
     } else if((DECL_ISEXTERN(basetype->decl_prop) && !init) || (type_is_func(type))) { 
-      cgen_global_decl(cxt, type, name, global_var);
+      cgen_global_decl(cxt, type, name, global_var, basetype);
     } else { // Defines a new global variable or array - may not have name
       assert(!type_is_func(type) && !type_is_void(type));
       // If the array has an initializer list, we could derive its element count and size
