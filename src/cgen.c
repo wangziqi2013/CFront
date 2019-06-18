@@ -53,7 +53,7 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
   while(global_var) {
     assert(global_var && global_var->type == T_GLOBAL_DECL_VAR);
     token_t *decl = ast_getchild(global_var, 0);
-    // Initializer, optional, can be init list of expression
+    // Initializer, optional, can be T_INIT_LIST or expression node
     token_t *init = ast_getchild(global_var, 1); 
     assert(decl && decl->type == T_DECL);
     token_t *exp = ast_getchild(decl, 1);
@@ -86,8 +86,7 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       value_t *value = value_init(cxt);
       value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
       value->pending_list = list_init();
-      if(type_is_array(type) || type_is_func(type)) value->addrtype = ADDR_LABEL;
-      else value->addrtype = ADDR_GLOBAL;  // Otherwise it must be a global variable (func are in the next branch)
+      value->addrtype = ADDR_GLOBAL;
       value->import_id = cxt->global_import_id++;
       value->type = type;
       list_insert(cxt->import_list, name->str, value);
@@ -114,8 +113,7 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
       }
       if(name->type != T_) { // Named global variable or array
         value_t *value = value_init(cxt);
-        if(type_is_array(type)) value->addrtype = ADDR_LABEL;
-        else value->addrtype = ADDR_GLOBAL;  // Otherwise it must be a global variable (func are in the next branch)
+        value->addrtype = ADDR_GLOBAL; 
         value->type = type;
         value->offset = type_alloc_global_data(cxt, type->size);
         // Check whether there is already an declaration or func prototype

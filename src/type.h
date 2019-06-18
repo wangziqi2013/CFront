@@ -147,8 +147,6 @@ typedef enum {
   LVALUES_END, RVALUES_BEGIN = 10,
   ADDR_TEMP,  // Unnamed variable (intermediate node of an expression)
   ADDR_IMM,   // Immediate value (constants)
-  ADDR_LABEL, // Array name and function name. Taking the addr returns the symbol addr
-  ADDR_RES,   // Resource type, not having a name but must be stored
   RVALUES_END,
 } addrtype_t;
 
