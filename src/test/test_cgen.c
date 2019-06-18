@@ -14,6 +14,24 @@
 #include "eval.h"
 #include "cgen.h"
 
+typedef struct {
+  cgen_cxt_t *cgen_cxt;       // This contains type cxt
+  type_cxt_t *type_cxt;
+  parse_exp_cxt_t *parse_cxt; // This contains token cxt
+  token_cxt_t *token_cxt;
+} test_cxt_t;
+
+tets_cxt_t *test_init(const char *s) {
+  test_cxt_t *cxt = (test_cxt_t *)malloc(sizeof(test_cxt_t));
+  SYSEXPECT(cxt != NULL);
+  memset(cxt, 0x00, sizeof(test_cxt_t));
+  cxt->cgen_cxt = cgen_init();
+  cxt->type_cxt = cxt->cgen_cxt->type_cxt;
+  cxt->parse_cxt = parse_exp_init(s);
+  cxt->token_cxt = cxt->parse_cxt->token_cxt;
+  return cxt;
+}
+
 /* 
 void test_eval_const_exp() {
   printf("=== Test eval_const_exp ===\n");
