@@ -38,8 +38,8 @@ mem-test: all
 ./bin/test_eval: test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
 	$(CC) test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_eval $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_cgen: test_cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
-	$(CC) test_cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_cgen $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+./bin/test_cgen: test_cgen.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
+	$(CC) test_cgen.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_cgen $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
