@@ -13,8 +13,17 @@ typedef struct {
   list_t *gdata_list;  // A list of global data, i.e. actual storage
 } cgen_cxt_t;
 
+// Global data container
+typedef struct {
+  void *data;      // Actual data; NULL means uninitialized
+  type_t *type;    // Type of the global data, which also contains the size
+} cgen_gdata_t;
+
 cgen_cxt_t *cgen_init();
 void cgen_free(cgen_cxt_t *cxt);
+
+cgen_gdata_t *cgen_gdata_init();
+void cgen_gdata_free(cgen_gdata_t *gdata);
 
 void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl);
 void cgen_global_func(type_cxt_t *cxt, token_t *func);

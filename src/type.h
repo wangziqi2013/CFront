@@ -124,12 +124,6 @@ typedef struct type_t_struct {
   size_t size;      // Always check if it is TYPE_UNKNOWN_SIZE which means compile time size unknown or undefined comp
 } type_t;
 
-// Global data container
-typedef struct {
-  void *data;      // Actual data; NULL means uninitialized
-  type_t *type;    // Type of the global data, which also contains the size
-} cgen_gdata_t;
-
 typedef struct { // Integer (builtin type) properties
   int sign;      // 0 means unsigned, 1 means signed
   int size;      // Number of bytes
@@ -199,9 +193,6 @@ typedef struct enum_t_struct {
   bintree_t *field_index;  // Same as above
   size_t size;             // Fixed size - same as integer
 } enum_t;
-
-cgen_gdata_t *cgen_init_gdata();
-void cgen_free_gdata(cgen_gdata_t *gdata);
 
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
