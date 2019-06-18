@@ -25,6 +25,9 @@ void cgen_free(cgen_cxt_t *cxt);
 cgen_gdata_t *cgen_gdata_init();
 void cgen_gdata_free(cgen_gdata_t *gdata);
 
+void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value);
+void *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void *parent_p, int parent_offset);
+
 void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl);
 void cgen_global_func(cgen_cxt_t *cxt, token_t *func);
 void cgen(cgen_cxt_t *cxt, token_t *root);

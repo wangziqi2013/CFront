@@ -46,7 +46,7 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 // 2. The size of data is already given by the type
 // 3. Return value points to the end of the buffer after processing the current list; To obtain the 
 //    head, just subtract the type size from the pointer value
-void *cgen_init_list(type_t *type, token_t *init, void *parent_p, int parent_offset) {
+cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void *parent_p, int parent_offset) {
   assert(init->type == T_INIT_LIST);
   if(!type_is_array(type) && !type_is_comp(type))
     error_row_col_exit(init->offset, "Initializer list can only be used to initialize array or composite types\n");
@@ -73,6 +73,14 @@ void *cgen_init_list(type_t *type, token_t *init, void *parent_p, int parent_off
     entry = entry->sibling;
   }
   return (void *)ret;
+}
+
+// Processes initializer value for global variable
+cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
+  assert(type->size != TYPE_UNKNOWN_SIZE);
+  cgen_gdata_t *gdata = cgen_gdata_init();
+  gdata->type = gdata;
+  void *data = malloc(type->size);
 }
 
 // 1. typedef - must have a name
