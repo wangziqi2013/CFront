@@ -2,6 +2,23 @@
 #include "eval.h"
 #include "cgen.h"
 
+// This function dumps all context info to stdout
+void cgen_print_cxt(cgen_cxt_t *cxt) {
+  listnode_t *node;
+  printf("Context Object @ 0x%016lX\n", cxt);
+  printf("===================================\n");
+  printf("Import List\n");
+  printf("-----------\n");
+  node = list_head(cxt->import_list);
+  while(node) {
+    char *name = (char *)list_key(node);
+    value_t *value = (value_t *)list_value(node);
+    printf("%s\n", type_print_str(0, value->type, name, 0));
+    node = list_next(node);
+  }
+  
+}
+
 cgen_cxt_t *cgen_init() {
   cgen_cxt_t *cxt = (cgen_cxt_t *)malloc(sizeof(cgen_cxt_t));
   SYSEXPECT(cxt != NULL);
@@ -79,7 +96,7 @@ cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void 
 // Processes initializer value for global variable
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
-  assert(token);
+  assert(token && token->type != T_INIT_LIST);
   cgen_gdata_t *gdata = cgen_gdata_init();
   gdata->type = type;
   gdata->data = malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte data
@@ -129,6 +146,7 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
       error_row_col_exit(decl->offset, "Could not define global variable with incomplete type\n");
     }
   }
+
   if(name->type != T_) { // Named global variable or array
     value_t *value = value_init(cxt->type_cxt);
     value->addrtype = ADDR_GLOBAL; 

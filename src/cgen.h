@@ -21,6 +21,8 @@ typedef struct {
   type_t *type;    // Type of the global data, which also contains the size
 } cgen_gdata_t;
 
+void cgen_print_cxt(cgen_cxt_t *cxt);
+
 cgen_cxt_t *cgen_init();
 void cgen_free(cgen_cxt_t *cxt);
 
