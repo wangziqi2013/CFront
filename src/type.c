@@ -242,7 +242,9 @@ hashtable_t *scope_top_name(type_cxt_t *cxt, int domain) { return ((scope_t *)st
 int scope_numlevel(type_cxt_t *cxt) { return stack_size(cxt->scopes); }
 void scope_recurse(type_cxt_t *cxt) { stack_push(cxt->scopes, scope_init(scope_numlevel(cxt))); }
 void scope_decurse(type_cxt_t *cxt) { scope_free(stack_pop(cxt->scopes)); }
-void *scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { return ht_insert(scope_top_name(cxt, domain), key, value); }
+void scope_top_insert(type_cxt_t *cxt, int domain, void *key, void *value) { 
+  ht_insert(scope_top_name(cxt, domain), key, value); 
+}
 
 void *scope_top_remove(type_cxt_t *cxt, int domain, void *key) {
   void *ht_ret = ht_remove(scope_top_name(cxt, domain), key);
