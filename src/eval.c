@@ -434,14 +434,9 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       if(!type_is_int(op1_value->type) || !type_is_int(op2_value->type))
         error_row_col_exit(exp->offset, "Consant expression operator must only have integer operands\n");
       target_type = type_int_convert(op1_value->type, op2_value->type);
-      int op1_cast = type_cast(target_type, op1_value->type, TYPE_CAST_IMPLICIT, op1->offset);
-      int op2_cast = type_cast(target_type, op2_value->type, TYPE_CAST_IMPLICIT, op2->offset);
-      int op1_signed = op1_cast == TYPE_CAST_SIGN_EXT;
-      int op2_signed = op2_cast == TYPE_CAST_SIGN_EXT;
-      op1_value->uint64 = eval_const_adjust_size(op1_value, target_type->size, op1_value->type->size, op1_signed);
-      op2_value->uint64 = eval_const_adjust_size(op2_value, target_type->size, op2_value->type->size, op2_signed);
-      op1_value->type = target_type;
-      op2_value->type = target_type;
+      // Eval and then convert to the target type
+      op1_value = eval_const_to_type(cxt, op1, target_type, TYPE_CAST_IMPLICIT);
+      op2_value = eval_const_to_type(cxt, op2, target_type, TYPE_CAST_IMPLICIT);
     } break;
     case EXP_COND: { // It has three operands: op1 (cond), op2, op3
       token_t *op3 = ast_getchild(exp, 2);
@@ -505,8 +500,8 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
   ret->addrtype = ADDR_IMM;
   ret->type = target_type; // This might be changed below in case branches
   int target_size = (int)target_type->size;
-  printf("exp %s target type %s target size %d\n", token_typestr(exp->type), type_print_str(0, target_type, 0, 0), target_size);
-  printf("op1 0x%lX op2 0x%lX\n", op1_value->uint64, op2_value->uint64);
+  //printf("exp %s target type %s target size %d\n", token_typestr(exp->type), type_print_str(0, target_type, 0, 0), target_size);
+  //printf("op1 0x%lX op2 0x%lX\n", op1_value->uint64, op2_value->uint64);
   int flag = 0; // Overflow or div-by-zero
   int is_signed = type_is_signed(target_type);
   assert(op1_value && op2_value);

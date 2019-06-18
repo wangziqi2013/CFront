@@ -46,6 +46,6 @@ str_t *eval_const_str_token(token_t *token); // Evaluates string token to str_t 
 // Evaluating const expression using value_t objects
 value_t *eval_const_get_int_value(type_cxt_t *cxt, token_t *token); // Evaluates int literal and returns value object
 value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp);
-value_t *eval_const_to(type_cxt_t *cxt, token_t *exp, type_t *type, int cast_type); // Evaluates and cast to type
+value_t *eval_const_to_type(type_cxt_t *cxt, token_t *exp, type_t *type, int cast_type); // Evaluates and cast to type
 
 #endif
