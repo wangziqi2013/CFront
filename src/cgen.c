@@ -1,4 +1,5 @@
 
+#include "eval.h"
 #include "cgen.h"
 
 cgen_cxt_t *cgen_init() {
@@ -78,9 +79,13 @@ cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void 
 // Processes initializer value for global variable
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
+  assert(token);
   cgen_gdata_t *gdata = cgen_gdata_init();
   gdata->type = gdata;
-  void *data = malloc(type->size);
+  gdata->data = malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte data
+  value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
+  memcpy(gdata->data, value->data, type->size);
+  return gdata;
 }
 
 // 1. typedef - must have a name
