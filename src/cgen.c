@@ -60,7 +60,7 @@ void *cgen_init_list(type_t *type, token_t *init, void *parent_p, int parent_off
     }
   }
   uint8_t *ret = (uint8_t *)parent_p;
-  int offset = parent_offset;
+  int offset = parent_offset; (void)offset; // TODO: REMOVE THIS
   if(parent_p == NULL) {
     ret = (uint8_t *)malloc(type->size); 
     SYSEXPECT(ret != NULL);
@@ -133,7 +133,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
       assert(!type_is_func(type) && !type_is_void(type));
       // If the array has an initializer list, we could derive its element count and size
       if(type->size == TYPE_UNKNOWN_SIZE) {
-        if(type_is_array && init) {
+        if(type_is_array(type) && init) {
           assert(type->array_size == -1);
           if(type->next->size == TYPE_UNKNOWN_SIZE) // The element size must be known
             error_row_col_exit(type->offset, "Array initialization with incomplete element type\n");
@@ -156,7 +156,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
             error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
           // TODO: CHECK WHETHER ARRAY RANGE ARE CONSISTENT
           // Resolve all pending references, and then remove the old entry from global scope
-          cgen_resolve_extern(cxt->type_cxt, prev_value);
+          cgen_resolve_extern(cxt, prev_value);
           void *ret = scope_top_remove(cxt->type_cxt, SCOPE_VALUE, name->str);
           assert(ret); (void)ret;
         }
