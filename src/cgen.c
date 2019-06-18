@@ -81,7 +81,7 @@ void *cgen_init_list(type_t *type, token_t *init, void *parent_p, int parent_off
 // 3. auto, register are disallowed
 // 4. static means the var is not exposed to other compilation units
 // 5. If none storage class then by default it is definition even without init list
-void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
+void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
   assert(global_decl->type == T_GLOBAL_DECL_ENTRY);
   token_t *basetype = ast_getchild(global_decl, 0);
   token_t *global_var = ast_getchild(global_decl, 1);
@@ -175,12 +175,12 @@ void cgen_global_decl(type_cxt_t *cxt, token_t *global_decl) {
   }
 }
 
-void cgen_global_func(type_cxt_t *cxt, token_t *func) {
+void cgen_global_func(cgen_cxt_t *cxt, token_t *func) {
   (void)cxt; (void)func;
 }
 
 // Main entry point to code generation
-void cgen(type_cxt_t *cxt, token_t *root) {
+void cgen(cgen_cxt_t *cxt, token_t *root) {
   assert(root->type == T_ROOT);
   token_t *t = ast_getchild(root, 0);
   while(t) {
