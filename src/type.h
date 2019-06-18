@@ -92,11 +92,6 @@ extern obj_free_func_t obj_free_func_list[OBJ_TYPE_COUNT + 1]; // Registered cal
 
 typedef struct {
   stack_t *scopes;
-  // The following three maintains symbols, i.e. names
-  list_t *import_list;       // Externally declared variable, function or array
-  hashtable_t *import_index; // Index of the above list - we may remove from this list
-  list_t *export_list; // Non-statically declared global variable, function or array
-  list_t *gdata_list;  // A list of global data, i.e. actual storage
 } type_cxt_t;
 
 typedef uint64_t typeid_t;
