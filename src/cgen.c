@@ -81,11 +81,36 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token);
   cgen_gdata_t *gdata = cgen_gdata_init();
-  gdata->type = gdata;
+  gdata->type = type;
   gdata->data = malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte data
   value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
   memcpy(gdata->data, value->data, type->size);
   return gdata;
+}
+
+// Processes global declaration, including normal declaration and function prototype
+void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *name, token_t *global_var) {
+  token_t *init = ast_getchild(global_var, 1);
+  // Declaration: has extern, no def, or is function type
+  if(name->type == T_) {// Extern type must have a name to be imported
+    error_row_col_exit(decl->offset, "External declaration must have a name\n");
+  } else if(type_is_func(type) && DECL_ISEXTERN(basetype->decl_prop)) {
+    error_row_col_exit(decl->offset, "You don't need \"extern\" to declare function prototypes\n");
+  } else if(type_is_func(type) && init) {
+    error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
+  }
+  value_t *value = value_init(cxt->type_cxt);
+  value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
+  value->pending_list = list_init();
+  value->addrtype = ADDR_GLOBAL;
+  value->type = type;
+  list_insert(cxt->import_list, name->str, value);
+  ht_insert(cxt->import_index, name->str, value);
+  // Also insert into the scope
+  if(scope_search(cxt->type_cxt, SCOPE_VALUE, name->str)) 
+    error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
+  scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
+  return;
 }
 
 // 1. typedef - must have a name
@@ -94,7 +119,7 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 // 3. auto, register are disallowed
 // 4. static means the var is not exposed to other compilation units
 // 5. If none storage class then by default it is definition even without init list
-void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
+void cgen_global(cgen_cxt_t *cxt, token_t *global_decl) {
   assert(global_decl->type == T_GLOBAL_DECL_ENTRY);
   token_t *basetype = ast_getchild(global_decl, 0);
   token_t *global_var = ast_getchild(global_decl, 1);
@@ -104,9 +129,8 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
     // Initializer, optional, can be T_INIT_LIST or expression node
     token_t *init = ast_getchild(global_var, 1); 
     assert(decl && decl->type == T_DECL);
-    token_t *exp = ast_getchild(decl, 1);
     token_t *name = ast_getchild(decl, 2); // This could be T_ if it is struct/union/enum
-    assert(exp && name);
+    assert(name);
     // Global var could have storage class but could not be void without derivation
     type_t *type = type_gettype(cxt->type_cxt, decl, basetype, TYPE_ALLOW_STGCLS); 
     
@@ -122,26 +146,7 @@ void cgen_global_decl(cgen_cxt_t *cxt, token_t *global_decl) {
     } else if(DECL_ISAUTO(basetype->decl_prop)) {
       error_row_col_exit(decl->offset, "Keyword \"auto\" is not allowed for outer-most scope\n");
     } else if((DECL_ISEXTERN(basetype->decl_prop) && !init) || (type_is_func(type))) { 
-      // Declaration: has extern, no def, or is function type
-      if(name->type == T_) {// Extern type must have a name to be imported
-        error_row_col_exit(decl->offset, "External declaration must have a name\n");
-      } else if(type_is_func(type) && DECL_ISEXTERN(basetype->decl_prop)) {
-        error_row_col_exit(decl->offset, "You don't need \"extern\" to declare function prototypes\n");
-      } else if(type_is_func(type) && init) {
-        error_row_col_exit(decl->offset, "Function prototype does not allow initialization\n");
-      }
-
-      value_t *value = value_init(cxt->type_cxt);
-      value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
-      value->pending_list = list_init();
-      value->addrtype = ADDR_GLOBAL;
-      value->type = type;
-      list_insert(cxt->import_list, name->str, value);
-      ht_insert(cxt->import_index, name->str, value);
-      // Also insert into the scope
-      if(scope_search(cxt->type_cxt, SCOPE_VALUE, name->str)) 
-        error_row_col_exit(decl->offset, "Duplicated global declaration of name \"%s\"\n", name->str);
-      scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
+      cgen_global_decl(cxt, type, name, global_var);
     } else { // Defines a new global variable or array - may not have name
       assert(!type_is_func(type) && !type_is_void(type));
       // If the array has an initializer list, we could derive its element count and size
@@ -197,7 +202,7 @@ void cgen(cgen_cxt_t *cxt, token_t *root) {
   token_t *t = ast_getchild(root, 0);
   while(t) {
     if(t->type == T_GLOBAL_DECL_ENTRY) {
-      cgen_global_decl(cxt, t);
+      cgen_global(cxt, t);
     } else if(t->type == T_GLOBAL_FUNC) {
       cgen_global_func(cxt, t);
     } else {
