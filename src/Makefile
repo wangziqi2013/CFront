@@ -12,10 +12,10 @@ endif
 
 .phony: line-count
 
+all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_eval ./bin/test_cgen
+
 line-count:
 	cloc --exclude-lang=Python ./
-
-all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_eval ./bin/test_cgen
 
 test: all
 	./bin/test_lex
