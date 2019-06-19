@@ -114,6 +114,13 @@ cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void 
   return (void *)ret;
 }
 
+cgen_data_t *cgen_init_array(cgen_cxt_t *cxt, type_t *type, token_t *token) {
+  assert(type_is_array(type) && token->type == T_INIT_LIST);
+  // This must be true because if there is init list we always know the array size
+  assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
+  
+}
+
 // Processes initializer value for global variable
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
