@@ -118,17 +118,50 @@ cgen_data_t *cgen_init_array(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   assert(type_is_array(type) && token->type == T_INIT_LIST);
   // This must be true because if there is init list we always know the array size
   assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
-  
+  assert(ast_child_count(token) <= type->array_size);
+
+}
+
+// Accept next write position, returns the next write position after filling current level
+int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_data_t *gdata, int64_t offset) {
+  assert(type_is_array(type) && token->type == T_INIT_LIST);
+  // This must be true because if there is init list we always know the array size
+  assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
+  assert(ast_child_count(token) <= type->array_size);
+  type_t *elem_type = type->next;
+  token_t *curr_elem = ast_getchild(token, 0);
+  int count = 0;
+  while(curr_elem) {
+    if(type_is_array(elem_type)) {
+      offset = cgen_init_array_(cxt, elem_type, curr_elem, gdata, offset);
+    } else if(type_is_comp(elem_type)) {
+      //offset = cgen_init_comp_(cxt, elem_type, curr_elem, gdata, offset);
+    } else {
+
+    }
+    curr_elem = curr_elem->sibling;
+    count++;
+  }
+  assert(count <= type->array_size);
+  int remains = type->array_size - count;
+  memset(gdata->data + offset, 0x00, remains * elem_type->size); // Fill the remaining space with zero
+  return offset + remains * elem_type->size; 
 }
 
 // Processes initializer value for global variable
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
+  
+  cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
+  
+  return gdata;
+}
+
+int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_data_t *gdata, int64_t offset) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
-  cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
   value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
-  memcpy(gdata->data, value->data, type->size);
-  return gdata;
+  memcpy(gdata->data + offset, value->data, type->size);
+  return offset + type->size;
 }
 
 // Resolves pending references of the external declaration value
