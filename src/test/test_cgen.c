@@ -45,6 +45,7 @@ void test_cgen_global_decl() {
   test_cxt_t *cxt;
   token_t *token;
 
+  // Test basis import export
   cxt = test_init("extern const int array[120 + 20]; int array2[] = {1, 2, 3, 4, 5}; ");
   token = parse(cxt->parse_cxt);
   cgen(cxt->cgen_cxt, token);
@@ -53,7 +54,15 @@ void test_cgen_global_decl() {
   ast_free(token);
   test_free(cxt);
   printf("=====================================\n");
-  
+  // Test array size
+  cxt = test_init("extern const int array[2 + 3]; volatile int array[] = {1, 2, 3, 4, }; ");
+  token = parse(cxt->parse_cxt);
+  cgen(cxt->cgen_cxt, token);
+  ast_print(token);
+  cgen_print_cxt(cxt->cgen_cxt);
+  ast_free(token);
+  test_free(cxt);
+  printf("=====================================\n");
 
   printf("Pass!\n");
   return;

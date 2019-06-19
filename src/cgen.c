@@ -16,6 +16,7 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
     printf("%s\n", type_print_str(0, value->type, name, 0));
     node = list_next(node);
   }
+  putchar('\n');
   printf("Export List\n");
   printf("-----------\n");
   node = list_head(cxt->export_list);
@@ -226,20 +227,6 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
 void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *decl, token_t *init) {
   token_t *name = ast_getchild(decl, 2);
   assert(!type_is_func(type) && !type_is_void(type));
-  // If the array has an initializer list, we could derive its element count and size
-  if(type->size == TYPE_UNKNOWN_SIZE) {
-    if(type_is_array(type) && init) {
-      assert(type->array_size == -1);
-      if(type->next->size == TYPE_UNKNOWN_SIZE) // The element size must be known
-        error_row_col_exit(type->offset, "Array initialization with incomplete element type\n");
-      int child_count = ast_child_count(init);
-      assert(child_count >= 0);
-      type->array_size = child_count;
-      type->size = type->next->size * child_count;
-    } else {
-      error_row_col_exit(decl->offset, "Could not define global variable with incomplete type\n");
-    }
-  }
 
   // Unnamed struct, union and enum declaration - do not reserve space
   if(name->type == T_) {
