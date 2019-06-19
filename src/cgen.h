@@ -11,16 +11,18 @@
 #define CGEN_ARRAY_DECL     1
 
 typedef struct {
-  type_cxt_t *type_cxt; // Owns memory; will automatically init and free
+  type_cxt_t *type_cxt;  // Owns memory; will automatically init and free
   list_t *import_list;       // Externally declared variable, function or array - only valid import is pending is 1
-  list_t *export_list; // Non-statically declared global variable, function or array
-  list_t *gdata_list;  // A list of global data, i.e. actual storage
+  list_t *export_list;  // Non-statically declared global variable, function or array
+  list_t *gdata_list;   // A list of global data, i.e. actual storage
+  int64_t gdata_offset; // Next global data offset
 } cgen_cxt_t;
 
 // Global data container
 typedef struct cgen_data_struct_t {
   void *data;      // Actual data; NULL means uninitialized
   type_t *type;    // Type of the global data, which also contains the size
+  int offset;      // Offset relative to the beginning of data segment
 } cgen_gdata_t;
 
 void cgen_print_cxt(cgen_cxt_t *cxt);
@@ -28,7 +30,7 @@ void cgen_print_cxt(cgen_cxt_t *cxt);
 cgen_cxt_t *cgen_init();
 void cgen_free(cgen_cxt_t *cxt);
 
-cgen_gdata_t *cgen_gdata_init();
+cgen_gdata_t *cgen_gdata_init(cgen_cxt_t *cxt, type_t *type);
 void cgen_gdata_free(cgen_gdata_t *gdata);
 
 void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value);
