@@ -18,7 +18,7 @@ typedef struct {
 } cgen_cxt_t;
 
 // Global data container
-typedef struct {
+typedef struct cgen_data_struct_t {
   void *data;      // Actual data; NULL means uninitialized
   type_t *type;    // Type of the global data, which also contains the size
 } cgen_gdata_t;

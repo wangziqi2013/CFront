@@ -265,6 +265,13 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
   if(!DECL_ISSTATIC(basetype->decl_prop)) list_insert(cxt->export_list, name->str, value);
 
   // TODO: PROCESS INIT LIST
+  if(type_is_array(type)) {
+
+  } else if(type_is_comp(type)) {
+
+  } else { // Single variable - eval and do a cast
+    
+  }
 
   // Resolve all pending references, and then remove the old entry from global scope
   if(value->pending) {

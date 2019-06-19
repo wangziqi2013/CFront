@@ -145,6 +145,8 @@ typedef enum {
   RVALUES_END,
 } addrtype_t;
 
+struct cgen_data_struct_t; // Defined in cgen.h
+
 typedef struct value_t_struct {
   type_t *type;         // Do not own
   addrtype_t addrtype;
@@ -160,7 +162,8 @@ typedef struct value_t_struct {
     int32_t  int32;
     uint64_t uint64;
     int64_t  int64;
-    int64_t  offset;    // Value is an offset
+    int64_t  offset;                  // Local address uses this field
+    struct cgen_data_struct_t *gdata; // Global address uses this field
   };
 } value_t;
 
