@@ -54,8 +54,21 @@ void test_cgen_global_decl() {
   ast_free(token);
   test_free(cxt);
   printf("=====================================\n");
-  // Test array size
+  // Test array size + def after decl
   cxt = test_init("extern int array[2 + 3]; int array[] = {1, 2, 3, 4, }; ");
+  token = parse(cxt->parse_cxt);
+  cgen(cxt->cgen_cxt, token);
+  ast_print(token);
+  cgen_print_cxt(cxt->cgen_cxt);
+  ast_free(token);
+  test_free(cxt);
+  printf("=====================================\n");
+  // Test decl after decl + decl after def
+  cxt = test_init("extern int array[2 + 3]; extern int array[]; \n"
+  "extern int array2[]; extern int array2[]; \n"
+  "extern int array3[]; extern int array3[3 + 4]; extern int array3[]; \n"
+  "int array4[4 << 1]; extern int array4[8]; \n"
+  "int array5[] = {1, 2, 3}; extern int array5[]; \n");
   token = parse(cxt->parse_cxt);
   cgen(cxt->cgen_cxt, token);
   ast_print(token);
