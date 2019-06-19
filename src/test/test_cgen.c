@@ -55,7 +55,7 @@ void test_cgen_global_decl() {
   test_free(cxt);
   printf("=====================================\n");
   // Test array size
-  cxt = test_init("extern const int array[2 + 3]; volatile int array[] = {1, 2, 3, 4, }; ");
+  cxt = test_init("extern int array[2 + 3]; int array[] = {1, 2, 3, 4, }; ");
   token = parse(cxt->parse_cxt);
   cgen(cxt->cgen_cxt, token);
   ast_print(token);
