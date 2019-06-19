@@ -152,8 +152,9 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init,
 
   assert(type_is_array(decl_type));
   if(type_cmp(decl_type->next, def_type->next) != TYPE_CMP_EQ) // Case 0
-    error_row_col_exit(def_type->offset, "Global array %s is inconsistent with previous declaration\n",
-      both_decl ? "declaration" : "definition");
+    error_row_col_exit(def_type->offset, "Global array %s has inconsistent base type (%s) with previous declaration (%s)\n",
+      both_decl ? "declaration" : "definition",
+      type_print_str(0, decl_type, NULL, 0), type_print_str(1, def_type, NULL, 0));
   int decl_size = decl_type->array_size;
   int def_size = def_type->array_size;
   int init_size = init ? ast_child_count(init) : -1;
@@ -243,7 +244,7 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
     if(type_is_array(value->type) && type_is_array(type)) // Resolve decl and def array type
       cgen_resolve_array_size(value->type, type, init, CGEN_ARRAY_DEF);
     if(type_cmp(value->type, type) != TYPE_CMP_EQ)
-      error_row_col_exit(decl->offset, "Global variable definition inconsistent with previous declaration\n");
+      error_row_col_exit(decl->offset, "Global variable definition has inconsistent type with previous declaration\n");
   } else {
     // Set array size from either type or init
     if(type_is_array(type)) cgen_resolve_array_size(NULL, type, init, CGEN_ARRAY_DEF);
