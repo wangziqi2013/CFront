@@ -42,6 +42,7 @@ cgen_cxt_t *cgen_init() {
   cxt->import_list = list_init();
   cxt->export_list = list_init();
   cxt->gdata_list = list_init();
+  cxt->gdata_offset = 0L;
   return cxt;
 }
 
@@ -59,13 +60,25 @@ void cgen_free(cgen_cxt_t *cxt) {
   free(cxt); 
 }
 
-cgen_gdata_t *cgen_gdata_init() {
+// This function initializes all fields in the gdata object
+// This function also inserts the gdata object into the global gdata list
+cgen_gdata_t *cgen_gdata_init(cgen_cxt_t *cxt, type_t *type) {
   cgen_gdata_t *gdata = (cgen_gdata_t *)malloc(sizeof(cgen_gdata_t));
   SYSEXPECT(gdata != NULL);
   memset(gdata, 0x00, sizeof(cgen_gdata_t));
+  gdata->type = type;
+  gdata->data = malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte malloc call
+  gdata->offset = cxt->gdata_offset; // Assign an offset relative to the data segment
+  cxt->gdata_offset += type->size;
+  SYSEXPECT(gdata->data);
+  list_insert(cxt->gdata_list, NULL, gdata);
   return gdata;
 }
-void cgen_gdata_free(cgen_gdata_t *gdata) { free(gdata); }
+
+void cgen_gdata_free(cgen_gdata_t *gdata) { 
+  free(gdata->data);
+  free(gdata); 
+}
 
 // Processes and materializes initialization list, returns a pointer to the next write position
 // 1. Top level function should call with parent_p = NULL and parent_offset equals any value
@@ -105,9 +118,7 @@ cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void 
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
-  cgen_gdata_t *gdata = cgen_gdata_init();
-  gdata->type = type;
-  gdata->data = malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte data
+  cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
   value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
   memcpy(gdata->data, value->data, type->size);
   return gdata;
