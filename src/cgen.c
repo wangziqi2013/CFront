@@ -128,9 +128,12 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 //        3.2.1 If init exists use init
 //        3.2.2 If init does not exist, report error
 // Final result is that we modify decl_type and def_type such that they are consistent in size
-void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init) {
+// Argument both_decl is set if both of them are declaratins. In this case we do not report error even
+// if the size cannot be decided; We implicitly assume that the first two arguments are all valid
+void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init, int both_decl) {
   assert(def_type && type_is_array(def_type));
   assert(!init || init->type == T_INIT_LIST);
+  assert(!both_decl || (decl_type && def_type && !init));
   if(def_type->next->size == TYPE_UNKNOWN_SIZE) // Always check this for both cases
     error_row_col_exit(def_type->next->offset, "Incomplete array base type\n");
 
@@ -172,7 +175,8 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init)
       decl_type->array_size = def_type->array_size = init_size;
       decl_type->size = def_type->size = init_size * decl_type->next->size;
     } else {
-      error_row_col_exit(def_type->offset, "Incomplete global array size\n");
+      // Only report error if one of them is a definition
+      if(!both_decl) error_row_col_exit(def_type->offset, "Incomplete global array size\n");
     }
   }
   if(init_size != -1 && init_size > final_size) 
@@ -201,15 +205,15 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   value->addrtype = ADDR_GLOBAL;
   value->type = type;
   list_insert(cxt->import_list, name->str, value);
-  // Declaration must not be after a definition or another declaration of the same name
-  // TODO: RESOLVE NAME CLASH
+  // Decl after decl or decl after def
   value_t *prev_value = scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
   if(prev_value) {
     type_t *prev_type = prev_value->type;
     if(type_is_array(type) && type_is_array(prev_type)) { // Array types are compared more carefully
-      
+
     } else if(type_cmp(type, prev_type) != TYPE_CMP_EQ) {
-      error_row_col_exit(decl->offset, "Incompatible global declaration with a previous declaration);
+      error_row_col_exit(decl->offset, "Incompatible global declaration with a previous %s",
+        prev_value->pending ? "declaration" : "definition");
     }
   } 
   scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
@@ -247,12 +251,12 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
     if(value->pending == 0) // Not a declaration - duplicated definition
       error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
     if(type_is_array(value->type) && type_is_array(type)) // Resolve decl and def array type
-      cgen_resolve_array_size(value->type, type, init);
+      cgen_resolve_array_size(value->type, type, init, CGEN_ARRAY_DEF);
     if(type_cmp(value->type, type) != TYPE_CMP_EQ)
       error_row_col_exit(decl->offset, "Global variable definition inconsistent with previous declaration\n");
   } else {
     // Set array size from either type or init
-    if(type_is_array(type)) cgen_resolve_array_size(NULL, type, init);
+    if(type_is_array(type)) cgen_resolve_array_size(NULL, type, init, CGEN_ARRAY_DEF);
     value = value_init(cxt->type_cxt);
     value->addrtype = ADDR_GLOBAL; 
     value->type = type;

@@ -7,6 +7,9 @@
 
 #define CGEN_GDATA_PADDING 8 // To avoid allocating a zero byte object on the heap
 
+#define CGEN_ARRAY_DEF      0
+#define CGEN_ARRAY_DECL     1
+
 typedef struct {
   type_cxt_t *type_cxt; // Owns memory; will automatically init and free
   list_t *import_list;       // Externally declared variable, function or array - only valid import is pending is 1
@@ -32,7 +35,7 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value);
 cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void *parent_p, int parent_offset);
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token);
 
-void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init);
+void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init, int both_decl);
 void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *decl, token_t *init);
 void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *decl, token_t *init);
 void cgen_global_func(cgen_cxt_t *cxt, token_t *func);
