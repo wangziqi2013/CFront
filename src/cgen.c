@@ -151,7 +151,8 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init,
 
   assert(type_is_array(decl_type));
   if(type_cmp(decl_type->next, def_type->next) != TYPE_CMP_EQ) // Case 0
-    error_row_col_exit(def_type->offset, "Global array definition is inconsistent with previous declaration\n");
+    error_row_col_exit(def_type->offset, "Global array %s is inconsistent with previous declaration\n",
+      both_decl ? "declaration" : "definition");
   int decl_size = decl_type->array_size;
   int def_size = def_type->array_size;
   int init_size = init ? ast_child_count(init) : -1;
@@ -181,7 +182,7 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init,
   }
   if(init_size != -1 && init_size > final_size) 
     error_row_col_exit(init->offset, "Array initializer list is longer than array type\n");
-  assert(decl_type->array_size == def_type->array_size);
+  assert(decl_type->array_size == def_type->array_size); // This is even true if both are decl of unknown size
   assert(decl_type->size == def_type->size);
   return;
 }
@@ -199,24 +200,26 @@ void cgen_global_decl(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t 
   } else if(type_is_array(type) && type->next->size == TYPE_UNKNOWN_SIZE) {
     error_row_col_exit(decl->offset, "Array declaration using incomplete base type\n");
   }
-  value_t *value = value_init(cxt->type_cxt);
-  value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
-  value->pending_list = list_init(); // Destroyed when we resolve the reference
-  value->addrtype = ADDR_GLOBAL;
-  value->type = type;
-  list_insert(cxt->import_list, name->str, value);
+  
   // Decl after decl or decl after def
   value_t *prev_value = scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
   if(prev_value) {
     type_t *prev_type = prev_value->type;
     if(type_is_array(type) && type_is_array(prev_type)) { // Array types are compared more carefully
-
+      cgen_resolve_array_size(prev_value->type, type, NULL, CGEN_ARRAY_DECL);
     } else if(type_cmp(type, prev_type) != TYPE_CMP_EQ) {
       error_row_col_exit(decl->offset, "Incompatible global declaration with a previous %s",
         prev_value->pending ? "declaration" : "definition");
     }
+  } else {
+    value_t *value = value_init(cxt->type_cxt);
+    value->pending = 1;            // If sees pending = 1 we just use an abstracted name for the value
+    value->pending_list = list_init(); // Destroyed when we resolve the reference
+    value->addrtype = ADDR_GLOBAL;
+    value->type = type;
+    list_insert(cxt->import_list, name->str, value);
+    scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
   } 
-  scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
   return;
 }
 
