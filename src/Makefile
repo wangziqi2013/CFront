@@ -10,6 +10,11 @@ ifeq ($(OPT), 1)
 	CFLAGS=-O3 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 endif
 
+.phony: line-count
+
+line-count:
+	cloc --exclude-lang=Python ./
+
 all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_eval ./bin/test_cgen
 
 test: all
