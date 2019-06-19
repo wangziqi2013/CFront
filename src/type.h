@@ -249,6 +249,12 @@ static inline int type_is_volatile(type_t *type) { // Returns 1 if the type has 
 static inline int type_is_comp(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT || BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
 }
+static inline int type_is_struct(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) == BASETYPE_STRUCT;
+}
+static inline int type_is_union(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) == BASETYPE_UNION;
+}
 static inline int type_is_enum(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_ENUM;
 }
