@@ -80,50 +80,48 @@ void cgen_gdata_free(cgen_gdata_t *gdata) {
   free(gdata); 
 }
 
-// Processes and materializes initialization list, returns a pointer to the next write position
-// 1. Top level function should call with parent_p = NULL and parent_offset equals any value
-// 2. The size of data is already given by the type
-// 3. Return value points to the end of the buffer after processing the current list; To obtain the 
-//    head, just subtract the type size from the pointer value
-cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void *parent_p, int parent_offset) {
-  assert(init->type == T_INIT_LIST);
-  if(!type_is_array(type) && !type_is_comp(type))
-    error_row_col_exit(init->offset, "Initializer list can only be used to initialize array or composite types\n");
-  // If it is array type, and the size of the first dimension is not defined, we fill the value using the 
-  // length of the init list
-  if(type->size == TYPE_UNKNOWN_SIZE) {
-    if(type_is_array(type)) {
-     
-    } else {
-      error_row_col_exit(type->offset, "Could not initialize incomplete composite type\n");
-    }
-  }
-  uint8_t *ret = (uint8_t *)parent_p;
-  int offset = parent_offset; (void)offset; // TODO: REMOVE THIS
-  if(parent_p == NULL) {
-    ret = (uint8_t *)malloc(type->size); 
-    SYSEXPECT(ret != NULL);
-    memset(ret, 0x00, type->size);
-    offset = 0;
-  }
-  token_t *entry = ast_getchild(init, 0);
-  while(entry) {
-    
-    entry = entry->sibling;
-  }
-  return (void *)ret;
-}
-
-cgen_data_t *cgen_init_array(cgen_cxt_t *cxt, type_t *type, token_t *token) {
-  assert(type_is_array(type) && token->type == T_INIT_LIST);
-  // This must be true because if there is init list we always know the array size
-  assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
-  assert(ast_child_count(token) <= type->array_size);
-
+cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token) {
+  cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
+  cgen_init_comp_(cxt, type, token, gdata, 0L);
+  return gdata;
 }
 
 // Accept next write position, returns the next write position after filling current level
-int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_data_t *gdata, int64_t offset) {
+int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
+  assert(type_is_comp(type) && token->type == T_INIT_LIST);
+  assert(ast_child_count(token) == list_size(type->field_list));
+  listnode_t *curr_field_node = list_head(type->field_list);
+  token_t *curr_elem = ast_getchild(token, 0);
+  if(type_is_struct(type)) {
+    while(curr_elem) {
+      assert(curr_field_node);
+      field_t *curr_field = (field_t *)list_value(curr_field_node);
+      type_t *curr_type = curr_field->type;
+      if(type_is_array(curr_type)) {
+        offset = cgen_init_array_(cxt, curr_type, curr_elem, gdata, offset);
+      } else if(type_is_comp(curr_type)) {
+        //offset = cgen_init_comp_(cxt, curr_type, curr_elem, gdata, offset);
+      } else {
+        offset = cgen_init_value(cxt, curr_type, curr_elem, gdata, offset);
+      }
+      curr_elem = curr_elem->sibling;
+      curr_field_node = list_next(curr_field_node);
+    }
+  } else {
+    
+  }
+  return offset;
+}
+
+
+cgen_gdata_t *cgen_init_array(cgen_cxt_t *cxt, type_t *type, token_t *token) {
+  cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
+  cgen_init_array_(cxt, type, token, gdata, 0L);
+  return gdata;
+}
+
+// Accept next write position, returns the next write position after filling current level
+int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type_is_array(type) && token->type == T_INIT_LIST);
   // This must be true because if there is init list we always know the array size
   assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
@@ -151,11 +149,11 @@ int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_dat
 // Processes initializer value for global variable
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
-  cgen_init_value_(ct, type, token, gdata, 0L);
+  cgen_init_value_(cxt, type, token, gdata, 0L);
   return gdata;
 }
 
-int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_data_t *gdata, int64_t offset) {
+int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
   value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
