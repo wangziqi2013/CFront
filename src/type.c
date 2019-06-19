@@ -418,6 +418,7 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       curr_type = type_init_from(cxt, &type_builtin_void, basetype->offset);
     } else if(basetype_type >= BASETYPE_CHAR && basetype_type <= BASETYPE_ULLONG) {
       curr_type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(basetype_type)], basetype->offset);
+      curr_type->decl_prop |= (basetype->decl_prop & DECL_QUAL_MASK); // Also copy const/volatile
     } else {
       type_error_not_supported(basetype->offset, basetype_type);
     }
@@ -773,6 +774,7 @@ int type_cmp(type_t *to, type_t *from) {
   volatile_flag = !(to->decl_prop & DECL_VOLATILE_MASK) && (from->decl_prop & DECL_VOLATILE_MASK);
   lossy_flag = const_flag || volatile_flag; // Set to 1 if RHS is more strict than LHS
   eq_flag = (to->decl_prop & DECL_QUAL_MASK) == (from->decl_prop & DECL_QUAL_MASK);
+  //printf("eq flag = %d from %s to %s\n", eq_flag, type_print_str(0, from, NULL, 0), type_print_str(1, to, NULL, 0));
   assert(!eq_flag || !lossy_flag); // At most one can be 1
 
   // Base type, end of recursion
