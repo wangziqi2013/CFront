@@ -89,12 +89,12 @@ cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 // Accept next write position, returns the next write position after filling current level
 int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type_is_comp(type) && token->type == T_INIT_LIST);
-  assert(ast_child_count(token) == list_size(type->field_list));
-  listnode_t *curr_field_node = list_head(type->field_list);
+  assert(ast_child_count(token) == list_size(type->comp->field_list));
+  listnode_t *curr_field_node = list_head(type->comp->field_list);
   token_t *curr_elem = ast_getchild(token, 0);
   if(type_is_struct(type)) {
-    if(ast_child_count(token) != list_size(type->field_list)) // Check length of the struct init list
-      error_row_col_exit(token, "Initializer list for struct must assign a value for every field\n");
+    if(ast_child_count(token) != list_size(type->comp->field_list)) // Check length of the struct init list
+      error_row_col_exit(token->offset, "Initializer list for struct must assign a value for every field\n");
     while(curr_elem) {
       assert(curr_field_node);
       field_t *curr_field = (field_t *)list_value(curr_field_node);
@@ -103,7 +103,7 @@ int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdat
         offset = cgen_init_array_(cxt, curr_type, curr_elem, gdata, offset);
       } else if(type_is_comp(curr_type)) {
         offset = cgen_init_comp_(cxt, curr_type, curr_elem, gdata, offset);
-      } else if(/* is bit field */0) {
+      } else if(/* is bit field */0) { // TODO: ADD INIT
       } else {
         offset = cgen_init_value_(cxt, curr_type, curr_elem, gdata, offset);
       }
@@ -113,7 +113,7 @@ int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdat
   } else {
     assert(type_is_union(type));
     if(ast_child_count(token) != 1) // Check length of the struct init list
-      error_row_col_exit(token, "Initializer list for union must only assing one field\n");
+      error_row_col_exit(token->offset, "Initializer list for union must only assing one field\n");
   }
   return offset;
 }
@@ -162,6 +162,7 @@ int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gda
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
   value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
+  // TODO: ADD STRING TYPE (eval const does not support string)
   memcpy(gdata->data + offset, value->data, type->size);
   return offset + type->size;
 }

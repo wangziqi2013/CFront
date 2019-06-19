@@ -34,7 +34,8 @@ cgen_gdata_t *cgen_gdata_init(cgen_cxt_t *cxt, type_t *type);
 void cgen_gdata_free(cgen_gdata_t *gdata);
 
 void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value);
-cgen_gdata_t *cgen_init_list(cgen_cxt_t *cxt, type_t *type, token_t *init, void *parent_p, int parent_offset);
+cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token);
+int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset);
 cgen_gdata_t *cgen_init_array(cgen_cxt_t *cxt, type_t *type, token_t *token);
 int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset);
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token);
