@@ -93,6 +93,8 @@ int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdat
   listnode_t *curr_field_node = list_head(type->field_list);
   token_t *curr_elem = ast_getchild(token, 0);
   if(type_is_struct(type)) {
+    if(ast_child_count(token) != list_size(type->field_list)) // Check length of the struct init list
+      error_row_col_exit(token, "Initializer list for struct must assign a value for every field\n");
     while(curr_elem) {
       assert(curr_field_node);
       field_t *curr_field = (field_t *)list_value(curr_field_node);
@@ -100,15 +102,18 @@ int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdat
       if(type_is_array(curr_type)) {
         offset = cgen_init_array_(cxt, curr_type, curr_elem, gdata, offset);
       } else if(type_is_comp(curr_type)) {
-        //offset = cgen_init_comp_(cxt, curr_type, curr_elem, gdata, offset);
+        offset = cgen_init_comp_(cxt, curr_type, curr_elem, gdata, offset);
+      } else if(/* is bit field */0) {
       } else {
-        offset = cgen_init_value(cxt, curr_type, curr_elem, gdata, offset);
+        offset = cgen_init_value_(cxt, curr_type, curr_elem, gdata, offset);
       }
       curr_elem = curr_elem->sibling;
       curr_field_node = list_next(curr_field_node);
     }
   } else {
-    
+    assert(type_is_union(type));
+    if(ast_child_count(token) != 1) // Check length of the struct init list
+      error_row_col_exit(token, "Initializer list for union must only assing one field\n");
   }
   return offset;
 }
@@ -133,9 +138,9 @@ int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gda
     if(type_is_array(elem_type)) {
       offset = cgen_init_array_(cxt, elem_type, curr_elem, gdata, offset);
     } else if(type_is_comp(elem_type)) {
-      //offset = cgen_init_comp_(cxt, elem_type, curr_elem, gdata, offset);
+      offset = cgen_init_comp_(cxt, elem_type, curr_elem, gdata, offset);
     } else {
-      offset = cgen_init_value(cxt, elem_type, curr_elem, gdata, offset);
+      offset = cgen_init_value_(cxt, elem_type, curr_elem, gdata, offset);
     }
     curr_elem = curr_elem->sibling;
     count++;
@@ -311,16 +316,15 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
 
   // This is done even if the value is declared previously
   if(!DECL_ISSTATIC(basetype->decl_prop)) list_insert(cxt->export_list, name->str, value);
-
-  // TODO: PROCESS INIT LIST
-  if(type_is_array(type)) {
-
-  } else if(type_is_comp(type)) {
-
-  } else { // Single variable - eval and do a cast
-    
+  if(init) {
+    if(type_is_array(type)) {
+      cgen_init_array(cxt, type, init);
+    } else if(type_is_comp(type)) {
+      cgen_init_comp(cxt, type, init);
+    } else { // Single variable - eval and do a cast
+      cgen_init_value(cxt, type, init);
+    }
   }
-
   // Resolve all pending references, and then remove the old entry from global scope
   if(value->pending) {
     cgen_resolve_extern(cxt, value);
