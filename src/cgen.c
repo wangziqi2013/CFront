@@ -137,7 +137,7 @@ int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_dat
     } else if(type_is_comp(elem_type)) {
       //offset = cgen_init_comp_(cxt, elem_type, curr_elem, gdata, offset);
     } else {
-
+      offset = cgen_init_value(cxt, elem_type, curr_elem, gdata, offset);
     }
     curr_elem = curr_elem->sibling;
     count++;
@@ -150,9 +150,8 @@ int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_dat
 
 // Processes initializer value for global variable
 cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
-  
   cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
-  
+  cgen_init_value_(ct, type, token, gdata, 0L);
   return gdata;
 }
 
