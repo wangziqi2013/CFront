@@ -10,16 +10,22 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
   printf("Import List\n");
   printf("-----------\n");
   node = list_head(cxt->import_list);
+  int count = 0;
   while(node) {
     char *name = (char *)list_key(node);
     value_t *value = (value_t *)list_value(node);
-    printf("%s\n", type_print_str(0, value->type, name, 0));
+    if(value->pending) { // Do not print non-pending values (i.e. they have been resolved)
+      printf("%s\n", type_print_str(0, value->type, name, 0));
+      count++;
+    }
     node = list_next(node);
   }
+  if(count == 0) printf("(Empty)\n");
   putchar('\n');
   printf("Export List\n");
   printf("-----------\n");
   node = list_head(cxt->export_list);
+  if(!node) printf("(Empty)\n");
   while(node) {
     char *name = (char *)list_key(node);
     value_t *value = (value_t *)list_value(node);
@@ -240,7 +246,7 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
   value_t *value = (value_t *)scope_search(cxt->type_cxt, SCOPE_VALUE, name->str);
   if(value) {
     if(value->pending == 0) // Not a declaration - duplicated definition
-      error_row_col_exit(decl->offset, "Duplicated global definition of name \"%s\"\n", name->str);
+      error_row_col_exit(name->offset, "Duplicated global definition of name \"%s\"\n", name->str);
     if(type_is_array(value->type) && type_is_array(type)) // Resolve decl and def array type
       cgen_resolve_array_size(value->type, type, init, CGEN_ARRAY_DEF);
     if(type_cmp(value->type, type) != TYPE_CMP_EQ)
@@ -253,8 +259,10 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
     value->type = type;
     value->pending = 0;
     scope_top_insert(cxt->type_cxt, SCOPE_VALUE, name->str, value);
-    if(!DECL_ISSTATIC(basetype->decl_prop)) list_insert(cxt->export_list, name->str, value);
   }
+
+  // This is done even if the value is declared previously
+  if(!DECL_ISSTATIC(basetype->decl_prop)) list_insert(cxt->export_list, name->str, value);
 
   // TODO: PROCESS INIT LIST
 
