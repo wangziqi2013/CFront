@@ -96,6 +96,8 @@ cgen_reloc_t *cgen_reloc_init(cgen_cxt_t *cxt) {
   return reloc;
 }
 
+void cgen_reloc_free(cgen_reloc_t *reloc) { free(reloc); }
+
 cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token) {
   cgen_gdata_t *gdata = cgen_gdata_init(cxt, type);
   cgen_init_comp_(cxt, type, token, gdata, 0L);
