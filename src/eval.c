@@ -463,7 +463,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
     case EXP_CAST: {
       token_t *decl_token = ast_getchild(exp, 1); // This is the second child
       token_t *basetype_token = ast_getchild(decl_token, 0);
-      // Allow casting to void or functions returning void
+      // Allow casting to void or functions returning void; Does not casting to anything with const/volatile
       type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID); 
       op1_value = eval_const_to_type(cxt, op1, target, TYPE_CAST_EXPLICIT);
       return op1_value;
@@ -474,7 +474,7 @@ value_t *eval_const_exp(type_cxt_t *cxt, token_t *exp) {
       if(op1->type == T_DECL) {
         token_t *basetype = ast_getchild(op1, 0);
         assert(basetype);
-        type = type_gettype(cxt, op1, basetype, TYPE_ALLOW_VOID); // Allow void but not storage class
+        type = type_gettype(cxt, op1, basetype, TYPE_ALLOW_VOID | TYPE_ALLOW_QUAL); // Allow void but not storage class
         if(type_is_void(type)) {
           error_row_col_exit(exp->offset, "\"void\" cannot be used in sizeof() expression\n");
         } else if(type_is_func(type)) {
