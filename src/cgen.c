@@ -11,9 +11,11 @@ void cgen_typed_print(type_t *type, void *data) {
   if(!data) {
     printf("(NO DATA)");
   } else if(type_is_char(type)) {
-    printf("CHAR \'%s\'", eval_hex_char(*(char *)data));
+    printf("CHAR \'%s\'", eval_hex_char(0xFF & *(char *)data));
   } else if(type_is_int(type)) {
-    printf("HEX 0x%lX (DEC %ld)", *(uint64_t *)data, *(int64_t *)data);
+    printf("HEX 0x%lX (DEC %ld)", 
+      eval_const_get_mask(type->size) & *(uint64_t *)data, 
+      eval_const_get_mask(type->size) & *(uint64_t *)data);
   } else if(type_is_ptr(type)) {
     printf("PTR 0x%016lX", *(uint64_t *)data);
   } else if(type_is_comp(type)) {
@@ -254,15 +256,17 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
-  //printf("Buffer @ %p offset %ld\n", gdata->data, offset);
+  //printf("Buffer @ %p offset %ld sz %lu\n", gdata->data + offset, offset, type->size);
   if(token->type != T_STR_CONST) {
     value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
     memcpy(gdata->data + offset, value->data, type->size);
   } else {
     assert(token->type == T_STR_CONST);
-    str_t *str = eval_const_str_token(token);
     if(type_is_ptr(type) && type_is_char(type->next)) { // Could only initialize char * (optionally qualifiers)
+      str_t *str = eval_const_str_token(token);
       cgen_gdata_t *gdata_str = cgen_gdata_init(cxt, type_get_strliteral(cxt->type_cxt, str_size(str) + 1, token->offset));
+      memcpy(gdata_str->data, str_cstr(str), str_size(str) + 1);
+      str_free(str);
       *(int64_t *)(gdata->data + offset) = gdata_str->offset; // Write relative value of the global data into ptr value
       // Then add a relocation record
       cgen_reloc_t *reloc = cgen_reloc_init(cxt);
