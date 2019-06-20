@@ -2,6 +2,26 @@
 #include "eval.h"
 #include "cgen.h"
 
+const char *cgen_reloc_name[] = {
+  "CODE", "DATA",
+};
+
+void cgen_typed_print(type_t *type, void *data) {
+  if(type_is_int(type)) {
+    printf("HEX 0x%lX (DEC %ld)\n", *(uint64_t *)data, *(int64_t *)data);
+  } else if(type_is_ptr(type)) {
+    printf("PTR 0x%016lX\n", *(uint64_t *)data);
+  } else if(type_is_struct(type)) {
+    printf("STRUCT {");
+    comp_t *comp = type->comp;
+    listnode_t *node = list_head(comp->field_list);
+    while(node) {
+      
+      node = list_next(node);
+    }
+  }
+}
+
 // This function dumps all context info to stdout
 void cgen_print_cxt(cgen_cxt_t *cxt) {
   listnode_t *node;
@@ -30,6 +50,16 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
     char *name = (char *)list_key(node);
     value_t *value = (value_t *)list_value(node);
     printf("%s\n", type_print_str(0, value->type, name, 0));
+    node = list_next(node);
+  }
+  putchar('\n');
+  printf("Reloc List\n");
+  printf("----------\n");
+  node = list_head(cxt->reloc_list);
+  if(!node) printf("(Empty)\n");
+  while(node) {
+    cgen_reloc_t *reloc = (cgen_reloc_t *)list_value(node);
+    printf("%s --> %s @ %ld\n", cgen_reloc_name[reloc->from], cgen_reloc_name[reloc->to], reloc->offset);
     node = list_next(node);
   }
 }
