@@ -89,8 +89,20 @@ void test_cgen_init() {
   test_cxt_t *cxt;
   token_t *token;
 
-  // Test basis import export
+  // Test array with const char *
   cxt = test_init("int x = 1, y = 2, z = 100; const char *a = \"123456\"; ");
+  token = parse(cxt->parse_cxt);
+  cgen(cxt->cgen_cxt, token);
+  ast_print(token);
+  cgen_print_cxt(cxt->cgen_cxt);
+  ast_free(token);
+  test_free(cxt);
+  printf("=====================================\n");
+  // Test array initialization
+  cxt = test_init(
+    "int x[] = {2, 4, 6, 8, 10}; \n "
+    "const char y[] = \"asdfghjkl\\n\"; \n"
+    "char z[20] = \"\"; \n");
   token = parse(cxt->parse_cxt);
   cgen(cxt->cgen_cxt, token);
   ast_print(token);
