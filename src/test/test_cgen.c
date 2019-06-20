@@ -83,9 +83,29 @@ void test_cgen_global_decl() {
   return;
 }
 
+void test_cgen_init() {
+  printf("=== Test cgen_init_ series ===\n");
+
+  test_cxt_t *cxt;
+  token_t *token;
+
+  // Test basis import export
+  cxt = test_init("int x = 1, y = 2, z = 100; const char *a = \"123456\"; ");
+  token = parse(cxt->parse_cxt);
+  cgen(cxt->cgen_cxt, token);
+  ast_print(token);
+  cgen_print_cxt(cxt->cgen_cxt);
+  ast_free(token);
+  test_free(cxt);
+  printf("=====================================\n");
+
+  printf("Pass!\n");
+}
+
 
 int main() {
   printf("Hello World!\n");
   test_cgen_global_decl();
+  test_cgen_init();
   return 0;
 }
