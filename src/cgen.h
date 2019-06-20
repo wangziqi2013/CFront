@@ -35,7 +35,7 @@ extern const char *cgen_reloc_name[];
 typedef struct cgen_data_struct_t {
   uint8_t *data;   // Actual data; NULL means uninitialized
   type_t *type;    // Type of the global data, which also contains the size
-  int offset;      // Offset relative to the beginning of data segment
+  int64_t offset;  // Offset relative to the beginning of data segment
 } cgen_gdata_t;
 
 void cgen_typed_print(type_t *type, void *data);

@@ -8,7 +8,9 @@ const char *cgen_reloc_name[] = {
 
 // TODO: ADDING ENUM AS A TYPE
 void cgen_typed_print(type_t *type, void *data) {
-  if(type_is_char(type)) {
+  if(!data) {
+    printf("(NO DATA)");
+  } else if(type_is_char(type)) {
     printf("CHAR \'%s\'", eval_hex_char(*(char *)data));
   } else if(type_is_int(type)) {
     printf("HEX 0x%lX (DEC %ld)\n", *(uint64_t *)data, *(int64_t *)data);
@@ -90,6 +92,18 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
   while(node) {
     cgen_reloc_t *reloc = (cgen_reloc_t *)list_value(node);
     printf("%s --> %s @ %ld\n", cgen_reloc_name[reloc->from], cgen_reloc_name[reloc->to], reloc->offset);
+    node = list_next(node);
+  }
+  putchar('\n');
+  printf("Global Data\n");
+  printf("-----------\n");
+  node = list_head(cxt->gdata_list);
+  if(!node) printf("(Empty)\n");
+  while(node) {
+    cgen_gdata_t *gdata = (cgen_gdata_t *)list_value(node);
+    printf("GDATA @ %ld : ", gdata->offset);
+    cgen_typed_print(gdata->type, gdata->data);
+    putchar('\n');
     node = list_next(node);
   }
 }
