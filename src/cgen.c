@@ -226,6 +226,22 @@ int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gda
   // This must be true because if there is init list we always know the array size
   assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
   assert(ast_child_count(token) <= type->array_size);
+  if(token->type == T_STR_CONST) {
+    if(type_is_char(type->next)) {
+      str_t *str = eval_const_str_token(token);
+      memcpy(gdata->data + offset, str_cstr(str), str_size(str) + 1);
+      int remains = type->array_size - (str_size(str) + 1); // Fill zero
+      assert(remains >= 0);
+      str_free(str);
+      offset += (str_size(str) + 1);
+      if(remains) memset(gdata->data + offset, 0x00, remains);
+      return offset + remains;
+    } else {
+      error_row_col_exit(token->offset, "Cannot use string literal to initialize type \"%s\"\n", 
+        type_print_str(0, type, NULL, 0));
+    }
+  }
+
   type_t *elem_type = type->next;
   token_t *curr_elem = ast_getchild(token, 0);
   int count = 0;
