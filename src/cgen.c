@@ -127,7 +127,7 @@ cgen_gdata_t *cgen_init_array(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 
 // Accept next write position, returns the next write position after filling current level
 int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
-  assert(type_is_array(type) && token->type == T_INIT_LIST);
+  assert(type_is_array(type) && (token->type == T_INIT_LIST || token->type == T_STR_CONST));
   // This must be true because if there is init list we always know the array size
   assert(type->array_size != -1 && type->size != TYPE_UNKNOWN_SIZE);
   assert(ast_child_count(token) <= type->array_size);
@@ -201,8 +201,16 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init,
   if(!decl_type) {
     if(def_type->array_size == -1) {
       if(!init) error_row_col_exit(def_type->offset, "Incomplete array type\n"); // Case 1.4
-      def_type->array_size = ast_child_count(init);
-      def_type->size = def_type->array_size * def_type->next->size; // Case 1.3
+      if(init->type == T_INIT_LIST) {
+        def_type->array_size = ast_child_count(init);
+        def_type->size = def_type->array_size * def_type->next->size; // Case 1.3
+      } else {
+        assert(init->type == T_STR_CONST);
+        str_t *str = eval_const_str_token(init);
+        def_type->array_size = str_size(str) + 1;
+        def_type->size = def_type->array_size * def_type->next->size;
+        str_free(str);
+      }
     } else { // Case 1.1 if no error
       if(init && ast_child_count(init) > def_type->array_size) // Case 1.2
         error_row_col_exit(def_type->offset, "Array initializer list is longer than array type\n");
