@@ -44,6 +44,7 @@ void cgen_free(cgen_cxt_t *cxt);
 
 cgen_gdata_t *cgen_gdata_init(cgen_cxt_t *cxt, type_t *type);
 void cgen_gdata_free(cgen_gdata_t *gdata);
+cgen_reloc_t *cgen_reloc_init(cgen_cxt_t *cxt);
 
 void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value);
 cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token);
