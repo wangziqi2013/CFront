@@ -61,7 +61,7 @@ void cgen_free(cgen_cxt_t *cxt) {
   // Free all nodes in the reloc list
   node = list_head(cxt->reloc_list);
   while(node) {
-    cgen_reloc_free((cgen_gdata_t *)list_value(node));
+    cgen_reloc_free((cgen_reloc_t *)list_value(node));
     node = list_next(node);
   }
   list_free(cxt->reloc_list);
@@ -89,13 +89,12 @@ void cgen_gdata_free(cgen_gdata_t *gdata) {
 }
 
 cgen_reloc_t *cgen_reloc_init(cgen_cxt_t *cxt) {
-  (void)cxt;
   cgen_reloc_t *reloc = (cgen_reloc_t *)malloc(sizeof(cgen_reloc_t));
   SYSEXPECT(reloc != NULL);
   memset(reloc, 0x00, sizeof(cgen_reloc_t));
+  list_insert(cxt->reloc_list, NULL, reloc);
   return reloc;
 }
-
 void cgen_reloc_free(cgen_reloc_t *reloc) { free(reloc); }
 
 cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token) {
