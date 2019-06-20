@@ -29,6 +29,7 @@ typedef struct {
   int64_t offset; // The offset to be modified during relocation
   size_t size;    // Number of bytes 
 } cgen_reloc_t;
+extern const char *cgen_reloc_name[];
 
 // Global data container
 typedef struct cgen_data_struct_t {
