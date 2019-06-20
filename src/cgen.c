@@ -6,19 +6,34 @@ const char *cgen_reloc_name[] = {
   "CODE", "DATA",
 };
 
+// TODO: ADDING ENUM AS A TYPE
 void cgen_typed_print(type_t *type, void *data) {
   if(type_is_int(type)) {
     printf("HEX 0x%lX (DEC %ld)\n", *(uint64_t *)data, *(int64_t *)data);
   } else if(type_is_ptr(type)) {
     printf("PTR 0x%016lX\n", *(uint64_t *)data);
-  } else if(type_is_struct(type)) {
-    printf("STRUCT {");
+  } else if(type_is_comp(type)) {
+    if(type_is_struct(type)) printf("STRUCT {");
+    else if(type_is_union(type)) printf("UNION {");
     comp_t *comp = type->comp;
     listnode_t *node = list_head(comp->field_list);
+    uint8_t *ptr;
     while(node) {
-      
+      field_t *field = list_value(node);
+      ptr = (uint8_t *)data + field->offset;
+      if(field->bitfield_size != -1) {
+        assert(type_is_int(field->type));
+        uint64_t bf = *(uint64_t *)ptr;
+        bf >>= field->bitfield_offset;
+        bf &= ((0x1UL << field->bitfield_size) - 1);
+        printf("BITFIELD %lX", bf);
+      } else {
+        cgen_typed_print(field->type, ptr);
+      }
+      printf(", ");
       node = list_next(node);
     }
+    printf("}");
   }
 }
 
