@@ -8,7 +8,9 @@ const char *cgen_reloc_name[] = {
 
 // TODO: ADDING ENUM AS A TYPE
 void cgen_typed_print(type_t *type, void *data) {
-  if(type_is_int(type)) {
+  if(type_is_char(type)) {
+    printf("CHAR \'%s\'", eval_hex_char(*(char *)data));
+  } else if(type_is_int(type)) {
     printf("HEX 0x%lX (DEC %ld)\n", *(uint64_t *)data, *(int64_t *)data);
   } else if(type_is_ptr(type)) {
     printf("PTR 0x%016lX\n", *(uint64_t *)data);
@@ -34,6 +36,18 @@ void cgen_typed_print(type_t *type, void *data) {
       node = list_next(node);
     }
     printf("}");
+  } else if(type_is_array(type) && type_is_char(type->next)) {
+    printf("STR ");
+    char *ptr = (char *)data;
+    for(int i = 0;i < type->array_size;i++) {
+      printf("\'%s\' ", eval_hex_char(*ptr++))
+    }
+  } 
+  else if(type_is_array(type)) {
+    printf("ARRAY {");
+    uint8_t *ptr = (uint8_t *)data;
+
+    
   }
 }
 

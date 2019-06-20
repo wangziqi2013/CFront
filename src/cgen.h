@@ -38,6 +38,7 @@ typedef struct cgen_data_struct_t {
   int offset;      // Offset relative to the beginning of data segment
 } cgen_gdata_t;
 
+void cgen_typed_print(type_t *type, void *data);
 void cgen_print_cxt(cgen_cxt_t *cxt);
 
 cgen_cxt_t *cgen_init();
