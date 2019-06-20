@@ -713,8 +713,8 @@ void test_type_cmp() {
   type_cxt = type_sys_init();
   token_1 = parse_decl(parse_cxt_1, PARSE_DECL_HASBASETYPE);
   token_2 = parse_decl(parse_cxt_2, PARSE_DECL_HASBASETYPE);
-  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), 0);
-  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), 0);
+  from = type_gettype(type_cxt, token_1, ast_getchild(token_1, 0), TYPE_ALLOW_QUAL);
+  to = type_gettype(type_cxt, token_2, ast_getchild(token_2, 0), TYPE_ALLOW_QUAL);
   ret = type_cmp(to, from);  printf("ret = %s\n", ret_string[ret]);
   assert(ret == TYPE_CMP_LOSELESS);
   parse_exp_free(parse_cxt_1); parse_exp_free(parse_cxt_2);
