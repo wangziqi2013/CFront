@@ -381,8 +381,11 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
   assert(decl_name->type == T_ || decl_name->type == T_IDENT);
   decl_prop_t basetype_type = BASETYPE_GET(basetype->decl_prop); // The type primitive of base type decl; only valid with BASETYPE_*
   type_t *curr_type;
-  if(!(flags & TYPE_ALLOW_STGCLS) && (basetype->decl_prop & DECL_STGCLS_MASK)) 
+  if(!(flags & TYPE_ALLOW_STGCLS) && (basetype->decl_prop & DECL_STGCLS_MASK)) {
     error_row_col_exit(basetype->offset, "Storage class modifier is not allowed in this context\n");
+  } else if(!(flags & TYPE_ALLOW_QUAL) && (basetype->decl_prop & DECL_QUAL_MASK)) {
+    error_row_col_exit(basetype->offset, "Type qualifier is not allowed in this context\n");
+  }
   
   if(basetype_type == BASETYPE_STRUCT || basetype_type == BASETYPE_UNION) {
     token_t *su = ast_getchild(basetype, 0);
@@ -412,7 +415,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
       // const void * is also illegal
       if(DECL_STGCLS_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have storage class\n"); }
       else if(DECL_QUAL_MASK & basetype->decl_prop) { error_row_col_exit(basetype->offset, "\"void\" type cannot have qualifiers\n"); }
-      else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { // void base type, and no derivation (we allow void *)
+      else if(!(flags & TYPE_ALLOW_VOID) && op->type == T_) { 
+        // void base type, and no derivation (we allow void * and void function)
         error_row_col_exit(basetype->offset, "\"void\" type can only be used in function argument and return value\n");
       }
       curr_type = type_init_from(cxt, &type_builtin_void, basetype->offset);
@@ -477,7 +481,8 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
         token_t *arg_basetype = ast_getchild(arg_decl, 0);
         token_t *arg_exp = ast_getchild(arg_decl, 1);
         token_t *arg_name = ast_getchild(arg_decl, 2);
-        arg_type = type_gettype(cxt, arg_decl, arg_basetype, TYPE_ALLOW_VOID); // This allows both base and decl to be void type
+        // This allows both base and decl to be void type
+        arg_type = type_gettype(cxt, arg_decl, arg_basetype, TYPE_ALLOW_VOID | TYPE_ALLOW_QUAL); 
         // Detect whether the type is void. (1) Ignore if it is the first and only arg; (2) Otherwise throw error
         if(BASETYPE_GET(arg_type->decl_prop) == BASETYPE_VOID) {
           if(arg_num > 1 || arg_decl->sibling) { error_row_col_exit(op->offset, "\"void\" must be the first and only argument\n"); }
@@ -563,7 +568,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       token_t *decl = ast_getchild(field, 0);
       assert(decl->type == T_DECL);
       field_t *f = field_init(cxt);
-      f->type = type_gettype(cxt, decl, basetype, 0); // Set field type; do not allow void and storage class
+      f->type = type_gettype(cxt, decl, basetype, TYPE_ALLOW_QUAL); // Set field type; do not allow void and storage class
       token_t *field_name = ast_getchild(decl, 2);
       if(field_name->type == T_IDENT) {
         f->name = field_name->str;             // Set field name if there is one
@@ -1034,7 +1039,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       token_t *decl_token = ast_getchild(exp, 1);
       token_t *basetype_token = ast_getchild(decl_token, 0);
       // Allow casting to void or functions returning void
-      type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID); 
+      type_t *target = type_gettype(cxt, decl_token, basetype_token, TYPE_ALLOW_VOID | TYPE_ALLOW_QUAL); 
       type_cast(target, lhs, TYPE_CAST_EXPLICIT, exp->offset);
       return target;
     } break;

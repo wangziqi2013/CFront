@@ -37,6 +37,7 @@
 // Arguments to type_gettype
 #define TYPE_ALLOW_VOID   0x00000001     // Whether allow void as base type (only allowed for func arg)
 #define TYPE_ALLOW_STGCLS 0x00000002     // Whether allow storage class (not for comp type and func arg)
+#define TYPE_ALLOW_QUAL   0x00000004     // Whether allow qualifiers (not for constant evaluation)
 
 // Used with type_typeof
 #define TYPEOF_IGNORE_FUNC_ARG     0x00000001 // Do not check type for function argument
@@ -205,7 +206,7 @@ static inline type_t *type_getint(decl_prop_t decl_prop) {
   return &type_builtin_ints[BASETYPE_INDEX(decl_prop)];
 }
 
-// Returns 1 if it is integer types. Applies to any type object
+// Returns 1 if it is integer types. Applies to any type object. Ignores const/volatile
 static inline int type_is_int(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
 }
