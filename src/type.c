@@ -603,7 +603,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       f->size = f->type->size;
       if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
         error_row_col_exit(f->name ? f->source_offset : basetype->offset, 
-          "Struct or union member \"%s\" size is unknown\n", type_printable_name(f->name));
+          "Struct or union member \"%s\" is incomplete type\n", type_printable_name(f->name));
       
       if(f->name) { // Only insert if there is a name; 
         if(bt_insert(comp->field_index, f->name, f) != f) {

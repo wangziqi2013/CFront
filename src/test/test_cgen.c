@@ -110,6 +110,18 @@ void test_cgen_init() {
   ast_free(token);
   test_free(cxt);
   printf("=====================================\n");
+  // Test struct
+  cxt = test_init(
+    "struct named_struct { int a; long b; char c[10]; } var1; \n "
+    "struct named_struct var2 = {100, 200L, \"qwert\"}; \n" 
+    );
+  token = parse(cxt->parse_cxt);
+  cgen(cxt->cgen_cxt, token);
+  ast_print(token);
+  cgen_print_cxt(cxt->cgen_cxt);
+  ast_free(token);
+  test_free(cxt);
+  printf("=====================================\n");
 
   printf("Pass!\n");
 }

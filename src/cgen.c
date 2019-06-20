@@ -470,11 +470,13 @@ void cgen_global_def(cgen_cxt_t *cxt, type_t *type, token_t *basetype, token_t *
     if(type_is_array(type)) {
       cgen_init_array(cxt, type, init);
     } else if(type_is_comp(type)) {
+      puts(type_print_str(0, type, NULL, 1));
       cgen_init_comp(cxt, type, init);
     } else { // Single variable - eval and do a cast
       cgen_init_value(cxt, type, init);
     }
   }
+  // TODO: SET VALUE OFFSET AFTER ASSIGNING VALUES
   // Resolve all pending references, and then remove the old entry from global scope
   if(value->pending) {
     cgen_resolve_extern(cxt, value);
