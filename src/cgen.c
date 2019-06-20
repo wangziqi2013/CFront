@@ -43,6 +43,7 @@ cgen_cxt_t *cgen_init() {
   cxt->export_list = list_init();
   cxt->gdata_list = list_init();
   cxt->gdata_offset = 0L;
+  cxt->reloc_list = list_init();
   return cxt;
 }
 
@@ -57,6 +58,13 @@ void cgen_free(cgen_cxt_t *cxt) {
     node = list_next(node);
   }
   list_free(cxt->gdata_list);
+  // Free all nodes in the reloc list
+  node = list_head(cxt->reloc_list);
+  while(node) {
+    cgen_reloc_free((cgen_gdata_t *)list_value(node));
+    node = list_next(node);
+  }
+  list_free(cxt->reloc_list);
   free(cxt); 
 }
 
@@ -103,7 +111,7 @@ int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdat
         offset = cgen_init_array_(cxt, curr_type, curr_elem, gdata, offset);
       } else if(type_is_comp(curr_type)) {
         offset = cgen_init_comp_(cxt, curr_type, curr_elem, gdata, offset);
-      } else if(/* is bit field */0) { // TODO: ADD INIT
+      } else if(/* is bit field */0) { // TODO: ADD INIT FOR BIT FIELD
       } else {
         offset = cgen_init_value_(cxt, curr_type, curr_elem, gdata, offset);
       }
@@ -161,9 +169,13 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
-  value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
-  // TODO: ADD STRING TYPE (eval const does not support string)
-  memcpy(gdata->data + offset, value->data, type->size);
+  if(token->type != T_STR_CONST) {
+    value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
+    memcpy(gdata->data + offset, value->data, type->size);
+  } else {
+    str_t *str = eval_const_str_token(token);
+    if(type_is_ptr(type) && type_is_)
+  }
   return offset + type->size;
 }
 
@@ -373,7 +385,9 @@ void cgen_global(cgen_cxt_t *cxt, token_t *global_decl) {
     // Global var could have storage class but could not be void without derivation
     // Note that we have one type variable for each declaration
     // This type might have unknown size, but we will resolve them later
-    type_t *type = type_gettype(cxt->type_cxt, decl, basetype, TYPE_ALLOW_STGCLS); 
+    // Do not allow void type; function call returning void is fine (will not report error)
+    type_t *type = type_gettype(cxt->type_cxt, decl, basetype, 
+      TYPE_ALLOW_STGCLS | TYPE_ALLOW_QUAL); 
     
     if(DECL_ISTYPEDEF(basetype->decl_prop)) { // Typedef of a new type
       if(name->type == T_) {

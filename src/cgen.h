@@ -19,8 +19,7 @@ typedef struct {
   list_t *export_list;  // Non-statically declared global variable, function or array
   list_t *gdata_list;   // A list of global data, i.e. actual storage
   int64_t gdata_offset; // Next global data offset
-  list_t *data_reloc_list; // Global data relocation
-  list_t *code_reloc_list; // Code relocation referring to global data
+  list_t *reloc_list;   // A list of cgen_reloc_t *; Owns memory
 } cgen_cxt_t;
 
 // A relocation entry provides info for converting relative reference (starting at address 0)
