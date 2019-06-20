@@ -32,7 +32,7 @@ typedef struct {
 
 // Global data container
 typedef struct cgen_data_struct_t {
-  void *data;      // Actual data; NULL means uninitialized
+  uint8_t *data;   // Actual data; NULL means uninitialized
   type_t *type;    // Type of the global data, which also contains the size
   int offset;      // Offset relative to the beginning of data segment
 } cgen_gdata_t;

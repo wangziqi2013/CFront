@@ -75,7 +75,7 @@ cgen_gdata_t *cgen_gdata_init(cgen_cxt_t *cxt, type_t *type) {
   SYSEXPECT(gdata != NULL);
   memset(gdata, 0x00, sizeof(cgen_gdata_t));
   gdata->type = type;
-  gdata->data = malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte malloc call
+  gdata->data = (uint8_t *)malloc(type->size + CGEN_GDATA_PADDING); // Avoid zero byte malloc call
   gdata->offset = cxt->gdata_offset; // Assign an offset relative to the data segment
   cxt->gdata_offset += type->size;
   SYSEXPECT(gdata->data);
@@ -182,8 +182,21 @@ int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gda
     value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
     memcpy(gdata->data + offset, value->data, type->size);
   } else {
+    assert(token->type == T_STR_CONST);
     str_t *str = eval_const_str_token(token);
-    if(type_is_ptr(type) && type_is_)
+    if(type_is_ptr(type) && type_is_char(type->next)) { // Could only initialize char * (optionally qualifiers)
+      cgen_gdata_t *gdata_str = cgen_gdata_init(cxt, type_get_strliteral(cxt->type_cxt, str_size(str) + 1, token->offset));
+      *(int64_t *)(gdata->data + offset) = gdata_str->offset; // Write relative value of the global data into ptr value
+      // Then add a relocation record
+      cgen_reloc_t *reloc = cgen_reloc_init(cxt);
+      reloc->to = reloc->from = CGEN_RELOC_DATA;
+      reloc->offset = gdata->offset + offset; // The address we just wrote relative value of ptr
+      reloc->size = type->size; // Pointer size
+      assert(type->size == TYPE_PTR_SIZE);
+    } else {
+      error_row_col_exit(token->offset, "Cannot use string literal to initialize type \"%s\"\n", 
+        type_print_str(0, type, NULL, 0));
+    }
   }
   return offset + type->size;
 }
