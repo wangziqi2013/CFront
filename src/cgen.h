@@ -10,13 +10,26 @@
 #define CGEN_ARRAY_DEF      0
 #define CGEN_ARRAY_DECL     1
 
+#define CGEN_RELOC_CODE     0
+#define CGEN_RELOC_DATA     1
+
 typedef struct {
   type_cxt_t *type_cxt;  // Owns memory; will automatically init and free
   list_t *import_list;       // Externally declared variable, function or array - only valid import is pending is 1
   list_t *export_list;  // Non-statically declared global variable, function or array
   list_t *gdata_list;   // A list of global data, i.e. actual storage
   int64_t gdata_offset; // Next global data offset
+  list_t *data_reloc_list; // Global data relocation
+  list_t *code_reloc_list; // Code relocation referring to global data
 } cgen_cxt_t;
+
+// A relocation entry provides info for converting relative reference (starting at address 0)
+// into absolute address when the binary is loaded into memory
+typedef struct {
+  int from, to;   // CGEN_RELOC_ series
+  int64_t offset; // The offset to be modified during relocation
+  size_t size;    // Number of bytes 
+} cgen_reloc_t;
 
 // Global data container
 typedef struct cgen_data_struct_t {
