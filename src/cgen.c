@@ -40,14 +40,15 @@ void cgen_typed_print(type_t *type, void *data) {
     printf("STR ");
     char *ptr = (char *)data;
     for(int i = 0;i < type->array_size;i++) {
-      printf("\'%s\' ", eval_hex_char(*ptr++))
+      printf("\'%s\' ", eval_hex_char(*ptr++));
     }
-  } 
-  else if(type_is_array(type)) {
+  } else if(type_is_array(type)) {
     printf("ARRAY {");
     uint8_t *ptr = (uint8_t *)data;
-
-    
+    for(int i = 0;i < type->array_size;i++) {
+      cgen_typed_print(type->next, ptr);
+      ptr += type->next->size;
+    }
   }
 }
 
