@@ -68,7 +68,8 @@ void test_cgen_global_decl() {
   "extern int array2[]; extern int array2[]; \n"
   "extern int array3[]; extern int array3[3 + 4]; extern int array3[]; \n"
   "int array4[4 << 1]; extern int array4[8]; \n"
-  "int array5[] = {1, 2, 3}; extern int array5[]; \n");
+  "int array5[] = {1, 2, 3}; extern int array5[]; \n"
+  "char array6[] = \"abcdefg\\n\"; extern char array6[]; \n"); // size should be 9
   token = parse(cxt->parse_cxt);
   cgen(cxt->cgen_cxt, token);
   ast_print(token);
