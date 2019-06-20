@@ -193,7 +193,7 @@ void cgen_resolve_extern(cgen_cxt_t *cxt, value_t *value) {
 // if the size cannot be decided; We implicitly assume that the first two arguments are all valid
 void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init, int both_decl) {
   assert(def_type && type_is_array(def_type));
-  assert(!init || init->type == T_INIT_LIST);
+  assert(!init || init->type == T_INIT_LIST || init->type == T_STR_CONST);
   assert(!both_decl || (decl_type && def_type && !init));
   if(def_type->next->size == TYPE_UNKNOWN_SIZE) // Always check this for both cases
     error_row_col_exit(def_type->next->offset, "Incomplete array base type\n");
@@ -217,7 +217,17 @@ void cgen_resolve_array_size(type_t *decl_type, type_t *def_type, token_t *init,
       type_print_str(0, decl_type, NULL, 0), type_print_str(1, def_type, NULL, 0));
   int decl_size = decl_type->array_size;
   int def_size = def_type->array_size;
-  int init_size = init ? ast_child_count(init) : -1;
+  int init_size;
+  if(!init) {
+    init_size = -1;
+  } else if(init->type == T_INIT_LIST) {
+    init_size = ast_child_count(init);
+  } else {
+    assert(init->type == T_STR_CONST);
+    str_t *str = eval_const_str_token(init);
+    init_size = str_size(str) + 1; // The size of str does not contain terminating zero
+    str_free(str);
+  }
   int final_size;
   if(decl_size != -1) {
     final_size = decl_size;
