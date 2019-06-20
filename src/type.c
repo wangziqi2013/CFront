@@ -60,6 +60,7 @@ type_t *type_get_strliteral(type_cxt_t *cxt, size_t full_size, char *offset) {
   type_t *ret = type_init_from(cxt, &type_builtin_string_template, offset);
   ret->array_size = full_size;
   ret->size = full_size * TYPE_CHAR_SIZE;
+  ret->next = const_char_type; 
   return ret;
 }
 
