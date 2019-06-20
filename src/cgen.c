@@ -13,9 +13,9 @@ void cgen_typed_print(type_t *type, void *data) {
   } else if(type_is_char(type)) {
     printf("CHAR \'%s\'", eval_hex_char(*(char *)data));
   } else if(type_is_int(type)) {
-    printf("HEX 0x%lX (DEC %ld)\n", *(uint64_t *)data, *(int64_t *)data);
+    printf("HEX 0x%lX (DEC %ld)", *(uint64_t *)data, *(int64_t *)data);
   } else if(type_is_ptr(type)) {
-    printf("PTR 0x%016lX\n", *(uint64_t *)data);
+    printf("PTR 0x%016lX", *(uint64_t *)data);
   } else if(type_is_comp(type)) {
     if(type_is_struct(type)) printf("STRUCT {");
     else if(type_is_union(type)) printf("UNION {");
@@ -49,6 +49,7 @@ void cgen_typed_print(type_t *type, void *data) {
     uint8_t *ptr = (uint8_t *)data;
     for(int i = 0;i < type->array_size;i++) {
       cgen_typed_print(type->next, ptr);
+      printf(", ");
       ptr += type->next->size;
     }
   }
@@ -102,6 +103,7 @@ void cgen_print_cxt(cgen_cxt_t *cxt) {
   while(node) {
     cgen_gdata_t *gdata = (cgen_gdata_t *)list_value(node);
     printf("GDATA @ %ld : ", gdata->offset);
+    //printf("Print Buffer @ %p\n", gdata->data);
     cgen_typed_print(gdata->type, gdata->data);
     putchar('\n');
     node = list_next(node);
@@ -252,6 +254,7 @@ cgen_gdata_t *cgen_init_value(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 int64_t cgen_init_value_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type->size != TYPE_UNKNOWN_SIZE);
   assert(token && token->type != T_INIT_LIST);
+  //printf("Buffer @ %p offset %ld\n", gdata->data, offset);
   if(token->type != T_STR_CONST) {
     value_t *value = eval_const_to_type(cxt->type_cxt, token, type, TYPE_CAST_IMPLICIT);
     memcpy(gdata->data + offset, value->data, type->size);
