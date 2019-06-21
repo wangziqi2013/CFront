@@ -213,6 +213,10 @@ static inline int type_is_int(type_t *type) {
 static inline int type_is_bitfield(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_BITFIELD;
 }
+static inline int type_is_enum(type_t *type) {
+  return BASETYPE_GET(type->decl_prop) == BASETYPE_ENUM;
+}
+static inline int
 static inline int type_is_char(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_CHAR;
 }

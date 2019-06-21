@@ -207,7 +207,7 @@ typedef struct token_t {
 #define BASETYPE_VOID       0x00120000
 #define BASETYPE_BITFIELD   0x00130000
 #define BASETYPE_GET(decl_prop) (decl_prop & BASETYPE_MASK)
-// This macro only evaluates each argument once
+// Better write setters as functions, not macros to avoid evaluating arguments multiple times
 static inline void BASETYPE_SET(token_t *token, decl_prop_t basetype) {
   token->decl_prop &= ~BASETYPE_MASK; \
   token->decl_prop |= ((basetype) & BASETYPE_MASK);

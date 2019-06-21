@@ -689,6 +689,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
   return comp;
 }
 
+// TODO: FORWARD DECL OF ENUM / ENUM TYPED VARIABLES
 enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
   assert(token->type == T_ENUM);
   enum_t *enu = enum_init(cxt);
@@ -973,7 +974,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       token_t *index_token = ast_getchild(exp, 1);
       assert(index_token);
       type_t *index_type = type_typeof(cxt, index_token, options);
-      if(!type_is_int(index_type)) 
+      if(!type_is_int(index_type) && !type_is_bitfield(index_type)) 
         error_row_col_exit(index_token->offset, "Array index must be of one of the integral types\n");
     }
     return lhs->next;
@@ -1009,7 +1010,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   switch(op_type) {
     // If applied to integer then result is the same integer, if applied to pointers then result is pointer
     case EXP_POST_INC: case EXP_PRE_INC: case EXP_PRE_DEC: case EXP_POST_DEC: {
-      if(type_is_int(lhs) || type_is_ptr(lhs)) return lhs;
+      if(type_is_int(lhs) || type_is_bitfield(lhs) || type_is_ptr(lhs)) return lhs;
       error_row_col_exit(exp->offset, "Invalid operand for \"%s\" operator\n", op_str);
     } break;
     case EXP_ARROW:
@@ -1029,17 +1030,17 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       return ((field_t *)ret)->type; // If it is a bit field the type object has the field set to -1
     } break;
     case EXP_PLUS: case EXP_MINUS: {
-      if(!type_is_int(lhs)) 
+      if(!type_is_int(lhs) && !type_is_bitfield(lhs)) 
         error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to integer types\n", op_str);
       return lhs;
     } break;
     case EXP_LOGICAL_NOT: {
-      if(!type_is_int(lhs) && !type_is_ptr(lhs)) 
+      if(!type_is_int(lhs) && !type_is_bitfield(lhs) && !type_is_ptr(lhs)) 
         error_row_col_exit(exp->offset, "Operator \'!\' must be applied to integer or pointer types\n");
       return lhs;
     } break;
     case EXP_BIT_NOT: {
-      if(!type_is_int(lhs)) 
+      if(!type_is_int(lhs) && !type_is_bitfield(lhs)) 
         error_row_col_exit(exp->offset, "Operator \'~\' must be applied to integer types\n");
       return lhs;
     }
@@ -1061,6 +1062,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       return deref;
     } break;
     case EXP_SIZEOF: { // sizeof() operator returns size_t type, which is unsigned long
+      if(type_is_bitfield(lhs)) error_row_col_exit(exp->offset, "Cannot take size of bit fields\n");
       return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(TYPE_SIZEOF_TYPE)], exp->offset);
     } break;
     // Group of operators that just perform an integer convert and check feasibility
