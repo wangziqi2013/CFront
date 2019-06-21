@@ -181,8 +181,11 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_ENUM       0x00100000
 #define BASETYPE_UDEF       0x00110000
 #define BASETYPE_VOID       0x00120000
-#define BASETYPE_GET(decl_prop) (decl_prop & 0x00FF0000)
-#define BASETYPE_SET(token, type) (token->decl_prop |= (type & 0x00FF0000))
+#define BASETYPE_GET(decl_prop) (decl_prop & BASETYPE_MASK)
+#define BASETYPE_SET(token, basetype) { \
+  do { ((token)->decl_prop) &= ~BASETYPE_MASK;  \
+       ((token)->decl_prop) |= ((basetype) & BASETYPE_MASK); } while(0); \
+}
 #define BASETYPE_INDEX(decl_prop) ((decl_prop) >> 16)   // Returns the index into the integer size table
 #define BASETYPE_FROMINDEX(index) ((decl_prop_t)index << 16)
 // The following are used by type nodes to specify the derivation operation
@@ -193,9 +196,12 @@ typedef uint32_t decl_prop_t;
 #define TYPE_OP_BITFIELD       0x04000000
 #define TYPE_OP_MASK           0xFF000000
 #define TYPE_OP_GET(decl_prop) (decl_prop & TYPE_OP_MASK)
-#define TYPE_OP_SET(decl_prop, op) { do { (decl_prop) |= ((op) & TYPE_OP_MASK) } while(0); }
+#define TYPE_OP_SET(decl_prop, op) { \
+  do { (decl_prop) &= ~TYPE_OP_MASK; \
+       (decl_prop) |= ((op) & TYPE_OP_MASK); } while(0); \
+}
 
-#define TYPE_EMPTY_BODY        0x01000000 // Struct or union has body but it is empty; Valid only with T_STRUCT, T_UNION
+#define TYPE_EMPTY_BODY        0x01000000 // Struct or union has body but it is empty; Valid only with token T_STRUCT, T_UNION
 
 typedef struct token_t {
   token_type_t type;         // This will be written during parsing to AST type
