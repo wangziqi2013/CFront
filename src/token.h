@@ -122,6 +122,30 @@ typedef enum {
 
 // Declaration properties, see below
 typedef uint32_t decl_prop_t;
+
+typedef struct token_t {
+  token_type_t type;         // This will be written during parsing to AST type
+  char *str;                 // Only valid for literals and identifiers; Owned by the token object
+  struct token_t *child;
+  union {
+    struct token_t *sibling; // If token is in AST then use child-sibling representation
+    struct token_t *next;    // If token is in pushbacks queue then form a circular queue
+  };
+  struct token_t *parent;    // Empty for root node
+  char *offset;              // The offset in source file, for error reporting purposes; AST node may also have this field
+  union {
+    decl_prop_t decl_prop;   // Property if the kwd is part of declaration; Set when a kwd is found
+    int array_size;          // Size of the array decl if it is EXP_ARRAY_SUB
+    int bitfield_size;       // Integer constant for bit field, only valid with T_COMP_FIELD
+    int enum_const;          // Enum constant, only valid with T_ENUM_FIELD
+    struct {
+      int op_size;           // Size of the operator, if it is an expression node
+      int op_sign;           // Whether the operation is signed (1 means signed)
+      int op_cast;           // After the operation how should we cast the result - see TYPE_CAST_ series macro
+    };
+  };
+} token_t;
+
 #define DECL_NULL          0x00000000
 #define DECL_INVALID       0xFFFFFFFF // Naturally incompatible with all
 // Type specifier bit mask (bit 4, 5, 6, 7), at the token level
@@ -184,10 +208,10 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_BITFIELD   0x00130000
 #define BASETYPE_GET(decl_prop) (decl_prop & BASETYPE_MASK)
 // This macro only evaluates each argument once
-#define BASETYPE_SET(token, basetype) \
-  do { token_t *t = token; decl_prop_t bt = basetype; \
-       t->decl_prop &= ~BASETYPE_MASK; \
-       t->decl_prop |= ((bt) & BASETYPE_MASK); } while(0);
+static inline void BASETYPE_SET(token_t *token, decl_prop_t basetype) {
+  token->decl_prop &= ~BASETYPE_MASK; \
+  token->decl_prop |= ((basetype) & BASETYPE_MASK);
+}
 
 #define BASETYPE_INDEX(decl_prop) ((decl_prop) >> 16)   // Returns the index into the integer size table
 #define BASETYPE_FROMINDEX(index) ((decl_prop_t)index << 16)
@@ -199,34 +223,8 @@ typedef uint32_t decl_prop_t;
 #define TYPE_OP_BITFIELD       0x04000000
 #define TYPE_OP_MASK           0xFF000000
 #define TYPE_OP_GET(decl_prop) (decl_prop & TYPE_OP_MASK)
-#define TYPE_OP_SET(decl_prop, op) \
-  do { (decl_prop) &= ~TYPE_OP_MASK; \
-       (decl_prop) |= ((op) & TYPE_OP_MASK); } while(0); 
 
 #define TYPE_EMPTY_BODY        0x01000000 // Struct or union has body but it is empty; Valid only with token T_STRUCT, T_UNION
-
-typedef struct token_t {
-  token_type_t type;         // This will be written during parsing to AST type
-  char *str;                 // Only valid for literals and identifiers; Owned by the token object
-  struct token_t *child;
-  union {
-    struct token_t *sibling; // If token is in AST then use child-sibling representation
-    struct token_t *next;    // If token is in pushbacks queue then form a circular queue
-  };
-  struct token_t *parent;    // Empty for root node
-  char *offset;              // The offset in source file, for error reporting purposes; AST node may also have this field
-  union {
-    decl_prop_t decl_prop;   // Property if the kwd is part of declaration; Set when a kwd is found
-    int array_size;          // Size of the array decl if it is EXP_ARRAY_SUB
-    int bitfield_size;       // Integer constant for bit field, only valid with T_COMP_FIELD
-    int enum_const;          // Enum constant, only valid with T_ENUM_FIELD
-    struct {
-      int op_size;           // Size of the operator, if it is an expression node
-      int op_sign;           // Whether the operation is signed (1 means signed)
-      int op_cast;           // After the operation how should we cast the result - see TYPE_CAST_ series macro
-    };
-  };
-} token_t;
 
 typedef struct {
   stack_t *udef_types;       // Auto detected when lexing T_IDENT
