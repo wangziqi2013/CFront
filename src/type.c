@@ -576,6 +576,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         f->source_offset = field_name->offset; // Set field offset to the name for error reporting
       } else { f->source_offset = field->offset; } // If anonymous field, set offset from the field token
       token_t *bf = ast_getchild(field, 1); // Set bit field (2nd child of T_COMP_FIELD)
+      
       if(bf != NULL) {
         assert(bf->type == T_BITFIELD);
         if(!type_is_int(f->type))  // Check whether base type is integer
@@ -588,17 +589,20 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         } else if(bf_size_value->int32 < 0) {
           error_row_col_exit(bf->offset, "Bit field size in declaration must be non-negative\n");
         }
-        field->bitfield_size = bf_size_value->int32; // Evaluate the constant expression
+        field->bitfield_size = bf_size_value->int32;       // Evaluate the constant expression
         f->bitfield_size = field->bitfield_size; 
         f->type->bitfield_size = f->bitfield_size;
+        TYPE_OP_SET(f->type->decl_prop, TYPE_OP_BITFIELD); // Indicate in the type that it is a bit field
         if((size_t)f->bitfield_size > f->type->size * 8) 
           error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
             type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
       } else { 
         assert(field->bitfield_size == -1);
         f->bitfield_size = f->bitfield_offset = -1; 
-        f->type->bitfield_size = f->type->bitfield_offset = -1; // Also set the value in type object
+        // Do not set this, because it will overwrite array size
+        //f->type->bitfield_size = f->type->bitfield_offset = -1; // Also set the value in type object
       }
+      
       f->offset = curr_offset; // Set size and offset (currently no alignment)
       f->size = f->type->size;
       if(f->size == TYPE_UNKNOWN_SIZE) // If there is no name then the T_COMP_FIELD has no offset
@@ -633,6 +637,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
           }
         } else { list_insert(comp->field_list, NULL, f); } // Anonymous non-comp field, insert
       }
+      
       if(token->type == T_STRUCT) {
         //printf("%s %d\n", f->name, f->bitfield_size);
         // Non-Bit field always increments the offset; This works also for promoted types
@@ -671,7 +676,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
       } else if(max_size < f->type->size) {
         max_size = f->type->size;
       }
-
+      
       field = field->sibling;
       prev_field = f;
     } // while(field)
