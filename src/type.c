@@ -974,7 +974,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       token_t *index_token = ast_getchild(exp, 1);
       assert(index_token);
       type_t *index_type = type_typeof(cxt, index_token, options);
-      if(!type_is_int(index_type) && !type_is_bitfield(index_type)) 
+      if(!type_is_general_int(index_type)) 
         error_row_col_exit(index_token->offset, "Array index must be of one of the integral types\n");
     }
     return lhs->next;
@@ -1010,7 +1010,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   switch(op_type) {
     // If applied to integer then result is the same integer, if applied to pointers then result is pointer
     case EXP_POST_INC: case EXP_PRE_INC: case EXP_PRE_DEC: case EXP_POST_DEC: {
-      if(type_is_int(lhs) || type_is_bitfield(lhs) || type_is_ptr(lhs)) return lhs;
+      if(type_is_general_int(lhs) || type_is_ptr(lhs)) return lhs;
       error_row_col_exit(exp->offset, "Invalid operand for \"%s\" operator\n", op_str);
     } break;
     case EXP_ARROW:
@@ -1030,17 +1030,17 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       return ((field_t *)ret)->type; // If it is a bit field the type object has the field set to -1
     } break;
     case EXP_PLUS: case EXP_MINUS: {
-      if(!type_is_int(lhs) && !type_is_bitfield(lhs)) 
+      if(!type_is_general_int(lhs)) 
         error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to integer types\n", op_str);
       return lhs;
     } break;
     case EXP_LOGICAL_NOT: {
-      if(!type_is_int(lhs) && !type_is_bitfield(lhs) && !type_is_ptr(lhs)) 
+      if(!type_is_general_int(lhs) && !type_is_ptr(lhs)) 
         error_row_col_exit(exp->offset, "Operator \'!\' must be applied to integer or pointer types\n");
       return lhs;
     } break;
     case EXP_BIT_NOT: {
-      if(!type_is_int(lhs) && !type_is_bitfield(lhs)) 
+      if(!type_is_general_int(lhs)) 
         error_row_col_exit(exp->offset, "Operator \'~\' must be applied to integer types\n");
       return lhs;
     }
@@ -1072,7 +1072,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_MUL_ASSIGN: case EXP_DIV_ASSIGN: case EXP_MOD_ASSIGN: 
     case EXP_AND_ASSIGN: case EXP_OR_ASSIGN: case EXP_XOR_ASSIGN: {
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); // Evaluate both left and right operands
-      if(type_is_int(lhs) && type_is_int(rhs)) { // Integer type conversion
+      if(type_is_general_int(lhs) && type_is_general_int(rhs)) { // Integer type conversion
         type_t *after_convert = type_int_convert(lhs, rhs);
         // Test whether they could convert, e.g. (int * unsigned int) is invalid because int could not be casted to unsigned int
         type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
@@ -1091,7 +1091,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_ADD_ASSIGN: case EXP_SUB_ASSIGN: {
       // Copied from above
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
-      if(type_is_int(lhs) && type_is_int(rhs)) { 
+      if(type_is_general_int(lhs) && type_is_general_int(rhs)) { 
         type_t *after_convert = type_int_convert(lhs, rhs);
         type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
         type_cast(after_convert, rhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 1)->offset);
@@ -1101,7 +1101,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
         } else {
           return after_convert;
         }
-      } else if(type_is_ptr(lhs) && type_is_int(rhs)) {
+      } else if(type_is_ptr(lhs) && type_is_general_int(rhs)) {
         return lhs;
       } else if(op_type == EXP_SUB && type_is_ptr(lhs) && type_is_ptr(rhs)) { // Pointer subtraction
         if(type_is_void_ptr(lhs) || type_is_void_ptr(rhs)) error_row_col_exit(exp->offset,
@@ -1117,14 +1117,14 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_LSHIFT: case EXP_RSHIFT: 
     case EXP_LSHIFT_ASSIGN: case EXP_RSHIFT_ASSIGN: { // Shift operator preserves the type
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
-      if(type_is_int(lhs) && type_is_int(rhs)) return lhs;
+      if(type_is_general_int(lhs) && type_is_general_int(rhs)) return lhs;
       error_row_col_exit(exp->offset, 
         "Operator \"%s\" must be applied to integer types", op_str);
     } break;
     case EXP_LESS: case EXP_GREATER: case EXP_LEQ: case EXP_GEQ: 
     case EXP_EQ: case EXP_NEQ: { // Comparison requires the same as +/-
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
-      if(type_is_int(lhs) && type_is_int(rhs)) { 
+      if(type_is_general_int(lhs) && type_is_general_int(rhs)) { 
         type_t *after_convert = type_int_convert(lhs, rhs); // Must convert to same length and must not lose information
         type_cast(after_convert, lhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 0)->offset);
         type_cast(after_convert, rhs, TYPE_CAST_IMPLICIT, ast_getchild(exp, 1)->offset);
@@ -1139,10 +1139,10 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     } break;
     case EXP_LOGICAL_AND: case EXP_LOGICAL_OR: { // && || accepts both pointer and integer as operands
       rhs = type_typeof(cxt, ast_getchild(exp, 1), options); 
-      if(!type_is_int(lhs) && !type_is_ptr(lhs)) 
+      if(!type_is_general_int(lhs) && !type_is_ptr(lhs)) 
         error_row_col_exit(ast_getchild(exp, 0)->offset, 
           "Operatpr \"%s\" must be applied to integer or pointer type\n", op_str);
-      if(!type_is_int(rhs) && !type_is_ptr(rhs)) 
+      if(!type_is_general_int(rhs) && !type_is_ptr(rhs)) 
         error_row_col_exit(ast_getchild(exp, 1)->offset, 
           "Operatpr \"%s\" must be applied to integer or pointer type\n", op_str);
     } break;
