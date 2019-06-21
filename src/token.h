@@ -190,7 +190,10 @@ typedef uint32_t decl_prop_t;
 #define TYPE_OP_DEREF          0x01000000
 #define TYPE_OP_ARRAY_SUB      0x02000000
 #define TYPE_OP_FUNC_CALL      0x03000000
-#define TYPE_OP_GET(decl_prop) (decl_prop & 0xFF000000)
+#define TYPE_OP_BITFIELD       0x04000000
+#define TYPE_OP_MASK           0xFF000000
+#define TYPE_OP_GET(decl_prop) (decl_prop & TYPE_OP_MASK)
+#define TYPE_OP_SET(decl_prop, op) { do { (decl_prop) |= ((op) & TYPE_OP_MASK) } while(0); }
 
 #define TYPE_EMPTY_BODY        0x01000000 // Struct or union has body but it is empty; Valid only with T_STRUCT, T_UNION
 
