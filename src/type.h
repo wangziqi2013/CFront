@@ -210,6 +210,9 @@ static inline type_t *type_getint(decl_prop_t decl_prop) {
 static inline int type_is_int(type_t *type) {
   return BASETYPE_GET(type->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(type->decl_prop) <= BASETYPE_ULLONG;
 }
+static inline int type_is_bitfield(type_t *type) {
+  return !!(type->decl_prop & TYPE_OP_BITFIELD);
+}
 static inline int type_is_char(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_CHAR;
 }
