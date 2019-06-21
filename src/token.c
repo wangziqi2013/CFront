@@ -184,6 +184,7 @@ char *token_decl_print(decl_prop_t decl_prop) {
       case BASETYPE_ENUM:       strcat(buffer, "enum "); break;
       case BASETYPE_UDEF:       strcat(buffer, "<typedef'ed> "); break;
       case BASETYPE_VOID:       strcat(buffer, "void "); break;
+      case BASETYPE_BITFIELD:   strcat(buffer, "bitfield "); break;
     }
   }
   buffer[strlen(buffer) - 1] = '\0';

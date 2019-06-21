@@ -114,6 +114,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
         str_concat(s, field_s->s);
         str_free(field_s);
         if(field->bitfield_size != -1) {
+          assert(type_is_bitfield(field->type));
           str_concat(s, " : ");
           str_print_int(s, field->bitfield_size);
         }
