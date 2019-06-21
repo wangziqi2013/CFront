@@ -213,13 +213,6 @@ static inline int type_is_int(type_t *type) {
 static inline int type_is_bitfield(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_BITFIELD;
 }
-static inline int type_is_enum(type_t *type) {
-  return BASETYPE_GET(type->decl_prop) == BASETYPE_ENUM;
-}
-// Whether the type is equivalent to an integer
-static inline int type_is_general_int(type_t *type) {
-  return type_is_int(type) || type_is_enum(type) || type_is_bitfield(type);
-}
 static inline int type_is_char(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_CHAR;
 }
@@ -271,6 +264,10 @@ static inline int type_is_union(type_t *type) {
 }
 static inline int type_is_enum(type_t *type) {
   return BASETYPE_GET(type->decl_prop) == BASETYPE_ENUM;
+}
+// Whether the type is equivalent to an integer
+static inline int type_is_general_int(type_t *type) {
+  return type_is_int(type) || type_is_enum(type) || type_is_bitfield(type);
 }
 static inline const char *type_printable_name(const char *name) { return name ? name : "<No Name>"; }
 

@@ -1150,7 +1150,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       token_t *op2 = ast_getchild(exp, 1);
       token_t *op3 = ast_getchild(exp, 2);
       assert(op2 && op3);
-      if(!type_is_int(lhs) && !type_is_ptr(lhs)) // First check condition
+      if(!type_is_general_int(lhs) && !type_is_ptr(lhs)) // First check condition
         error_row_col_exit(ast_getchild(exp, 0)->offset, 
           "The first operand of condition operator must be integer or pointer type\n");
       type_t *type2 = type_typeof(cxt, op2, options);
