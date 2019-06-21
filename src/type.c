@@ -152,6 +152,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   if(name) str_concat(decl_s, name);
   while(type->next) { // Means it is not a base type
     decl_prop_t op = TYPE_OP_GET(type->decl_prop);
+    //printf("op = %X\n", op);
     assert(op == TYPE_OP_ARRAY_SUB || op == TYPE_OP_DEREF || op == TYPE_OP_FUNC_CALL);
     if(op == TYPE_OP_ARRAY_SUB) {
       if(prev && TYPE_OP_GET(prev->decl_prop) == TYPE_OP_DEREF) {
@@ -592,15 +593,15 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         field->bitfield_size = bf_size_value->int32;       // Evaluate the constant expression
         f->bitfield_size = field->bitfield_size; 
         f->type->bitfield_size = f->bitfield_size;
-        TYPE_OP_SET(f->type->decl_prop, TYPE_OP_BITFIELD); // Indicate in the type that it is a bit field
+        // Change the type to bit field (no longer an integer)
+        f->type->decl_prop &= ~BASETYPE_MASK;
+        f->type->decl_prop |= BASETYPE_BITFIELD;
         if((size_t)f->bitfield_size > f->type->size * 8) 
           error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
             type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
       } else { 
         assert(field->bitfield_size == -1);
         f->bitfield_size = f->bitfield_offset = -1; 
-        // Do not set this, because it will overwrite array size
-        //f->type->bitfield_size = f->type->bitfield_offset = -1; // Also set the value in type object
       }
       
       f->offset = curr_offset; // Set size and offset (currently no alignment)
@@ -1050,7 +1051,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
       return target;
     } break;
     case EXP_ADDR: { // This works even for the two symbol types: ARRAY_SUB and FUNC_CALL
-      if(lhs->bitfield_size == -1) error_row_col_exit(exp->offset, "Cannot take address of bitfields\n");
+      if(type_is_bitfield(lhs)) error_row_col_exit(exp->offset, "Cannot take address of bit fields\n");
       type_t *deref = type_init(cxt);   // Create a new type node
       deref->decl_prop = TYPE_OP_DEREF;
       deref->next = lhs;
