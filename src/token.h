@@ -181,6 +181,7 @@ typedef uint32_t decl_prop_t;
 #define BASETYPE_ENUM       0x00100000
 #define BASETYPE_UDEF       0x00110000
 #define BASETYPE_VOID       0x00120000
+#define BASETYPE_BITFIELD   0x00130000
 #define BASETYPE_GET(decl_prop) (decl_prop & BASETYPE_MASK)
 #define BASETYPE_SET(token, basetype) { \
   do { ((token)->decl_prop) &= ~BASETYPE_MASK;  \
