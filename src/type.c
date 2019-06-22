@@ -599,10 +599,10 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         } else if(bf_size_value->int32 < 0) {
           error_row_col_exit(bf->offset, "Bit field size in declaration must be non-negative\n");
         }
-        field->bitfield_size = bf_size_value->int32;       // Evaluate the constant expression
-        f->bitfield_size = field->bitfield_size; 
+        f->bitfield_size = bf_size_value->int32; 
         f->type->bitfield_size = f->bitfield_size;
         // Change the type to bit field (no longer an integer)
+        // This does not require copy because we know the int type is copied by type_gettype()
         f->type->bitfield_basetype = f->type->decl_prop & BASETYPE_MASK;
         f->type->decl_prop &= ~BASETYPE_MASK;
         f->type->decl_prop |= BASETYPE_BITFIELD;
@@ -610,7 +610,6 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
           error_row_col_exit(field->offset, "Bit field \"%s\" size (%lu bits) must not exceed the integer size (%lu bits)\n", 
             type_printable_name(f->name), (size_t)f->bitfield_size, f->type->size * 8);
       } else { 
-        assert(field->bitfield_size == -1);
         f->bitfield_size = f->bitfield_offset = -1; 
       }
       

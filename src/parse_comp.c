@@ -55,7 +55,7 @@ token_t *parse_struct_union(parse_comp_cxt_t *cxt, token_t *root) {
           token_t *bf; // Assigned next line
           ast_append_child(field, ast_append_child(token_alloc_type(T_BITFIELD), bf = parse_exp(cxt, PARSE_EXP_NOCOMMA)));
           la = token_lookahead_notnull(cxt->token_cxt, 1);
-        } else { field->bitfield_size = -1; }
+        }
         if(la->type == T_COMMA) { token_consume_type(cxt->token_cxt, T_COMMA); }
         else if(la->type == T_SEMICOLON) { token_consume_type(cxt->token_cxt, T_SEMICOLON); break; } // Finish parsing the field on ';'
         else { error_row_col_exit(la->offset, "Unexpected symbol \"%s\" in struct/union field declaration\n", 
