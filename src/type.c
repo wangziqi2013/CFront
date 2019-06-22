@@ -940,18 +940,34 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   return TYPE_CAST_INVALID;
 }
 
-type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
+// This function may return the same type as passed
+const type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
   assert(type_is_general_int(type));
   if(type_is_enum(type)) {
     return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
-  } else if(type_is_bitfield) {
-
+  } 
+  if(type_is_bitfield(type)) { // Do not return in this branch - just convert to its original base type
+    type = &type_builtin_ints[BASETYPE_INDEX(type->bitfield_basetype)]; // Also do not copy - we will do it below
   }
+  // Integer promotion: If a type shorter than int type appears in an expression, they are promoted to
+  // integer type, regardless of signs
+  decl_prop_t basetype = BASETYPE_GET(type->decl_prop);
+  switch(basetype) {
+    case BASETYPE_CHAR: case BASETYPE_UCHAR: case BASETYPE_SHORT: case BASETYPE_USHORT:
+      type = NULL;
+      break; 
+    default:
+      type = NULL;
+      break;
+  }
+
+  return type;
 }
 
 // Single operand type derivation; If the op is not available, just pass NULL
-type_t *type_typeof_op(type_cxt_t *cxt, token_type_t type, type_t *op1, type_t *op2, type_t op3) {
-
+// The returned type is always a new copy, i.e. returned value can be modified independent from the arguments
+type_t *type_typeof_op(type_cxt_t *cxt, token_type_t type, type_t *op1, type_t *op2, type_t *op3) {
+  return NULL;
 }
 
 // This function evaluates the type of an expression
