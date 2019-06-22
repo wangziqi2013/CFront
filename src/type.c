@@ -295,7 +295,8 @@ type_t *type_init(type_cxt_t *cxt) {
 type_t *type_init_from(type_cxt_t *cxt, type_t *from, char *offset) {
   type_t *ret = type_init(cxt);
   memcpy(ret, from, sizeof(type_t));
-  ret->offset = offset;
+  if(!offset) ret->offset = offset;
+  else ret->offset = from->offset;
   ret->bitfield_size = -1;
   return ret;
 }
