@@ -88,7 +88,14 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
 
   // First, print base type, qualifier and storage class, if it is a primitive type, with a space at the end
   // typedef is also printed
-  str_concat(s, token_decl_print(basetype->decl_prop));
+  // Only use token_decl_print when this is not udef'ed name and not bit field; Otherwise print our own
+  if(basetype->udef_name) {
+    str_concat(s, basetype->udef_name);
+  } else if(type_is_bitfield(basetype)) { // Print base type for bit field
+    str_concat(s, token_decl_print(basetype->bitfield_basetype));
+  } else {
+    str_concat(s, token_decl_print(basetype->decl_prop));
+  }
   str_append(s, ' ');
 
   // This does not include qualifier and storage class
@@ -96,10 +103,7 @@ str_t *type_print(type_t *type, const char *name, str_t *s, int print_comp_body,
   assert(base != BASETYPE_UDEF); // Must have already been translated to other types
   
   // If base type is composite, print its body
-  if(basetype->udef_name) { // This has highest priority - just print udef name
-    str_concat(s, basetype->udef_name);
-    str_append(s, ' ');
-  } else if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
+  if(base == BASETYPE_STRUCT || base == BASETYPE_UNION) {
     comp_t *comp = basetype->comp;
     if(comp->name) { str_concat(s, comp->name); str_append(s, ' '); } // Name followed by a space
     if(print_comp_body && comp->has_definition) {
@@ -595,6 +599,7 @@ comp_t *type_getcomp(type_cxt_t *cxt, token_t *token, int is_forward) {
         f->bitfield_size = field->bitfield_size; 
         f->type->bitfield_size = f->bitfield_size;
         // Change the type to bit field (no longer an integer)
+        f->type->bitfield_basetype = f->type->decl_prop & BASETYPE_MASK;
         f->type->decl_prop &= ~BASETYPE_MASK;
         f->type->decl_prop |= BASETYPE_BITFIELD;
         if((size_t)f->bitfield_size > f->type->size * 8) 
@@ -937,7 +942,11 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
 
 type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
   assert(type_is_general_int(type));
-  if(type_is_enum(type)) return type_init_from(cxt, , type->offset);
+  if(type_is_enum(type)) {
+    return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
+  } else if(type_is_bitfield) {
+
+  }
 }
 
 // Single operand type derivation; If the op is not available, just pass NULL

@@ -118,6 +118,7 @@ typedef struct type_t_struct {
     struct {                // This duplicates the two fields from field_t
       int bitfield_size;
       int bitfield_offset;
+      decl_prop_t bitfield_basetype; // The integer base type of integer; only contains basetype, no qualifier
     };
   };
   char *udef_name;  // Stores user defined type's name (i.e. the name we use to refer to it))
