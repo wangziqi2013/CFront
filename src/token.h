@@ -137,7 +137,6 @@ typedef struct token_t {
     decl_prop_t decl_prop;   // Property if the kwd is part of declaration; Set when a kwd is found
     int array_size;          // Size of the array decl if it is EXP_ARRAY_SUB
     int bitfield_size;       // Integer constant for bit field, only valid with T_COMP_FIELD
-    int enum_const;          // Enum constant, only valid with T_ENUM_FIELD
   };
 } token_t;
 

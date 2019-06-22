@@ -721,10 +721,8 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token) {
       } else if(enum_value->uint32 != enum_value->uint64) {
         error_row_col_exit(enum_exp->offset, "Enum constant value too large to be represented by 32 bit int\n");
       } 
-      field->enum_const = curr_value = enum_value->int32;
-    } else {
-      field->enum_const = curr_value;
-    }
+      curr_value = enum_value->int32;
+    } 
     char *name_str = entry_name->str;
     list_insert(enu->field_list, name_str, (void *)(long)curr_value); // Directly store the integer as value
     if(bt_find(enu->field_index, name_str) != BT_NOTFOUND) {
