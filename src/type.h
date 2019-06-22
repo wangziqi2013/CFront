@@ -314,6 +314,7 @@ enum_t *type_getenum(type_cxt_t *cxt, token_t *token);
 type_t *type_int_convert(type_t *lhs, type_t *rhs);
 int type_cmp(type_t *to, type_t *from);
 int type_cast(type_t *to, type_t *from, int cast_type, char *offset);
+type_t *type_typeof_op(token_type_t type, type_t *op1, type_t *op2, type_t op3);
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options); // Evaluate the type of an expression
 
 #endif

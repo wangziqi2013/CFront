@@ -935,6 +935,11 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   return TYPE_CAST_INVALID;
 }
 
+// Single operand type derivation; If the op is not available, just pass NULL
+type_t *type_typeof_op(token_type_t type, type_t *op1, type_t *op2, type_t op3) {
+
+}
+
 // This function evaluates the type of an expression
 // Argument options: see TYPEOF_IGNORE_ series. For functions and arrays we do not need the type of 
 // arguments and index to determine the final type; Caller must not modify the returned type
