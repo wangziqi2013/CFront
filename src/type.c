@@ -935,8 +935,13 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   return TYPE_CAST_INVALID;
 }
 
+type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
+  assert(type_is_general_int(type));
+  if(type_is_enum(type)) return type_init_from(cxt, , type->offset);
+}
+
 // Single operand type derivation; If the op is not available, just pass NULL
-type_t *type_typeof_op(token_type_t type, type_t *op1, type_t *op2, type_t op3) {
+type_t *type_typeof_op(type_cxt_t *cxt, token_type_t type, type_t *op1, type_t *op2, type_t op3) {
 
 }
 
@@ -945,7 +950,7 @@ type_t *type_typeof_op(token_type_t type, type_t *op1, type_t *op2, type_t op3) 
 // arguments and index to determine the final type; Caller must not modify the returned type
 //   1. For literal types, just return their type constant
 //   2. void can be the result of casting, and can be returned
-//   3. Bit fields within a struct returns the base element type (e.g. For struct { short int x : 15; }, x type is "int")
+//   3. Bit fields within a struct returns the bit field type
 type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
   // Leaf types: Integer literal, string literal and identifiers
   if(BASETYPE_GET(exp->decl_prop) >= BASETYPE_CHAR && BASETYPE_GET(exp->decl_prop) <= BASETYPE_ULLONG) {
