@@ -785,102 +785,6 @@ void test_type_cmp() {
   return;
 }
 
-typedef struct {
-  parse_exp_cxt_t *parse_cxt;
-  type_cxt_t *type_cxt;
-  list_t *token_list;
-} test_cxt_t;
-
-// This function does not following:
-//   1. Initialize the string to parse to NULL
-//   2. Insert a few udef'ed name for parser to let them correctly identify types
-//      2.1 udef1, udef2, udef3, udef4. If you are using them in the test, make sure you actually define them
-test_cxt_t *test_set_up() {
-  test_cxt_t *test_cxt = (test_cxt_t *)malloc(sizeof(test_cxt));
-  SYSEXPECT(test_cxt != NULL);
-  test_cxt->parse_cxt = parse_exp_init(NULL); // Use NULL as a placeholder
-  test_cxt->type_cxt = type_sys_init();
-  test_cxt->token_list = list_init();
-  static token_t udef_tokens[4] = {
-    {T_IDENT, "udef1", NULL, {NULL}, NULL, NULL, {0}},
-    {T_IDENT, "udef2", NULL, {NULL}, NULL, NULL, {0}},
-    {T_IDENT, "udef3", NULL, {NULL}, NULL, NULL, {0}},
-    {T_IDENT, "udef4", NULL, {NULL}, NULL, NULL, {0}},
-  };
-  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[0]);
-  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[1]);
-  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[2]);
-  token_add_utype(test_cxt->parse_cxt->token_cxt, &udef_tokens[3]);
-  return test_cxt;
-}
-
-// Note that decl could not be const char * because the tokenizer may write into the stream
-// If argument "s" has a name, the name is inserted into either typedef domain or the value domain
-// depending on whether typedef stgcls is present
-// Also returns the type
-type_t *test_insert_symbol(test_cxt_t *test_cxt, char *s) {
-  parse_exp_reinit(test_cxt->parse_cxt, s);
-  token_t *decl = parse_decl(test_cxt->parse_cxt, PARSE_DECL_HASBASETYPE);
-  list_insert(test_cxt->token_list, NULL, decl);
-  if(decl->type != T_DECL) printf("Not a valid declaration: \"%s\"\n", s);
-  token_t *base = ast_getchild(decl, 0);
-  token_t *op = ast_getchild(decl, 1);
-  token_t *name = ast_getchild(decl, 2);
-  assert(base && op && name);
-  type_t *type = type_gettype(test_cxt->type_cxt, decl, base, TYPE_ALLOW_VOID | TYPE_ALLOW_STGCLS);
-  if(name->type == T_IDENT) {
-    if(DECL_ISTYPEDEF(base->decl_prop)) { // Insert into typedef domain
-      scope_top_insert(test_cxt->type_cxt, SCOPE_UDEF, name->str, type);
-    } else { // Insert into value domain using value_t objects
-      value_t *value = value_init(test_cxt->type_cxt);
-      value->type = type;
-      scope_top_insert(test_cxt->type_cxt, SCOPE_VALUE, name->str, value);
-    }
-  }
-  return type;
-}
-
-// Test tear down
-void test_tear_down(test_cxt_t *test_cxt) {
-  parse_exp_free(test_cxt->parse_cxt);
-  type_sys_free(test_cxt->type_cxt);
-  listnode_t *curr = list_head(test_cxt->token_list), *prev;
-  while(curr) {
-    prev = curr;
-    curr = list_next(curr);
-    token_free(list_value(prev));
-  }
-  list_free(test_cxt->token_list);
-}
-
-void test_type_typeof() {
-  printf("=== Test type_typeof ===\n");
-  parse_exp_cxt_t *parse_cxt;
-  type_cxt_t *type_cxt;
-  token_t *token;
-  type_t *type;
-  str_t *s;
-  
-  // First test whether get string type works
-  type_cxt = type_sys_init();
-  type = type_get_strliteral(type_cxt, 25, "Placeholder");
-  s = type_print(type, NULL, NULL, 1, 0);
-  printf("%s\n", s->s);
-  str_free(s);
-  type_sys_free(type_cxt);
-  printf("=====================================\n");
-
-  test_cxt_t *cxt = test_set_up();
-  test_insert_symbol(cxt, "struct str { int *x; long y; unsigned z : 20; }");
-  test_insert_symbol(cxt, "unsigned x");
-  test_insert_symbol(cxt, "long y");
-  //type = typeof
-  test_tear_down(cxt);
-
-  printf("Pass!\n");
-  return;
-}
-
 int main() {
   printf("=== Hello World! ===\n");
   test_scope_init();
@@ -896,7 +800,6 @@ int main() {
   test_type_anomaly();
   test_eval_const_str_token();
   test_type_cmp();
-  test_type_typeof();
   return 0;
 }
   
