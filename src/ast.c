@@ -66,14 +66,12 @@ void ast_print(token_t *token) { ast_print_(token, 0); }
 void ast_print_(token_t *token, int depth) {
   for(int i = 0;i < depth * 2;i++) if(i % 2 == 0) printf("|"); else printf(" ");
   const char *symstr = token_symstr(token->type);
-  char array_size[16];
-  if(token->type == EXP_ARRAY_SUB || token->type == T_COMP_FIELD || token->type == T_ENUM_FIELD) 
-    sprintf(array_size, "%d", token->array_size);
-  printf("%04d:%04d:%s %s%s\n", token->type, token->offset ? error_get_offset(token->offset) : 0,
+  printf("%04d:%04d:%s %s\n", 
+         token->type, 
+         token->offset ? error_get_offset(token->offset) : 0,
          token_typestr(token->type), 
          token->type == T_BASETYPE ? token_decl_print(token->decl_prop) : 
-         (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr),
-         token->type == EXP_ARRAY_SUB || token->type == T_COMP_FIELD || token->type == T_ENUM_FIELD ? array_size : "");
+          (symstr == NULL ? (token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END ? token->str : "") : symstr));
   for(token_t *child = token->child;child != NULL; child = child->sibling) ast_print_(child, depth + 1);
   return;
 }

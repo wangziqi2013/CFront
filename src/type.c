@@ -462,13 +462,12 @@ type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t
         } else if(array_size_value->int32 < 0) {
           error_row_col_exit(index->offset, "Array size in declaration must be non-negative\n");
         }
-        op->array_size = array_size_value->int32; // Only use low 31 bits
-      } else { op->array_size = -1; }
-      parent_type->array_size = op->array_size;
+        parent_type->array_size = array_size_value->int32;
+      } else { parent_type->array_size = -1; }
       // If lower type is unknown size (e.g. another array or struct without definition), or the array size not given 
       // then current size is also unknown
-      if(op->array_size == -1 || curr_type->size == TYPE_UNKNOWN_SIZE) parent_type->size = TYPE_UNKNOWN_SIZE;
-      else parent_type->size = curr_type->size * (size_t)op->array_size;
+      if(parent_type->array_size == -1 || curr_type->size == TYPE_UNKNOWN_SIZE) parent_type->size = TYPE_UNKNOWN_SIZE;
+      else parent_type->size = curr_type->size * (size_t)parent_type->array_size;
     } else if(op->type == EXP_FUNC_CALL) {
       // Do not allow const return value
       if((curr_type->decl_prop & DECL_CONST_MASK) || (curr_type->decl_prop & DECL_VOLATILE_MASK)) 

@@ -135,7 +135,6 @@ typedef struct token_t {
   char *offset;              // The offset in source file, for error reporting purposes; AST node may also have this field
   union {
     decl_prop_t decl_prop;   // Property if the kwd is part of declaration; Set when a kwd is found
-    int array_size;          // Size of the array decl if it is EXP_ARRAY_SUB
   };
 } token_t;
 
