@@ -184,7 +184,9 @@ cgen_gdata_t *cgen_init_comp(cgen_cxt_t *cxt, type_t *type, token_t *token) {
 // Accept next write position, returns the next write position after filling current level
 int64_t cgen_init_comp_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gdata_t *gdata, int64_t offset) {
   assert(type_is_comp(type) && token->type == T_INIT_LIST);
-  assert(ast_child_count(token) == list_size(type->comp->field_list));
+  if(ast_child_count(token) != list_size(type->comp->field_list)) 
+    error_row_col_exit(token->offset, 
+      "Initializer list for %s does not match definition\n", type_is_struct(type) ? "struct" : "union");
   listnode_t *curr_field_node = list_head(type->comp->field_list);
   token_t *curr_elem = ast_getchild(token, 0);
   if(type_is_struct(type)) {
@@ -232,8 +234,8 @@ int64_t cgen_init_array_(cgen_cxt_t *cxt, type_t *type, token_t *token, cgen_gda
       memcpy(gdata->data + offset, str_cstr(str), str_size(str) + 1);
       int remains = type->array_size - (str_size(str) + 1); // Fill zero
       assert(remains >= 0);
-      str_free(str);
       offset += (str_size(str) + 1);
+      str_free(str);
       if(remains) memset(gdata->data + offset, 0x00, remains);
       return offset + remains;
     } else {
