@@ -382,6 +382,9 @@ void value_free(void *ptr) {
 //      1.1 Type object decl_prop will never have storage class bits set (DECL_STGCLS_MASK)
 //   2. Do process struct/union/enum definition
 //   3. Type is only valid within the scope it is analyzed
+// Note: We follow the copy-on-write approach for types. Type objects to be modified outside of this
+// function must be copied first, and only modify the copy. This avoids problems that are hard to debug
+// when two objects share the same type object
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags) {
   assert(basetype->type == T_BASETYPE);
   token_t *op = ast_getchild(decl, 1);
@@ -941,24 +944,23 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
   return TYPE_CAST_INVALID;
 }
 
-// This function may return the same type as passed
-const type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
+type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
   assert(type_is_general_int(type));
   if(type_is_enum(type)) {
     return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
   } 
   if(type_is_bitfield(type)) { // Do not return in this branch - just convert to its original base type
-    type = &type_builtin_ints[BASETYPE_INDEX(type->bitfield_basetype)]; // Also do not copy - we will do it below
+    type = &type_builtin_ints[BASETYPE_INDEX(type->bitfield_basetype)]; // Do not copy - it is done below
   }
   // Integer promotion: If a type shorter than int type appears in an expression, they are promoted to
   // integer type, regardless of signs
   decl_prop_t basetype = BASETYPE_GET(type->decl_prop);
   switch(basetype) {
     case BASETYPE_CHAR: case BASETYPE_UCHAR: case BASETYPE_SHORT: case BASETYPE_USHORT:
-      type = NULL;
+      type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
       break; 
     default:
-      type = NULL;
+      type = type;
       break;
   }
 

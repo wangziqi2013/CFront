@@ -138,11 +138,6 @@ typedef struct token_t {
     int array_size;          // Size of the array decl if it is EXP_ARRAY_SUB
     int bitfield_size;       // Integer constant for bit field, only valid with T_COMP_FIELD
     int enum_const;          // Enum constant, only valid with T_ENUM_FIELD
-    struct {
-      int op_size;           // Size of the operator, if it is an expression node
-      int op_sign;           // Whether the operation is signed (1 means signed)
-      int op_cast;           // After the operation how should we cast the result - see TYPE_CAST_ series macro
-    };
   };
 } token_t;
 
