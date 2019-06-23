@@ -979,13 +979,26 @@ type_t *type_typeof_op_3(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *
 
 // Single operand type derivation; If the op is not available, just pass NULL
 // This function supports all sets of operands
-// This function does not check EXP_FUNC_CALL argument type - it simply derive the return type assuming arguments 
-// are provided correctly
+// This function does not check EXP_FUNC_CALL argument type and EXP_ARRAY_SUB subscription type - it simply derive 
+// the return type assuming arguments/subscripts are provided correctly
 type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2, type_t *op3) {
   switch(op) {
     case EXP_FUNC_CALL: {
-
-    }
+      assert(!op2 && !op3);
+      if(!type_is_func(op1) && !type_is_func_ptr(op1)) 
+        error_row_col_exit(op1->offset, "Function call must be applied to function or function pointer (current type: %s)\n", 
+          type_print_str(0, op1, NULL, 0));
+      if(type_is_func_ptr(op1)) op1 = op1->next;
+      return op1->next; // Function return type is the type of argument
+    } break;
+    case EXP_ARRAY_SUB: {
+      assert(!op2 && !op3);
+      if(!type_is_ptr(op1) && !type_is_array(op1))
+        error_row_col_exit(op1->offset, "Array indexing must be applied to array or pointer type (current type: %s)\n",
+          type_print_str(0, op1, NULL, 0));
+      return op1->next;
+    } break;
+    case 
     default: break;
   }
   return NULL;
