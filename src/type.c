@@ -987,20 +987,31 @@ type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op
     case EXP_FUNC_CALL: {
       assert(!op2 && !op3);
       if(!type_is_func(op1) && !type_is_func_ptr(op1)) 
-        error_row_col_exit(op1->offset, "Function call must be applied to function or function pointer (current type: %s)\n", 
-          type_print_str(0, op1, NULL, 0));
+        error_row_col_exit(op1->offset, "Function call must be applied to function or function pointer\n");
       if(type_is_func_ptr(op1)) op1 = op1->next;
       return op1->next; // Function return type is the type of argument
     } break;
     case EXP_ARRAY_SUB: {
       assert(!op2 && !op3);
       if(!type_is_ptr(op1) && !type_is_array(op1))
-        error_row_col_exit(op1->offset, "Array indexing must be applied to array or pointer type (current type: %s)\n",
-          type_print_str(0, op1, NULL, 0));
+        error_row_col_exit(op1->offset, "Array indexing must be applied to array or pointer type\n");
       return op1->next;
     } break;
-    case EXP_ARRAY:
-    case EXP_DOT:
+    case EXP_ARROW: {
+      assert(!op2 && !op3); 
+      if(!type_is_ptr(op1)) {
+        error_row_col_exit(op1->offset, "Operator \"->\" must be applied to pointer type\n");
+      } else if(!type_is_comp(op1->next)) {
+        error_row_col_exit(op1->next->offset, "Operator \"->\" must be applied to pointer to composite type\n");
+      }
+      return NULL;
+    } break;
+    case EXP_DOT: {
+      if(!type_is_comp(op1->next)) {
+        error_row_col_exit(op1->next->offset, "Operator \"->\" must be applied to pointer to composite type\n");
+      }
+      return NULL;
+    }
     default: break;
   }
   return NULL;
