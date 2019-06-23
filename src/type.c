@@ -384,7 +384,8 @@ void value_free(void *ptr) {
 //   3. Type is only valid within the scope it is analyzed
 // Note: We follow the copy-on-write approach for types. Type objects to be modified outside of this
 // function must be copied first, and only modify the copy. This avoids problems that are hard to debug
-// when two objects share the same type object
+// when two objects share the same type object. But, if a type object is known to have no sharer (e.g. just
+// returned from this function and not made public), it can be modified without COW.
 type_t *type_gettype(type_cxt_t *cxt, token_t *decl, token_t *basetype, uint32_t flags) {
   assert(basetype->type == T_BASETYPE);
   token_t *op = ast_getchild(decl, 1);
@@ -942,11 +943,13 @@ int type_cast(type_t *to, type_t *from, int cast_type, char *offset) {
 
 type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
   assert(type_is_general_int(type));
-  if(type_is_enum(type)) {
+  if(type_is_enum(type)) { // enum type is promoted to integer type
     return type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
   } 
+  int need_copy = 0;
   if(type_is_bitfield(type)) { // Do not return in this branch - just convert to its original base type
-    type = &type_builtin_ints[BASETYPE_INDEX(type->bitfield_basetype)]; // Do not copy - it is done below
+    type = &type_builtin_ints[BASETYPE_INDEX(type->bitfield_basetype)];
+    need_copy = 1;
   }
   // Integer promotion: If a type shorter than int type appears in an expression, they are promoted to
   // integer type, regardless of signs
@@ -955,11 +958,10 @@ type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
     case BASETYPE_CHAR: case BASETYPE_UCHAR: case BASETYPE_SHORT: case BASETYPE_USHORT:
       type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
       break; 
-    default:
-      type = type;
-      break;
+    default: { // bit field type is longer, but we need to copy it
+      if(need_copy) type = type_init_from(cxt, type, type->offset); break;
+    }
   }
-
   return type;
 }
 
