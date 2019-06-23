@@ -979,8 +979,9 @@ type_t *type_typeof_op_3(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *
 
 // Single operand type derivation; If the op is not available, just pass NULL
 // This function supports all sets of operands
-// This function does not check EXP_FUNC_CALL argument type and EXP_ARRAY_SUB subscription type - it simply derive 
-// the return type assuming arguments/subscripts are provided correctly
+// 1. EXP_FUNC_CALL argument types are not checked. Only func type is checked
+// 2. EXP_ARRAY_SUB index types are not checked. Only array type is checked
+// 3. EXP_DOT and EXP_ARROW op returns NULL b/c the field type is unknown; We check whether the op is composite type
 type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2, type_t *op3) {
   switch(op) {
     case EXP_FUNC_CALL: {
@@ -998,7 +999,8 @@ type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op
           type_print_str(0, op1, NULL, 0));
       return op1->next;
     } break;
-    case 
+    case EXP_ARRAY:
+    case EXP_DOT:
     default: break;
   }
   return NULL;
