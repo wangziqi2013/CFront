@@ -1007,9 +1007,9 @@ type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op
       return NULL;
     } break;
     case EXP_DOT: {
-      if(!type_is_comp(op1->next)) {
-        error_row_col_exit(op1->next->offset, "Operator \"->\" must be applied to pointer to composite type\n");
-      }
+      assert(!op2 && !op3);
+      if(!type_is_comp(op1))
+        error_row_col_exit(op1->next->offset, "Operator \".\" must be applied to composite type\n");
       return NULL;
     }
     default: break;
