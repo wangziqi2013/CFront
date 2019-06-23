@@ -966,15 +966,15 @@ type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
 }
 
 type_t *type_typeof_op_1(type_cxt_t *cxt, token_type_t op, type_t *op1) {
-  return type_typeof_op(cxt, op, op1, NULL, NULL, NULL);
+  return type_typeof_op(cxt, op, op1, NULL, NULL);
 }
 
 type_t *type_typeof_op_2(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2) {
-  return type_typeof_op(cxt, op, op1, op2, NULL, NULL);
+  return type_typeof_op(cxt, op, op1, op2, NULL);
 }
 
 type_t *type_typeof_op_3(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2, type_t *op3) {
-  return type_typeof_op(cxt, op, op1, op2, op3, NULL);
+  return type_typeof_op(cxt, op, op1, op2, op3);
 }
 
 // Single operand type derivation; If the op is not available, just pass NULL
