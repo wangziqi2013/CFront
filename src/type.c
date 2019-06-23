@@ -965,11 +965,6 @@ type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
   return type;
 }
 
-// Shorthands for calling typeof_op without passing extra arguments
-type_t *type_typeof_op_func(type_cxt_t *cxt, token_type_t op, token_t *arg) {
-  return type_typeof_op(cxt, op, NULL, NULL, NULL, arg);
-}
-
 type_t *type_typeof_op_1(type_cxt_t *cxt, token_type_t op, type_t *op1) {
   return type_typeof_op(cxt, op, op1, NULL, NULL, NULL);
 }
@@ -984,9 +979,13 @@ type_t *type_typeof_op_3(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *
 
 // Single operand type derivation; If the op is not available, just pass NULL
 // This function supports all sets of operands
-// If it is a function call, argument arg points to the first argument expression node
-type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2, type_t *op3, token_t *arg) {
+// This function does not check EXP_FUNC_CALL argument type - it simply derive the return type assuming arguments 
+// are provided correctly
+type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2, type_t *op3) {
   switch(op) {
+    case EXP_FUNC_CALL: {
+
+    }
     default: break;
   }
   return NULL;
