@@ -980,7 +980,7 @@ type_t *type_typeof_op_3(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *
 // Single operand type derivation; If the op is not available, just pass NULL
 // This function supports all sets of operands
 // 1. EXP_FUNC_CALL argument types are not checked. Only func type is checked
-// 2. EXP_ARRAY_SUB index types are not checked. Only array type is checked
+// 2. EXP_ARRAY_SUB index range is not checked
 // 3. EXP_DOT and EXP_ARROW op returns NULL b/c the field type is unknown; We check whether the op is composite type
 type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op2, type_t *op3) {
   switch(op) {
@@ -992,13 +992,15 @@ type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op
       return op1->next; // Function return type is the type of argument
     } break;
     case EXP_ARRAY_SUB: {
-      assert(!op2 && !op3);
+      assert(!op3);
       if(!type_is_ptr(op1) && !type_is_array(op1))
-        error_row_col_exit(op1->offset, "Array indexing must be applied to array or pointer type\n");
+        error_row_col_exit(op1->offset, "Operatr \"[]\" must be applied to array or pointer type\n");
+      if(!type_is_general_int(op2))
+        error_row_col_exit(op2->offset, "Operatr \"[]\" must use integer as index\n");
       return op1->next;
     } break;
     case EXP_ARROW: {
-      assert(!op2 && !op3); 
+      assert(!op3); 
       if(!type_is_ptr(op1)) {
         error_row_col_exit(op1->offset, "Operator \"->\" must be applied to pointer type\n");
       } else if(!type_is_comp(op1->next)) {
@@ -1007,7 +1009,7 @@ type_t *type_typeof_op(type_cxt_t *cxt, token_type_t op, type_t *op1, type_t *op
       return NULL;
     } break;
     case EXP_DOT: {
-      assert(!op2 && !op3);
+      assert(!op3);
       if(!type_is_comp(op1))
         error_row_col_exit(op1->next->offset, "Operator \".\" must be applied to composite type\n");
       return NULL;

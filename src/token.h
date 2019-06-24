@@ -133,7 +133,7 @@ typedef struct token_t {
   };
   struct token_t *parent;    // Empty for root node
   char *offset;              // The offset in source file, for error reporting purposes; AST node may also have this field
-  decl_prop_t decl_prop;   // Property if the kwd is part of declaration; Set when a kwd is found
+  decl_prop_t decl_prop;     // Property if the kwd is part of declaration; Set when a kwd is found
 } token_t;
 
 #define DECL_NULL          0x00000000
