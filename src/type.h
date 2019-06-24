@@ -200,19 +200,6 @@ typedef struct enum_t_struct {
   size_t size;             // Fixed size - same as integer
 } enum_t;
 
-typedef struct {                         // Describes how an expression is evaluated
-  token_t *exp;                          // The expression node; Do not own memory
-  union {
-    type_t *op_types[TYPE_OPERAND_MAX];  // If not function call, stores operand types (after int promo and convert)
-    list_t *op_type_list;                // List of argument types expected by the function
-  };
-  union {
-    int casts[TYPE_OPERAND_MAX];         // How should we cast incoming type to operand type above
-    list_t *cast_list;                   // How should we cast to function argument types
-  }
-  type_t *result_type;                   // Type of the result of the operator
-} type_exp_t;
-
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
 }
