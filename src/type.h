@@ -61,6 +61,8 @@
 #define TYPE_CAST_NO_OP            4          // Return value: No special bit operation needed
 #define TYPE_CAST_VOID             5          // Return value: The value has been invalidated (remove from symbol table)
 #define TYPE_CAST_GEN_PTR          6          // Return value: Generate a pointer (source type is an array or func)
+#define TYPE_CAST_TO_BITFIELD      7          // Return value: Cast from integer to bit field
+#define TYPE_CAST_FROM_BITFIELD    8          // Return value: Cast from bit field to integer
 
 enum {
   SCOPE_VALUE  = 1, // Named variable that has a value or memory location; Enum constants are put here
@@ -199,6 +201,13 @@ typedef struct enum_t_struct {
   bintree_t *field_index;  // Same as above
   size_t size;             // Fixed size - same as integer
 } enum_t;
+
+typedef struct {
+  int op;                  // TYPE_CAST_ series
+  int sign;                // If extension, whether duplicate sign bits to higher bits
+  int from_size, to_size;  // Sizes of integers to cast
+  int from_bit, to_bit;    // If op is bit field cast this stores the bit field begin and end bit
+} type_cast_t;
 
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
