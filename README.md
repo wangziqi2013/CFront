@@ -3,7 +3,17 @@ The goal of this project is to build a C compiler from the scratch without using
 
 # Directory Structure
 ./src - Main source directory
+
 ./src/test - Unit tests and functional tests
+
 ./src/old - Deprecated code. Only for demonstration purposes.
+
 ./src/python - A LL(1)/LR(1)/LALR(1) compiler generator implemented in Python
  
+# Compile and Test
+To compile, enter ./src directory, and type ``make all'' or just ``make''. This will build object files for each source file, and link them with the tests.
+
+To test, directly run binary under ./bin directory. Test source files are independent from each other (i.e. there is no mutral dependency), and should be rather straightforward to understand.
+
+# Contribution
+I only contribute to this project in my part-time. If you are interested in becoming a contributor feel free to drop me a message on Github.
