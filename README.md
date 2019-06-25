@@ -11,7 +11,7 @@ The goal of this project is to build a C compiler from the scratch without using
 [./src/python](https://github.com/wangziqi2013/CFront/tree/master/src/python) - A LL(1)/LR(1)/LALR(1) compiler generator implemented in Python
  
 # Compile and Test
-To compile, enter ./src directory, and type ``make all'' or just ``make''. This will build object files for each source file, and link them with the tests.
+To compile, enter ./src directory, and type `make all` or just `make`. This will build object files for each source file, and link them with the tests.
 
 To test, directly run binary under ./bin directory. Test source files are independent from each other (i.e. there is no mutral dependency), and should be rather straightforward to understand.
 
