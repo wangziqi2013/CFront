@@ -19,6 +19,16 @@ The goal of this project is to build a C compiler from the scratch without using
 ./src/parse_decl.c: Implements declaration parsing. It uses expression parsing to build declaration tree (in C language, declaration has exactly the same format as an expression).
 
 ./src/parse_comp.c: Implements composite type declaration parsing, including struct, union and enum.
+
+./src/parse_stmt.c: Implements statement parsing.
+
+./src/parse.c: Implements top-level (global declaration, definition and function definition) parsing.
+
+./src/type.c: Implements the type system.
+
+./src/eval.c: Implements compile-time evaluation support, including constant evaluation, atoi, string to binary, etc.
+
+./src/cgen.c: Implements top-level code generation.
  
 # Compile and Test
 To compile, enter ./src directory, and type `make all` or just `make`. This will build object files for each source file, and link them with the tests.
