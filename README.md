@@ -9,6 +9,16 @@ The goal of this project is to build a C compiler from the scratch without using
 [./src/old](https://github.com/wangziqi2013/CFront/tree/master/src/old) - Deprecated code. Only for demonstration purposes.
 
 [./src/python](https://github.com/wangziqi2013/CFront/tree/master/src/python) - A LL(1)/LR(1)/LALR(1) compiler generator implemented in Python
+
+# Source File Description
+
+./src/token.c: Implements lexical analysis and the token stream interface
+
+./src/parse_exp.c: Implements parsing interface and expression parsing. The entire parser is based on expression parsing, which uses a hand-coded shift-reduce parser with operator precedence.
+
+./src/parse_decl.c: Implements declaration parsing. It uses expression parsing to build declaration tree (in C language, declaration has exactly the same format as an expression).
+
+./src/parse_comp.c: Implements composite type declaration parsing, including struct, union and enum.
  
 # Compile and Test
 To compile, enter ./src directory, and type `make all` or just `make`. This will build object files for each source file, and link them with the tests.
