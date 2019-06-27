@@ -12,6 +12,8 @@ The goal of this project is to build a C compiler from the scratch without using
 
 # Source File Description
 
+## Main Files
+
 ./src/token.c: Implements lexical analysis and the token stream interface
 
 ./src/parse_exp.c: Implements parsing interface and expression parsing. The entire parser is based on expression parsing, which uses a hand-coded shift-reduce parser with operator precedence.
@@ -29,6 +31,16 @@ The goal of this project is to build a C compiler from the scratch without using
 ./src/eval.c: Implements compile-time evaluation support, including constant evaluation, atoi, string to binary, etc.
 
 ./src/cgen.c: Implements top-level code generation.
+
+## Data Structure Files
+
+./src/ast.c: Implements abstract syntax tree. We use left-child right-sibling organization for trees.
+
+./src/str.c: Implements string and list
+
+./src/hashtable.c: Implements hash table. We use hash table as symbol tables for scopes
+
+./src/bintree.c: Implements a simple binary search tree. We use binary search trees as indices for composite types.
  
 # Compile and Test
 To compile, enter ./src directory, and type `make all` or just `make`. This will build object files for each source file, and link them with the tests.
