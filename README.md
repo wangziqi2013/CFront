@@ -1,5 +1,5 @@
 # CFront 
-The goal of this project is to build a C compiler from the scratch without using any third-party code except standard C library. 
+The goal of this project is to build a C compiler from the scratch without using any third-party code except standard C library.  
 
 # Directory Structure
 [./src](https://github.com/wangziqi2013/CFront/tree/master/src) - Main source directory
@@ -32,7 +32,7 @@ The goal of this project is to build a C compiler from the scratch without using
 
 ./src/cgen.c: Implements top-level code generation.
 
-## Data Structure Files
+## Data Structure Files 
  
 ./src/ast.c: Implements abstract syntax tree. We use left-child right-sibling organization for trees.
 
