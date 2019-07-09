@@ -1,7 +1,7 @@
 # Compiled Object files
 *.slo
 *.lo
-*.o
+*.o 
 *.obj
 
 # Precompiled Headers
@@ -35,7 +35,7 @@
 bin
 build
 
-## Ignore python byte code
+## Ignore python byte code 
 *.pyc
 *.table
 
