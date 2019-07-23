@@ -1,4 +1,4 @@
-# CFront 
+# CFront  
 The goal of this project is to build a C compiler from the scratch without using any third-party code except standard C library.   
   
 # Directory Structure  
