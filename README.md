@@ -8,7 +8,7 @@ The goal of this project is to build a C compiler from the scratch without using
    
 [./src/old](https://github.com/wangziqi2013/CFront/tree/master/src/old) - Deprecated code. Only for demonstration purposes.
  
-[./src/python](https://github.com/wangziqi2013/CFront/tree/master/src/python) - A LL(1)/LR(1)/LALR(1) compiler generator implemented in Python
+[./src/python](https://github.com/wangziqi2013/CFront/tree/master/src/python) - A LL(1)/LR(1)/LALR(1) compiler generator implemented in Python  
 
 # Source File Description
 
