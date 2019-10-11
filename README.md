@@ -31,7 +31,7 @@ The goal of this project is to build a C compiler from the scratch without using
 ./src/eval.c: Implements compile-time evaluation support, including constant evaluation, atoi, string to binary, etc.
 
 ./src/cgen.c: Implements top-level code generation.
- 
+   
 ## Data Structure Files  
  
 ./src/ast.c: Implements abstract syntax tree. We use left-child right-sibling organization for trees.
