@@ -20,7 +20,7 @@ uint32_t prefix_to_flag_mmx(uint8_t byte) {
   return (uint32_t)0x1U << index;
 }
 
-uint32_t prefix_to_flag(uint8_t byte) {
+uint32_t prefix_to_flag_scalar(uint8_t byte) {
   uint32_t flag = FLAG_NONE;
   switch(byte) {
     case PREFIX_REP: flag = FLAG_REP; break;
