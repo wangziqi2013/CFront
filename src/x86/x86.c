@@ -34,3 +34,10 @@ uint32_t prefix_to_flag_scalar(uint8_t byte) {
   }
   return flag;
 }
+
+//* R/M Tables
+
+const int gen_reg_16_table[8] = {
+  REG_AX, REG_CX, REG_DX, REG_BX, 
+  REG_SP, REG_BP, REG_SI, REG_DI, 
+};

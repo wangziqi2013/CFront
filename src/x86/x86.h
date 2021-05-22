@@ -82,7 +82,7 @@ uint32_t prefix_to_flag_scalar(uint8_t byte);
 
 #define FLAG_LOCK     0x00000040
 
-//* Register const
+//* Register constants
 
 #define REG_NONE      0
 #define REG_AX        1
@@ -108,8 +108,13 @@ uint32_t prefix_to_flag_scalar(uint8_t byte);
 #define REG_ES        19
 #define REG_SS        20
 
-// The  following will never be used by instructions but we add them anyways
+// The following will never be used by instructions but we add them anyways
 #define REG_IP        21
 #define REG_FLAGS     22
+
+//* R/M Tables
+
+// Maps REG field to register name, word size (w = 0)
+extern const int gen_reg_16_table[8];
 
 #endif
