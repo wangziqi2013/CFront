@@ -1,6 +1,10 @@
 
 #include "x86.h"
 
+//* Global control
+
+global_t global;
+
 uint32_t prefix_to_flag_mmx(uint8_t byte) {
   // Load the mask value
   __m64 mask =_m_from_int64(PREFIX_MMX_MASK);
@@ -86,13 +90,29 @@ void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
       op->mem.regs = addr_mode_reg_table_2[rm];
-      op->mem.disp16 = ptr_load_8(data);
+      op->mem.disp8 = ptr_load_8(data);
       data = ptr_add_8(data);
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
       op->mem.regs = addr_mode_reg_table_2[rm];
       op->mem.disp16 = ptr_load_16(data);
       data = ptr_add_16(data);
     }
+  }
+  return data;
+}
+
+void *parse_prefix(ins_t *ins, void *data) {
+  while(1) {
+    uint8_t byte = ptr_load_8(data);
+    uint32_t flags = prefix_to_flag(byte);
+    if(flags == FLAG_NONE) {
+      break;
+    }
+    if(global.warn_repeated_prefix && (ins_flags & flags) != 0U) {
+      warn_printf("Repeated prefix byte 0x%X at address %X:%X\n",
+        byte, ins->addr.seg, ins->addr.offset);
+    }
+    ins->flags |= flags;
   }
   return data;
 }

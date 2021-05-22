@@ -196,8 +196,7 @@ void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w
 // Instruction
 
 typedef struct {
-  uint16_t off;
-  uint16_t seg;
+  farptr_t addr;
   int opcode;
   uint32_t flags;
   operand_t dest;
