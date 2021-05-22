@@ -119,4 +119,5 @@ extern const int gen_reg_16_table[8];
 extern const int gen_reg_8_table[8];
 extern const int seg_reg_table[4];
 
+
 #endif

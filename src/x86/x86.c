@@ -50,3 +50,9 @@ const int gen_reg_8_table[8] = {
 const int seg_reg_table[4] = {
   REG_ES, REG_CS, REG_SS, REG_DS, 
 };
+
+// Register pair for R/M addressing
+typedef struct {
+  int reg1;
+  int reg2;
+} rm_reg_t;
