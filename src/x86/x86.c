@@ -13,9 +13,9 @@ uint32_t prefix_to_flag_mmx(uint8_t byte) {
     return FLAG_NONE;
   }
   // Returns 1 + first index of "1"
-  int index = __builtin_ffs(cmp) - 1;
+  int index = __builtin_ffsl(cmp) - 1;
   assert(index != -1);
   assert(index % 8 == 0);
-  index = (index >> 3) + 1;
-  return (uint32_t)index;
+  index = (index >> 3);
+  return (uint32_t)0x1U << index;
 }
