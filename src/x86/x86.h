@@ -129,18 +129,43 @@ typedef struct {
 extern const addr_mode_reg_t rm_table_1[8];
 extern const addr_mode_reg_t rm_table_2[8];
 
-#define ADDR_MODE_REG_ONLY     0
-#define ADDR_MODE_REG_DISP_8   1
-#define ADDR_MODE_REG_DISP_16  2
+#define ADDR_MODE_MEM_REG_ONLY     0
+#define ADDR_MODE_MEM_REG_DISP_8   1
+#define ADDR_MODE_MEM_REG_DISP_16  2
+#define ADDR_MODE_REG              3
 
 // Addressing mode
 typedef struct {
-  int addr_mode;         // Just copies the mode bits
+  int addr_mode;         // Just copies the mode bits in the instruction
   addr_mode_reg_t regs;  // Register for addressing (one or two)
   union {
     uint8_t disp8;
     uint8_t disp16;
   };
 } addr_mode_t;
+
+// Operand type
+#define OPERAND_REG   0
+#define OPERAND_MEM   1
+
+// An operand can be either register or memory, which is encoded by addr_node_t
+typedef struct {
+  int operand_mode;
+  union {
+    int reg;
+    addr_mode_t mem;
+  };
+} operand_t; 
+
+void parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w) {
+  int addr_mode = (int)((byte & 0xC0) >> 6);
+  int reg = (int)((byte & 0x1C) >> 3);
+  int rm = (int)(byte & 0x07);
+  // Parse register operand. If d  == 1 then register operand belongs to dest
+  operand_t *op = (d == 1) ? dest : src;
+  op->operand_mode = OPERAND_REG;
+  op->reg = (w == 1) ? gen_reg_16_table[reg] : gen_reg_8_table[reg];
+  
+}
 
 #endif
