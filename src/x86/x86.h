@@ -82,4 +82,34 @@ uint32_t prefix_to_flag_scalar(uint8_t byte);
 
 #define FLAG_LOCK     0x00000040
 
+//* Register const
+
+#define REG_NONE      0
+#define REG_AX        1
+#define REG_BX        2
+#define REG_CX        3
+#define REG_DX        4
+#define REG_SI        5
+#define REG_DI        6
+#define REG_BP        7
+#define REG_SP        8
+
+#define REG_AH        9
+#define REG_AL        10
+#define REG_BH        11
+#define REG_BL        12
+#define REG_CH        13
+#define REG_CL        14
+#define REG_DH        15
+#define REG_DL        16
+
+#define REG_CS        17
+#define REG_DS        18
+#define REG_ES        19
+#define REG_SS        20
+
+// The  following will never be used by instructions but we add them anyways
+#define REG_IP        21
+#define REG_FLAGS     22
+
 #endif
