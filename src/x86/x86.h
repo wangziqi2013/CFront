@@ -119,5 +119,13 @@ extern const int gen_reg_16_table[8];
 extern const int gen_reg_8_table[8];
 extern const int seg_reg_table[4];
 
+// Register pair for R/M addressing
+typedef struct {
+  int reg1;
+  int reg2;
+} rm_reg_t;
+
+// Mode = 00
+extern const rm_reg_t rm_table_1[8];
 
 #endif
