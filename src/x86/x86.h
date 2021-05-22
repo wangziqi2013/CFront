@@ -196,14 +196,18 @@ inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
 inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
 inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
 
-// This is called after parsing opcode, d and w bit
+// This is called after parsing opcode
 void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data);
 
 // Instruction
 
+#define OP_NOP           0
+#define OP_ADD           1
+
 typedef struct {
-  farptr_t addr;
-  int opcode;          // This does not include D and W flag
+  farptr_t addr;       // Address of the instruction
+  uint8_t opcode;      // This is the raw opcode byte includes D and W flag, i.e., it is the full 8 byte
+  int op;              // This is the abstract operation (OP_ class)
   uint32_t flags;
   operand_t dest;
   operand_t src;
@@ -212,5 +216,7 @@ typedef struct {
 // This is called at the beginning of an instruction
 void *parse_prefix(ins_t *ins, void *data);
 void *parse_opcode(ins_t *ins, void *data);
+
+void *parse_ins(ins_t *ins, void *data);
 
 #endif

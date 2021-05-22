@@ -120,11 +120,19 @@ void *parse_prefix(ins_t *ins, void *data) {
 
 void *parse_opcode(ins_t *ins, void *data) {
   uint8_t byte = ptr_load_8(data);
-  ins->opcode = byte >> 2;
+  ins->opcode = byte;
   if(byte & 0x1) {
     ins->flags |= FLAG_W;
   } else if(byte & 0x1) {
     ins->flags |= FLAG_W;
   }
   return ptr_add_8(data);
+}
+
+void *parse_ins(ins_t *ins, void *data) {
+  data = parse_prefix(ins, data);
+  data = parse_opcode(ins, data);
+  switch(ins->opcode) {
+    case 0x90: 
+  }
 }
