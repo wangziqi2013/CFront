@@ -19,8 +19,6 @@
 #include <immintrin.h>
 #include <assert.h>
 
-#define ENABLE_MMX
-
 //* util
 
 // Error reporting and system call assertion
@@ -31,6 +29,8 @@
 #else
 #define dbg_printf(fmt, ...) do {} while(0);
 #endif
+
+#define warn_printf(fmt, ...) do { fprintf(stdout, "Warning: " fmt, ##__VA_ARGS__); } while(0);
 
 // Branching macro (this may have already been defined in other source files)
 #ifndef likely
@@ -72,6 +72,16 @@ uint32_t prefix_to_flag_scalar(uint8_t byte);
 #else 
 #define prefix_to_flag prefix_to_flag_scalar
 #endif
+
+//* Global control
+
+#define ENABLE_MMX
+
+typedef struct {
+  int warn_repeated_prefix; // Whether to warn repeated prefix bytes
+} global_t;
+
+extern global_t global;
 
 //* Prefix flags
 
