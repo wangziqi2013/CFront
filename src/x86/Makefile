@@ -5,7 +5,7 @@ LDFLAGS=
 all: x86-test
 
 x86-test: x86.o x86-test.c
-	gcc x86-test.c -o x86-test $(CFLAGS) $(LDFLAGS)
+	gcc x86-test.c x86.o -o x86-test $(CFLAGS) $(LDFLAGS)
 
 x86.o: x86.c x86.h
 	gcc x86.c -c -o x86.o $(CFLAGS) $(LDFLAGS)

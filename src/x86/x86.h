@@ -62,7 +62,7 @@
 // Used for MMX instruction
 #define PREFIX_MMX_MASK 0x00f036263e2ef2f3UL
 // Covert prefix to a flag; Returns FLAG_NONE if not a prefix
-uint32_t prefix_to_flag(uint8_t byte);
+uint32_t prefix_to_flag_mmx(uint8_t byte);
 
 //* Prefix flags
 
