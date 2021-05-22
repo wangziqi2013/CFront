@@ -59,14 +59,20 @@
 
 #define PREFIX_LOCK   0xf0
 
+// Used for MMX instruction
+#define PREFIX_MMX_MASK 0x00f036263e2ef2f3UL
+// Covert prefix to a flag; Returns FLAG_NONE if not a prefix
+uint32_t prefix_to_flag(uint8_t byte);
+
 //* Prefix flags
 
+#define FLAG_NONE     0x00000000
 #define FLAG_REP      0x00000001
 #define FLAG_REPE     FLAG_REP
 #define FLAG_REPZ     FLAG_REP
 
 #define FLAG_REPNE    0x00000002
-#define PREFIX_REPNZ  FLAG_REPNE
+#define FLAG_REPNZ    FLAG_REPNE
 
 #define FLAG_CS       0x00000004
 #define FLAG_DS       0x00000008

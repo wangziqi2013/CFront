@@ -1,4 +1,6 @@
 
+#include "x86.h"
+
 uint32_t prefix_to_flag(uint8_t byte) {
   // Load the mask value
   __m64 mask =_m_from_int64(PREFIX_MMX_MASK);
