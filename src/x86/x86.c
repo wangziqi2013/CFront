@@ -56,3 +56,7 @@ extern const rm_reg_t rm_table_1[8] = {
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_NONE, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
+extern const rm_reg_t rm_table_2[8] = {
+  {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
+  {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
+};
