@@ -19,6 +19,8 @@
 #include <immintrin.h>
 #include <assert.h>
 
+#define ENABLE_MMX
+
 //* util
 
 // Error reporting and system call assertion
@@ -64,6 +66,12 @@
 // Covert prefix to a flag; Returns FLAG_NONE if not a prefix
 uint32_t prefix_to_flag_mmx(uint8_t byte);
 uint32_t prefix_to_flag_scalar(uint8_t byte);
+
+#ifdef ENABLE_MMX
+#define prefix_to_flag prefix_to_flag_mmx
+#else 
+#define prefix_to_flag prefix_to_flag_scalar
+#endif
 
 //* Prefix flags
 
@@ -145,8 +153,11 @@ typedef struct {
 } addr_mode_t;
 
 // Operand type
-#define OPERAND_REG   0
-#define OPERAND_MEM   1
+#define OPERAND_REG     0
+#define OPERAND_MEM     1
+#define OPERAND_IMM8    2
+#define OPERAND_IMM16   3
+#define OPERAND_ADDR32  4
 
 // An operand can be either register or memory, which is encoded by addr_node_t
 typedef struct {
@@ -154,6 +165,12 @@ typedef struct {
   union {
     int reg;
     addr_mode_t mem;
+    uint16_t imm_16;     // 16 bit immediate value
+    uint8_t imm_8;       // 8 bit immediate value
+    struct {             // seg:offset full address
+      uint16_t off;
+      uint16_t seg;
+    };
   };
 } operand_t; 
 
@@ -163,5 +180,16 @@ inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
 inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
 
 void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data);
+
+// Instruction
+
+typedef struct {
+  int opcode;
+  uint32_t flags;
+  operand_t dest;
+  operand_t src;
+} ins_t;
+
+void *parse_prefix(ins_t *ins, void *data);
 
 #endif
