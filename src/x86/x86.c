@@ -108,11 +108,23 @@ void *parse_prefix(ins_t *ins, void *data) {
     if(flags == FLAG_NONE) {
       break;
     }
-    if(global.warn_repeated_prefix && (ins_flags & flags) != 0U) {
+    if(global.warn_repeated_prefix && (ins->flags & flags) != 0U) {
       warn_printf("Repeated prefix byte 0x%X at address %X:%X\n",
         byte, ins->addr.seg, ins->addr.offset);
     }
     ins->flags |= flags;
+    data = ptr_add_8(data);
   }
   return data;
+}
+
+void *parse_opcode(ins_t *ins, void *data) {
+  uint8_t byte = ptr_load_8(data);
+  ins->opcode = byte >> 2;
+  if(byte & 0x1) {
+    ins->flags |= FLAG_W;
+  } else if(byte & 0x1) {
+    ins->flags |= FLAG_W;
+  }
+  return ptr_add_8(data);
 }

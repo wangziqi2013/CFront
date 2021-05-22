@@ -100,6 +100,11 @@ extern global_t global;
 
 #define FLAG_LOCK     0x00000040
 
+// D flag in the opcode byte
+#define FLAG_D        0x00000080
+// W flag in the opcode byte
+#define FLAG_W        0x00000100
+
 //* Register constants
 
 #define REG_NONE      0
@@ -170,7 +175,7 @@ typedef struct {
 #define OPERAND_ADDR32  4
 
 typedef struct {
-  uint16_t off;
+  uint16_t offset;
   uint16_t seg;
 } farptr_t;
 
@@ -191,18 +196,21 @@ inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
 inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
 inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
 
+// This is called after parsing opcode, d and w bit
 void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data);
 
 // Instruction
 
 typedef struct {
   farptr_t addr;
-  int opcode;
+  int opcode;          // This does not include D and W flag
   uint32_t flags;
   operand_t dest;
   operand_t src;
 } ins_t;
 
+// This is called at the beginning of an instruction
 void *parse_prefix(ins_t *ins, void *data);
+void *parse_opcode(ins_t *ins, void *data);
 
 #endif
