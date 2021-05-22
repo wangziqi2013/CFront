@@ -51,12 +51,43 @@ const int seg_reg_table[4] = {
   REG_ES, REG_CS, REG_SS, REG_DS, 
 };
 
-extern const addr_mode_reg_t rm_table_1[8] = {
+extern const addr_mode_reg_t addr_mode_reg_table_1[8] = {
   {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_NONE, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
-extern const addr_mode_reg_t rm_table_2[8] = {
+extern const addr_mode_reg_t addr_mode_reg_table_2[8] = {
   {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
 };
+
+void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data) {
+  int addr_mode = (int)((byte & 0xC0) >> 6);
+  int reg = (int)((byte & 0x1C) >> 3);
+  int rm = (int)(byte & 0x07);
+  // Parse register operand. If d  == 1 then register operand belongs to dest
+  operand_t *op = (d == 1) ? dest : src;
+  op->operand_mode = OPERAND_REG;
+  op->reg = (w == 1) ? gen_reg_16_table[reg] : gen_reg_8_table[reg];
+  // Parse r/m operand
+  op = (d == 1) ? src : dest;
+  if(addr_mode == ADDR_MODE_REG) {
+    op->operand_mode = OPERAND_REG;
+    op->reg = (w == 1) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
+  } else {
+    op->operand_mode = OPERAND_MEM;
+    op->mem.addr_mode = addr_mode;
+    if(addr_mode == ADDR_MODE_MEM_REG_ONLY) { 
+      op->mem.regs = addr_mode_reg_table_1[rm];
+      // Directly addressed, followed by 16 bit absolute address
+      if(rm == 6) {
+
+      }
+    } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
+      
+    } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
+
+    }
+  }
+  return data;
+}
