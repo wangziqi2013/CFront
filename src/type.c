@@ -859,6 +859,8 @@ int type_cmp(type_t *to, type_t *from) {
 //   5. Any type to void is allowed, returns TYPE_CAST_VOID
 //   6. Function type to pointer of the same function type
 //   7. Could not cast void to any type
+//   8. Bit field <-> int
+//   9. enum <-> int
 // Implicit cast rules:
 //   1.1 Implicit cast does not allow casting longer integer to shorter integer
 //   1.2 Casting signed shorter int to longer types always use sign extension
