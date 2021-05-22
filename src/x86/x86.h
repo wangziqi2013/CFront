@@ -123,9 +123,24 @@ extern const int seg_reg_table[4];
 typedef struct {
   int reg1;
   int reg2;
-} rm_reg_t;
+} addr_mode_reg_t;
 
 // Mode = 00
-extern const rm_reg_t rm_table_1[8];
+extern const addr_mode_reg_t rm_table_1[8];
+extern const addr_mode_reg_t rm_table_2[8];
+
+#define ADDR_MODE_REG_ONLY     0
+#define ADDR_MODE_REG_DISP_8   1
+#define ADDR_MODE_REG_DISP_16  2
+
+// Addressing mode
+typedef struct {
+  int addr_mode;         // Just copies the mode bits
+  addr_mode_reg_t regs;  // Register for addressing (one or two)
+  union {
+    uint8_t disp8;
+    uint8_t disp16;
+  };
+} addr_mode_t;
 
 #endif
