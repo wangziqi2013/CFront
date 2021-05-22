@@ -209,6 +209,12 @@ typedef struct {
   int from_bit, to_bit;    // If op is bit field cast this stores the bit field begin and end bit
 } type_cast_t;
 
+typedef struct {
+  token_type_t op;
+  type_cast_t casts[3];
+  type_t *result_type;
+} type_exp_t;
+
 static inline void type_error_not_supported(const char *offset, decl_prop_t decl_prop) {
   error_row_col_exit(offset, "Sorry, type \"%s\" not yet supported\n", token_decl_print(decl_prop));
 }
