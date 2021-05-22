@@ -19,6 +19,8 @@
 #include <immintrin.h>
 #include <assert.h>
 
+//* util
+
 // Error reporting and system call assertion
 #define SYSEXPECT(expr) do { if(!(expr)) { perror(__func__); assert(0); exit(1); } } while(0)
 #define error_exit(fmt, ...) do { fprintf(stderr, "%s error: " fmt, __func__, ##__VA_ARGS__); assert(0); exit(1); } while(0);
@@ -39,5 +41,14 @@
 // Testing function print name and pass
 #define TEST_BEGIN() do { printf("========== %s ==========\n", __func__); } while(0);
 #define TEST_PASS() do { printf("Pass!\n"); } while(0);
+
+//* Prefix
+
+#define PREFIX_REP    0xf3
+#define PREFIX_REPE   PREFIX_REP
+#define PREFIX_REPZ   PREFIX_REP
+
+#define PREFIX_REPNE  0xf2
+#define PREFIX_REPNZ  PREFIX_REPNE
 
 #endif
