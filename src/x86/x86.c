@@ -46,3 +46,7 @@ const int gen_reg_8_table[8] = {
   REG_AL, REG_CL, REG_DL, REG_BL, 
   REG_AH, REG_CH, REG_DH, REG_BH, 
 };
+
+const int seg_reg_table[4] = {
+  REG_ES, REG_CS, REG_SS, REG_DS, 
+};

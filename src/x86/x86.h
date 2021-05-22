@@ -117,5 +117,6 @@ uint32_t prefix_to_flag_scalar(uint8_t byte);
 // Maps REG field to register name, word size (w = 0)
 extern const int gen_reg_16_table[8];
 extern const int gen_reg_8_table[8];
+extern const int seg_reg_table[4];
 
 #endif
