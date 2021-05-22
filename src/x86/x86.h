@@ -42,7 +42,7 @@
 #define TEST_BEGIN() do { printf("========== %s ==========\n", __func__); } while(0);
 #define TEST_PASS() do { printf("Pass!\n"); } while(0);
 
-//* Prefix
+//* Prefix (raw value in instructions)
 
 #define PREFIX_REP    0xf3
 #define PREFIX_REPE   PREFIX_REP
@@ -50,5 +50,29 @@
 
 #define PREFIX_REPNE  0xf2
 #define PREFIX_REPNZ  PREFIX_REPNE
+
+// Segment override
+#define PREFIX_CS     0x2e
+#define PREFIX_DS     0x3e
+#define PREFIX_ES     0x26
+#define PREFIX_SS     0x36
+
+#define PREFIX_LOCK   0xf0
+
+//* Prefix flags
+
+#define FLAG_REP      0x00000001
+#define FLAG_REPE     FLAG_REP
+#define FLAG_REPZ     FLAG_REP
+
+#define FLAG_REPNE    0x00000002
+#define PREFIX_REPNZ  FLAG_REPNE
+
+#define FLAG_CS       0x00000004
+#define FLAG_DS       0x00000008
+#define FLAG_ES       0x00000010
+#define FLAG_SS       0x00000020
+
+#define FLAG_LOCK     0x00000040
 
 #endif
