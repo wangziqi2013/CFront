@@ -157,6 +157,11 @@ typedef struct {
   };
 } operand_t; 
 
+inline static void *ptr_add_16(void *p) { return (void *)((uint16_t *)p + 1); }
+inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
+inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
+inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
+
 void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data);
 
 #endif
