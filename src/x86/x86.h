@@ -169,6 +169,11 @@ typedef struct {
 #define OPERAND_IMM16   3
 #define OPERAND_ADDR32  4
 
+typedef struct {
+  uint16_t off;
+  uint16_t seg;
+} farptr_t;
+
 // An operand can be either register or memory, which is encoded by addr_node_t
 typedef struct {
   int operand_mode;
@@ -177,10 +182,7 @@ typedef struct {
     addr_mode_t mem;
     uint16_t imm_16;     // 16 bit immediate value
     uint8_t imm_8;       // 8 bit immediate value
-    struct {             // seg:offset full address
-      uint16_t off;
-      uint16_t seg;
-    };
+    farptr_t farptr;     // seg:offset full address
   };
 } operand_t; 
 
@@ -194,6 +196,8 @@ void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w
 // Instruction
 
 typedef struct {
+  uint16_t off;
+  uint16_t seg;
   int opcode;
   uint32_t flags;
   operand_t dest;
