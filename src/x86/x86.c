@@ -19,3 +19,18 @@ uint32_t prefix_to_flag_mmx(uint8_t byte) {
   index = (index >> 3);
   return (uint32_t)0x1U << index;
 }
+
+uint32_t prefix_to_flag(uint8_t byte) {
+  uint32_t flag = FLAG_NONE;
+  switch(byte) {
+    case PREFIX_REP: flag = FLAG_REP; break;
+    case PREFIX_REPNE: flag = FLAG_REPNE; break;
+    case PREFIX_CS: flag = FLAG_CS; break;
+    case PREFIX_DS: flag = FLAG_DS; break;
+    case PREFIX_ES: flag = FLAG_ES; break;
+    case PREFIX_SS: flag = FLAG_SS; break;
+    case PREFIX_LOCK: flag = FLAG_LOCK; break;
+    default: break;
+  }
+  return flag;
+}
