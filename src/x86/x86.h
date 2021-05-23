@@ -171,7 +171,8 @@ extern const addr_mode_reg_t addr_mode_reg_table_2[8];
 #define ADDR_MODE_MEM_REG_ONLY     0
 #define ADDR_MODE_MEM_REG_DISP_8   1
 #define ADDR_MODE_MEM_REG_DISP_16  2
-#define ADDR_MODE_REG              3
+#define ADDR_MODE_MEM_DIRECT       3
+#define ADDR_MODE_REG              4
 
 // Addressing mode
 typedef struct {
@@ -180,6 +181,7 @@ typedef struct {
   union {
     uint8_t disp8;
     uint16_t disp16;
+    uint16_t ptr;
   };
 } addr_mode_t;
 

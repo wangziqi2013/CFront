@@ -76,8 +76,10 @@ void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int rm, void *data
     if(addr_mode == ADDR_MODE_MEM_REG_ONLY) { 
       operand->mem.regs = addr_mode_reg_table_1[rm];
       // Directly addressed, followed by 16 bit absolute address
+      // Note that this overrides the REG ONLY addressing mode
       if(rm == 6) {
-        operand->mem.disp16 = ptr_load_16(data);
+        operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
+        operand->mem.ptr = ptr_load_16(data);
         data = ptr_add_16(data);
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
