@@ -279,6 +279,8 @@ enum {
   OP_JGE,
   OP_JLE,
   OP_JG,
+  OP_TEST,
+  OP_XCHG,
 };
 
 // Maps op macros (see above) to string names

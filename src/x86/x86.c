@@ -159,7 +159,7 @@ const char *op_names[] = {
   "xor", "aaa", "cmp", "aas", "inc", "dec", 
   "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
-  
+  "test", "xchg",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -184,6 +184,7 @@ void *parse_alu_ins(ins_t *ins, int diff, int op, void *data) {
   return data;
 }
 
+// ALU operation with src being imm and dest being 
 void *parse_ins_grp1(ins_t *ins, void *data) {
   int reg = REG_NONE;
   // Parses mod + r/m operand as destination, and returns reg field
@@ -297,6 +298,14 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x80: case 0x81: case 0x82: case 0x83: {
       data = parse_ins_grp1(ins, data);
+    } break;
+    case 0x84: case 0x85: { // Order of dest and src does not matter
+      ins->op = OP_TEST;
+      data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
+    } break;
+    case 0x86: case 0x87: { // Order of dest and src does not matter
+      ins->op = OP_XCHG;
+      data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
     } break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
