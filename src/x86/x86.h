@@ -245,6 +245,9 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
 #define OP_POP           3
 #define OP_OR            4
 
+// Maps op macros (see above) to string names
+extern const char *op_names[];
+
 typedef struct {
   farptr_t addr;       // Address of the instruction
   uint8_t opcode;      // This is the raw opcode byte includes D and W flag, i.e., it is the full 8 byte

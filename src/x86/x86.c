@@ -133,6 +133,12 @@ void *parse_opcode(ins_t *ins, void *data) {
   return ptr_add_8(data);
 }
 
+//* ins_t
+
+const char *op_names[] = {
+  "nop", "add", "push", "pop", "or",
+};
+
 void *parse_ins(ins_t *ins, void *data) {
   data = parse_prefix(ins, data);
   data = parse_opcode(ins, data);
@@ -143,7 +149,7 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x90: ins->op = OP_NOP; break;
     case 0x00: case 0x01: case 0x02: case 0x03: { // Two operand add
       ins->op = OP_ADD;
-      data = parse_operand_2(&ins->dest, ins->src, ins->flags, data);
+      data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
     } break;
     case 0x04: {
       ins->op = OP_ADD;
@@ -165,7 +171,7 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x08: case 0x09: case 0x0A: case 0x0B: { // Two operand add
       ins->op = OP_OR;
-      data = parse_operand_2(&ins->dest, ins->src, ins->flags, data);
+      data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
     } break;
     case 0x0C: {
       ins->op = OP_OR;
@@ -181,6 +187,9 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_PUSH;
       operand_set_register(&ins->dest, REG_CS);
     } break;
+    default: {
+      error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
+    }
   }
 
   return data;
