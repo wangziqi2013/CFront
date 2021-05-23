@@ -415,6 +415,8 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xAB: ins->op = OP_STOSW; break;
     case 0xAC: ins->op = OP_LODSB; break;
     case 0xAD: ins->op = OP_LODSW; break;
+    case 0xAE: ins->op = OP_SCASB; break;
+    case 0xAF: ins->op = OP_SCASW; break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);

@@ -315,6 +315,8 @@ enum {
   OP_STOSW,
   OP_LODSB,
   OP_LODSW,
+  OP_SCASB,
+  OP_SCASW,
 };
 
 // Maps op macros (see above) to string names
