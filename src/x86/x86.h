@@ -184,20 +184,27 @@ typedef struct {
 typedef struct {
   int operand_mode;
   union {
-    int reg;             // Operand is in one of the registers
-    addr_mode_t mem;     // Operand is in memory
+    int reg;             // Operand is in one of the registers (size implied by register width)
+    addr_mode_t mem;     // Operand is in memory (size given by W flag)
     uint16_t imm_16;     // 16 bit immediate value
     uint8_t imm_8;       // 8 bit immediate value
-    farptr_t farptr;     // seg:offset full address
+    farptr_t farptr;     // seg:offset full address (32-bit operand)
   };
 } operand_t; 
+
+// Sets an operand as register
+inline static void operand_set_register(operand_t *operand, int reg) {
+  operand->operand_mode = OPERAND_REG;
+  operand->reg = reg;
+  return;
+}
 
 inline static void *ptr_add_16(void *p) { return (void *)((uint16_t *)p + 1); }
 inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
 inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
 inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
 
-// Parsing 2 operands, encoded as REG and moder/m
+// Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
 
 // Instruction
