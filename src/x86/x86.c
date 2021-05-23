@@ -225,6 +225,16 @@ void *parse_ins(ins_t *ins, void *data) {
       data = parse_alu_ins(ins, ins->opcode - 0x38, OP_CMP, data);
     } break;
     case 0x3F: ins->op = OP_AAS; break;
+    case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47: {
+      ins->op = OP_INC;
+      ins->src.operand_mode = OPERAND_REG;
+      ins->src.reg = gen_reg_16_table[ins->opcode - 0x40];
+    } break;
+    case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F: {
+      ins->op = OP_DEC;
+      ins->src.operand_mode = OPERAND_REG;
+      ins->src.reg = gen_reg_16_table[ins->opcode - 0x48];
+    } break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
