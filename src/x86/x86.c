@@ -65,19 +65,23 @@ const addr_mode_reg_t addr_mode_reg_table_2[8] = {
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
-void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data) {
-  int addr_mode = (int)((byte & 0xC0) >> 6);
-  int reg = (int)((byte & 0x1C) >> 3);
+// Two operand instructions; Both operands must be either reg or mem
+void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data) {
+  uint8_t byte = ptr_load_8(data);
+  data = ptr_add_8(data);
+  // Extract fields
+  int addr_mode = (int)(byte >> 6);
+  int reg = (int)((byte >> 3) & 0x07);
   int rm = (int)(byte & 0x07);
   // Parse register operand. If d  == 1 then register operand belongs to dest
-  operand_t *op = (d == 1) ? dest : src;
+  operand_t *op = (flags & FLAG_D) ? dest : src;
   op->operand_mode = OPERAND_REG;
-  op->reg = (w == 1) ? gen_reg_16_table[reg] : gen_reg_8_table[reg];
+  op->reg = (flags & FLAG_W) ? gen_reg_16_table[reg] : gen_reg_8_table[reg];
   // Parse r/m operand
-  op = (d == 1) ? src : dest;
+  op = (flags & FLAG_D) ? src : dest;
   if(addr_mode == ADDR_MODE_REG) {
     op->operand_mode = OPERAND_REG;
-    op->reg = (w == 1) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
+    op->reg = (flags & FLAG_W) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
   } else {
     op->operand_mode = OPERAND_MEM;
     op->mem.addr_mode = addr_mode;
@@ -133,6 +137,7 @@ void *parse_ins(ins_t *ins, void *data) {
   data = parse_prefix(ins, data);
   data = parse_opcode(ins, data);
   switch(ins->opcode) {
-    case 0x90: 
+    case 0x90: ins->op = OP_NOP; break;
+    //case 0x
   }
 }

@@ -168,11 +168,12 @@ typedef struct {
 } addr_mode_t;
 
 // Operand type
-#define OPERAND_REG     0
-#define OPERAND_MEM     1
-#define OPERAND_IMM8    2
-#define OPERAND_IMM16   3
-#define OPERAND_ADDR32  4
+#define OPERAND_NONE    0
+#define OPERAND_REG     1
+#define OPERAND_MEM     2
+#define OPERAND_IMM8    3
+#define OPERAND_IMM16   4
+#define OPERAND_FARPTR  5
 
 typedef struct {
   uint16_t offset;
@@ -183,8 +184,8 @@ typedef struct {
 typedef struct {
   int operand_mode;
   union {
-    int reg;
-    addr_mode_t mem;
+    int reg;             // Operand is in one of the registers
+    addr_mode_t mem;     // Operand is in memory
     uint16_t imm_16;     // 16 bit immediate value
     uint8_t imm_8;       // 8 bit immediate value
     farptr_t farptr;     // seg:offset full address
@@ -196,8 +197,8 @@ inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
 inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
 inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
 
-// This is called after parsing opcode
-void *parse_operands(operand_t *dest, operand_t *src, uint8_t byte, int d, int w, void *data);
+// Parsing 2 operands, encoded as REG and moder/m
+void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
 
 // Instruction
 
@@ -210,7 +211,7 @@ typedef struct {
   int op;              // This is the abstract operation (OP_ class)
   uint32_t flags;
   operand_t dest;
-  operand_t src;
+  operand_t src;       // If there only one operand, the src is used
 } ins_t;
 
 // This is called at the beginning of an instruction
