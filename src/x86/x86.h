@@ -243,6 +243,7 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
 #define OP_ADD           1
 #define OP_PUSH          2
 #define OP_POP           3
+#define OP_OR            4
 
 typedef struct {
   farptr_t addr;       // Address of the instruction

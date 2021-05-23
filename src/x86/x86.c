@@ -163,7 +163,24 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_POP;
       operand_set_register(&ins->dest, REG_ES);
     } break;
-    //case 0x
+    case 0x08: case 0x09: case 0x0A: case 0x0B: { // Two operand add
+      ins->op = OP_OR;
+      data = parse_operand_2(&ins->dest, ins->src, ins->flags, data);
+    } break;
+    case 0x0C: {
+      ins->op = OP_OR;
+      operand_set_register(&ins->dest, REG_AL);
+      data = operand_set_imm_8(&ins->src, data);
+    } break;
+    case 0x0D: {
+      ins->op = OP_OR;
+      operand_set_register(&ins->dest, REG_AX);
+      data = operand_set_imm_16(&ins->src, data);
+    } break;
+    case 0x0E: {
+      ins->op = OP_PUSH;
+      operand_set_register(&ins->dest, REG_CS);
+    } break;
   }
 
   return data;
