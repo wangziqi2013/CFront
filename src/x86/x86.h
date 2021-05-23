@@ -282,6 +282,7 @@ enum {
   OP_TEST,
   OP_XCHG,
   OP_MOV,
+  OP_LEA,
 };
 
 // Maps op macros (see above) to string names
@@ -296,6 +297,10 @@ typedef struct {
   operand_t dest;
   operand_t src;       // If there only one operand, the src is used
 } ins_t;
+
+inline static void print_inst_addr(inst_t *inst) {
+  fprintf(stderr, "Instruction at address %X:%X\n", inst->addr.seg, inst->addr.offset);
+}
 
 // This is called at the beginning of an instruction
 void *parse_prefix(ins_t *ins, void *data);

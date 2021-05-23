@@ -159,7 +159,7 @@ const char *op_names[] = {
   "xor", "aaa", "cmp", "aas", "inc", "dec", 
   "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
-  "test", "xchg", "mov",
+  "test", "xchg", "mov", "lea",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -203,6 +203,7 @@ void *parse_ins_grp1(ins_t *ins, void *data) {
   }
   // 0x82 just aliases 0x80, and 0x83 is imm8 and word argument???
   if(ins->opcode == 0x82 || ins->opcode == 0x83) {
+    print_inst_addr(inst);
     error_exit("Unsupported opcode: 0x%X\n", ins->opcode);
   }
   // Read 16-bit or 8-bit immediate value
@@ -321,9 +322,19 @@ void *parse_ins(ins_t *ins, void *data) {
       assert(reg >= 0 && reg <= 3); // We only have 4 segment registers
       operand_set_register(&ins->src, seg_reg_table[reg]);
     } break;
-    
+    case 0x8D: { // LEA, dest is always 16-bit register, src is always addressing mode
+      ins->op = OP_LEA;
+      int reg;
+      data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+      assert(reg >= 0 && reg <= 7);
+      if(ins->dest.operand_mode == OPERAND_REG) {
+        print_inst_addr(inst);
+        error_exit("LEA instruction must not have REG addressing mode\n");
+      }
+    } break;
     default: {
-      error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
+      print_inst_addr(inst);
+      error_exit("Illegal opcode: 0x%X\n", ins->opcode);
     }
   }
   ins->size = (uint8_t)((uint64_t)data - (uint64_t)old_data);
