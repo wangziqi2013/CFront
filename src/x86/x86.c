@@ -216,6 +216,7 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x28: case 0x29: case 0x2A: case 0x2B: case 0x2C: case 0x2D: { // Two operand SUB
       data = parse_alu_ins(ins, ins->opcode - 0x28, OP_SUB, data);
     } break;
+    case 0x2F: ins->op = OP_DAS; break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
