@@ -159,7 +159,7 @@ const char *op_names[] = {
   "xor", "aaa", "cmp", "aas", "inc", "dec", 
   "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
-  "test", "xchg",
+  "test", "xchg", "mov",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -305,6 +305,10 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x86: case 0x87: { // Order of dest and src does not matter
       ins->op = OP_XCHG;
+      data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
+    } break;
+    case 0x88: case 0x89: case 0x8A: case 0x8B: { // mov
+      ins->op = OP_MOV;
       data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
     } break;
     default: {

@@ -281,6 +281,7 @@ enum {
   OP_JG,
   OP_TEST,
   OP_XCHG,
+  OP_MOV,
 };
 
 // Maps op macros (see above) to string names
