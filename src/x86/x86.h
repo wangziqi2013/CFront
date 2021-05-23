@@ -241,7 +241,7 @@ void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int rm, void *data
 // Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
 // Only parses mod + rm, returns REG
-void *parse_operand_rm(operand_t *operand, uint32_t flags, int *reg, void *data);
+void *parse_operand_1(operand_t *operand, uint32_t flags, int *_reg, void *data);
 
 // Instruction
 

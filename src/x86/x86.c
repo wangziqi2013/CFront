@@ -113,14 +113,15 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
   return data;
 }
 
-void *parse_operand_rm(operand_t *operand, uint32_t flags, int *_reg, void *data) {
+// Only parses mode + r/m and returns reg for the caller
+void *parse_operand_1(operand_t *operand, uint32_t flags, int *_reg, void *data) {
   uint8_t byte = ptr_load_8(data);
   data = ptr_add_8(data);
   int addr_mode = (int)(byte >> 6);
   int reg = (int)((byte >> 3) & 0x07);
   int rm = (int)(byte & 0x07);
   *_reg = reg;
-
+  data = parse_operand_mod_rm(op, addr_mode, rm, data);
   return data;
 }
 
