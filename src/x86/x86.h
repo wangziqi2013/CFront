@@ -298,8 +298,8 @@ typedef struct {
   operand_t src;       // If there only one operand, the src is used
 } ins_t;
 
-inline static void print_inst_addr(inst_t *inst) {
-  fprintf(stderr, "Instruction at address %X:%X\n", inst->addr.seg, inst->addr.offset);
+inline static void print_inst_addr(ins_t *ins) {
+  fprintf(stderr, "Instruction at address %X:%X\n", ins->addr.seg, ins->addr.offset);
 }
 
 // This is called at the beginning of an instruction

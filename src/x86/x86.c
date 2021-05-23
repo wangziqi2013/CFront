@@ -203,7 +203,7 @@ void *parse_ins_grp1(ins_t *ins, void *data) {
   }
   // 0x82 just aliases 0x80, and 0x83 is imm8 and word argument???
   if(ins->opcode == 0x82 || ins->opcode == 0x83) {
-    print_inst_addr(inst);
+    print_inst_addr(ins);
     error_exit("Unsupported opcode: 0x%X\n", ins->opcode);
   }
   // Read 16-bit or 8-bit immediate value
@@ -328,12 +328,12 @@ void *parse_ins(ins_t *ins, void *data) {
       data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
       assert(reg >= 0 && reg <= 7);
       if(ins->dest.operand_mode == OPERAND_REG) {
-        print_inst_addr(inst);
+        print_inst_addr(ins);
         error_exit("LEA instruction must not have REG addressing mode\n");
       }
     } break;
     default: {
-      print_inst_addr(inst);
+      print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
     }
   }
