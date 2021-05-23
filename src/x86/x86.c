@@ -185,6 +185,27 @@ void *parse_alu_ins(ins_t *ins, int diff, int op, void *data) {
 }
 
 void *parse_ins_grp1(ins_t *ins, void *data) {
+  int reg = REG_NONE;
+  // Parses mod + r/m operand as destination, and returns reg field
+  data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+  assert(reg >= 0 && reg <= 7);
+  switch(reg) {
+    case 0: ins->op = OP_ADD; break;
+    case 1: ins->op = OP_OR; break;
+    case 2: ins->op = OP_ADC; break;
+    case 3: ins->op = OP_SBB; break;
+    case 4: ins->op = OP_AND; break;
+    case 5: ins->op = OP_SUB; break;
+    case 6: ins->op = OP_XOR; break;
+    case 7: ins->op = OP_CMP; break;
+    default: assert(0); break;
+  }
+  // 0x82 just aliases 0x80, and 0x83 is imm8 and word argument???
+  if(ins->opcode == 0x82 || ins->opcode == 0x83) {
+    error_exit("Unsupported opcode: 0x%X\n", ins->opcode);
+  }
+  // Read 16-bit or 8-bit immediate value
+  data = (ins->flags & FLAG_W) ? operand_set_imm_16(&ins->src, data) : operand_set_imm_8(&ins->src, data);
   return data;
 }
 
