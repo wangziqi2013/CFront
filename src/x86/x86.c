@@ -343,6 +343,12 @@ void *parse_ins(ins_t *ins, void *data) {
       assert(reg >= 0 && reg <= 3); // We only have 4 segment registers
       operand_set_register(&ins->dest, seg_reg_table[reg]);
     } break;
+    case 0x8F: { // Pop to r/m, ignore D bit, note that single operand operation have src as operand
+      ins->op = OP_POP;
+      int reg; // Ignore this
+      data = parse_operand_1(&ins->src, ins->flags, &reg, data);
+      (void)reg;
+    } break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
