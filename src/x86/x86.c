@@ -79,7 +79,7 @@ void *parse_operand_mod_rm(operand_t *operand, int flags, int addr_mode, int rm,
       // Note that this overrides the REG ONLY addressing mode
       if(rm == 6) {
         operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
-        operand->mem.ptr = ptr_load_16(data);
+        operand->mem.disp16 = ptr_load_16(data);
         data = ptr_add_16(data);
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
@@ -155,7 +155,11 @@ void *parse_opcode(ins_t *ins, void *data) {
 //* ins_t
 
 const char *op_names[] = {
-  "nop", "add", "push", "pop", "or",
+  "nop", "add", "push", "pop", "or", "addc", "sbb", "and", "daa", "sub", "das",
+  "xor", "aaa", "cmp", "aas", "inc", "dec", 
+  "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
+  "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
+  
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form

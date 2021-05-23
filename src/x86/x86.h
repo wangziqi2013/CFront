@@ -180,8 +180,7 @@ typedef struct {
   addr_mode_reg_t regs;  // Register for addressing (one or two)
   union {
     uint8_t disp8;
-    uint16_t disp16;
-    uint16_t ptr;
+    uint16_t disp16;     // Direct addressing mode also uses this
   };
 } addr_mode_t;
 
