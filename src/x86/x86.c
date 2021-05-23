@@ -162,6 +162,7 @@ void *parse_alu_ins(ins_t *ins, int diff, int op, void *data) {
 }
 
 void *parse_ins(ins_t *ins, void *data) {
+  void *old_data = data; // Compute size with this
   data = parse_prefix(ins, data);
   data = parse_opcode(ins, data);
   // Initialize operands
@@ -245,6 +246,6 @@ void *parse_ins(ins_t *ins, void *data) {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
   }
-
+  ins->size = (uint8_t)((uint64_t)data - (uint64_t)old_data);
   return data;
 }

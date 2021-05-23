@@ -263,8 +263,9 @@ extern const char *op_names[];
 typedef struct {
   farptr_t addr;       // Address of the instruction
   uint8_t opcode;      // This is the raw opcode byte includes D and W flag, i.e., it is the full 8 byte
-  int op;              // This is the abstract operation (OP_ class)
+  uint8_t op;          // This is the abstract operation (OP_ class)
   uint32_t flags;
+  uint8_t size;        // Number of bytes in the instruction
   operand_t dest;
   operand_t src;       // If there only one operand, the src is used
 } ins_t;
