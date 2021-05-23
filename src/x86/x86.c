@@ -66,7 +66,7 @@ const addr_mode_reg_t addr_mode_reg_table_2[8] = {
 };
 
 // Sets operand based on mode + r/m
-void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int rm, void *data) {
+void *parse_operand_mod_rm(operand_t *operand, int flags, int addr_mode, int rm, void *data) {
   if(addr_mode == ADDR_MODE_REG) {
     operand->operand_mode = OPERAND_REG;
     operand->reg = (flags & FLAG_W) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
@@ -109,19 +109,18 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
   op->reg = (flags & FLAG_W) ? gen_reg_16_table[reg] : gen_reg_8_table[reg];
   // Parse r/m operand
   op = (flags & FLAG_D) ? src : dest;
-  data = parse_operand_mod_rm(op, addr_mode, rm, data);
+  data = parse_operand_mod_rm(op, addr_mode, flags, rm, data);
   return data;
 }
 
 // Only parses mode + r/m and returns reg for the caller
-void *parse_operand_1(operand_t *operand, uint32_t flags, int *_reg, void *data) {
+void *parse_operand_1(operand_t *operand, uint32_t flags, int *reg, void *data) {
   uint8_t byte = ptr_load_8(data);
   data = ptr_add_8(data);
   int addr_mode = (int)(byte >> 6);
-  int reg = (int)((byte >> 3) & 0x07);
+  *reg = (int)((byte >> 3) & 0x07);
   int rm = (int)(byte & 0x07);
-  *_reg = reg;
-  data = parse_operand_mod_rm(op, addr_mode, rm, data);
+  data = parse_operand_mod_rm(operand, addr_mode, flags, rm, data);
   return data;
 }
 
@@ -182,7 +181,7 @@ void *parse_alu_ins(ins_t *ins, int diff, int op, void *data) {
 }
 
 void *parse_ins_grp1(ins_t *ins, void *data) {
-
+  return data;
 }
 
 void *parse_ins(ins_t *ins, void *data) {

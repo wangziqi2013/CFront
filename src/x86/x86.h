@@ -237,11 +237,11 @@ inline static void *operand_set_imm_16(operand_t *operand, void *data) {
 }
 
 // Given mode and r/m bits, set the operand
-void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int rm, void *data);
+void *parse_operand_mod_rm(operand_t *operand, int flags, int addr_mode, int rm, void *data);
 // Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
 // Only parses mod + rm, returns REG
-void *parse_operand_1(operand_t *operand, uint32_t flags, int *_reg, void *data);
+void *parse_operand_1(operand_t *operand, uint32_t flags, int *reg, void *data);
 
 // Instruction
 
