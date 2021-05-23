@@ -139,6 +139,28 @@ const char *op_names[] = {
   "nop", "add", "push", "pop", "or",
 };
 
+// ALU instructions occupy 6 opcodes, the first four being the general form
+// (reg, mem/reg and four w/d combinations). The last two being 8-bit imm to AL
+// and 16-bit imm to AX
+void *parse_alu_ins(ins_t *ins, int opcode_start, int opcode, int op, void *data) {
+  assert(opcode >= opcode_start);
+  ins->op = op;
+  switch(opcode - opcode_start) {
+    case 0x00: case 0x01: case 0x02: case 0x03: { // Two operands
+      data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
+    } break;
+    case 0x04: {
+      operand_set_register(&ins->dest, REG_AL);
+      data = operand_set_imm_8(&ins->src, data);
+    } break;
+    case 0x05: {
+      operand_set_register(&ins->dest, REG_AX);
+      data = operand_set_imm_16(&ins->src, data);
+    } break;
+  }
+  return data;
+}
+
 void *parse_ins(ins_t *ins, void *data) {
   data = parse_prefix(ins, data);
   data = parse_opcode(ins, data);
