@@ -311,6 +311,17 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_MOV;
       data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
     } break;
+    case 0x8C: { // mov E, seg reg
+      ins->op = OP_MOV;
+      // Override the argument size to word (0x8C itself indicates byte)
+      assert((ins->flags & FLAG_W) == 0);
+      ins->flags |= FLAG_W;
+      int reg;
+      data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+      assert(reg >= 0 && reg <= 3); // We only have 4 segment registers
+      operand_set_register(&ins->src, seg_reg_table[reg]);
+    } break;
+    
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
