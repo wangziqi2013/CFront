@@ -220,6 +220,7 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: { // Two operand XOR
       data = parse_alu_ins(ins, ins->opcode - 0x30, OP_XOR, data);
     } break;
+    case 0x37: ins->op = OP_AAA; break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
