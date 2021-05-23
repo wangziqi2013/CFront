@@ -228,6 +228,12 @@ inline static void *operand_set_imm_8(operand_t *operand, void *data) {
   return ptr_add_8(data);
 }
 
+inline static void *operand_set_imm_16(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_IMM_16;
+  operand->imm_8 = ptr_load_16(data);
+  return ptr_add_16(data);
+}
+
 // Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
 
