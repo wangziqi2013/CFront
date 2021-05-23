@@ -235,6 +235,14 @@ inline static void *operand_set_imm_16(operand_t *operand, void *data) {
   return ptr_add_16(data);
 }
 
+inline static void *operand_set_farptr(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_FARPTR;
+  operand->farptr.offset = ptr_load_16(data);
+  data = ptr_add_16(data);
+  operand->farptr.seg = ptr_load_16(data);
+  return ptr_add_16(data);
+}
+
 // Given mode and r/m bits, set the operand
 void *parse_operand_mod_rm(operand_t *operand, int flags, int addr_mode, int rm, void *data);
 // Parsing 2 operands, must be either reg or mem
@@ -283,6 +291,9 @@ enum {
   OP_XCHG,
   OP_MOV,
   OP_LEA,
+  OP_CBW,
+  OP_CWD,
+  OP_CALL,
 };
 
 // Maps op macros (see above) to string names
