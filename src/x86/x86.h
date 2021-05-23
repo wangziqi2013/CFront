@@ -187,8 +187,8 @@ typedef struct {
 #define OPERAND_NONE    0
 #define OPERAND_REG     1
 #define OPERAND_MEM     2
-#define OPERAND_IMM8    3
-#define OPERAND_IMM16   4
+#define OPERAND_IMM_8   3
+#define OPERAND_IMM_16  4
 #define OPERAND_FARPTR  5
 
 typedef struct {
@@ -208,6 +208,11 @@ typedef struct {
   };
 } operand_t; 
 
+inline static void *ptr_add_16(void *p) { return (void *)((uint16_t *)p + 1); }
+inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
+inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
+inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
+
 // Sets an operand as register. Register can be either general purpose or segment, but not IP or FLAGS
 inline static void operand_set_register(operand_t *operand, int reg) {
   assert(reg >= REG_BEGIN && reg < REG_END);
@@ -216,10 +221,12 @@ inline static void operand_set_register(operand_t *operand, int reg) {
   return;
 }
 
-inline static void *ptr_add_16(void *p) { return (void *)((uint16_t *)p + 1); }
-inline static void *ptr_add_8(void *p) { return (void *)((uint8_t *)p + 1); }
-inline static uint16_t ptr_load_16(void *p) { return *(uint16_t *)p; }
-inline static uint8_t ptr_load_8(void *p) { return *(uint8_t *)p; }
+// Parse a 8-bit immediate value from the instruction stream
+inline static void *operand_set_imm_8(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_IMM_8;
+  operand->imm_8 = ptr_load_8(data);
+  return ptr_add_8(data);
+}
 
 // Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
