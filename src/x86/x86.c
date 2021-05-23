@@ -159,7 +159,7 @@ const char *op_names[] = {
   "xor", "aaa", "cmp", "aas", "inc", "dec", 
   "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
-  "test", "xchg", "mov", "lea",
+  "test", "xchg", "mov", "lea", "cbw", "cwd", "call",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -225,10 +225,12 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x06: {
       ins->op = OP_PUSH;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_ES);
     } break;
     case 0x07: {
       ins->op = OP_POP;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_ES);
     } break;
     case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: { // Two operand OR
@@ -236,6 +238,7 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x0E: {
       ins->op = OP_PUSH;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_CS);
     } break;
     case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: { // Two operand ADC
@@ -243,10 +246,12 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x16: {
       ins->op = OP_PUSH;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_SS);
     } break;
     case 0x17: {
       ins->op = OP_POP;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_SS);
     } break;
     case 0x18: case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: { // Two operand SBB
@@ -254,10 +259,12 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x1E: {
       ins->op = OP_PUSH;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_DS);
     } break;
     case 0x1F: {
       ins->op = OP_POP;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, REG_DS);
     } break;
     case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: { // Two operand AND
@@ -278,18 +285,22 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x3F: ins->op = OP_AAS; break;
     case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47: {
       ins->op = OP_INC;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x40]);
     } break;
     case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F: {
       ins->op = OP_DEC;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x48]);
     } break;
     case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57: {
       ins->op = OP_PUSH;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x50]);
     } break;
     case 0x58: case 0x59: case 0x5A: case 0x5B: case 0x5C: case 0x5D: case 0x5E: case 0x5F: {
       ins->op = OP_POP;
+      ins->flags |= FLAG_W;
       operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x58]);
     } break;
     case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
@@ -348,6 +359,19 @@ void *parse_ins(ins_t *ins, void *data) {
       int reg; // Ignore this
       data = parse_operand_1(&ins->src, ins->flags, &reg, data);
       (void)reg;
+    } break;
+    case 0x91: case 0x92: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97: { // XCHG with AX
+      ins->op = OP_XCHG;
+      ins->flags |= FLAG_W;
+      operand_set_register(&ins->dest, REG_AX);
+      // Note that we skip AX, so the index start at 1 (base 0x90)
+      operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x90]);
+    } break;
+    case 0x98: ins->op = OP_CBW; break; // Byte size
+    case 0x99: ins->op = OP_CWD; break; // Word size
+    case 0x9A: {
+      ins->op = OP_CALL;
+      data = operand_set_farptr(&ins->src, data);
     } break;
     default: {
       print_inst_addr(ins);
