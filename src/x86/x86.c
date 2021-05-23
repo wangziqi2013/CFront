@@ -325,12 +325,23 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x8D: { // LEA, dest is always 16-bit register, src is always addressing mode
       ins->op = OP_LEA;
       int reg;
-      data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+      data = parse_operand_1(&ins->src, ins->flags, &reg, data); // Source must be memory address
       assert(reg >= 0 && reg <= 7);
-      if(ins->dest.operand_mode == OPERAND_REG) {
+      if(ins->src.operand_mode == OPERAND_REG) {
         print_inst_addr(ins);
         error_exit("LEA instruction must not have REG addressing mode\n");
       }
+      operand_set_register(&ins->dest, gen_reg_16_table[reg]); // Dest must be 16-bit gen purpose register
+    } break;
+    case 0x8E: { // Move to seg register from r/m
+      ins->op = OP_MOV;
+      // Override the argument size to word (0x8C itself indicates byte)
+      assert((ins->flags & FLAG_W) == 0);
+      ins->flags |= FLAG_W;
+      int reg;
+      data = parse_operand_1(&ins->src, ins->flags, &reg, data);
+      assert(reg >= 0 && reg <= 3); // We only have 4 segment registers
+      operand_set_register(&ins->dest, seg_reg_table[reg]);
     } break;
     default: {
       print_inst_addr(ins);
