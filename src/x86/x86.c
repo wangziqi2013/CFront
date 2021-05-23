@@ -155,6 +155,14 @@ void *parse_ins(ins_t *ins, void *data) {
       operand_set_register(&ins->dest, REG_AX);
       data = operand_set_imm_16(&ins->src, data);
     } break;
+    case 0x06: {
+      ins->op = OP_PUSH;
+      operand_set_register(&ins->dest, REG_ES);
+    } break;
+    case 0x07: {
+      ins->op = OP_POP;
+      operand_set_register(&ins->dest, REG_ES);
+    } break;
     //case 0x
   }
 
