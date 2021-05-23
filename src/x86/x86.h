@@ -307,6 +307,10 @@ enum {
   OP_POPF, 
   OP_SAHF,
   OP_LAHF,
+  OP_MOVSB, 
+  OP_MOVSW,
+  OP_CMPSB,
+  OP_CMPSW,
 };
 
 // Maps op macros (see above) to string names

@@ -161,6 +161,7 @@ const char *op_names[] = {
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
   "test", "xchg", "mov", "lea", "cbw", "cwd", "call",
   "wait", "pushf", "popf", "sahf", "lahf",
+  "movsb", "movsw", "cmpsb", "cmpsw",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -395,6 +396,10 @@ void *parse_ins(ins_t *ins, void *data) {
       data = operand_set_nearptr(&ins->dest, data);
       operand_set_register(&ins->src, REG_AX);
     } break;
+    case 0xA4: ins->op = OP_MOVSB; break;
+    case 0xA5: ins->op = OP_MOVSW; break;
+    case 0xA6: ins->op = OP_CMPSB; break;
+    case 0xA7: ins->op = OP_CMPSW; break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
