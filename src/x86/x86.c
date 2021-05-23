@@ -150,7 +150,11 @@ void *parse_ins(ins_t *ins, void *data) {
       operand_set_register(&ins->dest, REG_AL);
       data = operand_set_imm_8(&ins->src, data);
     } break;
-    
+    case 0x05: {
+      ins->op = OP_ADD;
+      operand_set_register(&ins->dest, REG_AX);
+      data = operand_set_imm_16(&ins->src, data);
+    } break;
     //case 0x
   }
 
