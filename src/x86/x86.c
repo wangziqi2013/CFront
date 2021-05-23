@@ -379,6 +379,14 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x9D: ins->op = OP_POPF; break;
     case 0x9E: ins->op = OP_SAHF; break;
     case 0x9F: ins->op = OP_LAHF; break;
+    case 0xA0: { // mov AL, [offset]
+      operand_set_register(&ins->dest, REG_AL);
+      data = operand_set_nearptr(&ins->src, data);
+    } break;
+    case 0xA1: { // mov AX, [offset]
+      operand_set_register(&ins->dest, REG_AX);
+      data = operand_set_nearptr(&ins->src, data);
+    } break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
