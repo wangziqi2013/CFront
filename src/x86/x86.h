@@ -191,6 +191,7 @@ typedef struct {
 #define OPERAND_IMM_8   3
 #define OPERAND_IMM_16  4
 #define OPERAND_FARPTR  5
+#define OPERAND_NEARPTR 6
 
 typedef struct {
   uint16_t offset;
@@ -206,6 +207,7 @@ typedef struct {
     uint16_t imm_16;     // 16 bit immediate value
     uint8_t imm_8;       // 8 bit immediate value
     farptr_t farptr;     // seg:offset full address (32-bit operand)
+    uint16_t nearptr;    // offset in the current segment (16-bit operand)
   };
 } operand_t; 
 
@@ -240,6 +242,12 @@ inline static void *operand_set_farptr(operand_t *operand, void *data) {
   operand->farptr.offset = ptr_load_16(data);
   data = ptr_add_16(data);
   operand->farptr.seg = ptr_load_16(data);
+  return ptr_add_16(data);
+}
+
+inline static void *operand_set_nearptr(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_NEARPTR;
+  operand->nearptr = ptr_load_16(data);
   return ptr_add_16(data);
 }
 
