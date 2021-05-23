@@ -65,6 +65,34 @@ const addr_mode_reg_t addr_mode_reg_table_2[8] = {
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
+// Sets operand based on mode + r/m
+void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int rm, void *data) {
+  if(addr_mode == ADDR_MODE_REG) {
+    operand->operand_mode = OPERAND_REG;
+    operand->reg = (flags & FLAG_W) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
+  } else {
+    operand->operand_mode = OPERAND_MEM;
+    operand->mem.addr_mode = addr_mode;
+    if(addr_mode == ADDR_MODE_MEM_REG_ONLY) { 
+      operand->mem.regs = addr_mode_reg_table_1[rm];
+      // Directly addressed, followed by 16 bit absolute address
+      if(rm == 6) {
+        operand->mem.disp16 = ptr_load_16(data);
+        data = ptr_add_16(data);
+      }
+    } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
+      operand->mem.regs = addr_mode_reg_table_2[rm];
+      operand->mem.disp8 = ptr_load_8(data);
+      data = ptr_add_8(data);
+    } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
+      operand->mem.regs = addr_mode_reg_table_2[rm];
+      operand->mem.disp16 = ptr_load_16(data);
+      data = ptr_add_16(data);
+    }
+  }
+  return data;
+}
+
 // Two operand instructions; Both operands must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data) {
   uint8_t byte = ptr_load_8(data);
@@ -79,29 +107,18 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
   op->reg = (flags & FLAG_W) ? gen_reg_16_table[reg] : gen_reg_8_table[reg];
   // Parse r/m operand
   op = (flags & FLAG_D) ? src : dest;
-  if(addr_mode == ADDR_MODE_REG) {
-    op->operand_mode = OPERAND_REG;
-    op->reg = (flags & FLAG_W) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
-  } else {
-    op->operand_mode = OPERAND_MEM;
-    op->mem.addr_mode = addr_mode;
-    if(addr_mode == ADDR_MODE_MEM_REG_ONLY) { 
-      op->mem.regs = addr_mode_reg_table_1[rm];
-      // Directly addressed, followed by 16 bit absolute address
-      if(rm == 6) {
-        op->mem.disp16 = ptr_load_16(data);
-        data = ptr_add_16(data);
-      }
-    } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
-      op->mem.regs = addr_mode_reg_table_2[rm];
-      op->mem.disp8 = ptr_load_8(data);
-      data = ptr_add_8(data);
-    } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
-      op->mem.regs = addr_mode_reg_table_2[rm];
-      op->mem.disp16 = ptr_load_16(data);
-      data = ptr_add_16(data);
-    }
-  }
+  data = parse_operand_mod_rm(op, addr_mode, rm, data);
+  return data;
+}
+
+void *parse_operand_rm(operand_t *operand, uint32_t flags, int *_reg, void *data) {
+  uint8_t byte = ptr_load_8(data);
+  data = ptr_add_8(data);
+  int addr_mode = (int)(byte >> 6);
+  int reg = (int)((byte >> 3) & 0x07);
+  int rm = (int)(byte & 0x07);
+  *_reg = reg;
+
   return data;
 }
 
@@ -159,6 +176,10 @@ void *parse_alu_ins(ins_t *ins, int diff, int op, void *data) {
     } break;
   }
   return data;
+}
+
+void *parse_ins_grp1(ins_t *ins, void *data) {
+
 }
 
 void *parse_ins(ins_t *ins, void *data) {

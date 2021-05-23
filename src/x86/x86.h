@@ -234,8 +234,12 @@ inline static void *operand_set_imm_16(operand_t *operand, void *data) {
   return ptr_add_16(data);
 }
 
+// Given mode and r/m bits, set the operand
+void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int rm, void *data);
 // Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
+// Only parses mod + rm, returns REG
+void *parse_operand_rm(operand_t *operand, uint32_t flags, int *reg, void *data);
 
 // Instruction
 
@@ -294,6 +298,7 @@ void *parse_prefix(ins_t *ins, void *data);
 void *parse_opcode(ins_t *ins, void *data);
 
 void *parse_alu_ins(ins_t *ins, int diff, int op, void *data);
+void *parse_ins_grp1(ins_t *ins, void *data);
 void *parse_ins(ins_t *ins, void *data);
 
 #endif
