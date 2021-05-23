@@ -239,23 +239,42 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
 
 // Instruction
 
-#define OP_NOP           0
-#define OP_ADD           1
-#define OP_PUSH          2
-#define OP_POP           3
-#define OP_OR            4
-#define OP_ADC           5
-#define OP_SBB           6
-#define OP_AND           7
-#define OP_DAA           8
-#define OP_SUB           9
-#define OP_DAS           10
-#define OP_XOR           11
-#define OP_AAA           12
-#define OP_CMP           13
-#define OP_AAS           14
-#define OP_INC           15
-#define OP_DEC           16
+enum {
+  OP_NOP = 0,
+  OP_ADD,
+  OP_PUSH,
+  OP_POP,
+  OP_OR,
+  OP_ADC,
+  OP_SBB,
+  OP_AND,
+  OP_DAA,
+  OP_SUB,
+  OP_DAS,
+  OP_XOR,
+  OP_AAA,
+  OP_CMP,
+  OP_AAS,
+  OP_INC,
+  OP_DEC,
+  // Jump short
+  OP_JO,
+  OP_JNO,
+  OP_JB,
+  OP_JNB,
+  OP_JZ,
+  OP_JNZ,
+  OP_JBE,
+  OP_JA,
+  OP_JS,
+  OP_JNS,
+  OP_JPE,
+  OP_JPO,
+  OP_JL,
+  OP_JGE,
+  OP_JLE,
+  OP_JG,
+};
 
 // Maps op macros (see above) to string names
 extern const char *op_names[];

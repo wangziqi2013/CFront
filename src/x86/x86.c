@@ -242,6 +242,11 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_POP;
       operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x58]);
     } break;
+    case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
+    case 0x78: case 0x79: case 0x7A: case 0x7B: case 0x7C: case 0x7D: case 0x7E: case 0x7F: { // Jump short
+      ins->op = OP_JO + ins->opcode - 0x70; // Their codes are consecutive in op space
+      data = operand_set_imm_8(&ins->src, data);
+    }
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
