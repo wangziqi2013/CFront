@@ -174,40 +174,40 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x06: {
       ins->op = OP_PUSH;
-      operand_set_register(&ins->dest, REG_ES);
+      operand_set_register(&ins->src, REG_ES);
     } break;
     case 0x07: {
       ins->op = OP_POP;
-      operand_set_register(&ins->dest, REG_ES);
+      operand_set_register(&ins->src, REG_ES);
     } break;
     case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: { // Two operand OR
       data = parse_alu_ins(ins, ins->opcode - 0x08, OP_OR, data);
     } break;
     case 0x0E: {
       ins->op = OP_PUSH;
-      operand_set_register(&ins->dest, REG_CS);
+      operand_set_register(&ins->src, REG_CS);
     } break;
     case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: { // Two operand ADC
       data = parse_alu_ins(ins, ins->opcode - 0x10, OP_ADC, data);
     } break;
     case 0x16: {
       ins->op = OP_PUSH;
-      operand_set_register(&ins->dest, REG_SS);
+      operand_set_register(&ins->src, REG_SS);
     } break;
     case 0x17: {
       ins->op = OP_POP;
-      operand_set_register(&ins->dest, REG_SS);
+      operand_set_register(&ins->src, REG_SS);
     } break;
     case 0x18: case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: { // Two operand SBB
       data = parse_alu_ins(ins, ins->opcode - 0x18, OP_SBB, data);
     } break;
     case 0x1E: {
       ins->op = OP_PUSH;
-      operand_set_register(&ins->dest, REG_DS);
+      operand_set_register(&ins->src, REG_DS);
     } break;
     case 0x1F: {
       ins->op = OP_POP;
-      operand_set_register(&ins->dest, REG_DS);
+      operand_set_register(&ins->src, REG_DS);
     } break;
     case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: { // Two operand AND
       data = parse_alu_ins(ins, ins->opcode - 0x20, OP_AND, data);
@@ -227,13 +227,19 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x3F: ins->op = OP_AAS; break;
     case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47: {
       ins->op = OP_INC;
-      ins->src.operand_mode = OPERAND_REG;
-      ins->src.reg = gen_reg_16_table[ins->opcode - 0x40];
+      operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x40]);
     } break;
     case 0x48: case 0x49: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F: {
       ins->op = OP_DEC;
-      ins->src.operand_mode = OPERAND_REG;
-      ins->src.reg = gen_reg_16_table[ins->opcode - 0x48];
+      operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x48]);
+    } break;
+    case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57: {
+      ins->op = OP_PUSH;
+      operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x50]);
+    } break;
+    case 0x58: case 0x59: case 0x5A: case 0x5B: case 0x5C: case 0x5D: case 0x5E: case 0x5F: {
+      ins->op = OP_POP;
+      operand_set_register(&ins->src, gen_reg_16_table[ins->opcode - 0x58]);
     } break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
