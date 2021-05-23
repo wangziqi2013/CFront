@@ -244,6 +244,7 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
 #define OP_PUSH          2
 #define OP_POP           3
 #define OP_OR            4
+#define OP_ADC           5
 
 // Maps op macros (see above) to string names
 extern const char *op_names[];
