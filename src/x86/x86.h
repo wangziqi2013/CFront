@@ -261,6 +261,7 @@ typedef struct {
 void *parse_prefix(ins_t *ins, void *data);
 void *parse_opcode(ins_t *ins, void *data);
 
+void *parse_alu_ins(ins_t *ins, int diff, int op, void *data);
 void *parse_ins(ins_t *ins, void *data);
 
 #endif
