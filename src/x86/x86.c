@@ -136,8 +136,23 @@ void *parse_opcode(ins_t *ins, void *data) {
 void *parse_ins(ins_t *ins, void *data) {
   data = parse_prefix(ins, data);
   data = parse_opcode(ins, data);
+  // Initialize operands
+  ins->src.operand_mode = OPERAND_NONE;
+  ins->dest.operand_mode = OPERAND_NONE;
   switch(ins->opcode) {
     case 0x90: ins->op = OP_NOP; break;
+    case 0x00: case 0x01: case 0x02: case 0x03: { // Two operand add
+      ins->op = OP_ADD;
+      data = parse_operand_2(&ins->dest, ins->src, ins->flags, data);
+    } break;
+    case 0x04: {
+      ins->op = OP_ADD;
+      operand_set_register(&ins->dest, REG_AL);
+      data = operand_set_imm_8(&ins->src, data);
+    } break;
+    
     //case 0x
   }
+
+  return data;
 }
