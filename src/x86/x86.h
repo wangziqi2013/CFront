@@ -108,6 +108,11 @@ extern global_t global;
 //* Register constants
 
 #define REG_NONE      0
+
+#define REG_BEGIN         1
+#define REG_GEN_BEGIN     1
+#define REG_GEN_16_BEGIN  1
+
 #define REG_AX        1
 #define REG_BX        2
 #define REG_CX        3
@@ -116,6 +121,9 @@ extern global_t global;
 #define REG_DI        6
 #define REG_BP        7
 #define REG_SP        8
+
+#define REG_GEN_16_END    9
+#define REG_GEN_8_BEGIN   9
 
 #define REG_AH        9
 #define REG_AL        10
@@ -126,10 +134,18 @@ extern global_t global;
 #define REG_DH        15
 #define REG_DL        16
 
+#define REG_GEN_8_END 17
+#define REG_GEN_END   17
+
+#define REG_SEG_BEGIN 17
+
 #define REG_CS        17
 #define REG_DS        18
 #define REG_ES        19
 #define REG_SS        20
+
+#define REG_SEG_END   21
+#define REG_END       21
 
 // The following will never be used by instructions but we add them anyways
 #define REG_IP        21
@@ -192,8 +208,9 @@ typedef struct {
   };
 } operand_t; 
 
-// Sets an operand as register
+// Sets an operand as register. Register can be either general purpose or segment, but not IP or FLAGS
 inline static void operand_set_register(operand_t *operand, int reg) {
+  assert(reg >= REG_BEGIN && reg < REG_END);
   operand->operand_mode = OPERAND_REG;
   operand->reg = reg;
   return;
