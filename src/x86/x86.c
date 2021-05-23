@@ -160,6 +160,7 @@ const char *op_names[] = {
   "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
   "test", "xchg", "mov", "lea", "cbw", "cwd", "call",
+  "wait", "pushf", "popf", "sahf", "lahf",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -369,10 +370,15 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x98: ins->op = OP_CBW; break; // Byte size
     case 0x99: ins->op = OP_CWD; break; // Word size
-    case 0x9A: {
+    case 0x9A: { // call far ptr
       ins->op = OP_CALL;
       data = operand_set_farptr(&ins->src, data);
     } break;
+    case 0x9B: ins->op = OP_WAIT; break;
+    case 0x9C: ins->op = OP_PUSHF; break;
+    case 0x9D: ins->op = OP_POPF; break;
+    case 0x9E: ins->op = OP_SAHF; break;
+    case 0x9F: ins->op = OP_LAHF; break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);

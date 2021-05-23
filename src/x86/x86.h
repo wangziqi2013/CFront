@@ -294,6 +294,11 @@ enum {
   OP_CBW,
   OP_CWD,
   OP_CALL,
+  OP_WAIT,
+  OP_PUSHF, 
+  OP_POPF, 
+  OP_SAHF,
+  OP_LAHF,
 };
 
 // Maps op macros (see above) to string names
