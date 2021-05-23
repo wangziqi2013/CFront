@@ -187,7 +187,7 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_PUSH;
       operand_set_register(&ins->dest, REG_CS);
     } break;
-    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: { // Two operand OR
+    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: { // Two operand ADC
       data = parse_alu_ins(ins, ins->opcode - 0x10, OP_ADC, data);
     } break;
     case 0x16: {
@@ -198,7 +198,7 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_POP;
       operand_set_register(&ins->dest, REG_SS);
     } break;
-    case 0x18: case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: { // Two operand OR
+    case 0x18: case 0x19: case 0x1A: case 0x1B: case 0x1C: case 0x1D: { // Two operand SBB
       data = parse_alu_ins(ins, ins->opcode - 0x18, OP_SBB, data);
     } break;
     case 0x1E: {
@@ -209,8 +209,12 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_POP;
       operand_set_register(&ins->dest, REG_DS);
     } break;
-    case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: { // Two operand OR
+    case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: { // Two operand AND
       data = parse_alu_ins(ins, ins->opcode - 0x20, OP_AND, data);
+    } break;
+    case 0x27: ins->op = OP_DAA; break;
+    case 0x28: case 0x29: case 0x2A: case 0x2B: case 0x2C: case 0x2D: { // Two operand SUB
+      data = parse_alu_ins(ins, ins->opcode - 0x28, OP_SUB, data);
     } break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
