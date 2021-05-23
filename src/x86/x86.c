@@ -209,6 +209,9 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_POP;
       operand_set_register(&ins->dest, REG_DS);
     } break;
+    case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: { // Two operand OR
+      data = parse_alu_ins(ins, ins->opcode - 0x20, OP_AND, data);
+    } break;
     default: {
       error_exit("Illegal opcode: 0x%X (maybe prefix?)\n", ins->opcode);
     }
