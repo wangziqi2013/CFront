@@ -417,6 +417,12 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xAD: ins->op = OP_LODSW; break;
     case 0xAE: ins->op = OP_SCASB; break;
     case 0xAF: ins->op = OP_SCASW; break;
+    case 0xB0: case 0xB1: case 0xB2: case 0xB3: case 0xB4: case 0xB5: case 0xB6: case 0xB7: {
+      ins->op = OP_MOV;
+      ins->flags &= (~FLAG_W); // Clear word flag
+      operand_set_register(&ins->dest, gen_reg_8_table[ins->opcode - 0xB0]);
+      data = operand_set_imm_8(&ins->src, data);
+    } break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
