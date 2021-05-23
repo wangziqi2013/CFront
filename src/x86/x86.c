@@ -400,6 +400,16 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xA5: ins->op = OP_MOVSW; break;
     case 0xA6: ins->op = OP_CMPSB; break;
     case 0xA7: ins->op = OP_CMPSW; break;
+    case 0xA8: {
+      ins->op = OP_TEST;
+      operand_set_register(&ins->dest, REG_AL);
+      data = operand_set_imm8(&ins->src, data);
+    } break;
+    case 0xA9: {
+      ins->op = OP_TEST;
+      operand_set_register(&ins->dest, REG_AX);
+      data = operand_set_imm16(&ins->src, data);
+    } break;
     default: {
       print_inst_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
