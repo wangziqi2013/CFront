@@ -461,6 +461,12 @@ void *parse_ins(ins_t *ins, void *data) {
       data = operand_set_imm_16(&ins->src, data);
     } break;
     case 0xCB: ins->op = OP_RETF; break;
+    case 0xCC: { // INT 3
+      ins->op = OP_INT; 
+      ins->src.operand_mode = OPERAND_IMM_8;
+      ins->src.imm_8 = 0x3;
+    } break;
+    
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
