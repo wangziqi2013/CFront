@@ -321,6 +321,7 @@ enum {
   OP_LES,
   OP_LDS,
   OP_RETF,
+  OP_INT,
 };
 
 // Maps op macros (see above) to string names

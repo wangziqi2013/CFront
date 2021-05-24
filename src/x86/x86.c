@@ -163,7 +163,7 @@ const char *op_names[] = {
   "wait", "pushf", "popf", "sahf", "lahf",
   "movsb", "movsw", "cmpsb", "cmpsw",
   "stosb", "stosw", "lodsb", "lodsw",
-  "ret",
+  "ret", "retf", "int",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -466,7 +466,10 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->src.operand_mode = OPERAND_IMM_8;
       ins->src.imm_8 = 0x3;
     } break;
-    
+    case 0xCD: {
+      ins->op = OP_INT; 
+      data = operand_set_imm_8(&ins->src, data);
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
