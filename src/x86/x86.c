@@ -447,6 +447,13 @@ void *parse_ins(ins_t *ins, void *data) {
       }
       operand_set_register(&ins->dest, gen_reg_16_table[reg]);
     } break;
+    case 0xC6: case 0xC7: { // mov r/m, imm_8/imm_16
+      ins->op = OP_MOV;
+      int reg;
+      data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+      (void)reg;
+      data = (ins->op == 0xC6) ? operand_set_imm_8(&ins->src, data) : operand_set_imm_16(&ins->src, data);
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
