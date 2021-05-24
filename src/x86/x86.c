@@ -207,7 +207,7 @@ void *parse_ins_grp1(ins_t *ins, void *data) {
   }
   // 0x82 just aliases 0x80, and 0x83 is imm8 and word argument???
   if(ins->opcode == 0x82 || ins->opcode == 0x83) {
-    print_inst_addr(ins);
+    print_ins_addr(ins);
     error_exit("Unsupported opcode: 0x%X\n", ins->opcode);
   }
   // Read 16-bit or 8-bit immediate value
@@ -342,9 +342,9 @@ void *parse_ins(ins_t *ins, void *data) {
       int reg;
       data = parse_operand_1(&ins->src, ins->flags, &reg, data); // Source must be memory address
       assert(reg >= 0 && reg <= 7);
-      if(ins->src.operand_mode == OPERAND_REG) {
-        print_inst_addr(ins);
-        error_exit("LEA instruction must not have REG addressing mode\n");
+      if(ins->src.operand_mode != OPERAND_MEM) {
+        print_ins_addr(ins);
+        error_exit("%s instruction must have memory type operand\n", op_names[ins->op]);
       }
       operand_set_register(&ins->dest, gen_reg_16_table[reg]); // Dest must be 16-bit gen purpose register
     } break;
@@ -434,8 +434,21 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_RET;
       data = operand_set_imm_16(&ins->src, data);
     } break;
+    case 0xC3: ins->op = OP_RET; break;
+    case 0xC4: case 0xC5: { // LES and LDS
+      ins->op = (ins->opcode == 0xC4) ? OP_LES : OP_LDS;
+      ins->flags |= FLAG_W; // Set word flag
+      int reg;
+      data = parse_operand_1(&ins->src, ins->flags, &reg, data);
+      assert(reg >= 0 && reg <= 7);
+      if(ins->src.operand_mode != OPERAND_MEM) {
+        print_ins_addr(ins);
+        error_exit("%s must have memory operand\n", op_names[ins->op]);
+      }
+      operand_set_register(&ins->dest, gen_reg_16_table[reg]);
+    } break;
     default: {
-      print_inst_addr(ins);
+      print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
     }
   }

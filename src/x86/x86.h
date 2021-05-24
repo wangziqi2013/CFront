@@ -317,7 +317,9 @@ enum {
   OP_LODSW,
   OP_SCASB,
   OP_SCASW,
-  OP_RETURN,
+  OP_RET,
+  OP_LES,
+  OP_LDS,
 };
 
 // Maps op macros (see above) to string names
@@ -333,7 +335,7 @@ typedef struct {
   operand_t src;       // If there only one operand, the src is used
 } ins_t;
 
-inline static void print_inst_addr(ins_t *ins) {
+inline static void print_ins_addr(ins_t *ins) {
   fprintf(stderr, "Instruction at address %X:%X\n", ins->addr.seg, ins->addr.offset);
 }
 
