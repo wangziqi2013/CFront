@@ -320,6 +320,7 @@ enum {
   OP_RET,
   OP_LES,
   OP_LDS,
+  OP_RETF,
 };
 
 // Maps op macros (see above) to string names

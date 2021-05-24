@@ -432,6 +432,7 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0xC2: {
       ins->op = OP_RET;
+      ins->flags |= FLAG_W;
       data = operand_set_imm_16(&ins->src, data);
     } break;
     case 0xC3: ins->op = OP_RET; break;
@@ -454,6 +455,12 @@ void *parse_ins(ins_t *ins, void *data) {
       (void)reg;
       data = (ins->op == 0xC6) ? operand_set_imm_8(&ins->src, data) : operand_set_imm_16(&ins->src, data);
     } break;
+    case 0xCA: {
+      ins->op = OP_RETF;
+      ins->flags |= FLAG_W;
+      data = operand_set_imm_16(&ins->src, data);
+    } break;
+    case 0xCB: ins->op = OP_RETF; break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
