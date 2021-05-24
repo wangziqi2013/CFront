@@ -163,6 +163,7 @@ const char *op_names[] = {
   "wait", "pushf", "popf", "sahf", "lahf",
   "movsb", "movsw", "cmpsb", "cmpsw",
   "stosb", "stosw", "lodsb", "lodsw",
+  "ret",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -426,7 +427,11 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xB8: case 0xB9: case 0xBA: case 0xBB: case 0xBC: case 0xBD: case 0xBE: case 0xBF: {
       ins->op = OP_MOV;
       ins->flags |= FLAG_W; // Set word flag
-      operand_set_register(&ins->dest, gen_reg_16_table[ins->opcode - 0xB0]);
+      operand_set_register(&ins->dest, gen_reg_16_table[ins->opcode - 0xB8]);
+      data = operand_set_imm_16(&ins->src, data);
+    } break;
+    case 0xC2: {
+      ins->op = OP_RET;
       data = operand_set_imm_16(&ins->src, data);
     } break;
     default: {
