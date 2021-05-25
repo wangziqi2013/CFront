@@ -501,6 +501,9 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0xCE: ins->op = OP_INTO; break;
     case 0xCF: ins->op = OP_IRET; break;
+    case 0xD0: case 0xD1: case 0xD2: case 0xD3: {
+      data = parse_ins_grp2(ins, data);
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
