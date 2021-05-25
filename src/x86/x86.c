@@ -215,6 +215,29 @@ void *parse_ins_grp1(ins_t *ins, void *data) {
   return data;
 }
 
+void *parse_ins_grp2(ins_t *ins, void *data) {
+  int reg = REG_NONE;
+  // Parses mod + r/m operand as destination, and returns reg field
+  data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+  assert(reg >= 0 && reg <= 7);
+  // Set source operand
+  switch(ins->opcode) {
+    case D0: operand_set_const_8(&ins->src, 1); break;
+    case D1: operand_set_const_16(&ins->src, 1); break;
+    case D2: operand_set_register(&ins->src, REG_CL); break;
+    case D3: operand_set_register(&ins->src, REG_CL); break;
+    default: assert(0); break;
+  }
+  switch(reg) {
+
+    default: {
+      print_ins_addr(ins);
+      error_exit("Unknown reg field (2nd opcode) for grp2: %X\n", reg);
+    } break;
+  }
+  return data;
+}
+
 void *parse_ins(ins_t *ins, void *data) {
   void *old_data = data; // Compute size with this
   data = parse_prefix(ins, data);

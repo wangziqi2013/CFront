@@ -237,13 +237,13 @@ inline static void *operand_set_imm_16(operand_t *operand, void *data) {
   return ptr_add_16(data);
 }
 
-inline static void operand_set_const_8(operand_t *operand, void *data, uint8_t value) {
+inline static void operand_set_const_8(operand_t *operand, uint8_t value) {
   operand->operand_mode = OPERAND_IMM_8;
   operand->imm_8 = value;
   return;
 }
 
-inline static void operand_set_const_16(operand_t *operand, void *data, uint16_t value) {
+inline static void operand_set_const_16(operand_t *operand, uint16_t value) {
   operand->operand_mode = OPERAND_IMM_16;
   operand->imm_16 = value;
   return;
