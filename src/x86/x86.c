@@ -230,13 +230,13 @@ void *parse_ins_grp2(ins_t *ins, void *data) {
     default: assert(0); break;
   }
   switch(reg) {
-    case 0: break;
-    case 1: break;
-    case 2: break;
-    case 3: break;
-    case 4: break;
-    case 5: break;
-    case 7: break;
+    case 0: ins->op = OP_ROL; break;
+    case 1: ins->op = OP_ROR; break;
+    case 2: ins->op = OP_RCL; break;
+    case 3: ins->op = OP_RCR; break;
+    case 4: ins->op = OP_SHL; break;
+    case 5: ins->op = OP_SHR; break;
+    case 7: ins->op = OP_SAR; break;
     default: { // reg == 6 is invalid
       print_ins_addr(ins);
       error_exit("Unknown reg field (2nd opcode) for grp2: %X\n", reg);
