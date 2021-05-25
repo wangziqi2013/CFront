@@ -336,6 +336,13 @@ enum {
   OP_INT,
   OP_INTO,
   OP_IRET,
+  OP_ROL,
+  OP_ROR,
+  OP_RCL,
+  OP_RCR,
+  OP_SHL,
+  OP_SHR,
+  OP_SAR,
 };
 
 // Maps op macros (see above) to string names

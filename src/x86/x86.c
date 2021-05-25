@@ -164,6 +164,7 @@ const char *op_names[] = {
   "movsb", "movsw", "cmpsb", "cmpsw",
   "stosb", "stosw", "lodsb", "lodsw",
   "ret", "retf", "int", "into", "iret",
+  "rol", "ror", "rcl", "rcr", "shl", "shr", "sar",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -222,15 +223,21 @@ void *parse_ins_grp2(ins_t *ins, void *data) {
   assert(reg >= 0 && reg <= 7);
   // Set source operand
   switch(ins->opcode) {
-    case D0: operand_set_const_8(&ins->src, 1); break;
-    case D1: operand_set_const_16(&ins->src, 1); break;
-    case D2: operand_set_register(&ins->src, REG_CL); break;
-    case D3: operand_set_register(&ins->src, REG_CL); break;
+    case 0xD0: operand_set_const_8(&ins->src, 1); break;
+    case 0xD1: operand_set_const_16(&ins->src, 1); break;
+    case 0xD2: operand_set_register(&ins->src, REG_CL); break;
+    case 0xD3: operand_set_register(&ins->src, REG_CL); break;
     default: assert(0); break;
   }
   switch(reg) {
-
-    default: {
+    case 0: break;
+    case 1: break;
+    case 2: break;
+    case 3: break;
+    case 4: break;
+    case 5: break;
+    case 7: break;
+    default: { // reg == 6 is invalid
       print_ins_addr(ins);
       error_exit("Unknown reg field (2nd opcode) for grp2: %X\n", reg);
     } break;
@@ -486,10 +493,9 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xCB: ins->op = OP_RETF; break;
     case 0xCC: { // INT 3
       ins->op = OP_INT; 
-      ins->src.operand_mode = OPERAND_IMM_8;
-      ins->src.imm_8 = 0x3;
+      operand_set_const_8(&ins->src, 0x3);
     } break;
-    case 0xCD: {
+    case 0xCD: { // INT imm8
       ins->op = OP_INT; 
       data = operand_set_imm_8(&ins->src, data);
     } break;
