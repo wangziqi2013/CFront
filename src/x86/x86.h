@@ -243,6 +243,12 @@ inline static void operand_set_const_8(operand_t *operand, void *data, uint8_t v
   return;
 }
 
+inline static void operand_set_const_16(operand_t *operand, void *data, uint16_t value) {
+  operand->operand_mode = OPERAND_IMM_16;
+  operand->imm_16 = value;
+  return;
+}
+
 inline static void *operand_set_farptr(operand_t *operand, void *data) {
   operand->operand_mode = OPERAND_FARPTR;
   operand->farptr.offset = ptr_load_16(data);
