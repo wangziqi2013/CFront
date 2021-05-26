@@ -523,12 +523,16 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xE4: case 0xE5: { // IN AL/AX, imm8
       ins->op = OP_IN;
       operand_set_register(&ins->dest, (ins->opcode == 0xE4) ? REG_AL : REG_AX);
-      data = operand_set_imm_8(&src, data);
+      data = operand_set_imm_8(&ins->src, data);
     } break;
     case 0xE6: case 0xE7: { // OUT imm8, AL/AX
       ins->op = OP_OUT;
-      data = operand_set_imm_8(&dest, data);
+      data = operand_set_imm_8(&ins->dest, data);
       operand_set_register(&ins->src, (ins->opcode == 0xE6) ? REG_AL : REG_AX);
+    } break;
+    case 0xE8: { // Call rel16
+      ins->op = OP_CALL;
+      data = operand_set_imm_16(&ins->src, data);
     } break;
     default: {
       print_ins_addr(ins);
