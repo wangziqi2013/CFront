@@ -249,16 +249,17 @@ void *parse_ins_grp2(ins_t *ins, void *data) {
   return data;
 }
 
-// 0xF6, flags is set accordingly (byte argument)
-void *parse_ins_grp3a(ins_t *ins, void *data) {
+// 0xF6, 0xF7, flags is set accordingly (byte argument)
+void *parse_ins_grp3(ins_t *ins, void *data) {
   int reg = REG_NONE;
   // Parses mod + r/m operand as destination, and returns reg field
+  // Note that this works for both 0xF6 (Grp3a) and 0xF7 (Grp3b)
   data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
   assert(reg >= 0 && reg <= 7);
   switch(reg) {
-    case 0: { // Test Ev, Ib
+    case 0: { // Test Ev, Ib/Iw
       ins->op = OP_TEST;
-      data = operand_set_register(&ins->src, data);
+      data = (ins->opcode == 0xF6) ? operand_set_imm_8(&ins->src, data) : operand_set_imm_16(&ins->src, data);
     } break;
     case 2: ins->op = OP_NOT; break;
     case 3: ins->op = OP_NEG; break;
@@ -268,7 +269,7 @@ void *parse_ins_grp3a(ins_t *ins, void *data) {
     case 7: ins->op = OP_IDIV; break;
     default: { // reg == 1 is invalid
       print_ins_addr(ins);
-      error_exit("Unknown reg field (2nd opcode) for grp3a: %X\n", reg);
+      error_exit("Unknown reg field (2nd opcode) for grp3: %X\n", reg);
     } break;
   }
   return data;
@@ -594,6 +595,12 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0XF4: ins->op = OP_HLT; break;
     case 0xF5: ins->op = OP_CMC; break;
+    case 0xF6: case 0xF7: { // Grp3a and 3b (FLAG_W is set accordingly)
+      data = parse_ins_grp3(ins, data);
+    } break;
+    case 0xF8: case 0xF9: case 0xFA: case 0xFB: case 0xFC: case 0xFD: {
+      ins->op = (ins->opcode - 0xF8) + OP_CLC;
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
