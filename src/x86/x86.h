@@ -153,6 +153,8 @@ extern global_t global;
 #define REG_IP        21
 #define REG_FLAGS     22
 
+extern const char *reg_names[];
+
 //* R/M Tables
 
 // Maps REG field to register name, word size (w = 0)

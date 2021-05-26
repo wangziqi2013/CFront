@@ -65,11 +65,23 @@ const addr_mode_reg_t addr_mode_reg_table_2[8] = {
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
+const char *reg_names[] = {
+  "None", "AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP", 
+  "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", 
+  "CS", "DS", "ES", "SS",
+  "IP", "FLAGS",
+};
+
 void addr_mode_fprint(addr_mode_t *addr_mode, FILE *fp) {
   assert(addr_mode->addr_mode != ADDR_MODE_REG);
   fprintf(fp, "[");
-  if(addr_mode->addr_mode == ADDR_MODE_MEM_DIRECT) {
-    printf(fp, "%X", addr_mode->disp16);
+  switch(addr_mode->addr_mode) {
+    case ADDR_MODE_MEM_DIRECT: {
+      printf(fp, "%X", addr_mode->disp_16);
+    } break;
+    case ADDR_MODE_MEM_REG_ONLY: {
+
+    }
   }
   fprintf(fp, "]");
   return;
