@@ -165,6 +165,7 @@ const char *op_names[] = {
   "stosb", "stosw", "lodsb", "lodsw",
   "ret", "retf", "int", "into", "iret",
   "rol", "ror", "rcl", "rcr", "shl", "shr", "sar",
+  "aam", "aad",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -503,6 +504,14 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xCF: ins->op = OP_IRET; break;
     case 0xD0: case 0xD1: case 0xD2: case 0xD3: {
       data = parse_ins_grp2(ins, data);
+    } break;
+    case 0xD4: {
+      ins->op = OP_AAM;
+      data = operand_set_imm_8(&ins->src, data);
+    } break;
+    case 0xD5: {
+      ins->op = OP_AAD;
+      data = operand_set_imm_8(&ins->src, data);
     } break;
     default: {
       print_ins_addr(ins);
