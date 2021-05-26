@@ -248,6 +248,31 @@ void *parse_ins_grp2(ins_t *ins, void *data) {
   return data;
 }
 
+// 0xF6, flags is set accordingly (byte argument)
+void *parse_ins_grp3a(ins_t *ins, void *data) {
+  int reg = REG_NONE;
+  // Parses mod + r/m operand as destination, and returns reg field
+  data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+  assert(reg >= 0 && reg <= 7);
+  switch(reg) {
+    case 0: { // Test Ev, Ib
+      ins->op = OP_TEST;
+      data = operand_set_register(&ins->src, data);
+    } break;
+    case 2: ins->op = OP_NOT; break;
+    case 3: ins->op = OP_NEG; break;
+    case 4: ins->op = OP_MUL; break;
+    case 5: ins->op = OP_IMUL; break;
+    case 6: ins->op = OP_DIV; break;
+    case 7: ins->op = OP_IDIV; break;
+    default: { // reg == 1 is invalid
+      print_ins_addr(ins);
+      error_exit("Unknown reg field (2nd opcode) for grp3a: %X\n", reg);
+    } break;
+  }
+  return data;
+}
+
 void *parse_ins(ins_t *ins, void *data) {
   void *old_data = data; // Compute size with this
   data = parse_prefix(ins, data);

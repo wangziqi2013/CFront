@@ -381,6 +381,7 @@ void *parse_opcode(ins_t *ins, void *data);
 void *parse_alu_ins(ins_t *ins, int diff, int op, void *data);
 void *parse_ins_grp1(ins_t *ins, void *data);
 void *parse_ins_grp2(ins_t *ins, void *data);
+void *parse_ins_grp3a(ins_t *ins, void *data);
 void *parse_ins(ins_t *ins, void *data);
 
 #endif
