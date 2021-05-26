@@ -620,6 +620,12 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xF8: case 0xF9: case 0xFA: case 0xFB: case 0xFC: case 0xFD: {
       ins->op = (ins->opcode - 0xF8) + OP_CLC;
     } break;
+    case 0xFE: {
+      data = parse_ins_grp4(ins, data);
+    } break;
+    case 0xFF: {
+      data = parse_ins_grp5(ins, data);
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
