@@ -104,6 +104,8 @@ extern global_t global;
 #define FLAG_D        0x00000080
 // W flag in the opcode byte
 #define FLAG_W        0x00000100
+// Whether call/jmp uses far ptr, only applies to memory operand
+#define FLAG_MEM_FARPTR 0X00000200
 
 //* Register constants
 

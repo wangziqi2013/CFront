@@ -305,6 +305,7 @@ void *parse_ins_grp5(ins_t *ins, void *data) {
     case 2: ins->op = OP_CALL; break; // Call near, absolute indirect
     case 3: { // Call far, offset:seg stored in the given memory location
       ins->op = OP_CALL; 
+      ins->flags |= FLAG_MEM_FARPTR;  // Otherwise, will not know whether memory operand is far or near
       if(ins->src.operand_mode != OPERAND_MEM) {
         print_ins_addr(ins);
         error_exit("Call (FF/3) must always have memory operand");
@@ -313,6 +314,7 @@ void *parse_ins_grp5(ins_t *ins, void *data) {
     case 4: ins->op = OP_JMP; break; // Jmp near absolute indirect
     case 5: {
       ins->op = OP_JMP;
+      ins->flags |= FLAG_MEM_FARPTR;  // Otherwise, will not know whether memory operand is far or near
       if(ins->src.operand_mode != OPERAND_MEM) {
         print_ins_addr(ins);
         error_exit("Jmp (FF/5) must always have memory operand");
@@ -609,19 +611,19 @@ void *parse_ins(ins_t *ins, void *data) {
       data = operand_set_imm_8(&ins->dest, data);
       operand_set_register(&ins->src, (ins->opcode == 0xE6) ? REG_AL : REG_AX);
     } break;
-    case 0xE8: { // Call rel16
+    case 0xE8: { // Call rel16 in imm16
       ins->op = OP_CALL;
       data = operand_set_imm_16(&ins->src, data);
     } break;
-    case 0xE9: { // jmp rel16
+    case 0xE9: { // jmp rel16 in imm16
       ins->op = OP_JMP;
       data = operand_set_imm_16(&ins->src, data);
     } break;
-    case 0xEA: {  // jmp farptr
+    case 0xEA: {  // jmp farptr in imm32
       ins->op = OP_JMP;
       data = operand_set_farptr(&ins->src, data);
     } break;
-    case 0xEB: {  // jmp rel8
+    case 0xEB: {  // jmp rel8 in imm 8
       ins->op = OP_JMP;
       data = operand_set_imm_8(&ins->src, data);
     } break;
