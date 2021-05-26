@@ -355,6 +355,12 @@ enum {
   OP_JMP,
   OP_HLT,
   OP_CMC,
+  OP_NOT,
+  OP_NEG,
+  OP_MUL,
+  OP_IMUL,
+  OP_DIV,
+  OP_IDIV,
 };
 
 // Maps op macros (see above) to string names
