@@ -77,9 +77,10 @@ void addr_mode_fprint(addr_mode_t *addr_mode, FILE *fp) {
   fprintf(fp, "[");
   switch(addr_mode->addr_mode) {
     case ADDR_MODE_MEM_DIRECT: {
-      printf(fp, "%X", addr_mode->disp_16);
+      fprintf(fp, "%X", addr_mode->disp_16);
     } break;
     case ADDR_MODE_MEM_REG_ONLY: {
+      assert(addr_mode->regs.reg1 != REG_NONE);
       fprintf(fp, "%s", reg_names[addr_mode->regs.reg1]);
       if(addr_mode->regs.reg2 != REG_NONE) {
         fprintf(fp, "+ %s", reg_names[addr_mode->regs.reg2]);
@@ -87,12 +88,13 @@ void addr_mode_fprint(addr_mode_t *addr_mode, FILE *fp) {
     } break;
     case ADDR_MODE_MEM_REG_DISP_8: 
     case ADDR_MODE_MEM_REG_DISP_16: {
+      assert(addr_mode->regs.reg1 != REG_NONE);
       fprintf(fp, "%s", reg_names[addr_mode->regs.reg1]);
       if(addr_mode->regs.reg2 != REG_NONE) {
         fprintf(fp, " + %s", reg_names[addr_mode->regs.reg2]);
       }
       // Print sign extended 8-bit displacement or 16-bit displacement
-      fprintf(" + %X", 
+      fprintf(fp, " + %X", 
         (addr_mode->addr_mode == ADDR_MODE_MEM_REG_DISP_8) ? (int16_t)(int8_t)addr_mode->disp_8 : addr_mode->disp_16);
     } break;
   }
@@ -114,7 +116,7 @@ void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm,
       // Note that this overrides the REG ONLY addressing mode
       if(rm == 6) {
         operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
-        operand->mem.disp16 = ptr_load_16(data);
+        operand->mem.disp_16 = ptr_load_16(data);
         data = ptr_add_16(data);
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
