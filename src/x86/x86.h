@@ -345,6 +345,7 @@ enum {
   OP_SAR,
   OP_AAM,
   OP_AAD,
+  OP_XLAT,
 };
 
 // Maps op macros (see above) to string names
