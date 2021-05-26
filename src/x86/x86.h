@@ -354,6 +354,7 @@ enum {
   OP_OUT,
   OP_JMP,
   OP_HLT,
+  OP_CMC,
 };
 
 // Maps op macros (see above) to string names

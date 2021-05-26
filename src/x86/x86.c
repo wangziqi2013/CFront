@@ -167,7 +167,7 @@ const char *op_names[] = {
   "rol", "ror", "rcl", "rcr", "shl", "shr", "sar",
   "aam", "aad", "xlat",
   "loopnz", "loopz", "loop", "jcxz",
-  "in", "out", "jmp", "hlt"
+  "in", "out", "jmp", "hlt", "cmc",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -567,6 +567,7 @@ void *parse_ins(ins_t *ins, void *data) {
       operand_set_register(&ins->src, REG_AX);
     } break;
     case 0XF4: ins->op = OP_HLT; break;
+    case 0xF5: ins->op = OP_CMC; break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
