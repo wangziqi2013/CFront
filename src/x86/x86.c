@@ -167,7 +167,7 @@ const char *op_names[] = {
   "rol", "ror", "rcl", "rcr", "shl", "shr", "sar",
   "aam", "aad", "xlat",
   "loopnz", "loopz", "loop", "jcxz",
-  "in", "out",
+  "in", "out", "jmp",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form
@@ -537,6 +537,10 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xE9: { // jmp rel16
       ins->op = OP_JMP;
       data = operand_set_imm_16(&ins->src, data);
+    } break;
+    case 0xEA: {  // jmp farptr
+      ins->op = OP_JMP;
+      data = operand_set_farptr(&ins->src, data);
     } break;
     default: {
       print_ins_addr(ins);
