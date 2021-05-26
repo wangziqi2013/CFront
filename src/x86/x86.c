@@ -546,6 +546,16 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_JMP;
       data = operand_set_imm_8(&ins->src, data);
     } break;
+    case 0xEC: {  // in AL, DX
+      ins->op = OP_IN;
+      operand_set_register(&ins->dest, REG_AL);
+      operand_set_register(&ins->src, REG_DX);
+    } break;
+    case 0xED: {  // in AX, DX
+      ins->op = OP_IN;
+      operand_set_register(&ins->dest, REG_AX);
+      operand_set_register(&ins->src, REG_DX);
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
