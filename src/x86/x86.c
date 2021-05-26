@@ -318,6 +318,7 @@ void *parse_ins_grp5(ins_t *ins, void *data) {
         error_exit("Jmp (FF/5) must always have memory operand");
       }
     } break;
+    case 6: ins->op = OP_PUSH; break;
     default: { // reg == 7 is invalid
       print_ins_addr(ins);
       error_exit("Unknown reg field (2nd opcode) for grp4: %X\n", reg);
