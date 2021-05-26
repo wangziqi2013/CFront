@@ -169,6 +169,7 @@ const char *op_names[] = {
   "loopnz", "loopz", "loop", "jcxz",
   "in", "out", "jmp", "hlt", "cmc",
   "not", "neg", "mul", "imul", "div", "idiv",
+  "clc", "stc", "cli", "sti", "cld", "std",
 };
 
 // ALU instructions occupy 6 opcodes, the first four being the general form

@@ -361,7 +361,12 @@ enum {
   OP_IMUL,
   OP_DIV,
   OP_IDIV,
-  
+  OP_CLC,
+  OP_STC,
+  OP_CLI,
+  OP_STI,
+  OP_CLD,
+  OP_STD,
 };
 
 // Maps op macros (see above) to string names
