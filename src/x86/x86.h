@@ -173,20 +173,22 @@ extern const addr_mode_reg_t addr_mode_reg_table_2[8];
 #define ADDR_MODE_MEM_REG_ONLY     0
 #define ADDR_MODE_MEM_REG_DISP_8   1
 #define ADDR_MODE_MEM_REG_DISP_16  2
-#define ADDR_MODE_MEM_DIRECT       3
 // This will cause the addr_mode object be not initialized
-#define ADDR_MODE_REG              4
+#define ADDR_MODE_REG              3
+// This is not in the raw instruction
+#define ADDR_MODE_MEM_DIRECT       4
 
 // Addressing mode for memory operands
 typedef struct {
-  int addr_mode;         // Just copies the mode bits in the instruction
+  int addr_mode;         // ADDR_MODE_ macros
   addr_mode_reg_t regs;  // Register for addressing (one or two)
   union {
-    uint8_t disp8;
-    uint16_t disp16;     // Direct addressing mode also uses this
+    uint8_t disp_8;
+    uint16_t disp_16;    // Direct addressing mode also uses this
   };
 } addr_mode_t;
 
+// Prints memory operand (ADDR_MODE_REG will not be printed because its encoding is not stored)
 void addr_mode_print(addr_mode_t *addr_mode);
 
 // Operand type

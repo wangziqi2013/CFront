@@ -65,6 +65,16 @@ const addr_mode_reg_t addr_mode_reg_table_2[8] = {
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
+void addr_mode_fprint(addr_mode_t *addr_mode, FILE *fp) {
+  assert(addr_mode->addr_mode != ADDR_MODE_REG);
+  fprintf(fp, "[");
+  if(addr_mode->addr_mode == ADDR_MODE_MEM_DIRECT) {
+    printf(fp, "%X", addr_mode->disp16);
+  }
+  fprintf(fp, "]");
+  return;
+}
+
 // Sets operand based on mode + r/m
 void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm, void *data) {
   if(addr_mode == ADDR_MODE_REG) {
@@ -84,11 +94,11 @@ void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm,
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
       operand->mem.regs = addr_mode_reg_table_2[rm];
-      operand->mem.disp8 = ptr_load_8(data);
+      operand->mem.disp_8 = ptr_load_8(data);
       data = ptr_add_8(data);
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
       operand->mem.regs = addr_mode_reg_table_2[rm];
-      operand->mem.disp16 = ptr_load_16(data);
+      operand->mem.disp_16 = ptr_load_16(data);
       data = ptr_add_16(data);
     }
   }
@@ -101,6 +111,7 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
   data = ptr_add_8(data);
   // Extract fields
   int addr_mode = (int)(byte >> 6);
+  assert(addr_mode >= 0 && addr_mode <= 3);
   int reg = (int)((byte >> 3) & 0x07);
   int rm = (int)(byte & 0x07);
   // Parse register operand. If d  == 1 then register operand belongs to dest
@@ -118,6 +129,7 @@ void *parse_operand_1(operand_t *operand, uint32_t flags, int *reg, void *data) 
   uint8_t byte = ptr_load_8(data);
   data = ptr_add_8(data);
   int addr_mode = (int)(byte >> 6);
+  assert(addr_mode >= 0 && addr_mode <= 3);
   *reg = (int)((byte >> 3) & 0x07);
   int rm = (int)(byte & 0x07);
   data = parse_operand_mod_rm(operand, addr_mode, flags, rm, data);
