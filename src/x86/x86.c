@@ -80,8 +80,21 @@ void addr_mode_fprint(addr_mode_t *addr_mode, FILE *fp) {
       printf(fp, "%X", addr_mode->disp_16);
     } break;
     case ADDR_MODE_MEM_REG_ONLY: {
-
-    }
+      fprintf(fp, "%s", reg_names[addr_mode->regs.reg1]);
+      if(addr_mode->regs.reg2 != REG_NONE) {
+        fprintf(fp, "+ %s", reg_names[addr_mode->regs.reg2]);
+      }
+    } break;
+    case ADDR_MODE_MEM_REG_DISP_8: 
+    case ADDR_MODE_MEM_REG_DISP_16: {
+      fprintf(fp, "%s", reg_names[addr_mode->regs.reg1]);
+      if(addr_mode->regs.reg2 != REG_NONE) {
+        fprintf(fp, " + %s", reg_names[addr_mode->regs.reg2]);
+      }
+      // Print sign extended 8-bit displacement or 16-bit displacement
+      fprintf(" + %X", 
+        (addr_mode->addr_mode == ADDR_MODE_MEM_REG_DISP_8) ? (int16_t)(int8_t)addr_mode->disp_8 : addr_mode->disp_16);
+    } break;
   }
   fprintf(fp, "]");
   return;
