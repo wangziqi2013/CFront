@@ -519,6 +519,12 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_LOOPNZ + (ins->opcode - 0xE0);
       data = operand_set_imm_8(&ins->src, data);
     } break;
+    case 0xE4: case 0xE5: { // IN AL/AX, imm8
+      ins->op = OP_IN;
+      operand_set_register(&ins->dest, (ins->opcode == 0xE4) ? REG_AL : REG_AX);
+      data = operand_set_imm_8(&src, data);
+    } break;
+    
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);

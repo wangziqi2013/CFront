@@ -350,6 +350,8 @@ enum {
   OP_LOOPZ,
   OP_LOOP,
   OP_JCXZ,
+  OP_IN,
+  OP_OUT,
 };
 
 // Maps op macros (see above) to string names
