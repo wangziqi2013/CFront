@@ -104,8 +104,8 @@ extern global_t global;
 #define FLAG_D        0x00000080
 // W flag in the opcode byte
 #define FLAG_W        0x00000100
-// Whether call/jmp uses far ptr, only applies to memory operand
-#define FLAG_MEM_FARPTR 0X00000200
+// Whether call/jmp is far
+#define FLAG_FAR      0x00000200
 
 //* Register constants
 
@@ -174,9 +174,10 @@ extern const addr_mode_reg_t addr_mode_reg_table_2[8];
 #define ADDR_MODE_MEM_REG_DISP_8   1
 #define ADDR_MODE_MEM_REG_DISP_16  2
 #define ADDR_MODE_MEM_DIRECT       3
+// This will cause the addr_mode object be not initialized
 #define ADDR_MODE_REG              4
 
-// Addressing mode
+// Addressing mode for memory operands
 typedef struct {
   int addr_mode;         // Just copies the mode bits in the instruction
   addr_mode_reg_t regs;  // Register for addressing (one or two)
@@ -186,14 +187,16 @@ typedef struct {
   };
 } addr_mode_t;
 
+void addr_mode_print(addr_mode_t *addr_mode);
+
 // Operand type
-#define OPERAND_NONE    0
-#define OPERAND_REG     1
-#define OPERAND_MEM     2
-#define OPERAND_IMM_8   3
-#define OPERAND_IMM_16  4
-#define OPERAND_FARPTR  5
-#define OPERAND_NEARPTR 6
+#define OPERAND_NONE       0
+#define OPERAND_REG        1
+#define OPERAND_MEM        2
+#define OPERAND_IMM_8      3
+#define OPERAND_IMM_16     4
+#define OPERAND_FARPTR     5
+#define OPERAND_NEARPTR    6
 
 typedef struct {
   uint16_t offset;
@@ -266,7 +269,7 @@ inline static void *operand_set_nearptr(operand_t *operand, void *data) {
 }
 
 // Given mode and r/m bits, set the operand
-void *parse_operand_mod_rm(operand_t *operand, int flags, int addr_mode, int rm, void *data);
+void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm, void *data);
 // Parsing 2 operands, must be either reg or mem
 void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *data);
 // Only parses mod + rm, returns REG

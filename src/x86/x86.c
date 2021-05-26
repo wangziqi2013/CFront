@@ -66,7 +66,7 @@ const addr_mode_reg_t addr_mode_reg_table_2[8] = {
 };
 
 // Sets operand based on mode + r/m
-void *parse_operand_mod_rm(operand_t *operand, int flags, int addr_mode, int rm, void *data) {
+void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm, void *data) {
   if(addr_mode == ADDR_MODE_REG) {
     operand->operand_mode = OPERAND_REG;
     operand->reg = (flags & FLAG_W) ? gen_reg_16_table[rm] : gen_reg_8_table[rm]; // rm encodes a register
@@ -305,20 +305,20 @@ void *parse_ins_grp5(ins_t *ins, void *data) {
     case 2: ins->op = OP_CALL; break; // Call near, absolute indirect
     case 3: { // Call far, offset:seg stored in the given memory location
       ins->op = OP_CALL; 
-      ins->flags |= FLAG_MEM_FARPTR;  // Otherwise, will not know whether memory operand is far or near
       if(ins->src.operand_mode != OPERAND_MEM) {
         print_ins_addr(ins);
         error_exit("Call (FF/3) must always have memory operand");
       }
+      ins->flags |= FLAG_FAR;
     } break;
     case 4: ins->op = OP_JMP; break; // Jmp near absolute indirect
     case 5: {
       ins->op = OP_JMP;
-      ins->flags |= FLAG_MEM_FARPTR;  // Otherwise, will not know whether memory operand is far or near
       if(ins->src.operand_mode != OPERAND_MEM) {
         print_ins_addr(ins);
         error_exit("Jmp (FF/5) must always have memory operand");
       }
+      ins->flags |= FLAG_FAR;
     } break;
     case 6: ins->op = OP_PUSH; break;
     default: { // reg == 7 is invalid
