@@ -294,6 +294,38 @@ void *parse_ins_grp4(ins_t *ins, void *data) {
   return data;
 }
 
+void *parse_ins_grp5(ins_t *ins, void *data) {
+  int reg = REG_NONE;
+  // Parses mod + r/m operand as src, and returns reg field. This will read word size operand
+  data = parse_operand_1(&ins->src, ins->flags, &reg, data);
+  assert(reg >= 0 && reg <= 7);
+  switch(reg) {
+    case 0: ins->op = OP_INC; break;
+    case 1: ins->op = OP_DEC; break;
+    case 2: ins->op = OP_CALL; break; // Call near, absolute indirect
+    case 3: { // Call far, offset:seg stored in the given memory location
+      ins->op = OP_CALL; 
+      if(ins->src.operand_mode != OPERAND_MEM) {
+        print_ins_addr(ins);
+        error_exit("Call (FF/3) must always have memory operand");
+      }
+    } break;
+    case 4: ins->op = OP_JMP; break; // Jmp near absolute indirect
+    case 5: {
+      ins->op = OP_JMP;
+      if(ins->src.operand_mode != OPERAND_MEM) {
+        print_ins_addr(ins);
+        error_exit("Jmp (FF/5) must always have memory operand");
+      }
+    } break;
+    default: { // reg == 7 is invalid
+      print_ins_addr(ins);
+      error_exit("Unknown reg field (2nd opcode) for grp4: %X\n", reg);
+    } break;
+  }
+  return data;
+}
+
 void *parse_ins(ins_t *ins, void *data) {
   void *old_data = data; // Compute size with this
   data = parse_prefix(ins, data);
