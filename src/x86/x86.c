@@ -556,6 +556,16 @@ void *parse_ins(ins_t *ins, void *data) {
       operand_set_register(&ins->dest, REG_AX);
       operand_set_register(&ins->src, REG_DX);
     } break;
+    case 0xEE: {  // OUT DX, AL
+      ins->op = OP_OUT;
+      operand_set_register(&ins->dest, REG_DX);
+      operand_set_register(&ins->src, REG_AL);
+    } break;
+    case 0xEF: {  // in DX, AX
+      ins->op = OP_OUT;
+      operand_set_register(&ins->dest, REG_DX);
+      operand_set_register(&ins->src, REG_AX);
+    } break;
     default: {
       print_ins_addr(ins);
       error_exit("Illegal opcode: 0x%X\n", ins->opcode);
