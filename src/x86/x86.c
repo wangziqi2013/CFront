@@ -253,13 +253,15 @@ void *parse_ins_grp2(ins_t *ins, void *data) {
 // 0xF6, 0xF7, flags is set accordingly (byte argument)
 void *parse_ins_grp3(ins_t *ins, void *data) {
   int reg = REG_NONE;
-  // Parses mod + r/m operand as destination, and returns reg field
+  // Parses mod + r/m operand as src, and returns reg field
   // Note that this works for both 0xF6 (Grp3a) and 0xF7 (Grp3b)
-  data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
+  data = parse_operand_1(&ins->src, ins->flags, &reg, data);
   assert(reg >= 0 && reg <= 7);
   switch(reg) {
     case 0: { // Test Ev, Ib/Iw
       ins->op = OP_TEST;
+      // It is destination
+      ins->dest = ins->src;
       data = (ins->opcode == 0xF6) ? operand_set_imm_8(&ins->src, data) : operand_set_imm_16(&ins->src, data);
     } break;
     case 2: ins->op = OP_NOT; break;
@@ -271,6 +273,22 @@ void *parse_ins_grp3(ins_t *ins, void *data) {
     default: { // reg == 1 is invalid
       print_ins_addr(ins);
       error_exit("Unknown reg field (2nd opcode) for grp3: %X\n", reg);
+    } break;
+  }
+  return data;
+}
+
+void *parse_ins_grp4(ins_t *ins, void *data) {
+  int reg = REG_NONE;
+  // Parses mod + r/m operand as src, and returns reg field
+  data = parse_operand_1(&ins->src, ins->flags, &reg, data);
+  assert(reg >= 0 && reg <= 7);
+  switch(reg) {
+    case 0: ins->op = OP_INC; break;
+    case 1: ins->op = OP_DEC; break;
+    default: { // reg == 2 - 7 is invalid
+      print_ins_addr(ins);
+      error_exit("Unknown reg field (2nd opcode) for grp4: %X\n", reg);
     } break;
   }
   return data;
