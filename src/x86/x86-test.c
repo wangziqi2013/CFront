@@ -441,6 +441,18 @@ void test_84() {
   return;
 }
 
+void test_85() {
+  TEST_BEGIN();
+  char *test_str = \
+    "test bx, cx" "\n"
+    "test [0x1234], dx" "\n"
+    "test [bx+di+0x12], bp" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -470,6 +482,7 @@ int main() {
   test_81();
   test_83();
   test_84();
+  test_85();
   printf("All test passed!\n");
   return 0;
 }
