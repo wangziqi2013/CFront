@@ -195,8 +195,8 @@ void *parse_opcode(ins_t *ins, void *data) {
   ins->opcode = byte;
   if(byte & 0x1) {
     ins->flags |= FLAG_W;
-  } else if(byte & 0x1) {
-    ins->flags |= FLAG_W;
+  } else if(byte & 0x2) {
+    ins->flags |= FLAG_D;
   }
   return ptr_add_8(data);
 }
