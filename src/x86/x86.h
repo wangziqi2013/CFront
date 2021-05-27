@@ -191,7 +191,15 @@ typedef struct {
 } addr_mode_t;
 
 // Prints memory operand (ADDR_MODE_REG will not be printed because its encoding is not stored)
-void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp)
+void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp);
+// Generate the mode r/m byte and the following displacement bits
+inline static uint8_t *addr_mode_gen(uint8_t mode, uint8_t reg, uint8_t rm, uint8_t *data) {
+  assert(mode <= 3);
+  assert(reg <= 7);
+  assert(rm <= 7);
+  data[0] = (mode << 6) | (reg << 3) | (rm);
+  return data + 1;
+}
 
 // Operand type
 #define OPERAND_NONE       0
