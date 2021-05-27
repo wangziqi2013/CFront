@@ -327,6 +327,17 @@ void test_38_3d() {
   return;
 }
 
+void test_3f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "aas" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -348,6 +359,7 @@ int main() {
   test_30_35();
   test_37();
   test_38_3d();
+  test_3f();
   printf("All test passed!\n");
   return 0;
 }
