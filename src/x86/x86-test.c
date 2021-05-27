@@ -175,6 +175,16 @@ void test_08_0d() {
   return;
 }
 
+void test_0e() {
+  TEST_BEGIN();
+  char *test_str = \
+    "push cs" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -184,6 +194,7 @@ int main() {
   test_00_to_05();
   test_06_07();
   test_08_0d();
+  test_0e();
   printf("All test passed!\n");
   return 0;
 }
