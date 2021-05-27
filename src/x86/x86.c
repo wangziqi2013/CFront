@@ -406,6 +406,7 @@ void *parse_ins_grp5(ins_t *ins, void *data) {
 
 void *parse_ins(ins_t *ins, void *data) {
   void *old_data = data; // Compute size with this
+  ins->flags = 0;
   data = parse_prefix(ins, data);
   data = parse_opcode(ins, data);
   // Initialize operands
