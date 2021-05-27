@@ -149,6 +149,17 @@ void test_00_to_05() {
   return;
 }
 
+void test_06_07() {
+  TEST_BEGIN();
+  char *test_str = \
+    "push es" "\n"
+    "pop es" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -156,6 +167,7 @@ int main() {
   test_ins_fprint();
   // Exhaustive opcode test
   test_00_to_05();
+  test_06_07();
   printf("All test passed!\n");
   return 0;
 }
