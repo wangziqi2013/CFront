@@ -363,6 +363,20 @@ void test_50_5f() {
   return;
 }
 
+void test_70_7f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "jo short 0x7f" "\n" "jno short 0xff" "\n" "jb short 0x80" "\n" "jnb short 0x81" "\n" 
+    "jz short 0x01" "\n" "jnz short 0x02" "\n" 
+    "jbe short 0x12" "\n" "ja short 0x23" "\n" "js short 0x34" "\n" "jns short 0x45" 
+    "\n" "jpe short 0x56" "\n" "jpo short 0x67" "\n"
+    "jl short 0x78" "\n" "jge short 0x89" "\n" "jle short 0x9a" "\n" "jg short 0xab" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+} 
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -387,6 +401,7 @@ int main() {
   test_3f();
   test_40_4f();
   test_50_5f();
+  test_70_7f();
   printf("All test passed!\n");
   return 0;
 }

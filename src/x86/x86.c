@@ -235,7 +235,7 @@ void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
 const char *op_names[] = {
   "nop", "add", "push", "pop", "or", "adc", "sbb", "and", "daa", "sub", "das",
   "xor", "aaa", "cmp", "aas", "inc", "dec", 
-  "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
+  "jo", "jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
   "test", "xchg", "mov", "lea", "cbw", "cwd", "call",
   "wait", "pushf", "popf", "sahf", "lahf",
