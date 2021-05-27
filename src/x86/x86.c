@@ -72,8 +72,17 @@ const char *reg_names[] = {
   "IP", "FLAGS",
 };
 
-void addr_mode_fprint(addr_mode_t *addr_mode, FILE *fp) {
+void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp) {
   assert(addr_mode->addr_mode != ADDR_MODE_REG);
+  if(flags & FLAG_CS) {
+    printf("cs:");
+  } else if(flags & FLAG_DS) {
+    printf("ds:")
+  } else if(flags & FLAG_ES) {
+    printf("es:")
+  } else if(flags & FLAG_SS) {
+    printf("ss:")
+  }
   fprintf(fp, "[");
   switch(addr_mode->addr_mode) {
     case ADDR_MODE_MEM_DIRECT: {

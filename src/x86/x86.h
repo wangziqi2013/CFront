@@ -191,7 +191,7 @@ typedef struct {
 } addr_mode_t;
 
 // Prints memory operand (ADDR_MODE_REG will not be printed because its encoding is not stored)
-void addr_mode_print(addr_mode_t *addr_mode);
+void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp)
 
 // Operand type
 #define OPERAND_NONE       0
