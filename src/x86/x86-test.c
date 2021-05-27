@@ -51,7 +51,7 @@ void test_prefix_to_flag() {
 
 void test_compile_helper() {
   TEST_BEGIN();
-  char *test_str = "mov ax, 0x1234\nmov al, bl\nadd bx, [bp+si+0x2345]\njmp far es:[si]";
+  char *test_str = "mov ax, 0x1234\nmov al, bl\nadd bx, [bp+si+0x2345]\njmp far [es:di+bp+0x23]\n";
   test_helper_compile(test_str, "test_compile_helper.bin");
   remove("test_compile_helper.bin");
   TEST_PASS();
