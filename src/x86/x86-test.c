@@ -160,6 +160,21 @@ void test_06_07() {
   return;
 }
 
+void test_08_0d() {
+  TEST_BEGIN();
+  char *test_str = \
+    "or [si+0x1234], cl" "\n"
+    "or [di], ax" "\n"
+    "or ch, [bp+di]" "\n"
+    "or dx, [0x1234]" "\n"
+    "or al, 0x23" "\n"
+    "or ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -168,6 +183,7 @@ int main() {
   // Exhaustive opcode test
   test_00_to_05();
   test_06_07();
+  test_08_0d();
   printf("All test passed!\n");
   return 0;
 }
