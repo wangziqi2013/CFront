@@ -96,6 +96,21 @@ static void *test_helper_load_file(const char *filename, int *_size) {
   return buf;
 }
 
+// Print a given file
+static void test_helper_print_file(const char *filename) {
+  int size = 0;
+  void *data = test_helper_load_file("test_compile_helper.bin", &size);
+  void *end = (uint8_t *)data + size;
+  while(data < end) {
+    ins_t ins;
+    data = parse_ins(&ins, data);
+    ins_fprint(&ins, stdout);
+    fputc('\n', stdout);
+  }
+  assert(data == end);
+  return;
+}
+
 void test_ins_fprint() {
   TEST_BEGIN();
   char *test_str = \
@@ -108,16 +123,7 @@ void test_ins_fprint() {
     "jmp 0x1234:0x5678"
     ;
   test_helper_compile(test_str, "test_compile_helper.bin");
-  int size;
-  void *data = test_helper_load_file("test_compile_helper.bin", &size);
-  void *end = (uint8_t *)data + size;
-  while(data < end) {
-    ins_t ins;
-    data = parse_ins(&ins, data);
-    ins_fprint(&ins, stdout);
-    fputc('\n', stdout);
-  }
-  assert(data == end);
+  test_helper_print_file("test_compile_helper.bin");
   remove("test_compile_helper.bin");
   TEST_PASS();
   return;

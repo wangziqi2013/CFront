@@ -87,7 +87,7 @@ void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp) {
   }
   switch(addr_mode->addr_mode) {
     case ADDR_MODE_MEM_DIRECT: {
-      fprintf(fp, "%X", addr_mode->disp_16);
+      fprintf(fp, "0x%04X", addr_mode->disp_16);
     } break;
     case ADDR_MODE_MEM_REG_ONLY: {
       assert(addr_mode->regs.reg1 != REG_NONE);
