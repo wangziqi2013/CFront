@@ -55,11 +55,13 @@ const int seg_reg_table[4] = {
   REG_ES, REG_CS, REG_SS, REG_DS, 
 };
 
+// Reg only, this also encoded direct addressing mode
 const addr_mode_reg_t addr_mode_reg_table_1[8] = {
   {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_NONE, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
+// Reg + disp_8/disp_16
 const addr_mode_reg_t addr_mode_reg_table_2[8] = {
   {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 

@@ -134,7 +134,7 @@ void test_ins_fprint() {
   return;
 }
 
-void test_00_to_05() {
+void test_00_05() {
   TEST_BEGIN();
   char *test_str = \
     "add [ss:bx], cl" "\n"
@@ -185,16 +185,60 @@ void test_0e() {
   return;
 }
 
+void test_10_15() {
+  TEST_BEGIN();
+  char *test_str = \
+    "adc [0x1234], ah" "\n"
+    "adc [bp], sp" "\n"
+    "adc dl, [bx]" "\n"
+    "adc bp, [0x1234]" "\n"
+    "adc al, 0x23" "\n"
+    "adc ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_16_17() {
+  TEST_BEGIN();
+  char *test_str = \
+    "push ss" "\n"
+    "pop ss" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_18_1d() {
+  TEST_BEGIN();
+  char *test_str = \
+    "sbb [0x1234], bh" "\n"
+    "sbb [bp], cx" "\n"
+    "sbb bh, [bx]" "\n"
+    "sbb sp, [0x1234]" "\n"
+    "sbb al, 0x23" "\n"
+    "sbb ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
   test_addr_mode();
   test_ins_fprint();
   // Exhaustive opcode test
-  test_00_to_05();
+  test_00_05();
   test_06_07();
   test_08_0d();
   test_0e();
+  test_10_15();
+  test_16_17();
+  test_18_1d();
   printf("All test passed!\n");
   return 0;
 }
