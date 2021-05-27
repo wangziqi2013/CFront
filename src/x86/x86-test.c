@@ -382,13 +382,13 @@ void test_80() {
   TEST_BEGIN();
   char *test_str = \
     "add bh, 0x12" "\n"
-    "add bl, 0x34" "\n"
-    "add ch, 0x56" "\n"
-    "add cl, 0x78" "\n"
-    "add byte [0x1123], 0x9a" "\n"
-    "add byte [bx+si], 0xbc" "\n"
-    "add byte [bp+di+0x2345], 0xde" "\n"
-    "add byte [bx+0x79], 0xff" "\n"
+    "or bl, 0x34" "\n"
+    "adc ch, 0x56" "\n"
+    "sbb cl, 0x78" "\n"
+    "and byte [0x1123], 0x9a" "\n"
+    "sub byte [bx+si], 0xbc" "\n"
+    "xor byte [bp+di+0x2345], 0xde" "\n"
+    "cmp byte [bx+0x79], 0xff" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -399,13 +399,30 @@ void test_81() {
   TEST_BEGIN();
   char *test_str = \
     "add bx, 0x1234" "\n"
-    "add bp, 0x3456" "\n"
-    "add cx, 0x5678" "\n"
-    "add dx, 0x789a" "\n"
-    "add word [0x1123], 0x9aaa" "\n"
-    "add word [bx+si], 0xbccc" "\n"
-    "add word [bp+di+0x2345], 0xdeee" "\n"
-    "add word [bx+0x79], 0xefff" "\n"
+    "or bp, 0x3456" "\n"
+    "adc cx, 0x5678" "\n"
+    "sbb dx, 0x789a" "\n"
+    "and word [0x1123], 0x9aaa" "\n"
+    "sub word [bx+si], 0xbccc" "\n"
+    "xor word [bp+di+0x2345], 0xdeee" "\n"
+    "cmp word [bx+0x79], 0xefff" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_83() {
+  TEST_BEGIN();
+  char *test_str = \
+    "add bx, 0x12" "\n"
+    "or bp, 0x34" "\n"
+    "adc cx, 0x56" "\n"
+    "sbb dx, 0x78" "\n"
+    "and word [0x1123], 0xffff" "\n"
+    "sub word [bx+si], 0xff8c" "\n"
+    "xor word [bp+di+0x2345], 0xfff0" "\n"
+    "cmp word [bx+0x79], 0x00" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -439,6 +456,7 @@ int main() {
   test_70_7f();
   test_80();
   test_81();
+  test_83();
   printf("All test passed!\n");
   return 0;
 }
