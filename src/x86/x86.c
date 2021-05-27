@@ -753,13 +753,17 @@ void ins_fprint(ins_t *ins, FILE *fp) {
   if((ins->flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
     fprintf(fp, " far");
   }
-  if(ins->src.operand_mode != OPERAND_NONE) {
-    fputc(' ', fp);
-    operand_fprint(&ins->src, ins->flags, fp);
-  }
   if(ins->dest.operand_mode != OPERAND_NONE) {
-    fprintf(fp, ", ");
+    fputc(' ', fp);
     operand_fprint(&ins->dest, ins->flags, fp);
+  }
+  if(ins->src.operand_mode != OPERAND_NONE) {
+    if(ins->dest.operand_mode != OPERAND_NONE) {
+      fprintf(fp, ", ");
+    } else {
+      fprintf(fp, " ");
+    }
+    operand_fprint(&ins->src, ins->flags, fp);
   }
   return;
 }
