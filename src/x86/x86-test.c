@@ -75,6 +75,27 @@ void test_addr_mode() {
   return;
 }
 
+static void *test_helper_load_file(const char *filename, int *_size) {
+  FILE *fp = fopen(filename, "r");
+  SYSEXPECT(fp != NULL);
+  int ret;
+  ret = fseek(fp, 0, SEEK_END);
+  SYSEXPECT(ret == 0);
+  int size = (int)ftell(fp);
+  SYSEXPECT(size != -1);
+  if(size == 0) {
+    error_exit("The file \"%s\" is empty\n", filename);
+  }
+  *_size = size;
+  ret = fseek(fp, 0, SEEK_SET);
+  SYSEXPECT(ret == 0);
+  void *buf = malloc(size);
+  SYSEXPECT(buf != NULL);
+  ret = fread(buf, size, 1, fp);
+  SYSEXPECT(ret == 1);
+  return buf;
+}
+
 void test_ins_fprint() {
   TEST_BEGIN();
   char *test_str = \
@@ -87,7 +108,16 @@ void test_ins_fprint() {
     "jmp 0x1234:0x5678"
     ;
   test_helper_compile(test_str, "test_compile_helper.bin");
-  
+  int size;
+  void *data = test_helper_load_file("test_compile_helper.bin", &size);
+  void *end = (uint8_t *)data + size;
+  while(data < end) {
+    ins_t ins;
+    data = parse_ins(&ins, data);
+    ins_fprint(&ins, stdout);
+    fputc('\n', stdout);
+  }
+  assert(data == end);
   remove("test_compile_helper.bin");
   TEST_PASS();
   return;
