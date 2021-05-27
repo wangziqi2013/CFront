@@ -201,6 +201,7 @@ void *parse_opcode(ins_t *ins, void *data) {
   return ptr_add_8(data);
 }
 
+// Only segment override prefixes in the flags are used
 void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
   switch(operand->operand_mode) {
     case OPERAND_REG: {

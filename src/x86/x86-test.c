@@ -58,9 +58,27 @@ void test_compile_helper() {
   return;
 }
 
+// Test addr mode parsing and printing
+void test_addr_mode() {
+  TEST_BEGIN();
+  uint8_t data[3] = {0x00, 0x56, 0x34};
+  for(int i = 0;i < 256;i++) {
+    data[0] = i;
+    operand_t dest, src;
+    parse_operand_2(&dest, &src, FLAG_W, data);
+    operand_fprint(&dest, 0, stdout);
+    fprintf(stdout, ", ");
+    operand_fprint(&src, 0, stdout);
+    putchar('\n');
+  }
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
+  test_addr_mode();
   printf("All test passed!\n");
   return 0;
 }
