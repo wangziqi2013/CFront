@@ -417,4 +417,6 @@ void *parse_ins_grp4(ins_t *ins, void *data);
 void *parse_ins_grp5(ins_t *ins, void *data);
 void *parse_ins(ins_t *ins, void *data);
 
+void ins_fprint(ins_t *ins, FILE *fp);
+
 #endif
