@@ -290,12 +290,37 @@ void test_2f() {
 void test_30_35() {
   TEST_BEGIN();
   char *test_str = \
-    "xor [0x12], bl" "\n"
-    "xor [bp+di+0x4567], bx" "\n"
-    "xor ch, [bx+0x890a]" "\n"
-    "xor dx, [0x1234]" "\n"
+    "xor [cs:0x12], bl" "\n"
+    "xor [bp+si+0x4567], bx" "\n"
+    "xor ch, [bx+0xffff]" "\n"
+    "xor dx, [0xffff]" "\n"
     "xor al, 0x23" "\n"
     "xor ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_37() {
+  TEST_BEGIN();
+  char *test_str = \
+    "aaa" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_38_3d() {
+  TEST_BEGIN();
+  char *test_str = \
+    "cmp [cs:0x12], bl" "\n"
+    "cmp [bp+si+0x4567], bx" "\n"
+    "cmp ch, [bx+0xffff]" "\n"
+    "cmp dx, [0xffff]" "\n"
+    "cmp al, 0x23" "\n"
+    "cmp ax, 0x4567" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -321,6 +346,8 @@ int main() {
   test_28_2d();
   test_2f();
   test_30_35();
+  test_37();
+  test_38_3d();
   printf("All test passed!\n");
   return 0;
 }
