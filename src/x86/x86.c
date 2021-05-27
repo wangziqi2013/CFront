@@ -193,9 +193,10 @@ void *parse_prefix(ins_t *ins, void *data) {
 void *parse_opcode(ins_t *ins, void *data) {
   uint8_t byte = ptr_load_8(data);
   ins->opcode = byte;
-  if(byte & 0x1) {
+  if(byte & 0x01) {
     ins->flags |= FLAG_W;
-  } else if(byte & 0x2) {
+  }
+  if(byte & 0x02) {
     ins->flags |= FLAG_D;
   }
   return ptr_add_8(data);
@@ -253,6 +254,7 @@ const char *op_names[] = {
 void *parse_alu_ins(ins_t *ins, int diff, int op, void *data) {
   assert(diff >= 0 || diff <= 5);
   ins->op = op;
+  //printf("flags %X opcode %X\n", ins->flags, ins->opcode);
   switch(diff) {
     case 0x00: case 0x01: case 0x02: case 0x03: { // Two operands
       data = parse_operand_2(&ins->dest, &ins->src, ins->flags, data);
