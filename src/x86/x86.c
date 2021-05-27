@@ -694,11 +694,11 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0xE8: { // Call rel16 in imm16
       ins->op = OP_CALL;
-      data = operand_set_imm_16(&ins->src, data);
+      data = operand_set_rel_16(&ins->src, data);
     } break;
     case 0xE9: { // jmp rel16 in imm16
       ins->op = OP_JMP;
-      data = operand_set_imm_16(&ins->src, data);
+      data = operand_set_rel_16(&ins->src, data);
     } break;
     case 0xEA: {  // jmp farptr in imm32
       ins->op = OP_JMP;
