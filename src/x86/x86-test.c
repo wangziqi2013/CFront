@@ -337,6 +337,19 @@ void test_3f() {
   return;
 }
 
+void test_40_4f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "inc ax" "\n" "inc cx" "\n" "inc dx" "\n" "inc bx" "\n"
+    "inc sp" "\n" "inc bp" "\n" "inc si" "\n" "inc di" "\n"
+    "dec ax" "\n" "dec cx" "\n" "dec dx" "\n" "dec bx" "\n"
+    "dec sp" "\n" "dec bp" "\n" "dec si" "\n" "dec di" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 
 int main() {
   test_prefix_to_flag();
@@ -360,6 +373,7 @@ int main() {
   test_37();
   test_38_3d();
   test_3f();
+  test_40_4f();
   printf("All test passed!\n");
   return 0;
 }
