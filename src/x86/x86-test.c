@@ -262,6 +262,21 @@ void test_27() {
   return;
 }
 
+void test_28_2d() {
+  TEST_BEGIN();
+  char *test_str = \
+    "sub [0x12], bl" "\n"
+    "sub [bp+di+0x4567], bx" "\n"
+    "sub ch, [bx+0x890a]" "\n"
+    "sub dx, [0x1234]" "\n"
+    "sub al, 0x23" "\n"
+    "sub ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -278,6 +293,7 @@ int main() {
   test_1e_1f();
   test_20_25();
   test_27();
+  test_28_2d();
   printf("All test passed!\n");
   return 0;
 }
