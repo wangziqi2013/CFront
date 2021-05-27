@@ -230,15 +230,15 @@ void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
 //* ins_t
 
 const char *op_names[] = {
-  "nop", "add", "push", "pop", "or", "addc", "sbb", "and", "daa", "sub", "das",
+  "nop", "add", "push", "pop", "or", "adc", "sbb", "and", "daa", "sub", "das",
   "xor", "aaa", "cmp", "aas", "inc", "dec", 
   "jo"," jno", "jb", "jnb", "jz", "jnz", "jbe", "ja", "js", 
   "jns", "jpe", "jpo", "jl", "jge", "jle", "jg",
   "test", "xchg", "mov", "lea", "cbw", "cwd", "call",
   "wait", "pushf", "popf", "sahf", "lahf",
   "movsb", "movsw", "cmpsb", "cmpsw",
-  "stosb", "stosw", "lodsb", "lodsw",
-  "ret", "retf", "int", "into", "iret",
+  "stosb", "stosw", "lodsb", "lodsw", "scasb", "scasw",
+  "ret", "les", "lds", "retf", "int", "into", "iret",
   "rol", "ror", "rcl", "rcr", "shl", "shr", "sar",
   "aam", "aad", "xlat",
   "loopnz", "loopz", "loop", "jcxz",
@@ -745,26 +745,6 @@ void *parse_ins(ins_t *ins, void *data) {
   return data;
 }
 
-static void *test_helper_load_file(const char *filename) {
-  FILE *fp = fopen(filename, "r");
-  SYSEXPECT(fp != NULL);
-  int ret;
-  ret = fseek(fp, 0, SEEK_END);
-  SYSEXPECT(ret == 0);
-  int size = (int)ftell(fp);
-  SYSEXPECT(size != -1);
-  if(size == 0) {
-    error_exit("The file \"%s\" is empty\n", filename);
-  }
-  ret = fseek(fp, 0, SEEK_SET);
-  SYSEXPECT(ret == 0);
-  void *buf = malloc(size);
-  SYSEXPECT(buf != NULL);
-  ret = fread(buf, size, 1, fp);
-  SYSEXPECT(ret == 1);
-  return buf;
-}
-
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
   fprintf(fp, "%s", op_names[ins->op]);
@@ -777,7 +757,7 @@ void ins_fprint(ins_t *ins, FILE *fp) {
     operand_fprint(&ins->src, ins->flags, fp);
   }
   if(ins->dest.operand_mode != OPERAND_NONE) {
-    fputc(' ', fp);
+    fprintf(fp, ", ");
     operand_fprint(&ins->dest, ins->flags, fp);
   }
   return;
