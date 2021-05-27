@@ -766,18 +766,26 @@ void ins_jcc_fprint(ins_t *ins, FILE *fp) {
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
   fprintf(fp, "%s", op_names[ins->op]);
+  uint8_t opcode = ins->opcode;
+  uint32_t flags = ins->flags;
   // jcc is printed differently
-  if(ins->opcode >= 0x70 && ins->opcode <= 0x7F) {
+  if(opcode >= 0x70 && opcode <= 0x7F) {
     ins_jcc_fprint(ins, fp);
     return;
   }
   // jmp/call far needs an extra "far"
-  if((ins->flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
+  if((flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
     fprintf(fp, " far");
   }
   if(ins->dest.operand_mode != OPERAND_NONE) {
     fputc(' ', fp);
-    operand_fprint(&ins->dest, ins->flags, fp);
+    // Certain opcodes requires operand size
+    if(opcode == 0x80 || opcode == 0x81 || opcode == 0x83) {
+      if(ins->dest.operand_mode == OPERAND_MEM) {
+        fprintf(fp, (flags & FLAG_W) ? "word ptr " : "byte ptr ");
+      }
+    }
+    operand_fprint(&ins->dest, flags, fp);
   }
   if(ins->src.operand_mode != OPERAND_NONE) {
     if(ins->dest.operand_mode != OPERAND_NONE) {
@@ -785,7 +793,7 @@ void ins_fprint(ins_t *ins, FILE *fp) {
     } else {
       fprintf(fp, " ");
     }
-    operand_fprint(&ins->src, ins->flags, fp);
+    operand_fprint(&ins->src, flags, fp);
   }
   return;
 }
