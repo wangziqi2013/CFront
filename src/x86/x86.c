@@ -209,6 +209,16 @@ void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
     case OPERAND_MEM: {
       addr_mode_fprint(&operand->mem, flags, fp);
     } break;
+    case OPERAND_IMM_8: {
+      fprintf(fp, "0x%02X", operand->imm_8);
+    } break;
+    case OPERAND_IMM_16: 
+    case OPERAND_NEARPTR: {
+      fprintf(fp, "0x%04X", operand->imm_16);
+    } break;
+    case OPERAND_FARPTR: { // Only used by mov
+      fprintf(fp, "0x%04X:0x%04X", operand->farptr.seg, operand->farptr.offset);
+    } break;
     default: {
       error_exit("(Internal error) Unknown operand mode: %d\n", operand->operand_mode);
     }
