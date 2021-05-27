@@ -799,6 +799,10 @@ void ins_fprint(ins_t *ins, FILE *fp) {
     } else {
       fprintf(fp, " ");
     }
+    // 0x83 is always 16-bit dest and 8-bit imm
+    if(opcode == 0x83) {
+      fprintf(fp, "byte ");
+    }
     operand_fprint(&ins->src, flags, fp);
   }
   return;
