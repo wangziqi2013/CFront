@@ -225,6 +225,8 @@ typedef struct {
     addr_mode_t mem;     // Operand is in memory (size given by W flag)
     uint16_t imm_16;     // 16 bit immediate value
     uint8_t imm_8;       // 8 bit immediate value
+    uint16_t rel_16;     // 16 bit relative
+    uint16_t rel_8;      // 8 bit relative
     farptr_t farptr;     // seg:offset full address (32-bit operand)
     uint16_t nearptr;    // offset in the current segment (16-bit operand)
   };
@@ -258,13 +260,13 @@ inline static void *operand_set_imm_16(operand_t *operand, void *data) {
 
 inline static void *operand_set_rel_8(operand_t *operand, void *data) {
   operand->operand_mode = OPERAND_REL_8;
-  operand->imm_8 = ptr_load_8(data);
+  operand->rel_8 = ptr_load_8(data);
   return ptr_add_8(data);
 }
 
 inline static void *operand_set_rel_16(operand_t *operand, void *data) {
   operand->operand_mode = OPERAND_REL_16;
-  operand->imm_16 = ptr_load_16(data);
+  operand->rel_16 = ptr_load_16(data);
   return ptr_add_16(data);
 }
 
