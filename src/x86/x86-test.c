@@ -226,6 +226,17 @@ void test_18_1d() {
   return;
 }
 
+void test_1e_1f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "push ds" "\n"
+    "pop ds" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -239,6 +250,7 @@ int main() {
   test_10_15();
   test_16_17();
   test_18_1d();
+  test_1e_1f();
   printf("All test passed!\n");
   return 0;
 }
