@@ -745,6 +745,26 @@ void *parse_ins(ins_t *ins, void *data) {
   return data;
 }
 
+static void *test_helper_load_file(const char *filename) {
+  FILE *fp = fopen(filename, "r");
+  SYSEXPECT(fp != NULL);
+  int ret;
+  ret = fseek(fp, 0, SEEK_END);
+  SYSEXPECT(ret == 0);
+  int size = (int)ftell(fp);
+  SYSEXPECT(size != -1);
+  if(size == 0) {
+    error_exit("The file \"%s\" is empty\n", filename);
+  }
+  ret = fseek(fp, 0, SEEK_SET);
+  SYSEXPECT(ret == 0);
+  void *buf = malloc(size);
+  SYSEXPECT(buf != NULL);
+  ret = fread(buf, size, 1, fp);
+  SYSEXPECT(ret == 1);
+  return buf;
+}
+
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
   fprintf(fp, "%s", op_names[ins->op]);
