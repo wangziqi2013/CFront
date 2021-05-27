@@ -75,10 +75,29 @@ void test_addr_mode() {
   return;
 }
 
+void test_ins_fprint() {
+  TEST_BEGIN();
+  char *test_str = \
+    "mov ax, 0x1234\n"
+    "mov al, bl\n"
+    "add bx, [bp+si+0x2345]\n"
+    "jmp far [es:di+bp+0x23]\n"
+    "call [bx+di]\n"
+    "call [0x89ab]\n"
+    "jmp 0x1234:0x5678"
+    ;
+  test_helper_compile(test_str, "test_compile_helper.bin");
+  
+  remove("test_compile_helper.bin");
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
   test_addr_mode();
+  test_ins_fprint();
   printf("All test passed!\n");
   return 0;
 }

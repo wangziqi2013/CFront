@@ -749,8 +749,8 @@ void *parse_ins(ins_t *ins, void *data) {
 void ins_fprint(ins_t *ins, FILE *fp) {
   fprintf(fp, "%s", op_names[ins->op]);
   // jmp/call far needs an extra "far"
-  if((flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
-    fprintf(fp, " far", op_names[ins->op]);
+  if((ins->flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
+    fprintf(fp, " far");
   }
   if(ins->src.operand_mode != OPERAND_NONE) {
     fputc(' ', fp);
