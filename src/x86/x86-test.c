@@ -277,6 +277,31 @@ void test_28_2d() {
   return;
 }
 
+void test_2f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "das" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_30_35() {
+  TEST_BEGIN();
+  char *test_str = \
+    "xor [0x12], bl" "\n"
+    "xor [bp+di+0x4567], bx" "\n"
+    "xor ch, [bx+0x890a]" "\n"
+    "xor dx, [0x1234]" "\n"
+    "xor al, 0x23" "\n"
+    "xor ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -294,6 +319,8 @@ int main() {
   test_20_25();
   test_27();
   test_28_2d();
+  test_2f();
+  test_30_35();
   printf("All test passed!\n");
   return 0;
 }
