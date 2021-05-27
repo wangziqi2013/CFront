@@ -111,6 +111,13 @@ static void test_helper_print_file(const char *filename) {
   return;
 }
 
+static void test_ins(const char *test_str) {
+  test_helper_compile(test_str, "test_compile_helper.bin");
+  test_helper_print_file("test_compile_helper.bin");
+  remove("test_compile_helper.bin");
+  return;
+}
+
 void test_ins_fprint() {
   TEST_BEGIN();
   char *test_str = \
@@ -122,9 +129,7 @@ void test_ins_fprint() {
     "call [0x89ab]\n"
     "jmp 0x1234:0x5678"
     ;
-  test_helper_compile(test_str, "test_compile_helper.bin");
-  test_helper_print_file("test_compile_helper.bin");
-  remove("test_compile_helper.bin");
+  test_ins(test_str);
   TEST_PASS();
   return;
 }
