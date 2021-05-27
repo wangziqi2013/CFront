@@ -758,6 +758,7 @@ void ins_jcc_fprint(ins_t *ins, FILE *fp) {
   assert(ins->opcode >= 0x70 && ins->opcode <= 0x7F);
   uint16_t rel_16 = (uint16_t)(int16_t)(int8_t)ins->src.rel_8;
   rel_16 += 2; // After the two-byte instruction
+  // "rel" means it depends on inst's actual address (i.e., current IP)
   fprintf(fp, " rel %04X", rel_16);
   return;
 }

@@ -377,6 +377,24 @@ void test_70_7f() {
   return;
 } 
 
+// Group 1, op Eb, Ib
+void test_80() {
+  TEST_BEGIN();
+  char *test_str = \
+    "add bh, 0x12" "\n"
+    "add bl, 0x34" "\n"
+    "add ch, 0x56" "\n"
+    "add cl, 0x78" "\n"
+    "add byte [0x1123], 0x9a" "\n"
+    "add byte [bx+si], 0xbc" "\n"
+    "add byte [bp+di+0x2345], 0xde" "\n"
+    "add byte [bx+0x79], 0xff" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -402,6 +420,7 @@ int main() {
   test_40_4f();
   test_50_5f();
   test_70_7f();
+  test_80();
   printf("All test passed!\n");
   return 0;
 }
