@@ -395,6 +395,23 @@ void test_80() {
   return;
 }
 
+void test_81() {
+  TEST_BEGIN();
+  char *test_str = \
+    "add bx, 0x1234" "\n"
+    "add bp, 0x3456" "\n"
+    "add cx, 0x5678" "\n"
+    "add dx, 0x789a" "\n"
+    "add word [0x1123], 0x9aaa" "\n"
+    "add word [bx+si], 0xbccc" "\n"
+    "add word [bp+di+0x2345], 0xdeee" "\n"
+    "add word [bx+0x79], 0xefff" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -421,6 +438,7 @@ int main() {
   test_50_5f();
   test_70_7f();
   test_80();
+  test_81();
   printf("All test passed!\n");
   return 0;
 }
