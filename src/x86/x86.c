@@ -747,11 +747,17 @@ void *parse_ins(ins_t *ins, void *data) {
 
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
-  fprintf("%s", op_names[ins->op]);
+  fprintf(fp, "%s", op_names[ins->op]);
+  // jmp/call far needs an extra "far"
+  if((flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
+    fprintf(fp, " far", op_names[ins->op]);
+  }
   if(ins->src.operand_mode != OPERAND_NONE) {
+    fputc(' ', fp);
     operand_fprint(&ins->src, ins->flags, fp);
   }
   if(ins->dest.operand_mode != OPERAND_NONE) {
+    fputc(' ', fp);
     operand_fprint(&ins->dest, ins->flags, fp);
   }
   return;
