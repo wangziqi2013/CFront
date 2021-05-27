@@ -250,7 +250,7 @@ inline static void *operand_set_imm_8(operand_t *operand, void *data) {
 
 inline static void *operand_set_imm_16(operand_t *operand, void *data) {
   operand->operand_mode = OPERAND_IMM_16;
-  operand->imm_8 = ptr_load_16(data);
+  operand->imm_16 = ptr_load_16(data);
   return ptr_add_16(data);
 }
 
