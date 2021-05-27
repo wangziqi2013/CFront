@@ -10,12 +10,18 @@ static void test_helper_compile(const char *s, const char *filename) {
   }
   snprintf(temp_filename, sizeof(temp_filename), "temp_in_%lu.asm", time(NULL));
   FILE *fp = fopen(temp_filename, "w");
+  SYSEXPECT(fp != NULL);
   int fwrite_ret = fwrite(s, strlen(s), 1, fp);
-  SYS_EXPECT(fwrite_ret == 1);
+  SYSEXPECT(fwrite_ret == 1);
   fclose(fp);
   char command[512];
   snprintf(command, sizeof(command), "nasm -f bin -o %s %s", filename, temp_filename);
   int sys_ret = system(command);
+  if(sys_ret != 0) {
+    error_exit("nasm fails to return normally (exit code %d)\n", sys_ret);
+  }
+  snprintf(command, sizeof(command), "ndisasm -b 16 %s", filename);
+  sys_ret = system(command);
   remove(temp_filename);
   return;
 }
@@ -43,8 +49,18 @@ void test_prefix_to_flag() {
   return;
 }
 
+void test_compile_helper() {
+  TEST_BEGIN();
+  char *test_str = "mov ax, 0x1234\nmov al, bl\nadd bx, [bp+si+0x2345]\njmp far es:[si]";
+  test_helper_compile(test_str, "test_compile_helper.bin");
+  remove("test_compile_helper.bin");
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
+  test_compile_helper();
   printf("All test passed!\n");
   return 0;
 }
