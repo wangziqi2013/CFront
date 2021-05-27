@@ -134,11 +134,28 @@ void test_ins_fprint() {
   return;
 }
 
+void test_00_to_05() {
+  TEST_BEGIN();
+  char *test_str = \
+    "add [ss:bx], cl" "\n"
+    "add [di+0x67], ax" "\n"
+    "add ch, [bx+si+0x90]" "\n"
+    "add dx, [bx]" "\n"
+    "add al, 0x23" "\n"
+    "add ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
   test_addr_mode();
   test_ins_fprint();
+  // Exhaustive opcode test
+  test_00_to_05();
   printf("All test passed!\n");
   return 0;
 }
