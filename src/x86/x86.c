@@ -205,6 +205,7 @@ void *parse_opcode(ins_t *ins, void *data) {
 }
 
 // Only segment override prefixes in the flags are used
+// Note that this function does not print rel_8 and rel_16 since they require instruction information
 void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
   switch(operand->operand_mode) {
     case OPERAND_REG: {
@@ -504,7 +505,7 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
     case 0x78: case 0x79: case 0x7A: case 0x7B: case 0x7C: case 0x7D: case 0x7E: case 0x7F: { // Jump short
       ins->op = OP_JO + ins->opcode - 0x70; // Their codes are consecutive in op space
-      data = operand_set_imm_8(&ins->src, data);
+      data = operand_set_rel_8(&ins->src, data); // Use relative value
     } break;
     case 0x80: case 0x81: case 0x82: case 0x83: {
       data = parse_ins_grp1(ins, data);
@@ -679,7 +680,7 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xD7: ins->op = OP_XLAT; break;
     case 0xE0: case 0xE1: case 0xE2: case 0xE3: {
       ins->op = OP_LOOPNZ + (ins->opcode - 0xE0);
-      data = operand_set_imm_8(&ins->src, data);
+      data = operand_set_rel_8(&ins->src, data);
     } break;
     case 0xE4: case 0xE5: { // IN AL/AX, imm8
       ins->op = OP_IN;
@@ -703,9 +704,9 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->op = OP_JMP;
       data = operand_set_farptr(&ins->src, data);
     } break;
-    case 0xEB: {  // jmp rel8 in imm 8
+    case 0xEB: {  // jmp rel8
       ins->op = OP_JMP;
-      data = operand_set_imm_8(&ins->src, data);
+      data = operand_set_rel_8(&ins->src, data);
     } break;
     case 0xEC: {  // in AL, DX
       ins->op = OP_IN;
@@ -750,9 +751,23 @@ void *parse_ins(ins_t *ins, void *data) {
   return data;
 }
 
+// Prints jcc, i.e., 0x70 -- 0x7F
+// These instructions are different, since their target address uses sign-extended relative offsets,
+// and that the offset is after the instruction
+void ins_jcc_fprint(ins_t *ins, FILE *fp) {
+  assert(ins->opcode >= 0x70 && ins->opcode <= 0x7F);
+  uint16_t rel_16 = ins->src.
+  return;
+}
+
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
   fprintf(fp, "%s", op_names[ins->op]);
+  // jcc is printed differently
+  if(ins->opcode >= 0x70 && ins->opcode <= 0x7F) {
+    ins_jcc_fprint(ins, fp);
+    return;
+  }
   // jmp/call far needs an extra "far"
   if((ins->flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
     fprintf(fp, " far");
