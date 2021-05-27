@@ -207,8 +207,10 @@ inline static uint8_t *addr_mode_gen(uint8_t mode, uint8_t reg, uint8_t rm, uint
 #define OPERAND_MEM        2
 #define OPERAND_IMM_8      3
 #define OPERAND_IMM_16     4
-#define OPERAND_FARPTR     5
-#define OPERAND_NEARPTR    6
+#define OPERAND_REL_8      5
+#define OPERAND_REL_16     6
+#define OPERAND_FARPTR     7
+#define OPERAND_NEARPTR    8
 
 typedef struct {
   uint16_t offset;
@@ -253,6 +255,19 @@ inline static void *operand_set_imm_16(operand_t *operand, void *data) {
   operand->imm_16 = ptr_load_16(data);
   return ptr_add_16(data);
 }
+
+inline static void *operand_set_rel_8(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_REL_8;
+  operand->imm_8 = ptr_load_8(data);
+  return ptr_add_8(data);
+}
+
+inline static void *operand_set_rel_16(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_REL_16;
+  operand->imm_16 = ptr_load_16(data);
+  return ptr_add_16(data);
+}
+
 
 inline static void operand_set_const_8(operand_t *operand, uint8_t value) {
   operand->operand_mode = OPERAND_IMM_8;
