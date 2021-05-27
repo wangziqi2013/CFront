@@ -237,6 +237,21 @@ void test_1e_1f() {
   return;
 }
 
+void test_20_25() {
+  TEST_BEGIN();
+  char *test_str = \
+    "add [0x1234], bl" "\n"
+    "add [bp], bx" "\n"
+    "add ch, [bx]" "\n"
+    "add dx, [0x1234]" "\n"
+    "add al, 0x23" "\n"
+    "add ax, 0x4567" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -251,6 +266,7 @@ int main() {
   test_16_17();
   test_18_1d();
   test_1e_1f();
+  test_20_25();
   printf("All test passed!\n");
   return 0;
 }
