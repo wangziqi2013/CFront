@@ -287,6 +287,8 @@ void *parse_operand_2(operand_t *dest, operand_t *src, uint32_t flags, void *dat
 // Only parses mod + rm, returns REG
 void *parse_operand_1(operand_t *operand, uint32_t flags, int *reg, void *data);
 
+void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp);
+
 // Instruction
 
 enum {

@@ -201,6 +201,21 @@ void *parse_opcode(ins_t *ins, void *data) {
   return ptr_add_8(data);
 }
 
+void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
+  switch(operand->operand_mode) {
+    case OPERAND_REG: {
+      fprintf(fp, "%s", reg_names[operand->reg]);
+    } break;
+    case OPERAND_MEM: {
+      addr_mode_fprint(&operand->mem, flags, fp);
+    } break;
+    default: {
+      error_exit("(Internal error) Unknown operand mode: %d\n", operand->operand_mode);
+    }
+  }
+  return;
+}
+
 //* ins_t
 
 const char *op_names[] = {
