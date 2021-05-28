@@ -574,8 +574,9 @@ void *parse_ins(ins_t *ins, void *data) {
     } break;
     case 0x98: ins->op = OP_CBW; break; // Byte size
     case 0x99: ins->op = OP_CWD; break; // Word size
-    case 0x9A: { // call far ptr
+    case 0x9A: { // call far immediate far address
       ins->op = OP_CALL;
+      ins->flags |= FLAG_FAR;
       data = operand_set_farptr(&ins->src, data);
     } break;
     case 0x9B: ins->op = OP_WAIT; break;
@@ -771,6 +772,8 @@ void ins_jcc_fprint(ins_t *ins, FILE *fp) {
 
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
+  uint8_t opcode = ins->opcode;
+  uint32_t flags = ins->flags;
   // REP/REPE/REPNE
   if(opcode == 0xA4 || opcode == 0xA5 || opcode == 0xAA || opcode == 0xAB || opcode == 0xAC || opcode == 0xAD) {
     if(flags & FLAG_REP) {
@@ -783,19 +786,18 @@ void ins_fprint(ins_t *ins, FILE *fp) {
       fprintf(fp, "repne ");
     }
   }
-  fprintf(fp, "%s", op_names[ins->op]);
-  uint8_t opcode = ins->opcode;
-  uint32_t flags = ins->flags;
-  // lock flag
+  // lock prefix
   if(flags & FLAG_LOCK) {
     fprintf(fp, "lock ");
   }
+  // Opcode name
+  fprintf(fp, "%s", op_names[ins->op]);
   // jcc is printed differently
   if(opcode >= 0x70 && opcode <= 0x7F) {
     ins_jcc_fprint(ins, fp);
     return;
   }
-  // jmp/call far needs an extra "far"
+  // jmp/call far using memory operand needs an extra "far"
   if((flags & FLAG_FAR) && (ins->op == OP_JMP || ins->op == OP_CALL)) {
     fprintf(fp, " far");
   }
