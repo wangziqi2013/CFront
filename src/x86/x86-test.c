@@ -538,6 +538,16 @@ void test_91_97() {
   return;
 }
 
+void test_98_99() {
+  TEST_BEGIN();
+  char *test_str = \
+    "cbw\ncwd" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -572,6 +582,7 @@ int main() {
   test_8f();
   test_90();
   test_91_97();
+  test_98_99();
   printf("All test passed!\n");
   return 0;
 }
