@@ -766,6 +766,21 @@ void test_d0_d1() {
   return;
 }
 
+void test_d4_d5() {
+  TEST_BEGIN();
+  char *test_str = \
+    "aam" "\n"
+    "aam 0xa" "\n"
+    "aam 0x7" "\n"
+    "aad" "\n"
+    "aad 0xa" "\n"
+    "aad 0x7" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -814,6 +829,7 @@ int main() {
   test_ca_cb();
   test_cc_cf();
   test_d0_d1();
+  test_d4_d5();
   printf("All test passed!\n");
   return 0;
 }
