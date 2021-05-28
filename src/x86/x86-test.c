@@ -590,6 +590,25 @@ void test_a0_a3() {
   return;
 }
 
+void test_a4_a7() {
+  TEST_BEGIN();
+  char *test_str = \
+    "movsb" "\n"
+    "movsw" "\n"
+    "rep movsb" "\n"
+    "rep movsw" "\n"
+    "cmpsb" "\n"
+    "cmpsw" "\n"
+    "repz cmpsb" "\n"
+    "repe cmpsw" "\n"
+    "repnz cmpsb" "\n"
+    "repne cmpsw" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -628,6 +647,7 @@ int main() {
   test_9a();
   test_9b_9f();
   test_a0_a3();
+  test_a4_a7();
   printf("All test passed!\n");
   return 0;
 }
