@@ -577,6 +577,19 @@ void test_9b_9f() {
   return;
 }
 
+void test_a0_a3() {
+  TEST_BEGIN();
+  char *test_str = \
+    "mov al, [0x1134]" "\n"
+    "mov ax, [0x1234]" "\n"
+    "mov [0x2345], al" "\n"
+    "mov [0x34], ax" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -614,6 +627,7 @@ int main() {
   test_98_99();
   test_9a();
   test_9b_9f();
+  test_a0_a3();
   printf("All test passed!\n");
   return 0;
 }
