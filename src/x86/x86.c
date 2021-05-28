@@ -846,8 +846,8 @@ void ins_fprint(ins_t *ins, FILE *fp) {
       if(ins->src.imm_8 == 10) {
         return;
       }
-    } else if(opcode == 0xF6 || opcode == 0xF7) {
-      // Single operand in Grp 3a and 3b
+    } else if(opcode == 0xF6 || opcode == 0xF7 || opcode == 0xFE || opcode == 0xFF) {
+      // Single operand in Grp 3a, 3b, 4 and 5
       if(ins->src.operand_mode == OPERAND_MEM) {
         fprintf(fp, (flags & FLAG_W) ? "word ptr " : "byte ptr ");
       }
