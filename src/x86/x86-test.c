@@ -459,7 +459,7 @@ void test_86_87() {
   return;
 }
 
-void test_88_8c() {
+void test_88_8e() {
   TEST_BEGIN();
   char *test_str = \
     "mov [0x12], ah" "\n"
@@ -471,6 +471,15 @@ void test_88_8c() {
     "mov ax, ds" "\n"
     "mov dx, es" "\n"
     "mov si, ss" "\n"
+    // LEA
+    "lea ax, [bx+di+0x890a]" "\n"
+    "lea bx, [bp]" "\n"
+    "lea si, [0x7654]" "\n"
+    // Move gen reg to seg
+    "mov cs, ax" "\n"
+    "mov ds, bx" "\n"
+    "mov es, dx" "\n"
+    "mov ss, cx" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -507,7 +516,7 @@ int main() {
   test_83();
   test_84_85();
   test_86_87();
-  test_88_8c();
+  test_88_8e();
   printf("All test passed!\n");
   return 0;
 }
