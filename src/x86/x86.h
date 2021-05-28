@@ -291,12 +291,6 @@ inline static void *operand_set_farptr(operand_t *operand, void *data) {
   return ptr_add_16(data);
 }
 
-inline static void *operand_set_nearptr(operand_t *operand, void *data) {
-  operand->operand_mode = OPERAND_NEARPTR;
-  operand->nearptr = ptr_load_16(data);
-  return ptr_add_16(data);
-}
-
 // Sets a direct memory operand
 // This is specifically used by mov 0xA0 - 0xA3
 inline static void *operand_set_mem_direct(operand_t *operand, void *data) {
