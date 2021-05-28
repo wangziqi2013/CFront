@@ -880,6 +880,21 @@ void test_f6_f7() {
   return;
 }
 
+void test_f8_fd() {
+  TEST_BEGIN();
+  char *test_str = \
+    "clc" "\n"
+    "stc" "\n"
+    "cli" "\n"
+    "sti" "\n"
+    "cld" "\n"
+    "std" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -936,6 +951,7 @@ int main() {
   test_ec_ef();
   test_f4_f5();
   test_f6_f7();
+  test_f8_fd();
   printf("All test passed!\n");
   return 0;
 }
