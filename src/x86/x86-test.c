@@ -563,6 +563,20 @@ void test_9a() {
   return;
 }
 
+void test_9b_9f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "wait" "\n"
+    "pushf" "\n"
+    "popf" "\n"
+    "sahf" "\n"
+    "lahf" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -599,6 +613,7 @@ int main() {
   test_91_97();
   test_98_99();
   test_9a();
+  test_9b_9f();
   printf("All test passed!\n");
   return 0;
 }

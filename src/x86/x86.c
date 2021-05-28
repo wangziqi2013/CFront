@@ -579,7 +579,7 @@ void *parse_ins(ins_t *ins, void *data) {
       ins->flags |= FLAG_FAR;
       data = operand_set_farptr(&ins->src, data);
     } break;
-    case 0x9B: ins->op = OP_WAIT; break;
+    case 0x9B: ins->op = OP_WAIT; break; // This may be treated as a prefix, but we encode it as an inst
     case 0x9C: ins->op = OP_PUSHF; break;
     case 0x9D: ins->op = OP_POPF; break;
     case 0x9E: ins->op = OP_SAHF; break;
