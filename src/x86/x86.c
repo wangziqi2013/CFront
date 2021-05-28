@@ -802,6 +802,11 @@ void ins_fprint(ins_t *ins, FILE *fp) {
     // 0x83 is always 16-bit dest and 8-bit imm
     if(opcode == 0x83) {
       fprintf(fp, "byte ");
+    } else if(opcode == 0x8F) {
+      // POP to memory must be word ptr
+      if(ins->src.operand_mode == OPERAND_MEM) {
+        fprintf(fp, "word ptr ");
+      }
     }
     operand_fprint(&ins->src, flags, fp);
   }
