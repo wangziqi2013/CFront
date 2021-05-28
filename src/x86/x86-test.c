@@ -690,6 +690,18 @@ void test_c4_c5() {
   return;
 }
 
+// mov Eb, Ib and mov Ev, Iv
+void test_c6_c7() {
+  TEST_BEGIN();
+  char *test_str = \
+    "mov byte [bx+si], 0x98" "\n"
+    "mov word [bp+di], 0x7654" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -734,6 +746,7 @@ int main() {
   test_b0_bf();
   test_c2_c3();
   test_c4_c5();
+  test_c6_c7();
   printf("All test passed!\n");
   return 0;
 }
