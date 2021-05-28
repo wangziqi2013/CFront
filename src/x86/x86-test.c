@@ -679,6 +679,17 @@ void test_c2_c3() {
   return;
 }
 
+void test_c4_c5() {
+  TEST_BEGIN();
+  char *test_str = \
+    "les ax, [bx+si]" "\n"
+    "lds cx, [0x1234]" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -722,6 +733,7 @@ int main() {
   test_aa_af();
   test_b0_bf();
   test_c2_c3();
+  test_c4_c5();
   printf("All test passed!\n");
   return 0;
 }
