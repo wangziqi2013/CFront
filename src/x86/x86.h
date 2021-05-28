@@ -297,6 +297,15 @@ inline static void *operand_set_nearptr(operand_t *operand, void *data) {
   return ptr_add_16(data);
 }
 
+// Sets a direct memory operand
+// This is specifically used by mov 0xA0 - 0xA3
+inline static void *operand_set_mem_direct(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_MEM;
+  operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
+  operand->mem.disp_16 = ptr_load_16(data);
+  return ptr_add_16(data);
+}
+
 // Given mode and r/m bits, set the operand
 void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm, void *data);
 // Parsing 2 operands, must be either reg or mem
