@@ -831,6 +831,19 @@ void test_e8_eb() {
   return;
 }
 
+void test_ec_ef() {
+  TEST_BEGIN();
+  char *test_str = \
+    "in al, DX" "\n"
+    "in ax, DX" "\n"
+    "out DX, al" "\n"
+    "out DX, ax"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -884,6 +897,7 @@ int main() {
   test_e0_e3();
   test_e4_e7();
   test_e8_eb();
+  test_ec_ef();
   printf("All test passed!\n");
   return 0;
 }
