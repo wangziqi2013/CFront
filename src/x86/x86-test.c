@@ -515,6 +515,29 @@ void test_90() {
   return;
 }
 
+void test_91_97() {
+  TEST_BEGIN();
+  char *test_str = \
+    "xchg ax, bx" "\n"
+    "xchg ax, cx" "\n"
+    "xchg ax, dx" "\n"
+    "xchg ax, si" "\n"
+    "xchg ax, di" "\n"
+    "xchg ax, sp" "\n"
+    "xchg ax, bp" "\n"
+    "xchg bx, ax" "\n"
+    "xchg cx, ax" "\n"
+    "xchg dx, ax" "\n"
+    "xchg si, ax" "\n"
+    "xchg di, ax" "\n"
+    "xchg sp, ax" "\n"
+    "xchg bp, ax" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -548,6 +571,7 @@ int main() {
   test_88_8e();
   test_8f();
   test_90();
+  test_91_97();
   printf("All test passed!\n");
   return 0;
 }
