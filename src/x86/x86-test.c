@@ -818,6 +818,19 @@ void test_e4_e7() {
   return;
 }
 
+void test_e8_eb() {
+  TEST_BEGIN();
+  char *test_str = \
+    "call 0x1234" "\n"
+    "jmp 0x1237" "\n"
+    "jmp 0x1234:0x5678" "\n"
+    "jmp 0x45"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -870,6 +883,7 @@ int main() {
   test_d7();
   test_e0_e3();
   test_e4_e7();
+  test_e8_eb();
   printf("All test passed!\n");
   return 0;
 }
