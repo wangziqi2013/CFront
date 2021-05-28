@@ -774,6 +774,11 @@ void ins_rel_8_fprint(ins_t *ins, FILE *fp) {
   return;
 }
 
+void ins_rel_16_fprint(ins_t *ins, FILE *fp) {
+  fprintf(fp, " rel 0x%04X", ins->src.rel_16);
+  return;
+}
+
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
   uint8_t opcode = ins->opcode;
@@ -796,9 +801,12 @@ void ins_fprint(ins_t *ins, FILE *fp) {
   }
   // Opcode name
   fprintf(fp, "%s", op_names[ins->op]);
-  // jcc is printed differently
-  if((opcode >= 0x70 && opcode <= 0x7F) || (opcode >= 0xE0 && opcode <= 0xE3)) {
+  // rel8 is printed differently
+  if((opcode >= 0x70 && opcode <= 0x7F) || (opcode >= 0xE0 && opcode <= 0xE3) || opcode == 0xEB) {
     ins_rel_8_fprint(ins, fp);
+    return;
+  } else if(opcode == 0xE8 || opcode == 0xE9) {
+    ins_rel_16_fprint(ins, fp);
     return;
   }
   // jmp/call far using memory operand needs an extra "far"
