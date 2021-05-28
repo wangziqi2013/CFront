@@ -702,6 +702,17 @@ void test_c6_c7() {
   return;
 }
 
+void test_ca_cb() {
+  TEST_BEGIN();
+  char *test_str = \
+    "retf" "\n"
+    "retf 0x7654" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -747,6 +758,7 @@ int main() {
   test_c2_c3();
   test_c4_c5();
   test_c6_c7();
+  test_ca_cb();
   printf("All test passed!\n");
   return 0;
 }
