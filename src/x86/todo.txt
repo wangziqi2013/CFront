@@ -1,0 +1,3 @@
+
+In the test, assign each instruction an address
+ - Let jump/loop rel8 instruction print absolute address computed from rel8
