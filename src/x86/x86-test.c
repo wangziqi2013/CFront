@@ -895,6 +895,28 @@ void test_f8_fd() {
   return;
 }
 
+// Grp4 and 5
+void test_fe_ff() {
+  TEST_BEGIN();
+  char *test_str = \
+    // Single memory operand
+    "inc byte [bx]" "\n"
+    "dec ah" "\n"
+    "inc word [si]" "\n"
+    "dec dh" "\n"
+    "push word [di]" "\n"
+    "push word [0x4567]" "\n"
+    // call and jmp with memory operand (i.e., target address stored in memory)
+    "call word [si + 0x5678]" "\n"
+    "call far [si + 0x5678]" "\n"
+    "jmp word [di + 0x5678]" "\n"
+    "jmp far [bp + 0x5678]" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -952,6 +974,7 @@ int main() {
   test_f4_f5();
   test_f6_f7();
   test_f8_fd();
+  test_fe_ff();
   printf("All test passed!\n");
   return 0;
 }
