@@ -643,6 +643,30 @@ void test_aa_af() {
   return;
 }
 
+void test_b0_bf() {
+  TEST_BEGIN();
+  char *test_str = \
+    "mov al, 0x12" "\n"
+    "mov cl, 0x12" "\n"
+    "mov dl, 0x12" "\n"
+    "mov bl, 0x12" "\n"
+    "mov ah, 0x12" "\n"
+    "mov ch, 0x12" "\n"
+    "mov dh, 0x12" "\n"
+    "mov bh, 0x12" "\n"
+    "mov ax, 0x1234" "\n"
+    "mov cx, 0x1234" "\n"
+    "mov dx, 0x1234" "\n"
+    "mov bx, 0x1234" "\n"
+    "mov sp, 0x1234" "\n"
+    "mov bp, 0x1234" "\n"
+    "mov si, 0x1234" "\n"
+    "mov di, 0x1234" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
 
 int main() {
   test_prefix_to_flag();
@@ -685,6 +709,7 @@ int main() {
   test_a4_a7();
   test_a8_a9();
   test_aa_af();
+  test_b0_bf();
   printf("All test passed!\n");
   return 0;
 }
