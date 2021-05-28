@@ -459,6 +459,24 @@ void test_86_87() {
   return;
 }
 
+void test_88_8c() {
+  TEST_BEGIN();
+  char *test_str = \
+    "mov [0x12], ah" "\n"
+    "mov [bx+si], dx" "\n"
+    "mov cl, [bx+si]" "\n"
+    "mov si, [bx+di+0x34]" "\n"
+    // The following tests segment reg move
+    "mov sp, cs" "\n"
+    "mov ax, ds" "\n"
+    "mov dx, es" "\n"
+    "mov si, ss" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -489,6 +507,7 @@ int main() {
   test_83();
   test_84_85();
   test_86_87();
+  test_88_8c();
   printf("All test passed!\n");
   return 0;
 }
