@@ -585,19 +585,23 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0x9E: ins->op = OP_SAHF; break;
     case 0x9F: ins->op = OP_LAHF; break;
     case 0xA0: { // mov AL, [offset]
+      ins->op = OP_MOV;
       operand_set_register(&ins->dest, REG_AL);
-      data = operand_set_nearptr(&ins->src, data);
+      data = operand_set_mem_direct(&ins->src, data);
     } break;
     case 0xA1: { // mov AX, [offset]
+    ins->op = OP_MOV;
       operand_set_register(&ins->dest, REG_AX);
-      data = operand_set_nearptr(&ins->src, data);
+      data = operand_set_mem_direct(&ins->src, data);
     } break;
     case 0xA2: { // mov [offset], AL
-      data = operand_set_nearptr(&ins->dest, data);
+      ins->op = OP_MOV;
+      data = operand_set_mem_direct(&ins->dest, data);
       operand_set_register(&ins->src, REG_AL);
     } break;
     case 0xA3: { // mov [offset], AX
-      data = operand_set_nearptr(&ins->dest, data);
+      ins->op = OP_MOV;
+      data = operand_set_mem_direct(&ins->dest, data);
       operand_set_register(&ins->src, REG_AX);
     } break;
     case 0xA4: ins->op = OP_MOVSB; break;
