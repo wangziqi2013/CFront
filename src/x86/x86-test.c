@@ -713,13 +713,38 @@ void test_ca_cb() {
   return;
 }
 
-void test_cc_ce() {
+void test_cc_cf() {
   TEST_BEGIN();
   char *test_str = \
     "int3" "\n"
     "int 0x255" "\n"
     "int 0x0" "\n"
     "into" "\n"
+    "iret" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+// Group 2 operand, Eb, 1 or Ev, q
+void test_d0_d1() {
+  TEST_BEGIN();
+  char *test_str = \
+    "rol bl, 1" "\n"
+    "ror al, 1" "\n"
+    "rcl byte [bx], 1" "\n"
+    "rcr byte [0x1234], 1" "\n"
+    "shl byte [si], 1" "\n"
+    "shr byte [di], 1" "\n"
+    "sar byte [bp], 1" "\n"
+    "rol bx, 1" "\n"
+    "ror ax, 1" "\n"
+    "rcl word [bx], 1" "\n"
+    "rcr word [0x1234], 1" "\n"
+    "shl word [si], 1" "\n"
+    "shr word [di], 1" "\n"
+    "sar word [bp], 1" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -772,7 +797,8 @@ int main() {
   test_c4_c5();
   test_c6_c7();
   test_ca_cb();
-  test_cc_ce();
+  test_cc_cf();
+  test_d0_d1();
   printf("All test passed!\n");
   return 0;
 }
