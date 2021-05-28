@@ -745,6 +745,21 @@ void test_d0_d1() {
     "shl word [si], 1" "\n"
     "shr word [di], 1" "\n"
     "sar word [bp], 1" "\n"
+    // 0xD1, shift using CL
+    "rol bl, cl" "\n"
+    "ror al, cl" "\n"
+    "rcl byte [bx], cl" "\n"
+    "rcr byte [0x1234], cl" "\n"
+    "shl byte [si], cl" "\n"
+    "shr byte [di], cl" "\n"
+    "sar byte [bp], cl" "\n"
+    "rol bx, cl" "\n"
+    "ror ax, cl" "\n"
+    "rcl word [bx], cl" "\n"
+    "rcr word [0x1234], cl" "\n"
+    "shl word [si], cl" "\n"
+    "shr word [di], cl" "\n"
+    "sar word [bp], cl" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
