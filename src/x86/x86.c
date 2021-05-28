@@ -241,7 +241,7 @@ const char *op_names[] = {
   "wait", "pushf", "popf", "sahf", "lahf",
   "movsb", "movsw", "cmpsb", "cmpsw",
   "stosb", "stosw", "lodsb", "lodsw", "scasb", "scasw",
-  "ret", "les", "lds", "retf", "int", "into", "iret",
+  "ret", "les", "lds", "retf", "int3", "int", "into", "iret",
   "rol", "ror", "rcl", "rcr", "shl", "shr", "sar",
   "aam", "aad", "xlat",
   "loopnz", "loopz", "loop", "jcxz",
@@ -666,9 +666,9 @@ void *parse_ins(ins_t *ins, void *data) {
       data = operand_set_imm_16(&ins->src, data);
     } break;
     case 0xCB: ins->op = OP_RETF; break;
-    case 0xCC: { // INT 3
-      ins->op = OP_INT; 
-      operand_set_const_8(&ins->src, 0x3);
+    case 0xCC: { // INT3
+      ins->op = OP_INT3; 
+      //operand_set_const_8(&ins->src, 0x3);
     } break;
     case 0xCD: { // INT imm8
       ins->op = OP_INT; 

@@ -371,6 +371,7 @@ enum {
   OP_LES,
   OP_LDS,
   OP_RETF,
+  OP_INT3,
   OP_INT,
   OP_INTO,
   OP_IRET,
