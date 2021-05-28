@@ -832,9 +832,14 @@ void ins_fprint(ins_t *ins, FILE *fp) {
       if(ins->src.operand_mode == OPERAND_MEM) {
         fprintf(fp, "word ptr ");
       }
+    } else if(opcode == 0xD4 || opcode == 0xD5) {
+      assert(ins->src.operand_mode == OPERAND_IMM_8);
+      // AAD/AAM do not need to print 10
+      if(ins->src.imm_8 == 10) {
+        return;
+      }
     }
     operand_fprint(&ins->src, flags, fp);
   }
-  
   return;
 }
