@@ -217,8 +217,7 @@ void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
     case OPERAND_IMM_8: {
       fprintf(fp, "0x%02X", operand->imm_8);
     } break;
-    case OPERAND_IMM_16: 
-    case OPERAND_NEARPTR: {
+    case OPERAND_IMM_16: {
       fprintf(fp, "0x%04X", operand->imm_16);
     } break;
     case OPERAND_FARPTR: { // Only used by mov

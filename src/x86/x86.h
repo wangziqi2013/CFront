@@ -210,7 +210,6 @@ inline static uint8_t *addr_mode_gen(uint8_t mode, uint8_t reg, uint8_t rm, uint
 #define OPERAND_REL_8      5
 #define OPERAND_REL_16     6
 #define OPERAND_FARPTR     7
-#define OPERAND_NEARPTR    8
 
 typedef struct {
   uint16_t offset;
@@ -228,7 +227,6 @@ typedef struct {
     uint16_t rel_16;     // 16 bit relative
     uint16_t rel_8;      // 8 bit relative
     farptr_t farptr;     // seg:offset full address (32-bit operand)
-    uint16_t nearptr;    // offset in the current segment (16-bit operand)
   };
 } operand_t; 
 
