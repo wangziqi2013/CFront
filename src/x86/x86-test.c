@@ -805,6 +805,19 @@ void test_e0_e3() {
   return;
 }
 
+void test_e4_e7() {
+  TEST_BEGIN();
+  char *test_str = \
+    "in al, 0x80" "\n"
+    "in ax, 0x98" "\n"
+    "out 0x56, al" "\n"
+    "out 0x45, ax"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -856,6 +869,7 @@ int main() {
   test_d4_d5();
   test_d7();
   test_e0_e3();
+  test_e4_e7();
   printf("All test passed!\n");
   return 0;
 }
