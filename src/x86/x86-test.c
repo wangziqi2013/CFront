@@ -609,6 +609,41 @@ void test_a4_a7() {
   return;
 }
 
+void test_a8_a9() {
+  TEST_BEGIN();
+  char *test_str = \
+    "test al, 0x34" "\n"
+    "test ax, 0x9876" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_aa_af() {
+  TEST_BEGIN();
+  char *test_str = \
+    "stosb" "\n"
+    "stosw" "\n"
+    "rep stosb" "\n"
+    "rep stosw" "\n"
+    "lodsb" "\n"
+    "lodsw" "\n"
+    "rep lodsb" "\n"
+    "rep lodsw" "\n"
+    "scasb" "\n"
+    "scasw" "\n"
+    "repz scasb" "\n"
+    "repe scasw" "\n"
+    "repnz scasb" "\n"
+    "repne scasw" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -648,6 +683,8 @@ int main() {
   test_9b_9f();
   test_a0_a3();
   test_a4_a7();
+  test_a8_a9();
+  test_aa_af();
   printf("All test passed!\n");
   return 0;
 }
