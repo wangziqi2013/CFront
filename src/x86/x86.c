@@ -658,7 +658,7 @@ void *parse_ins(ins_t *ins, void *data) {
       int reg;
       data = parse_operand_1(&ins->dest, ins->flags, &reg, data);
       (void)reg;
-      data = (ins->op == 0xC6) ? operand_set_imm_8(&ins->src, data) : operand_set_imm_16(&ins->src, data);
+      data = (ins->opcode == 0xC6) ? operand_set_imm_8(&ins->src, data) : operand_set_imm_16(&ins->src, data);
     } break;
     case 0xCA: {
       ins->op = OP_RETF;
@@ -807,7 +807,7 @@ void ins_fprint(ins_t *ins, FILE *fp) {
   if(ins->dest.operand_mode != OPERAND_NONE) {
     fputc(' ', fp);
     // Certain opcodes requires operand size
-    if(opcode == 0x80 || opcode == 0x81 || opcode == 0x83) {
+    if(opcode == 0x80 || opcode == 0x81 || opcode == 0x83 || opcode == 0xC6 || opcode == 0xC7) {
       if(ins->dest.operand_mode == OPERAND_MEM) {
         fprintf(fp, (flags & FLAG_W) ? "word ptr " : "byte ptr ");
       }
