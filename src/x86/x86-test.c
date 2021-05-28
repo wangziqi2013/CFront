@@ -713,6 +713,19 @@ void test_ca_cb() {
   return;
 }
 
+void test_cc_ce() {
+  TEST_BEGIN();
+  char *test_str = \
+    "int3" "\n"
+    "int 0x255" "\n"
+    "int 0x0" "\n"
+    "into" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -759,6 +772,7 @@ int main() {
   test_c4_c5();
   test_c6_c7();
   test_ca_cb();
+  test_cc_ce();
   printf("All test passed!\n");
   return 0;
 }
