@@ -797,7 +797,7 @@ void test_e0_e3() {
     "loopnz 0x23" "\n"
     "loopz 0x24" "\n"
     "loop 0x25" "\n"
-    "label:"
+    "label:" "\n"
     "loop label" "\n"
     ;
   test_ins(test_str);
@@ -811,7 +811,7 @@ void test_e4_e7() {
     "in al, 0x80" "\n"
     "in ax, 0x98" "\n"
     "out 0x56, al" "\n"
-    "out 0x45, ax"
+    "out 0x45, ax" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -824,7 +824,7 @@ void test_e8_eb() {
     "call 0x1234" "\n"
     "jmp 0x1237" "\n"
     "jmp 0x1234:0x5678" "\n"
-    "jmp 0x45"
+    "jmp 0x45" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -837,7 +837,18 @@ void test_ec_ef() {
     "in al, DX" "\n"
     "in ax, DX" "\n"
     "out DX, al" "\n"
-    "out DX, ax"
+    "out DX, ax" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
+void test_f4_f5() {
+  TEST_BEGIN();
+  char *test_str = \
+    "HLT" "\n"
+    "CMC" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
@@ -898,6 +909,7 @@ int main() {
   test_e4_e7();
   test_e8_eb();
   test_ec_ef();
+  test_f4_f5();
   printf("All test passed!\n");
   return 0;
 }
