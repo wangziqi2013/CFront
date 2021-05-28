@@ -223,6 +223,9 @@ void operand_fprint(operand_t *operand, uint32_t flags, FILE *fp) {
     case OPERAND_FARPTR: { // Only used by mov
       fprintf(fp, "0x%04X:0x%04X", operand->farptr.seg, operand->farptr.offset);
     } break;
+    case OPERAND_IMPLIED_1: { // Implied const value 1
+      fprintf(fp, "1");
+    } break;  
     default: {
       error_exit("(Internal error) Unknown operand mode: %d\n", operand->operand_mode);
     }
@@ -313,8 +316,8 @@ void *parse_ins_grp2(ins_t *ins, void *data) {
   assert(reg >= 0 && reg <= 7);
   // Set source operand
   switch(ins->opcode) {
-    case 0xD0: operand_set_const_8(&ins->src, 1); break;
-    case 0xD1: operand_set_const_16(&ins->src, 1); break;
+    case 0xD0: operand_set_implied_one(&ins->src); break;
+    case 0xD1: operand_set_implied_one(&ins->src); break;
     case 0xD2: operand_set_register(&ins->src, REG_CL); break;
     case 0xD3: operand_set_register(&ins->src, REG_CL); break;
     default: assert(0); break;

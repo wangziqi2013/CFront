@@ -211,6 +211,8 @@ inline static uint8_t *addr_mode_gen(uint8_t mode, uint8_t reg, uint8_t rm, uint
 #define OPERAND_REL_8      5
 #define OPERAND_REL_16     6
 #define OPERAND_FARPTR     7
+// The operand is a const value 1, which is not stored
+#define OPERAND_IMPLIED_1  8
 
 typedef struct {
   uint16_t offset;
@@ -269,7 +271,6 @@ inline static void *operand_set_rel_16(operand_t *operand, void *data) {
   return ptr_add_16(data);
 }
 
-
 inline static void operand_set_const_8(operand_t *operand, uint8_t value) {
   operand->operand_mode = OPERAND_IMM_8;
   operand->imm_8 = value;
@@ -279,6 +280,11 @@ inline static void operand_set_const_8(operand_t *operand, uint8_t value) {
 inline static void operand_set_const_16(operand_t *operand, uint16_t value) {
   operand->operand_mode = OPERAND_IMM_16;
   operand->imm_16 = value;
+  return;
+}
+
+inline static void operand_set_implied_one(operand_t *operand) {
+  operand->operand_mode = OPERAND_IMPLIED_1;
   return;
 }
 
