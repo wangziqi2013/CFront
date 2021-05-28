@@ -771,9 +771,25 @@ void ins_jcc_fprint(ins_t *ins, FILE *fp) {
 
 // Only prints instruction, but not address or binary representation
 void ins_fprint(ins_t *ins, FILE *fp) {
+  // REP/REPE/REPNE
+  if(opcode == 0xA4 || opcode == 0xA5 || opcode == 0xAA || opcode == 0xAB || opcode == 0xAC || opcode == 0xAD) {
+    if(flags & FLAG_REP) {
+      fprintf(fp, "rep ");
+    }
+  } else if(opcode == 0xA6 || opcode == 0xA7 || opcode == 0xAE || opcode == 0xAF) {
+    if(flags & FLAG_REPE) {
+      fprintf(fp, "repe ");
+    } else if(flags & FLAG_REPNE) {
+      fprintf(fp, "repne ");
+    }
+  }
   fprintf(fp, "%s", op_names[ins->op]);
   uint8_t opcode = ins->opcode;
   uint32_t flags = ins->flags;
+  // lock flag
+  if(flags & FLAG_LOCK) {
+    fprintf(fp, "lock ");
+  }
   // jcc is printed differently
   if(opcode >= 0x70 && opcode <= 0x7F) {
     ins_jcc_fprint(ins, fp);
@@ -810,5 +826,6 @@ void ins_fprint(ins_t *ins, FILE *fp) {
     }
     operand_fprint(&ins->src, flags, fp);
   }
+  
   return;
 }
