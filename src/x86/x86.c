@@ -764,15 +764,13 @@ void *parse_ins(ins_t *ins, void *data) {
   return data;
 }
 
-// Prints jcc, i.e., 0x70 -- 0x7F
+// Prints a 8-bit relative offset value
 // These instructions are different, since their target address uses sign-extended relative offsets,
 // and that the offset is after the instruction
-void ins_jcc_fprint(ins_t *ins, FILE *fp) {
-  assert(ins->opcode >= 0x70 && ins->opcode <= 0x7F);
-  uint16_t rel_16 = (uint16_t)(int16_t)(int8_t)ins->src.rel_8;
-  rel_16 += 2; // After the two-byte instruction
+void ins_rel_8_fprint(ins_t *ins, FILE *fp) {
+  //uint16_t rel_16 = (uint16_t)(int16_t)(int8_t)ins->src.rel_8;
   // "rel" means it depends on inst's actual address (i.e., current IP)
-  fprintf(fp, " rel %04X", rel_16);
+  fprintf(fp, " rel 0x%02X", ins->src.rel_8);
   return;
 }
 
@@ -799,8 +797,8 @@ void ins_fprint(ins_t *ins, FILE *fp) {
   // Opcode name
   fprintf(fp, "%s", op_names[ins->op]);
   // jcc is printed differently
-  if(opcode >= 0x70 && opcode <= 0x7F) {
-    ins_jcc_fprint(ins, fp);
+  if((opcode >= 0x70 && opcode <= 0x7F) || (opcode >= 0xE0 && opcode <= 0xE3)) {
+    ins_rel_8_fprint(ins, fp);
     return;
   }
   // jmp/call far using memory operand needs an extra "far"
