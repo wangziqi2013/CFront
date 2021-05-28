@@ -486,6 +486,23 @@ void test_88_8e() {
   return;
 }
 
+void test_8f() {
+  TEST_BEGIN();
+  char *test_str = \
+    "pop ax" "\n"
+    "pop cx" "\n"
+    "pop si" "\n"
+    "pop bp" "\n"
+    "pop word [0x1234]" "\n"
+    "pop word [bx]" "\n"
+    "pop word [bx+0x9876]" "\n"
+    "pop word [bp+si+0x76]" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -517,6 +534,7 @@ int main() {
   test_84_85();
   test_86_87();
   test_88_8e();
+  test_8f();
   printf("All test passed!\n");
   return 0;
 }
