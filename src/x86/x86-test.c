@@ -532,6 +532,11 @@ void test_91_97() {
     "xchg di, ax" "\n"
     "xchg sp, ax" "\n"
     "xchg bp, ax" "\n"
+    // Lock prefix
+    "lock xchg ax, bx" "\n"
+    "lock xchg ax, cx" "\n"
+    "lock xchg sp, ax" "\n"
+    "lock xchg bp, ax" "\n"
     ;
   test_ins(test_str);
   TEST_PASS();
