@@ -668,6 +668,17 @@ void test_b0_bf() {
   return;
 }
 
+void test_c2_c3() {
+  TEST_BEGIN();
+  char *test_str = \
+    "ret" "\n"
+    "ret 0x9876" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -710,6 +721,7 @@ int main() {
   test_a8_a9();
   test_aa_af();
   test_b0_bf();
+  test_c2_c3();
   printf("All test passed!\n");
   return 0;
 }
