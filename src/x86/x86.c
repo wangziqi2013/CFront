@@ -807,7 +807,8 @@ void ins_fprint(ins_t *ins, FILE *fp) {
   if(ins->dest.operand_mode != OPERAND_NONE) {
     fputc(' ', fp);
     // Certain opcodes requires operand size
-    if(opcode == 0x80 || opcode == 0x81 || opcode == 0x83 || opcode == 0xC6 || opcode == 0xC7) {
+    if(opcode == 0x80 || opcode == 0x81 || opcode == 0x83 || opcode == 0xC6 || opcode == 0xC7 || 
+       opcode == 0xD0 || opcode == 0xD1 || opcode == 0xD2 || opcode == 0xD3) {
       if(ins->dest.operand_mode == OPERAND_MEM) {
         fprintf(fp, (flags & FLAG_W) ? "word ptr " : "byte ptr ");
       }
