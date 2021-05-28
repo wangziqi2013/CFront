@@ -89,7 +89,7 @@ void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp) {
   }
   switch(addr_mode->addr_mode) {
     case ADDR_MODE_MEM_DIRECT: {
-      fprintf(fp, "0x%04X", addr_mode->disp_16);
+      fprintf(fp, "0x%04X", addr_mode->direct_addr);
     } break;
     case ADDR_MODE_MEM_REG_ONLY: {
       assert(addr_mode->regs.reg1 != REG_NONE);
@@ -586,21 +586,21 @@ void *parse_ins(ins_t *ins, void *data) {
     case 0xA0: { // mov AL, [offset]
       ins->op = OP_MOV;
       operand_set_register(&ins->dest, REG_AL);
-      data = operand_set_mem_direct(&ins->src, data);
+      data = operand_set_mem_direct_addr(&ins->src, data);
     } break;
     case 0xA1: { // mov AX, [offset]
     ins->op = OP_MOV;
       operand_set_register(&ins->dest, REG_AX);
-      data = operand_set_mem_direct(&ins->src, data);
+      data = operand_set_mem_direct_addr(&ins->src, data);
     } break;
     case 0xA2: { // mov [offset], AL
       ins->op = OP_MOV;
-      data = operand_set_mem_direct(&ins->dest, data);
+      data = operand_set_mem_direct_addr(&ins->dest, data);
       operand_set_register(&ins->src, REG_AL);
     } break;
     case 0xA3: { // mov [offset], AX
       ins->op = OP_MOV;
-      data = operand_set_mem_direct(&ins->dest, data);
+      data = operand_set_mem_direct_addr(&ins->dest, data);
       operand_set_register(&ins->src, REG_AX);
     } break;
     case 0xA4: ins->op = OP_MOVSB; break;

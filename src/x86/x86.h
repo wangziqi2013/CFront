@@ -186,7 +186,8 @@ typedef struct {
   addr_mode_reg_t regs;  // Register for addressing (one or two)
   union {
     uint8_t disp_8;
-    uint16_t disp_16;    // Direct addressing mode also uses this
+    uint16_t disp_16;
+    uint16_t direct_addr; // Direct addressing mode uses this
   };
 } addr_mode_t;
 
@@ -291,10 +292,10 @@ inline static void *operand_set_farptr(operand_t *operand, void *data) {
 
 // Sets a direct memory operand
 // This is specifically used by mov 0xA0 - 0xA3
-inline static void *operand_set_mem_direct(operand_t *operand, void *data) {
+inline static void *operand_set_mem_direct_addr(operand_t *operand, void *data) {
   operand->operand_mode = OPERAND_MEM;
   operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
-  operand->mem.disp_16 = ptr_load_16(data);
+  operand->mem.direct_addr = ptr_load_16(data);
   return ptr_add_16(data);
 }
 
