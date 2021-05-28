@@ -503,6 +503,18 @@ void test_8f() {
   return;
 }
 
+void test_90() {
+  TEST_BEGIN();
+  char *test_str = \
+    "nop" "\n"
+    "nop" "\n"
+    "nop" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -535,6 +547,7 @@ int main() {
   test_86_87();
   test_88_8e();
   test_8f();
+  test_90();
   printf("All test passed!\n");
   return 0;
 }
