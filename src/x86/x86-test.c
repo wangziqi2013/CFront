@@ -855,6 +855,31 @@ void test_f4_f5() {
   return;
 }
 
+// Group 3a and 3b
+void test_f6_f7() {
+  TEST_BEGIN();
+  char *test_str = \
+    "test byte [bx], 0x76" "\n"
+    "not byte [bx]" "\n"
+    "neg bl" "\n"
+    "mul cl" "\n"
+    "imul byte [bp+0x1123]" "\n"
+    "div cl" "\n"
+    "idiv byte [bp+0x1123]" "\n"
+    // 0xf7
+    "test word [bx], 0x76" "\n"
+    "not word [bx]" "\n"
+    "neg bx" "\n"
+    "mul cx" "\n"
+    "imul word [bp+0x1123]" "\n"
+    "div dx" "\n"
+    "idiv word [bp+0x1123]" "\n"
+    ;
+  test_ins(test_str);
+  TEST_PASS();
+  return;
+}
+
 int main() {
   test_prefix_to_flag();
   test_compile_helper();
@@ -910,6 +935,7 @@ int main() {
   test_e8_eb();
   test_ec_ef();
   test_f4_f5();
+  test_f6_f7();
   printf("All test passed!\n");
   return 0;
 }
