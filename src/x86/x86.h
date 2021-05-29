@@ -438,7 +438,9 @@ typedef struct {
 
 // Reads instructions from a file (used for debugging)
 typedef struct {
-  const char *filename;        // File name
+  char *filename;              // File name
+  void *data;                  // Content of the file
+  void *ptr;                   // Current read position
   int size;                    // File size (bytes)
   uint32_t curr_addr;          // Current address of the instruction
   ins_t curr_ins;              // The instruction object

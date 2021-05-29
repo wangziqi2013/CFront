@@ -120,11 +120,29 @@ ins_reader_t *ins_reader_init(const char *filename) {
   ins_reader_t *ins_reader = (ins_reader_t *)malloc(sizeof(ins_reader_t));
   SYSEXPECT(ins_reader != NULL);
   ins_reader->filename = strclone(filename);
+  FILE *fp = fopen(filename, "rb");
+  SYSEXPECT(fp != NULL);
+  int ret;
+  ret = fseek(fp, 0, SEEK_END);
+  SYSEXPECT(ret == 0);
+  ins_reader->size = ftell(fp);
+  SYSEXPECT(ins_reader->size != -1);
+  if(ins_reader->size == 0) {
+    error_exit("The file \"%s\" is empty\n", filename);
+  }
+  ret = fseek(fp, 0, SEEK_SET);
+  SYSEXPECT(ret == 0);
+  ins_reader->data = malloc(ins_reader->size);
+  ret = fread(ins_reader->data, ins_reader->size, 1, fp);
+  SYSEXPECT(ret == 1);
+  fclose(fp);
+  ins->ptr = ins->data;
   return ins_reader;
 }
 
 void ins_reader_free(ins_reader_t *ins_reader) {
   free(ins_reader->filename);
+  free(ins_reader->data);
   free(ins_reader);
   return;
 }
