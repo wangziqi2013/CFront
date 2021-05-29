@@ -137,6 +137,7 @@ ins_reader_t *ins_reader_init(const char *filename) {
   SYSEXPECT(ret == 1);
   fclose(fp);
   ins_reader->ptr = ins_reader->data;
+  ins_reader->next_addr = 0;
   return ins_reader;
 }
 
@@ -147,6 +148,15 @@ void ins_reader_free(ins_reader_t *ins_reader) {
   return;
 }
 
+inline static void ins_reader_next(ins_reader_t *ins_reader, ins_t *ins) {
+  if(ins_reader_is_end(ins_reader) == 1) {
+    error_exit("The ins_reader has reached the end (size %d bytes)\n", ins_reader->size);
+  }
+  ins_reader->data = parse_ins(&ins, ins_reader->data);
+  // Advance the address
+  ins_reader->next_addr += ins->size;
+  return;
+}
 
 //* ins_t
 
