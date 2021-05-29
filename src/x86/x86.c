@@ -154,7 +154,7 @@ void ins_reader_next(ins_reader_t *ins_reader, ins_t *ins) {
   }
   ins_reader->data = parse_ins(ins, ins_reader->data);
   // Advance the address
-  ins_reader->next_addr += ins->size;
+  ins_reader->next_addr += (uint32_t)ins->size;
   return;
 }
 
@@ -810,23 +810,19 @@ void *parse_ins(ins_t *ins, void *data) {
   return data;
 }
 
-// Prints a 8-bit relative offset value
-// These instructions are different, since their target address uses sign-extended relative offsets,
-// and that the offset is after the instruction
-void ins_rel_8_fprint(ins_t *ins, FILE *fp) {
-  //uint16_t rel_16 = (uint16_t)(int16_t)(int8_t)ins->src.rel_8;
-  // "rel" means it depends on inst's actual address (i.e., current IP)
-  fprintf(fp, " rel 0x%02X", ins->src.rel_8);
+// Prints a 8-bit relative offset value as absolute address
+void ins_rel_8_fprint(ins_t *ins, uint32_t next_addr, FILE *fp) {
+  fprintf(fp, " 0x%04X", next_addr + (uint16_t)ins->src.rel_8);
   return;
 }
 
-void ins_rel_16_fprint(ins_t *ins, FILE *fp) {
-  fprintf(fp, " rel 0x%04X", ins->src.rel_16);
+void ins_rel_16_fprint(ins_t *ins, uint32_t next_addr, FILE *fp) {
+  fprintf(fp, " 0x%04X", next_addr + ins->src.rel_16);
   return;
 }
 
 // Only prints instruction, but not address or binary representation
-void ins_fprint(ins_t *ins, FILE *fp) {
+void ins_fprint(ins_t *ins, uint32_t next_addr, FILE *fp) {
   uint8_t opcode = ins->opcode;
   uint32_t flags = ins->flags;
   // REP/REPE/REPNE
@@ -849,10 +845,10 @@ void ins_fprint(ins_t *ins, FILE *fp) {
   fprintf(fp, "%s", op_names[ins->op]);
   // rel8 is printed differently
   if((opcode >= 0x70 && opcode <= 0x7F) || (opcode >= 0xE0 && opcode <= 0xE3) || opcode == 0xEB) {
-    ins_rel_8_fprint(ins, fp);
+    ins_rel_8_fprint(ins, next_addr, fp);
     return;
   } else if(opcode == 0xE8 || opcode == 0xE9) {
-    ins_rel_16_fprint(ins, fp);
+    ins_rel_16_fprint(ins, next_addr, fp);
     return;
   }
   // jmp/call far using memory operand needs an extra "far"

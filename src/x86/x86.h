@@ -469,6 +469,8 @@ void *parse_ins_grp4(ins_t *ins, void *data);
 void *parse_ins_grp5(ins_t *ins, void *data);
 void *parse_ins(ins_t *ins, void *data);
 
-void ins_fprint(ins_t *ins, FILE *fp);
+void ins_rel_8_fprint(ins_t *ins, uint32_t next_addr, FILE *fp);
+void ins_rel_16_fprint(ins_t *ins, uint32_t next_addr, FILE *fp);
+void ins_fprint(ins_t *ins, uint32_t next_addr, FILE *fp);
 
 #endif
