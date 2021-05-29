@@ -443,7 +443,7 @@ typedef struct {
   void *end;                   // End pointer
   void *ptr;                   // Current read position
   int size;                    // File size (bytes)
-  uint32_t next_addr;          // Next address of the instruction
+  uint16_t next_addr;          // Next address of the instruction
 } ins_reader_t;
 
 ins_reader_t *ins_reader_init();
@@ -456,6 +456,9 @@ inline static int ins_reader_is_exact_end(ins_reader_t *ins_reader) {
 }
 inline static void *ins_reader_get_curr_ptr(ins_reader_t *ins_reader) {
   return ins_reader->ptr;
+}
+inline static uint16_t ins_reader_get_next_addr(ins_reader_t *ins_reader) {
+  return ins_reader->next_addr;
 }
 // The ins object is within the object
 void ins_reader_next(ins_reader_t *ins_reader, ins_t *ins);
