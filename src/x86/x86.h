@@ -440,6 +440,7 @@ typedef struct {
 typedef struct {
   char *filename;              // File name
   void *data;                  // Content of the file
+  void *end;                   // End pointer
   void *ptr;                   // Current read position
   int size;                    // File size (bytes)
   uint32_t next_addr;          // Next address of the instruction
@@ -448,7 +449,7 @@ typedef struct {
 ins_reader_t *ins_reader_init();
 void ins_reader_free(ins_reader_t *ins_reader);
 inline static int ins_reader_is_end(ins_reader_t *ins_reader) {
-  return (int)((uint64_t)ins_reader->ptr - (uint64_t)ins_reader->data) >= ins_reader->size;
+  return ins_reader->ptr >= ins_reader->end;
 }
 // The ins object is within the object
 void ins_reader_next(ins_reader_t *ins_reader, ins_t *ins);
