@@ -136,7 +136,7 @@ ins_reader_t *ins_reader_init(const char *filename) {
   ret = fread(ins_reader->data, ins_reader->size, 1, fp);
   SYSEXPECT(ret == 1);
   fclose(fp);
-  ins->ptr = ins->data;
+  ins_reader->ptr = ins_reader->data;
   return ins_reader;
 }
 
@@ -146,6 +146,7 @@ void ins_reader_free(ins_reader_t *ins_reader) {
   free(ins_reader);
   return;
 }
+
 
 //* ins_t
 
