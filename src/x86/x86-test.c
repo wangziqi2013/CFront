@@ -98,16 +98,15 @@ static void *test_helper_load_file(const char *filename, int *_size) {
 
 // Print a given file
 static void test_helper_print_file(const char *filename) {
-  int size = 0;
-  void *data = test_helper_load_file("test_compile_helper.bin", &size);
-  void *end = (uint8_t *)data + size;
-  while(data < end) {
+  ins_reader_t *ins_reader = ins_reader_init(filename);
+  while(ins_reader_is_end(ins_reader) == 0) {
     ins_t ins;
-    data = parse_ins(&ins, data);
-    ins_fprint(&ins, stdout);
+    ins_reader_next(ins_reader, &ins);
+    ins_fprint(&ins, ins_reader->next_addr, stdout);
     fputc('\n', stdout);
   }
-  assert(data == end);
+  assert(ins_reader_is_exact_end(ins_reader) == 1);
+  ins_reader_free(ins_reader);
   return;
 }
 
