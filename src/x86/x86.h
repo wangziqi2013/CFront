@@ -44,6 +44,15 @@
 #define TEST_BEGIN() do { printf("========== %s ==========\n", __func__); } while(0);
 #define TEST_PASS() do { printf("Pass!\n"); } while(0);
 
+// String functions
+inline static char *strclone(const char *s) {
+  int len = strlen(s);
+  char *ret = (char *)malloc(len + 1);
+  SYSEXPECT(ret != NULL);
+  strcpy(ret, s);
+  return ret;
+}
+
 //* Prefix (raw value in instructions)
 
 #define PREFIX_REP    0xf3
@@ -434,6 +443,9 @@ typedef struct {
   uint32_t curr_addr;          // Current address of the instruction
   ins_t curr_ins;              // The instruction object
 } ins_reader_t;
+
+ins_reader_t *ins_reader_init();
+void ins_reader_free(ins_reader_t *ins_reader);
 
 inline static void print_ins_addr(ins_t *ins) {
   fprintf(stderr, "Instruction at address %X:%X\n", ins->addr.seg, ins->addr.offset);

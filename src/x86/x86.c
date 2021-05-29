@@ -114,6 +114,19 @@ void addr_mode_fprint(addr_mode_t *addr_mode, uint32_t flags, FILE *fp) {
   return;
 }
 
+//* ins_reader_t
+
+ins_reader_t *ins_reader_init(const char *filename) {
+  ins_reader_t *ins_reader = (ins_reader_t *)malloc(sizeof(ins_reader_t));
+  SYSEXPECT(ins_reader != NULL);
+  ins_reader->filename = strclone(filename);
+  return ins_reader;
+}
+
+void ins_reader_free(ins_reader_t *ins_reader);
+
+//* ins_t
+
 // Sets operand based on mode + r/m
 void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm, void *data) {
   if(addr_mode == ADDR_MODE_REG) {
