@@ -451,6 +451,9 @@ void ins_reader_free(ins_reader_t *ins_reader);
 inline static int ins_reader_is_end(ins_reader_t *ins_reader) {
   return ins_reader->ptr >= ins_reader->end;
 }
+inline static int ins_reader_is_exact_end(ins_reader_t *ins_reader) {
+  return ins_reader->ptr == ins_reader->end;
+}
 // The ins object is within the object
 void ins_reader_next(ins_reader_t *ins_reader, ins_t *ins);
 
