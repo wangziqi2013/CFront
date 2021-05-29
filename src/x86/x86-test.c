@@ -81,6 +81,15 @@ static void test_helper_print_file(const char *filename) {
   while(ins_reader_is_end(ins_reader) == 0) {
     ins_t ins;
     ins_reader_next(ins_reader, &ins);
+    // Print address (32-bit full address)
+    printf("%08X  ", ins_reader->next_addr - ins.size);
+    uint8_t *ptr = (uint8_t *)ins_reader_get_curr_ptr(ins_reader) - ins.size;
+    for(int i = 0;i < ins.size;i++) {
+      printf("%02X", ptr[i]);
+    }
+    for(int i = 0;i < 9 - ins.size;i++) {
+      printf("  ");
+    }
     ins_fprint(&ins, ins_reader->next_addr, stdout);
     fputc('\n', stdout);
   }
@@ -91,6 +100,7 @@ static void test_helper_print_file(const char *filename) {
 
 static void test_ins(const char *test_str) {
   test_helper_compile(test_str, "test_compile_helper.bin");
+  printf("----------\n");
   test_helper_print_file("test_compile_helper.bin");
   remove("test_compile_helper.bin");
   return;
