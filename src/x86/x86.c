@@ -123,7 +123,11 @@ ins_reader_t *ins_reader_init(const char *filename) {
   return ins_reader;
 }
 
-void ins_reader_free(ins_reader_t *ins_reader);
+void ins_reader_free(ins_reader_t *ins_reader) {
+  free(ins_reader->filename);
+  free(ins_reader);
+  return;
+}
 
 //* ins_t
 
