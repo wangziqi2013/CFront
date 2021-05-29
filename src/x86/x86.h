@@ -427,6 +427,14 @@ typedef struct {
   operand_t src;       // If there only one operand, the src is used
 } ins_t;
 
+// Reads instructions from a file (used for debugging)
+typedef struct {
+  const char *filename;        // File name
+  int size;                    // File size (bytes)
+  uint32_t curr_addr;          // Current address of the instruction
+  ins_t curr_ins;              // The instruction object
+} ins_reader_t;
+
 inline static void print_ins_addr(ins_t *ins) {
   fprintf(stderr, "Instruction at address %X:%X\n", ins->addr.seg, ins->addr.offset);
 }
