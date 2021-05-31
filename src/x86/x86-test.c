@@ -101,7 +101,7 @@ static void test_helper_print_file(const char *filename) {
 static void test_ins(const char *test_str) {
   test_helper_compile(test_str, "test_compile_helper.bin");
   printf("----------\n");
-  test_helper_print_file("test_compile_helper.bin");
+  test_helper_print_file("test_compile_helper.bin"); 
   remove("test_compile_helper.bin");
   return;
 }
