@@ -185,14 +185,16 @@ typedef struct {
 
 // Mode = 00/01/10
 extern const addr_mode_reg_t addr_mode_reg_table_16[8];
+extern const addr_mode_reg_t addr_mode_reg_table_32[8];
 
 #define ADDR_MODE_MEM_REG_ONLY     0
 #define ADDR_MODE_MEM_REG_DISP_8   1
 #define ADDR_MODE_MEM_REG_DISP_16  2
+#define ADDR_MODE_MEM_REG_DISP_32  3
 // This will cause the addr_mode object be not initialized
-#define ADDR_MODE_REG              3
+#define ADDR_MODE_REG              4
 // This is not in the raw instruction
-#define ADDR_MODE_MEM_DIRECT       4
+#define ADDR_MODE_MEM_DIRECT       5
 
 // Addressing mode for memory operands
 typedef struct {

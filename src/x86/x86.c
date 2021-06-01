@@ -62,7 +62,7 @@ const addr_mode_reg_t addr_mode_reg_table_16[8] = {
 };
 
 // 32-bit mode, 32-bit register
-const int addr_mode_reg_table_32[8] = {
+const addr_mode_reg_t addr_mode_reg_table_32[8] = {
   {REG_EAX, REG_NONE}, {REG_ECX, REG_NONE}, {REG_EDX, REG_NONE}, {REG_EBX, REG_NONE}, 
   {REG_ESP, REG_NONE}, {REG_EBP, REG_NONE}, {REG_ESI, REG_NONE}, {REG_EDI, REG_NONE}, 
 };
