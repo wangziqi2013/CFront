@@ -55,20 +55,16 @@ const int seg_reg_table[4] = {
   REG_ES, REG_CS, REG_SS, REG_DS, 
 };
 
-// Reg only, this also encoded direct addressing mode
-const addr_mode_reg_t addr_mode_reg_table_1[8] = {
-  {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
-  {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_NONE, REG_NONE}, {REG_BX, REG_NONE}, 
-};
-
-// Reg + disp_8/disp_16
-const addr_mode_reg_t addr_mode_reg_table_2[8] = {
+// Reg only and reg + disp_8/16; For reg_only, index 6 is not used
+const addr_mode_reg_t addr_mode_reg_table[8] = {
   {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
 };
 
 const char *reg_names[] = {
-  "None", "AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP", 
+  "None", 
+  "AX", "BX", "CX", "DX", "SI", "DI", "BP", "SP", 
+  "EAX", "EBX", "ECX", "EDX", "ESI", "EDI", "EBP", "ESP", 
   "AH", "AL", "BH", "BL", "CH", "CL", "DH", "DL", 
   "CS", "DS", "ES", "SS",
   "IP", "FLAGS",
@@ -170,20 +166,21 @@ void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm,
     operand->operand_mode = OPERAND_MEM;
     operand->mem.addr_mode = addr_mode;
     if(addr_mode == ADDR_MODE_MEM_REG_ONLY) { 
-      operand->mem.regs = addr_mode_reg_table_1[rm];
-      // Directly addressed, followed by 16 bit absolute address
-      // Note that this overrides the REG ONLY addressing mode
       if(rm == 6) {
+        // Directly addressed, followed by 16 bit absolute address
+        // Note that this overrides the REG ONLY addressing mode
         operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
         operand->mem.disp_16 = ptr_load_16(data);
         data = ptr_add_16(data);
+      } else {
+        operand->mem.regs = addr_mode_reg_table[rm];
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
-      operand->mem.regs = addr_mode_reg_table_2[rm];
+      operand->mem.regs = addr_mode_reg_table[rm];
       operand->mem.disp_8 = ptr_load_8(data);
       data = ptr_add_8(data);
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
-      operand->mem.regs = addr_mode_reg_table_2[rm];
+      operand->mem.regs = addr_mode_reg_table[rm];
       operand->mem.disp_16 = ptr_load_16(data);
       data = ptr_add_16(data);
     }
