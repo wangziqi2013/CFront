@@ -133,9 +133,18 @@ enum {
   REG_SP,
   REG_GEN_16_END,
   // 32-bit register
-  
+  REG_GEN_32_BEGIN = REG_GEN_16_END,
+  REG_EAX = REG_GEN_32_BEGIN,
+  REG_EBX,
+  REG_ECX,
+  REG_EDX,
+  REG_ESI,
+  REG_EDI,
+  REG_EBP,
+  REG_ESP,
+  REG_GEN_32_END,
   // 8-bit register
-  REG_GEN_8_BEGIN = REG_GEN_16_END,
+  REG_GEN_8_BEGIN = REG_GEN_32_END,
   REG_AH = REG_GEN_8_BEGIN,
   REG_AL,
   REG_BH,
