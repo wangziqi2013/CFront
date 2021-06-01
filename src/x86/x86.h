@@ -118,49 +118,46 @@ extern global_t global;
 
 //* Register constants
 
-#define REG_NONE      0
-
-#define REG_BEGIN         1
-#define REG_GEN_BEGIN     1
-#define REG_GEN_16_BEGIN  1
-
-#define REG_AX        1
-#define REG_BX        2
-#define REG_CX        3
-#define REG_DX        4
-#define REG_SI        5
-#define REG_DI        6
-#define REG_BP        7
-#define REG_SP        8
-
-#define REG_GEN_16_END    9
-#define REG_GEN_8_BEGIN   9
-
-#define REG_AH        9
-#define REG_AL        10
-#define REG_BH        11
-#define REG_BL        12
-#define REG_CH        13
-#define REG_CL        14
-#define REG_DH        15
-#define REG_DL        16
-
-#define REG_GEN_8_END 17
-#define REG_GEN_END   17
-
-#define REG_SEG_BEGIN 17
-
-#define REG_CS        17
-#define REG_DS        18
-#define REG_ES        19
-#define REG_SS        20
-
-#define REG_SEG_END   21
-#define REG_END       21
-
-// The following will never be used by instructions but we add them anyways
-#define REG_IP        21
-#define REG_FLAGS     22
+enum {
+  REG_NONE = 0,
+  REG_BEGIN,
+  REG_GEN_BEGIN = REG_BEGIN,
+  REG_GEN_16_BEGIN = REG_BEGIN,
+  REG_AX = REG_GEN_16_BEGIN,
+  REG_BX,
+  REG_CX,
+  REG_DX,
+  REG_SI,
+  REG_DI,
+  REG_BP,
+  REG_SP,
+  REG_GEN_16_END,
+  // 32-bit register
+  
+  // 8-bit register
+  REG_GEN_8_BEGIN = REG_GEN_16_END,
+  REG_AH = REG_GEN_8_BEGIN,
+  REG_AL,
+  REG_BH,
+  REG_BL,
+  REG_CH,
+  REG_CL,
+  REG_DH,
+  REG_DL,
+  REG_GEN_8_END,
+  REG_GEN_END = REG_GEN_8_END,
+  // Segment register
+  REG_SEG_BEGIN,
+  REG_CS,
+  REG_DS,
+  REG_ES,
+  REG_SS,
+  REG_SEG_END,
+  REG_END,
+  // Non-general purpose registers
+  REG_IP,
+  REG_FLAGS,
+};
 
 extern const char *reg_names[];
 
