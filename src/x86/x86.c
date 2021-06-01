@@ -56,9 +56,15 @@ const int seg_reg_table[4] = {
 };
 
 // Reg only and reg + disp_8/16; For reg_only, index 6 is not used
-const addr_mode_reg_t addr_mode_reg_table[8] = {
+const addr_mode_reg_t addr_mode_reg_table_16[8] = {
   {REG_BX, REG_SI}, {REG_BX, REG_DI}, {REG_BP, REG_SI}, {REG_BP, REG_DI}, 
   {REG_SI, REG_NONE}, {REG_DI, REG_NONE}, {REG_BP, REG_NONE}, {REG_BX, REG_NONE}, 
+};
+
+// 32-bit mode, 32-bit register
+const int addr_mode_reg_table_32[8] = {
+  {REG_EAX, REG_NONE}, {REG_ECX, REG_NONE}, {REG_EDX, REG_NONE}, {REG_EBX, REG_NONE}, 
+  {REG_ESP, REG_NONE}, {REG_EBP, REG_NONE}, {REG_ESI, REG_NONE}, {REG_EDI, REG_NONE}, 
 };
 
 const char *reg_names[] = {
@@ -173,14 +179,14 @@ void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm,
         operand->mem.disp_16 = ptr_load_16(data);
         data = ptr_add_16(data);
       } else {
-        operand->mem.regs = addr_mode_reg_table[rm];
+        operand->mem.regs = addr_mode_reg_table_16[rm];
       }
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_8) {
-      operand->mem.regs = addr_mode_reg_table[rm];
+      operand->mem.regs = addr_mode_reg_table_16[rm];
       operand->mem.disp_8 = ptr_load_8(data);
       data = ptr_add_8(data);
     } else if(addr_mode == ADDR_MODE_MEM_REG_DISP_16) {
-      operand->mem.regs = addr_mode_reg_table[rm];
+      operand->mem.regs = addr_mode_reg_table_16[rm];
       operand->mem.disp_16 = ptr_load_16(data);
       data = ptr_add_16(data);
     }

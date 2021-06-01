@@ -184,7 +184,7 @@ typedef struct {
 } addr_mode_reg_t;
 
 // Mode = 00/01/10
-extern const addr_mode_reg_t addr_mode_reg_table[8];
+extern const addr_mode_reg_t addr_mode_reg_table_16[8];
 
 #define ADDR_MODE_MEM_REG_ONLY     0
 #define ADDR_MODE_MEM_REG_DISP_8   1
