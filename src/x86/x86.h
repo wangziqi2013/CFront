@@ -321,6 +321,13 @@ inline static void *operand_set_mem_direct_addr_16(operand_t *operand, void *dat
   return ptr_add_16(data);
 }
 
+inline static void *operand_set_mem_direct_addr_32(operand_t *operand, void *data) {
+  operand->operand_mode = OPERAND_MEM;
+  operand->mem.addr_mode = ADDR_MODE_MEM_DIRECT;
+  operand->mem.direct_addr_32 = ptr_load_32(data);
+  return ptr_add_32(data);
+}
+
 // Given mode and r/m bits, set the operand
 void *parse_operand_mod_rm(operand_t *operand, int addr_mode, int flags, int rm, void *data);
 // Parsing 2 operands, must be either reg or mem
