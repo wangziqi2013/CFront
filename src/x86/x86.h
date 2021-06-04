@@ -193,7 +193,7 @@ extern const addr_mode_reg_t addr_mode_reg_table_32[8];
 #define ADDR_MODE_MEM_REG_DISP_32  3
 // This will cause the addr_mode object be not initialized
 #define ADDR_MODE_REG              4
-// This is not in the raw instruction
+// Direct addr mode; This is not in the raw instruction; Same for 16 and 32 bit
 #define ADDR_MODE_MEM_DIRECT       5
 
 // Addressing mode for memory operands
@@ -203,7 +203,9 @@ typedef struct {
   union {
     uint8_t disp_8;
     uint16_t disp_16;
+    uint32_t disp_32;
     uint16_t direct_addr_16; // Direct addressing mode uses this
+    uint32_t direct_addr_32; // Direct addressing mode uses this
   };
 } addr_mode_t;
 
