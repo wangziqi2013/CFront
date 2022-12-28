@@ -56,7 +56,9 @@ void parse_typespec(parse_decl_cxt_t *cxt, token_t *basetype) {
   // Note that this is not a while loop
   switch(type) {   // Basetype declaration cannot be the end of file
     case T_UNSIGNED: usign = 1;                                // Fall through
+    /* fall through */
     case T_SIGNED: token_free(token_get_next(cxt->token_cxt)); // Fall through again
+    /* fall through */
     case T_CHAR: case T_SHORT: case T_INT: case T_LONG: {      // Note: Do not get_next_token() on these types
       token_t *token = token_get_next(cxt->token_cxt);         // unsigned and signed have been processed before this line
       switch(token->type) {
