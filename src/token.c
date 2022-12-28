@@ -742,6 +742,7 @@ char *token_get_int(char *s, token_t *token) {
           else { end += 2; inttype = BASETYPE_LLONG; }                                // LL
           break;
         case 'u': case 'U': end += 2; inttype = BASETYPE_ULONG;                       // LU
+        /* fall through */
         default: end++; inttype = BASETYPE_UINT; break;                               // L
       }
     break;
