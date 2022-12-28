@@ -7,6 +7,8 @@ TESTFLAGS=-I$(PWD)
 LDFLAGS=
 BIN=./bin/
 
+SRCS=$(wildcard *.c ./tests/*.c)
+
 ifeq ($(OPT), 1)
 	CFLAGS=-O3 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 endif
@@ -47,20 +49,20 @@ $(BIN)/test_eval: test_eval.o stack.o token.o error.o ast.o hashtable.o type.o e
 $(BIN)/test_cgen: test_cgen.o parse.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
 	$(CC) test_cgen.o parse.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o $(BIN)/test_cgen $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-test_lex.o: ./test/test_lex.c token.h
-	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+test_lex.o: ./tests/test_lex.c token.h
+	$(CC) ./tests/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-test_parse.o: ./test/test_parse.c token.h
-	$(CC) ./test/test_parse.c -c -o $(PWD)/test_parse.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+test_parse.o: ./tests/test_parse.c token.h
+	$(CC) ./tests/test_parse.c -c -o $(PWD)/test_parse.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-test_type.o: ./test/test_type.c token.h
-	$(CC) ./test/test_type.c -c -o $(PWD)/test_type.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+test_type.o: ./tests/test_type.c token.h
+	$(CC) ./tests/test_type.c -c -o $(PWD)/test_type.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-test_eval.o: ./test/test_eval.c token.h
-	$(CC) ./test/test_eval.c -c -o $(PWD)/test_eval.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+test_eval.o: ./tests/test_eval.c token.h
+	$(CC) ./tests/test_eval.c -c -o $(PWD)/test_eval.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-test_cgen.o: ./test/test_cgen.c token.h
-	$(CC) ./test/test_cgen.c -c -o $(PWD)/test_cgen.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+test_cgen.o: ./tests/test_cgen.c token.h
+	$(CC) ./tests/test_cgen.c -c -o $(PWD)/test_cgen.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 parse_exp.o: parse_exp.c parse_exp.h stack.h token.h ast.h hashtable.h error.h parse_decl.h error.h token.h
 	$(CC) parse_exp.c -c -o parse_exp.o $(CFLAGS) $(LDFLAGS)

@@ -26,7 +26,7 @@ void error_exit_or_jump(int need_exit) {
 // Returns the row and column of a given pointer
 // Note:
 //   1. If error is not initialized then row and col will be set to -1
-//   2. If the pointer is not in the string registerd during initialization
+//   2. If the pointer is not in the string registered during initialization
 //      then row and col will be set to -2
 void error_get_row_col(const char *s, int *row, int *col) {
   if(inited == 0) { *row = *col = -1; }

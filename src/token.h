@@ -12,7 +12,7 @@
 #include "stack.h"
 #include "hashtable.h"
 
-#define TOKEN_MAX_KWD_SIZE 31 // Keywords cannot be 32 chars long (enough for C kwywords)
+#define TOKEN_MAX_KWD_SIZE 31 // Keywords cannot be 32 chars long (enough for C keywords)
 
 // Types of raw tokens. 
 // This enum type does not distinguish between different expression operators, i.e. both
