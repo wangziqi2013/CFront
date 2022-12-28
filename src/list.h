@@ -7,20 +7,22 @@
 #define LIST_NOTFOUND ((void *)-1)  // Return value for find()
 
 typedef struct listnode {
-  void *key, *value;
+  void *key;               // No ownership
+  void *value;             // No ownership
   struct listnode *next;
 } listnode_t;
 
 typedef struct {
-  listnode_t *head, *tail;
+  listnode_t *head;
+  listnode_t *tail;
   int size;
 } list_t;
 
-static inline listnode_t *list_head(list_t *list) { return list->head; }
-static inline listnode_t *list_tail(list_t *list) { return list->tail; }
-static inline listnode_t *list_next(listnode_t *node) { return node->next; }
-static inline void *list_key(listnode_t *node) { return node->key; }
-static inline void *list_value(listnode_t *node) { return node->value; }
+inline static listnode_t *list_head(list_t *list) { return list->head; }
+inline static listnode_t *list_tail(list_t *list) { return list->tail; }
+inline static listnode_t *list_next(listnode_t *node) { return node->next; }
+inline static void *list_key(listnode_t *node) { return node->key; }
+inline static void *list_value(listnode_t *node) { return node->value; }
 
 list_t *list_init();
 void list_free(list_t *list);
