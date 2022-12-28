@@ -5,6 +5,7 @@ CFLAGS=-O0 -g -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
 PWD=$(CURDIR)
 TESTFLAGS=-I$(PWD)
 LDFLAGS=
+BIN=./bin/
 
 ifeq ($(OPT), 1)
 	CFLAGS=-O3 -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable
@@ -12,39 +13,39 @@ endif
 
 .phony: line-count
 
-all: ./bin/test_lex ./bin/test_parse ./bin/test_type ./bin/test_eval ./bin/test_cgen
+all: $(BIN)/test_lex $(BIN)/test_parse $(BIN)/test_type $(BIN)/test_eval $(BIN)/test_cgen
 
 line-count:
 	cloc --exclude-lang=Python ./
 
 test: all
-	./bin/test_lex
-	./bin/test_parse
-	./bin/test_type
-	./bin/test_eval
-	./bin/test_cgen
+	$(BIN)/test_lex
+	$(BIN)/test_parse
+	$(BIN)/test_type
+	$(BIN)/test_eval
+	$(BIN)/test_cgen
 
 mem-test: all
-	valgrind --leak-check=full ./bin/test_lex
-	valgrind --leak-check=full ./bin/test_parse
-	valgrind --leak-check=full ./bin/test_type
-	valgrind --leak-check=full ./bin/test_eval
-	valgrind --leak-check=full ./bin/test_cgen
+	valgrind --leak-check=full $(BIN)/test_lex
+	valgrind --leak-check=full $(BIN)/test_parse
+	valgrind --leak-check=full $(BIN)/test_type
+	valgrind --leak-check=full $(BIN)/test_eval
+	valgrind --leak-check=full $(BIN)/test_cgen
 
-./bin/test_parse: test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o
-	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o -o ./bin/test_parse $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+$(BIN)/test_parse: test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o
+	$(CC) test_parse.o parse_exp.o stack.o token.o error.o ast.o hashtable.o parse_decl.o parse_comp.o parse_stmt.o parse.o eval.o type.o list.o bintree.o str.o -o $(BIN)/test_parse $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_lex: test_lex.o stack.o token.o error.o ast.o hashtable.o
-	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o ./bin/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+$(BIN)/test_lex: test_lex.o stack.o token.o error.o ast.o hashtable.o
+	$(CC) test_lex.o stack.o token.o error.o ast.o hashtable.o -o $(BIN)/test_lex $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
-	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+$(BIN)/test_type: test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
+	$(CC) test_type.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o $(BIN)/test_type $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 	
-./bin/test_eval: test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
-	$(CC) test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_eval $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+$(BIN)/test_eval: test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
+	$(CC) test_eval.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o $(BIN)/test_eval $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
-./bin/test_cgen: test_cgen.o parse.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
-	$(CC) test_cgen.o parse.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o ./bin/test_cgen $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
+$(BIN)/test_cgen: test_cgen.o parse.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o
+	$(CC) test_cgen.o parse.o cgen.o stack.o token.o error.o ast.o hashtable.o type.o eval.o bintree.o list.o str.o parse_exp.o parse_decl.o parse_stmt.o parse_comp.o -o $(BIN)/test_cgen $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
 test_lex.o: ./test/test_lex.c token.h
 	$(CC) ./test/test_lex.c -c -o $(PWD)/test_lex.o $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
@@ -116,4 +117,4 @@ parse_exp.h: stack.h token.h ast.h hashtable.h
 
 clean:
 	rm -f *.o
-	rm -r ./bin/*
+	rm -r $(BIN)/*
