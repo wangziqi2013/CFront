@@ -7,7 +7,9 @@ int strcmp_cb(void *a, void *b) { return strcmp(a, b); }
 hashval_t strhash_cb(void *a) { 
   char *s = (char *)a;
   hashval_t hashval;
-  for(hashval = (hashval_t)0; *s != '\0'; s++) hashval = *s + 31 * hashval;
+  for(hashval = (hashval_t)0; *s != '\0'; s++) {
+    hashval = *s + 31 * hashval;
+  }
   return hashval;
 }
 
@@ -38,17 +40,25 @@ void ht_free(hashtable_t *ht) {
   return;
 }
 
-int ht_size(hashtable_t *ht) { return ht->size; }
+int ht_size(hashtable_t *ht) { 
+  return ht->size; 
+}
 
 // Returns an existing slot for key, if it already exists, or an empty one
 int ht_find_slot(hashtable_t *ht, void **keys, void *key, int op) {
   assert(key != NULL && key != HT_REMOVED);
   hashval_t begin = ht->hash(key) & ht->mask;
-  if(op == HT_OP_INSERT) 
-    while(keys[begin] != NULL && keys[begin] != HT_REMOVED && !ht->eq(keys[begin], key)) begin = (begin + 1) & ht->mask;
-  else if(op == HT_OP_FIND) 
-    while(keys[begin] && (keys[begin] == HT_REMOVED || !ht->eq(keys[begin], key))) begin = (begin + 1) & ht->mask;
-  else assert(0);
+  if(op == HT_OP_INSERT) {
+    while(keys[begin] != NULL && keys[begin] != HT_REMOVED && !ht->eq(keys[begin], key)) {
+      begin = (begin + 1) & ht->mask;
+    }
+  } else if(op == HT_OP_FIND) {
+    while(keys[begin] && (keys[begin] == HT_REMOVED || !ht->eq(keys[begin], key))) {
+      begin = (begin + 1) & ht->mask;
+    }
+  } else {
+    assert(0);
+  }
   return begin;
 }
 
@@ -87,9 +97,13 @@ void *ht_find(hashtable_t *ht, void *key) {
 // Inserts if key does not exist, and returns value. Returns current value otherwise;
 void *ht_insert(hashtable_t *ht, void *key, void *value) {
   assert(key != NULL);
-  if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) ht_resize(ht);
+  if(HT_RESIZE_THRESHOLD(ht->capacity) == ht->size) {
+    ht_resize(ht);
+  }
   int slot = ht_find_slot(ht, ht->keys, key, HT_OP_INSERT);
-  if(ht->keys[slot] && ht->keys[slot] != HT_REMOVED) return ht->values[slot];
+  if(ht->keys[slot] && ht->keys[slot] != HT_REMOVED) {
+    return ht->values[slot];
+  }
   ht->keys[slot] = key;
   ht->values[slot] = value;
   ht->size++;
@@ -101,7 +115,9 @@ void *ht_remove(hashtable_t *ht, void *key) {
   assert(key != NULL);
   int slot = ht_find_slot(ht, ht->keys, key, HT_OP_FIND);
   assert(ht->keys[slot] != HT_REMOVED);
-  if(ht->keys[slot] == NULL) return HT_NOTFOUND;
+  if(ht->keys[slot] == NULL) {
+    return HT_NOTFOUND;
+  }
   ht->keys[slot] = HT_REMOVED;
   ht->size--;
   return ht->values[slot];

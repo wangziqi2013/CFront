@@ -9,7 +9,7 @@
 
 typedef parse_exp_cxt_t parse_cxt_t;
 
-parse_stmt_cxt_t *parse_init(char *input);
+parse_cxt_t *parse_init(char *input);
 void parse_free(parse_cxt_t *cxt);
 token_t *parse(parse_cxt_t *cxt);
 

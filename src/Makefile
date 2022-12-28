@@ -24,12 +24,15 @@ all: tests
 
 tests: $(TEST_OBJS)
 
+# Build rule for source files under the current directory, one object file per source file
 %.o: %.c
 	$(CC) -MMD -MP -c $< -o $@ $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
+# Build rule for test source files under ./tests directory, one binary per test source file
 ./bin/%: ./tests/%.c $(OBJS)
 	$(CC) $< $(OBJS) -o $@ $(CFLAGS) $(LDFLAGS) $(TESTFLAGS)
 
+# Include automatically generated dependency files for every source file
 -include $(DEPS)
 
 line-count:
@@ -37,4 +40,4 @@ line-count:
 
 clean:
 	rm -f *.o
-	rm -rf $(BIN)/*
+	rm -f $(BIN)/*
