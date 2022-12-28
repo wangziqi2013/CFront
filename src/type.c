@@ -961,7 +961,10 @@ type_t *type_int_promo(type_cxt_t *cxt, type_t *type) {
       type = type_init_from(cxt, &type_builtin_ints[BASETYPE_INDEX(BASETYPE_INT)], type->offset);
       break; 
     default: { // bit field type is longer, but we need to copy it
-      if(need_copy) type = type_init_from(cxt, type, type->offset); break;
+      if(need_copy) {
+        type = type_init_from(cxt, type, type->offset); 
+      }
+      break;
     }
   }
   return type;
@@ -1102,7 +1105,7 @@ type_t *type_typeof(type_cxt_t *cxt, token_t *exp, uint32_t options) {
     case EXP_ARROW:
       if(!type_is_ptr(lhs)) error_row_col_exit(exp->offset, "Operator \"->\" must be applied to pointer types\n");
       lhs = lhs->next;
-      // Fall thruogh
+      /* fall through */
     case EXP_DOT: {
       if(!type_is_comp(lhs)) 
         error_row_col_exit(exp->offset, "Operator \"%s\" must be applied to composite types\n", op_str);
