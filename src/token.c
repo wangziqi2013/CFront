@@ -953,24 +953,23 @@ int token_consume_type(token_cxt_t *cxt, token_type_t type) {
 // Adds the token to the tail of the circular linked list
 void token_pushback(token_cxt_t *cxt, token_t *token) {
   assert(token != NULL);
-  if(cxt->pushbacks == NULL) {
-    cxt->pushbacks = token->next = token;
+  token->next = NULL;
+  if(cxt->pb_head == NULL) {
+    cxt->pb_head = cxt->pb_tail = token;
   } else {
-    token->next = cxt->pushbacks->next;
-    cxt->pushbacks->next = token;
-    assert(token->next != NULL);
-    cxt->pushbacks = token;
+    cxt->pb_tail->next = token;
+    cxt->pb_tail = token;
   }
-  cxt->pb_num++;
+  cxt->pb_count++;
   return;
 }
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL
-// Parameter num "1" means the immediate next token
+// Parameter count "1" means the immediate next token
 // Return value cannot be used to build AST tree
-token_t *token_lookahead(token_cxt_t *cxt, int num) {
-  assert(num > 0 && cxt->pb_num >= 0);  
-  while(cxt->pb_num < num) {
+token_t *token_lookahead(token_cxt_t *cxt, int count) {
+  assert(count > 0 && cxt->pb_count >= 0);  
+  while(cxt->pb_count < count) {
     // This may return NULL if token stream reaches the end
     token_t *token = token_get_next_ignore_lookahead(cxt); 
     if(token != NULL) {
@@ -979,18 +978,16 @@ token_t *token_lookahead(token_cxt_t *cxt, int num) {
       return NULL;
     }
   }
-  token_t *ret = cxt->pushbacks;
-  if(cxt->pb_num != num) {
-    while(num--) {
-      ret = ret->next;
-    }
+  token_t *ret = cxt->pb_head;
+  while(--count != 0) {
+    ret = ret->next;
   }
   return ret;
 }
 
 // Same as the regular version except that it reports error if run out of tokens
-token_t *token_lookahead_notnull(token_cxt_t *cxt, int num) {
-  token_t *la = token_lookahead(cxt, num);
+token_t *token_lookahead_notnull(token_cxt_t *cxt, int count) {
+  token_t *la = token_lookahead(cxt, count);
   if(la == NULL) {
     error_row_col_exit(cxt->s, "Unexpected end of file\n");
   }

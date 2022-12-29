@@ -218,8 +218,9 @@ inline static void BASETYPE_SET(token_t *token, decl_prop_t basetype) {
 
 typedef struct {
   stack_t *udef_types;       // Auto detected when lexing T_IDENT
-  token_t *pushbacks;        // Look-ahead symbols in the stream; forms a circular linked list
-  int pb_num;                // Number of pushbacks
+  token_t *pb_head;          // Pushback token head (removing end)
+  token_t *pb_tail;          // Pushback token tail (inserting end)
+  int pb_count;              // Number of pushbacks
   char *s;                   // Current read position
   char *begin;               // Begin of the current text (set once never changes)
 } token_cxt_t;
@@ -265,7 +266,7 @@ token_t *token_get_next_ignore_lookahead(token_cxt_t *cxt);
 token_t *token_get_next(token_cxt_t *cxt);
 int token_consume_type(token_cxt_t *cxt, token_type_t type);
 void token_pushback(token_cxt_t *cxt, token_t *token);
-token_t *token_lookahead(token_cxt_t *cxt, int num);
-token_t *token_lookahead_notnull(token_cxt_t *cxt, int num);
+token_t *token_lookahead(token_cxt_t *cxt, int count);
+token_t *token_lookahead_notnull(token_cxt_t *cxt, int count);
 
 #endif
