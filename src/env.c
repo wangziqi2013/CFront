@@ -8,8 +8,31 @@ void env_init_include_path(env_t *env) {
   // they will override all other paths
   char *env_path = getenv("C_INCLUDE_PATH");
   if(env_path != NULL) {
-
-    count++;
+    // Parse this string as a ":" separated path variable
+    char *p = env_path;
+    while(1) {
+      char *q = p;
+      if(*q == '\0') {
+        break;
+      }
+      // Stop at ':' or '\0'
+      while(*q != ':' && *q != '\0') {
+        q++;
+      }
+      if(*q == '\0') {
+        break;
+      }
+      int size = q - p;
+      if(size != 0) {
+        char *path = (char *)malloc(sizeof(q - p) + 1);
+        SYSEXPECT(path != NULL);
+        memcpy(path, p, size);
+        path[size] = '\0';
+        list_insertat(env->include_paths, path, path, count);
+        count++;
+      }
+      p = q + 1;
+    }
   }
   return;
 }

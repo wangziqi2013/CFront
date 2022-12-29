@@ -48,23 +48,34 @@ void error_exit_or_jump(int need_exit) {
 //   2. If the pointer is not in the string registered during initialization
 //      then row and col will be set to -2
 void error_get_row_col(const char *s, int *row, int *col) {
-  if(inited == 0) { *row = *col = -1; }
-  else {
+  if(inited == 0) { 
+    *row = *col = -1; 
+  } else {
     *row = *col = 1;
     const char *p;
     const char *line_head = begin; // Track the beginning of the line
     for(p = begin; p != s && *p != '\0';p++) {
-      if(*p == '\n') (*row)++, *col = 1, line_head = p + 1;
-      else (*col)++;
+      if(*p == '\n') {
+        (*row)++; 
+        *col = 1; 
+        line_head = p + 1;
+      } else {
+        (*col)++;
+      }
     }
     if(*p == '\0' && p != s) { // if p == s then still valid
       *row = *col = -2;
       fprintf(stderr, "Did you forget to register a new pointer with error module?\n");
-    } else { // Print from line head to next line
+    } else { 
+      // Print from line head to next line
       printf("----\n");
-      while(*line_head != '\n' && *line_head != '\0') putchar(*line_head++);
+      while(*line_head != '\n' && *line_head != '\0') {
+        putchar(*line_head++);
+      }
       putchar('\n');
-      for(int i = 0;i < *col - 1;i++) putchar(' ');
+      for(int i = 0;i < *col - 1;i++) {
+        putchar(' ');
+      }
       printf("^\n");
       printf("----\n");
     }
