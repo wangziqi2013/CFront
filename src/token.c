@@ -124,7 +124,7 @@ void token_add_utype(token_cxt_t *cxt, token_t *token) {
     int row, col;
     error_get_row_col(cxt->begin, &row, &col);
     error_row_col_exit(token->offset, 
-      "The name \"%s\" for typedef has already been defined @ row %d col %d\n", token->str, row, col);
+      "The type name \"%s\" for typedef has already been defined @ row %d col %d\n", token->str, row, col);
   }
   ht_insert((hashtable_t *)stack_peek(cxt->udef_types), token->str, token);
 }
