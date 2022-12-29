@@ -218,7 +218,7 @@ inline static void BASETYPE_SET(token_t *token, decl_prop_t basetype) {
 
 typedef struct {
   stack_t *udef_types;       // Auto detected when lexing T_IDENT
-  token_t *pushbacks;        // Look-ahead symbols in the stream
+  token_t *pushbacks;        // Look-ahead symbols in the stream; forms a circular linked list
   int pb_num;                // Number of pushbacks
   int ignore_pb;             // Whether to ignore pushbacked tokens
   char *s;                   // Current read position

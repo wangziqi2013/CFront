@@ -93,9 +93,11 @@ void token_cxt_reinit(token_cxt_t *cxt, char *input) {
 }
 
 void token_cxt_free(token_cxt_t *cxt) {
-  while(stack_size(cxt->udef_types)) ht_free(stack_pop(cxt->udef_types));
+  while(stack_size(cxt->udef_types) != 0) {
+    ht_free(stack_pop(cxt->udef_types));
+  }
   stack_free(cxt->udef_types);
-  if(cxt->pushbacks) {
+  if(cxt->pushbacks != NULL) {
     token_t *curr = cxt->pushbacks->next;
     cxt->pushbacks->next = NULL;
     while(curr != NULL) {
@@ -810,22 +812,29 @@ token_t *token_get_next(token_cxt_t *cxt) {
 // Return 0 if there is no next token or type mismatch, and the token is not consumed
 int token_consume_type(token_cxt_t *cxt, token_type_t type) {
   token_t *token = token_get_next(cxt);
-  if(token == NULL) return 0;
-  if(token->type == type) { token_free(token); return 1; }
+  if(token == NULL) {
+    return 0;
+  } else if(token->type == type) { 
+    token_free(token); 
+    return 1; 
+  }
   token_pushback(cxt, token);
   return 0;
 }
 
+// Adds the token to the tail of the circular linked list
 void token_pushback(token_cxt_t *cxt, token_t *token) {
   assert(token != NULL);
-  if(cxt->pushbacks == NULL) cxt->pushbacks = token->next = token;
-  else {
+  if(cxt->pushbacks == NULL) {
+    cxt->pushbacks = token->next = token;
+  } else {
     token->next = cxt->pushbacks->next;
     cxt->pushbacks->next = token;
     assert(token->next != NULL);
     cxt->pushbacks = token;
   }
   cxt->pb_num++;
+  return;
 }
 
 // Looks ahead into the token stream. If token stream ended before num then return NULL
@@ -837,11 +846,18 @@ token_t *token_lookahead(token_cxt_t *cxt, int num) {
     cxt->ignore_pb = 1;
     token_t *token = token_get_next(cxt); // This may return NULL if token stream reaches the end
     cxt->ignore_pb = 0;
-    if(token != NULL) token_pushback(cxt, token);
-    else return NULL;
+    if(token != NULL) {
+      token_pushback(cxt, token);
+    } else {
+      return NULL;
+    }
   }
   token_t *ret = cxt->pushbacks;
-  if(cxt->pb_num != num) while(num--) ret = ret->next;
+  if(cxt->pb_num != num) {
+    while(num--) {
+      ret = ret->next;
+    }
+  }
   return ret;
 }
 
