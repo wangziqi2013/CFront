@@ -6,6 +6,8 @@
 
 #define LIST_NOTFOUND ((void *)-1)  // Return value for find()
 
+void LIST_SIMPLE_FREE_CB(void *p);
+
 typedef struct listnode {
   void *key;               // No ownership
   void *value;             // No ownership
@@ -29,7 +31,7 @@ inline static void *list_value(listnode_t *node) { return node->value; }
 list_t *list_init();
 void list_free(list_t *list);
 
-void list_set_free_cb(list_t *list, void (*key_free_cb)(void *), void (*key_free_cb)(void *));
+void list_set_free_cb(list_t *list, void (*key_free_cb)(void *), void (*value_free_cb)(void *));
 
 int list_size(list_t *list);
 listnode_t *listnode_alloc();

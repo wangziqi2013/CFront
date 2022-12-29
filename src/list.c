@@ -1,6 +1,11 @@
 
 #include "list.h"
 
+void LIST_SIMPLE_FREE_CB(void *p) {
+  free(p);
+  return;
+}
+
 list_t *list_init() {
   list_t *list = (list_t *)malloc(sizeof(list_t));
   SYSEXPECT(list != NULL);
@@ -14,6 +19,12 @@ void list_free(list_t *list) {
   listnode_t *node = list->head;
   while(node != NULL) {
     listnode_t *next = node->next;
+    if(list->key_free_cb != NULL) {
+      list->key_free_cb(node->key);
+    }
+    if(list->value_free_cb != NULL) {
+      list->value_free_cb(node->value);
+    }
     listnode_free(node);
     node = next;
   }
@@ -21,7 +32,15 @@ void list_free(list_t *list) {
   return;
 }
 
-int list_size(list_t *list) { return list->size; }
+void list_set_free_cb(list_t *list, void (*key_free_cb)(void *), void (*value_free_cb)(void *)) {
+  list->key_free_cb = key_free_cb;
+  list->value_free_cb = value_free_cb;
+  return;
+}
+
+int list_size(list_t *list) { 
+  return list->size; 
+}
 
 // Allocate a node. All fields are uninitialized
 listnode_t *listnode_alloc() {
