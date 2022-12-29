@@ -877,21 +877,8 @@ char *token_get_str(char *s, token_t *token, char closing) {
   return end + 1;
 }
 
-// Returns the next token, or NULL if EOF
-token_t *token_get_next(token_cxt_t *cxt) {
-  token_t *token;
-  if(cxt->pushbacks && !cxt->ignore_pb) {
-    assert(cxt->pb_num > 0);
-    token = cxt->pushbacks->next;
-    if(token == cxt->pushbacks) {
-      cxt->pushbacks = NULL;
-    } else {
-      cxt->pushbacks->next = token->next;
-    }
-    cxt->pb_num--;
-    return token;
-  }
-  token = token_alloc();
+token_t *token_get_next_ignore_lookahead(token_cxt_t *cxt) {
+  token_t *token = token_alloc();
   while(1) {
     const char *before = cxt->s;
     if(cxt->s == NULL || *cxt->s == '\0') { 
@@ -934,6 +921,23 @@ token_t *token_get_next(token_cxt_t *cxt) {
   return token;
 }
 
+// Returns the next token, or NULL if EOF
+token_t *token_get_next(token_cxt_t *cxt) {
+  token_t *token;
+  if(cxt->pushbacks && !cxt->ignore_pb) {
+    assert(cxt->pb_num > 0);
+    token = cxt->pushbacks->next;
+    if(token == cxt->pushbacks) {
+      cxt->pushbacks = NULL;
+    } else {
+      cxt->pushbacks->next = token->next;
+    }
+    cxt->pb_num--;
+    return token;
+  }
+  return token_get_next_ignore_lookahead(cxt);
+}
+
 // Consume the next token if it is of the given type. 
 // Return 0 if there is no next token or type mismatch, and the token is not consumed
 int token_consume_type(token_cxt_t *cxt, token_type_t type) {
@@ -969,9 +973,10 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
   assert(num > 0 && cxt->pb_num >= 0);  
   while(cxt->pb_num < num) {
-    cxt->ignore_pb = 1;
-    token_t *token = token_get_next(cxt); // This may return NULL if token stream reaches the end
-    cxt->ignore_pb = 0;
+    //cxt->ignore_pb = 1;
+    // This may return NULL if token stream reaches the end
+    token_t *token = token_get_next_ignore_lookahead(cxt); 
+    //cxt->ignore_pb = 0;
     if(token != NULL) {
       token_pushback(cxt, token);
     } else {
