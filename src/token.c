@@ -110,8 +110,15 @@ void token_cxt_free(token_cxt_t *cxt) {
 }
 
 // Called by parse_stmt when we see a statement block
-void token_enter_scope(token_cxt_t *cxt) { stack_push(cxt->udef_types, ht_str_init()); }
-void token_exit_scope(token_cxt_t *cxt) { ht_free((hashtable_t *)stack_pop(cxt->udef_types)); }
+void token_enter_scope(token_cxt_t *cxt) { 
+  stack_push(cxt->udef_types, ht_str_init()); 
+  return;
+}
+
+void token_exit_scope(token_cxt_t *cxt) { 
+  ht_free((hashtable_t *)stack_pop(cxt->udef_types)); 
+  return;
+}
 
 // Adds a user-defined type into current scope's hash table. The parser adds a name when
 // it sees a typedef'ed base type with a name
@@ -129,25 +136,38 @@ void token_add_utype(token_cxt_t *cxt, token_t *token) {
 
 // Search from stack top to stack bottom and see whether we defined that type
 int token_isutype(token_cxt_t *cxt, token_t *token) {
-  if(token->type != T_IDENT) return 0;
-  for(int i = 0;i < stack_size(cxt->udef_types);i++) 
-    if(ht_find((hashtable_t *)stack_peek_at(cxt->udef_types, i), token->str) != HT_NOTFOUND) return 1;
+  if(token->type != T_IDENT) {
+    return 0;
+  }
+  for(int i = 0;i < stack_size(cxt->udef_types);i++) {
+    if(ht_find((hashtable_t *)stack_peek_at(cxt->udef_types, i), token->str) != HT_NOTFOUND) {
+      return 1;
+    }
+  }
   return 0;
 }
 
 // Only checks STORAGE CLASS, QUALIFIER and TYPE SPEC. At most one from the former is allowed.
 // No duplicates for the latter is allowed
 int token_decl_compatible(token_t *dest, token_t *src) {
-  if(src->decl_prop & DECL_STGCLS_MASK) return !(dest->decl_prop & DECL_STGCLS_MASK);
-  if(src->decl_prop & DECL_QUAL_MASK) return !(dest->decl_prop & src->decl_prop);
-  if(src->decl_prop & DECL_TYPE_MASK) return (BASETYPE_GET(dest->decl_prop) == BASETYPE_NONE);
+  if(src->decl_prop & DECL_STGCLS_MASK) {
+    return !(dest->decl_prop & DECL_STGCLS_MASK);
+  }
+  if(src->decl_prop & DECL_QUAL_MASK) {
+    return !(dest->decl_prop & src->decl_prop);
+  }
+  if(src->decl_prop & DECL_TYPE_MASK) {
+    return (BASETYPE_GET(dest->decl_prop) == BASETYPE_NONE);
+  }
   return 1;
 }
 
 // Apply the token's specifier/qualifier/type to the prop and return updated value
 // Return DECL_INVALID if incompatible
 int token_decl_apply(token_t *dest, token_t *src) {
-  if(!token_decl_compatible(dest, src)) return 0;
+  if(token_decl_compatible(dest, src) == 0) {
+    return 0;
+  }
   dest->decl_prop |= src->decl_prop;
   return 1;
 }
@@ -164,8 +184,12 @@ char *token_decl_print(decl_prop_t decl_prop) {
       case DECL_STATIC: strcat(buffer, "static "); break;
     }
   }
-  if(decl_prop & DECL_VOLATILE_MASK) strcat(buffer, "volatile ");
-  if(decl_prop & DECL_CONST_MASK) strcat(buffer, "const ");
+  if(decl_prop & DECL_VOLATILE_MASK) {
+    strcat(buffer, "volatile ");
+  }
+  if(decl_prop & DECL_CONST_MASK) {
+    strcat(buffer, "const ");
+  }
   if(decl_prop & BASETYPE_MASK) {
     switch(decl_prop & BASETYPE_MASK) {
       case BASETYPE_CHAR:       strcat(buffer, "char "); break;
@@ -193,25 +217,29 @@ char *token_decl_print(decl_prop_t decl_prop) {
   return buffer;
 }
 
-// Returns the precedence and associativity
+// Returns the precedence and associativity of expression type token
 // Associativity is encoded implicitly by precedence: 2, 13 and 14 are R-TO-L
 // and the rest are L-TO-R 
 void token_get_property(token_type_t type, int *preced, assoc_t *assoc) {
   assert(type >= EXP_BEGIN && type < EXP_END);
   assert(sizeof(precedences) / sizeof(precedences[0]) == (EXP_END - EXP_BEGIN));
   *preced = precedences[type - EXP_BEGIN];
-  if(*preced == 2 || *preced == 13 || *preced == 14) *assoc = ASSOC_RL;
-  else *assoc = ASSOC_LR;
+  if(*preced == 2 || *preced == 13 || *preced == 14) {
+    *assoc = ASSOC_RL;
+  } else {
+    *assoc = ASSOC_LR;
+  }
   return;
 }
 
-// Number of operands of the token. Most operands below precedence 2 has two
-// operands, the only exception being : ? which has three.
+// Number of operands of the token. All operands below precedence 2 has two operands
+// Note that the "? :" are parsed as two expressions, i.e., EXP_COND and EXP_COLON
 int token_get_num_operand(token_type_t type) {
   assert(type >= EXP_BEGIN && type < EXP_END);
   // Only case in precedence 1 and has 1 operand
-  if(type == EXP_DOT || type == EXP_ARROW || 
-     type == EXP_ARRAY_SUB || type == EXP_FUNC_CALL) return 2;
+  if(type == EXP_DOT || type == EXP_ARROW || type == EXP_ARRAY_SUB || type == EXP_FUNC_CALL) {
+    return 2;
+  }
   assert(precedences[type - EXP_BEGIN] != 0 && precedences[type - EXP_BEGIN] != 999);
   return precedences[type - EXP_BEGIN] > 2 ? 2 : 1;  
 }
@@ -219,18 +247,25 @@ int token_get_num_operand(token_type_t type) {
 // Return T_ILLEGAL if not a keyword; keyword type otherwise
 // The token is specified by argument s and end
 token_type_t token_get_keyword_type(const char *s) {
-  int begin = 0, end = sizeof(keywords) / sizeof(const char *);
+  int begin = 0;
+  int end = sizeof(keywords) / sizeof(const char *);
   while(begin < end - 1) {
     int middle = (begin + end) / 2;
     int cmp = strcmp(keywords[middle], s);
-    if(cmp == 0) return T_KEYWORDS_BEGIN + middle;
-    else if(cmp < 0) begin = middle + 1;
-    else end = middle;
+    if(cmp == 0) {
+      return T_KEYWORDS_BEGIN + middle;
+    } else if(cmp < 0) {
+      begin = middle + 1;
+    } else { 
+      end = middle;
+    }
     assert(begin < (int)sizeof(keywords) / (int)sizeof(const char *));
     assert(end <= (int)sizeof(keywords) / (int)sizeof(const char *));
   }
   // This means the given token is not a keyword
-  if(strcmp(keywords[begin], s) == 0) return T_KEYWORDS_BEGIN + begin;
+  if(strcmp(keywords[begin], s) == 0) {
+    return T_KEYWORDS_BEGIN + begin;
+  }
   return T_ILLEGAL;
 }
 
