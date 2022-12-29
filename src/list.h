@@ -16,6 +16,8 @@ typedef struct {
   listnode_t *head;
   listnode_t *tail;
   int size;
+  void (*key_free_cb)(void *);
+  void (*value_free_cb)(void *);
 } list_t;
 
 inline static listnode_t *list_head(list_t *list) { return list->head; }
@@ -26,6 +28,9 @@ inline static void *list_value(listnode_t *node) { return node->value; }
 
 list_t *list_init();
 void list_free(list_t *list);
+
+void list_set_free_cb(list_t *list, void (*key_free_cb)(void *), void (*key_free_cb)(void *));
+
 int list_size(list_t *list);
 listnode_t *listnode_alloc();
 void listnode_free(listnode_t *node);
