@@ -8,19 +8,38 @@ static int inited = 0;
 // Whether test mode is on. Under test mode, error reporting functions calls 
 // longjmp to jump to a previously set location
 static int testmode = 0;
+
 jmp_buf env;
 
 // This must be called in order for line number to work
-void error_init(const char *s) { begin = s; inited = 1; }
-void error_free() { inited = 0; }
-void error_testmode(int mode) { testmode = mode; }
+void error_init(const char *s) { 
+  begin = s; 
+  inited = 1; 
+  return;
+}
+
+void error_free() { 
+  inited = 0; 
+  return;
+}
+
+void error_testmode(int mode) { 
+  testmode = mode; 
+  return;
+}
+
 void error_exit_or_jump(int need_exit) { 
-  if(testmode) { fprintf(stderr, "*** %s are redirected ***\n", need_exit ? "Errors" : "Warnings"); longjmp(env, 1); }
-#ifndef NDEBUG
-  else if(need_exit) { assert(0); }
-#else
-  else if(need_exit) { exit(ERROR_CODE_EXIT); }
-#endif
+  if(testmode != 0) { 
+    fprintf(stderr, "*** %s are redirected ***\n", need_exit ? "Errors" : "Warnings"); 
+    longjmp(env, 1); 
+  } else if(need_exit) { 
+    #ifndef NDEBUG
+    assert(0); 
+    #else
+    exit(ERROR_CODE_EXIT); 
+    #endif
+  }
+  return;
 }
 
 // Returns the row and column of a given pointer

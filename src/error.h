@@ -23,9 +23,13 @@ extern jmp_buf env;
                                           int row, col; error_get_row_col(s, &row, &col); \
                                           fprintf(stderr, "Warning (row %d col %d): " fmt, row, col, ##__VA_ARGS__); \
                                           error_exit_or_jump(ERROR_ACTION_CONT); } while(0);
+
+// The following two macros are used for testing. It redirects the control flow back to the testing function
+// if an error occurs. The testing function should set testmode to 1.
 // Usage: if(error_trycatch()) { ...code goes here } else { ... error happens } ... error did not happen
 #define error_trycatch() (setjmp(env) == ERROR_FIRSTTIME)
 #define ERROR_FIRSTTIME 0
+
 #define SYSEXPECT(expr) do { if(!(expr)) syserror(__func__); } while(0) // Assertion for system calls; Valid under all modes
 
 void error_init(const char *s);
