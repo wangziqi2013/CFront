@@ -71,22 +71,22 @@ token_cxt_t *token_cxt_init(char *input) {
   SYSEXPECT(cxt != NULL);
   cxt->udef_types = stack_init();
   stack_push(cxt->udef_types, ht_str_init());
-  cxt->pushbacks = NULL;
+  cxt->pb_head = cxt->pb_tail = NULL;
   cxt->s = cxt->begin = input;
-  cxt->pb_num = 0;
+  cxt->pb_count = 0;
   return cxt;
 }
 
 void token_cxt_reinit(token_cxt_t *cxt, char *input) {
   cxt->s = cxt->begin = input;
-  cxt->pb_num = 0;
-  token_t *curr = cxt->pushbacks, *prev = NULL;
-  while(curr) {
-    prev = curr;
-    curr = curr->next;
-    token_free(prev); // Only free the node after we get its next node
+  token_t *curr = cxt->pb_head;
+  while(curr != NULL) {
+    token_t *next = curr->next;
+    token_free(curr);
+    curr = next;
   }
-  cxt->pushbacks = NULL;
+  cxt->pb_head = cxt->pb_tail = NULL;
+  cxt->pb_count = 0;
   return;
 }
 
@@ -95,14 +95,11 @@ void token_cxt_free(token_cxt_t *cxt) {
     ht_free(stack_pop(cxt->udef_types));
   }
   stack_free(cxt->udef_types);
-  if(cxt->pushbacks != NULL) {
-    token_t *curr = cxt->pushbacks->next;
-    cxt->pushbacks->next = NULL;
-    while(curr != NULL) {
-      cxt->pushbacks = curr->next;
-      token_free(curr);
-      curr = cxt->pushbacks;
-    }
+  token_t *curr = cxt->pb_head;
+  while(curr != NULL) {
+    token_t *next = curr->next;
+    token_free(curr);
+    curr = next;
   }
   free(cxt);
 }
@@ -921,19 +918,17 @@ token_t *token_get_next_ignore_lookahead(token_cxt_t *cxt) {
 
 // Returns the next token, or NULL if EOF
 token_t *token_get_next(token_cxt_t *cxt) {
-  token_t *token;
-  if(cxt->pushbacks != NULL) {
-    assert(cxt->pb_num > 0);
-    token = cxt->pushbacks->next;
-    if(token == cxt->pushbacks) {
-      cxt->pushbacks = NULL;
-    } else {
-      cxt->pushbacks->next = token->next;
-    }
-    cxt->pb_num--;
-    return token;
+  token_t *ret;
+  if(cxt->pb_count == 1) {
+    ret = cxt->pb_head;
+    cxt->pb_head = cxt->pb_tail = NULL;
+  } else if(cxt->pb_count > 1) {
+    ret = cxt->pb_head;
+    cxt->pb_head = ret->next;
+  } else {
+    ret = token_get_next_ignore_lookahead(cxt);
   }
-  return token_get_next_ignore_lookahead(cxt);
+  return ret;
 }
 
 // Consume the next token if it is of the given type. 
