@@ -922,9 +922,11 @@ token_t *token_get_next(token_cxt_t *cxt) {
   if(cxt->pb_count == 1) {
     ret = cxt->pb_head;
     cxt->pb_head = cxt->pb_tail = NULL;
+    cxt->pb_count--;
   } else if(cxt->pb_count > 1) {
     ret = cxt->pb_head;
     cxt->pb_head = ret->next;
+    cxt->pb_count--;
   } else {
     ret = token_get_next_ignore_lookahead(cxt);
   }

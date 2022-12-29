@@ -97,7 +97,7 @@ void test_token_lookahead() {
   token_pushback(token_cxt, t2);
   token_pushback(token_cxt, t3);
   token_pushback(token_cxt, t4);
-  assert(token_cxt->pb_num == 4);
+  assert(token_cxt->pb_count == 4);
   for(int i = 1;i <= 3;i++) { // Should see 1 2 3
     token = token_get_next(token_cxt);
     assert(atoi(token->str) == i);
