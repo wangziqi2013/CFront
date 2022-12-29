@@ -198,7 +198,7 @@ typedef struct token_t {
 #define BASETYPE_BITFIELD   0x00130000
 #define BASETYPE_GET(decl_prop) (decl_prop & BASETYPE_MASK)
 // Better write setters as functions, not macros to avoid evaluating arguments multiple times
-static inline void BASETYPE_SET(token_t *token, decl_prop_t basetype) {
+inline static void BASETYPE_SET(token_t *token, decl_prop_t basetype) {
   token->decl_prop &= ~BASETYPE_MASK; \
   token->decl_prop |= ((basetype) & BASETYPE_MASK);
 }
@@ -234,7 +234,7 @@ extern uint32_t kwd_props[32];
 extern int precedences[51];
 
 // Note that both bounds are inclusive because there must be no gap in the exp token enum
-static inline int token_is_assign(token_t *token) { 
+inline static int token_is_assign(token_t *token) { 
   return token->type >= EXP_ASSIGN_BEGIN && token->type <= EXP_ASSIGN_END; 
 }
 
