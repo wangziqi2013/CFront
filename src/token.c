@@ -546,7 +546,9 @@ const char *token_symstr(token_type_t type) {
 //   3. { and } are processed here
 char *token_get_op(char *s, token_t *token) {
   token->offset = s;
-  if(s == NULL) return NULL;
+  if(s == NULL) {
+    return NULL;
+  }
   switch(s[0]) {
     case '\0': return NULL;
     // Must be single character operator
@@ -663,7 +665,6 @@ char *token_get_op(char *s, token_t *token) {
         default: token->type = T_BIT_OR; return s + 1;                  // |
       }
   }
-
   token->type = T_ILLEGAL;
   return s;
 }
@@ -679,8 +680,11 @@ void token_copy_literal(token_t *token, const char *begin, const char *end) {
 }
 
 void token_free(token_t *token) {
-  if(token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END) free(token->str);
+  if(token->type >= T_LITERALS_BEGIN && token->type < T_LITERALS_END) {
+    free(token->str);
+  }
   free(token);
+  return;
 }
 
 token_t *token_alloc() {
@@ -700,19 +704,23 @@ token_t *token_alloc_type(token_type_t type) {
   return token;
 }
 
-token_t *token_get_empty() { return token_alloc_type(T_); }
+token_t *token_get_empty() { 
+  return token_alloc_type(T_); 
+}
 
 // Returns an identifier, including both keywords and user defined identifier
 // Same rule as the get_op call
 // Note:
-//   1. If keywords are detected then the buffer is not initialized
+//   1. If keywords are detected then the literal is not copied to the token
 char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
   static char buffer[TOKEN_MAX_KWD_SIZE + 1];  // One additional for terminating zero
   token->offset = s;
   if(s == NULL || *s == '\0') return NULL;
   else if(isalpha(*s) || *s == '_') {
     char *end = s + 1;
-    while(isalnum(*end) || *end == '_') end++;
+    while(isalnum(*end) || *end == '_') {
+      end++;
+    }
     token_type_t type = T_ILLEGAL;
     if(end - s <= TOKEN_MAX_KWD_SIZE) {
       memcpy(buffer, s, end - s);
@@ -727,13 +735,14 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
         token->decl_prop |= DECL_UDEF;
       }
     } else {
+      // The token represents a keyword. In this case, we apply the declaration properties
+      // to the token for the parser to use
       token->type = type;
       assert(type >= T_KEYWORDS_BEGIN && type < T_KEYWORDS_END);
       token->decl_prop = kwd_props[type - T_KEYWORDS_BEGIN];
     }
     return end;
   }
-  
   token->type = T_ILLEGAL;
   return s;
 }
@@ -742,68 +751,128 @@ char *token_get_ident(token_cxt_t *cxt, char *s, token_t *token) {
 // The digits are guaranteed to be consistent with the base. Plus/Minus signs are not included.
 char *token_get_int(char *s, token_t *token) {
   token->offset = s;
-  if(s == NULL || *s == '\0') return NULL;
+  if(s == NULL || *s == '\0') {
+    return NULL;
+  }
   token->type = T_DEC_INT_CONST;
   if(s[0] == '0') {
     if(s[1] == 'x') {
       if(isxdigit(s[2])) {
         s += 2;
         token->type = T_HEX_INT_CONST;
-      } else error_exit("Invalid hex integer literal\n");
+      } else {
+        error_exit("Invalid hex integer literal\n");
+      }
     } else if(isdigit(s[1])) {
       s++;
       token->type = T_OCT_INT_CONST;
     }
   }
   char *end = s;
-  if(token->type == T_DEC_INT_CONST) while(isdigit(*end)) end++;
-  else if(token->type == T_HEX_INT_CONST) while(isxdigit(*end)) end++;
-  else while(*end >= '0' && *end < '8') end++;
+  if(token->type == T_DEC_INT_CONST) {
+    while(isdigit(*end)) {
+      end++;
+    }
+  } else if(token->type == T_HEX_INT_CONST) {
+    while(isxdigit(*end)) {
+      end++;
+    }
+  } else {
+    while(*end >= '0' && *end < '8') {
+      end++;
+    }
+  }
   assert(end != s);
   token_copy_literal(token, s, end);
   decl_prop_t inttype;
   switch(*end) {
-    case 'u': case 'U': 
+    case 'u': case 'U': {
       switch(end[1]) {
-        case 'l': case 'L':
-          if(end[2] == 'l' || end[2] == 'L') { end += 3; inttype = BASETYPE_ULLONG; } // ULL
-          else { end += 2; inttype = BASETYPE_ULONG; }                                // UL
-          break;
-        default: end++; inttype = BASETYPE_UINT; break;                               // U
+        case 'l': case 'L': {
+          if(end[2] == 'l' || end[2] == 'L') { 
+            // ULL
+            end += 3; 
+            inttype = BASETYPE_ULLONG; 
+          } else { 
+            // UL
+            end += 2; 
+            inttype = BASETYPE_ULONG; 
+          } 
+        } break;
+        default: {
+          // U
+          end++; 
+          inttype = BASETYPE_UINT;
+        } break;
       }
-    break;
-    case 'l': case 'L':
+    } break;
+    case 'l': case 'L': {
       switch(end[1]) {
-        case 'l': case 'L':
-          if(end[2] == 'u' || end[2] == 'U') { end += 3; inttype = BASETYPE_ULLONG; } // LLU
-          else { end += 2; inttype = BASETYPE_LLONG; }                                // LL
-          break;
-        case 'u': case 'U': end += 2; inttype = BASETYPE_ULONG;                       // LU
-        /* fall through */
-        default: end++; inttype = BASETYPE_UINT; break;                               // L
+        case 'l': case 'L': {
+          if(end[2] == 'u' || end[2] == 'U') { 
+            // LLU
+            end += 3; 
+            inttype = BASETYPE_ULLONG; 
+          } else { 
+            // LL
+            end += 2; 
+            inttype = BASETYPE_LLONG; 
+          }                          
+        } break;
+        case 'u': case 'U': {
+          // LU
+          end += 2; 
+          inttype = BASETYPE_ULONG;
+        } break;
+        default: {
+          // L
+          end++; 
+          inttype = BASETYPE_UINT; 
+        } break;
       }
-    break;
-    default: inttype = BASETYPE_INT; break;
+    } break;
+    default: {
+      inttype = BASETYPE_INT; 
+    } break;
   }
-  token->decl_prop = inttype; // Make integer constant the declared size
+  // Make integer constant the declared size
+  token->decl_prop = inttype;
   return end;
 }
 
+// Copy a string or char literal enclosed by single or double quotation mark
+// Whether to use single or double quotation is specified by "closing"
+// This function does not attempt to translate escaped characters
 char *token_get_str(char *s, token_t *token, char closing) {
-  token->offset = s - 1; // Note that s is the pointer to the first literal byte
-  if(s == NULL || *s == '\0') return NULL;
+  // Note that s is the pointer to the first character after the quotation mark
+  token->offset = s - 1;
+  if(s == NULL || *s == '\0') {
+    return NULL;
+  }
   token->type = closing == '\'' ? T_CHAR_CONST : T_STR_CONST;
   char *end = s;
   do {
-    while(*end != '\0' && *end != closing && *end != '\\') end++;
-    if(*end == '\0') error_row_col_exit(s, "%s literal not closed\n", closing == '\"' ? "String" : "Char");
-    if(*end == '\\') {
-      if(end[1] == closing || end[1] == '\\') end += 2; // Escaped closing character and '\' is skipped 
-      else end++;
+    while(*end != '\0' && *end != closing && *end != '\\') {
+      end++;
     }
-    if(*end == closing) break;
+    if(*end == '\0') {
+      error_row_col_exit(s, "%s literal not closed\n", closing == '\"' ? "String" : "Char");
+    }
+    if(*end == '\\') {
+      if(end[1] == closing || end[1] == '\\') {
+        end += 2; // Escaped closing character and '\' is skipped 
+      } else {
+        end++;
+      }
+    }
+    if(*end == closing) {
+      break;
+    }
   } while(1);
-  if(closing == '\'') token->decl_prop = BASETYPE_CHAR; // If the closing is char then add type
+  if(closing == '\'') {
+    // If the closing is char then add the base type
+    token->decl_prop = BASETYPE_CHAR;
+  }
   token_copy_literal(token, s, end);
   return end + 1;
 }
@@ -814,29 +883,51 @@ token_t *token_get_next(token_cxt_t *cxt) {
   if(cxt->pushbacks && !cxt->ignore_pb) {
     assert(cxt->pb_num > 0);
     token = cxt->pushbacks->next;
-    if(token == cxt->pushbacks) cxt->pushbacks = NULL;
-    else cxt->pushbacks->next = token->next;
+    if(token == cxt->pushbacks) {
+      cxt->pushbacks = NULL;
+    } else {
+      cxt->pushbacks->next = token->next;
+    }
     cxt->pb_num--;
     return token;
   }
   token = token_alloc();
   while(1) {
     const char *before = cxt->s;
-    if(cxt->s == NULL || *cxt->s == '\0') { token_free(token); return NULL; }
-    else if(isspace(*cxt->s)) while(isspace(*cxt->s)) cxt->s++;
-    else if(cxt->s[0] == '/' && cxt->s[1] == '/') while(*cxt->s != '\n' && *cxt->s != '\0') cxt->s++;
-    else if(cxt->s[0] == '/' && cxt->s[1] == '*') {
+    if(cxt->s == NULL || *cxt->s == '\0') { 
+      token_free(token); 
+      return NULL; 
+    } else if(isspace(*cxt->s)) {
+      while(isspace(*cxt->s)) {
+        cxt->s++;
+      }
+    } else if(cxt->s[0] == '/' && cxt->s[1] == '/') {
+      while(*cxt->s != '\n' && *cxt->s != '\0') {
+        cxt->s++;
+      }
+    } else if(cxt->s[0] == '/' && cxt->s[1] == '*') {
       cxt->s += 2;
-      while((cxt->s[0] != '\0') && (cxt->s[0] != '*' || cxt->s[1] != '/')) cxt->s++;
-      if(cxt->s[0] == '\0') error_row_col_exit(before, "Block comment not closed at the end of file\n");
+      while((cxt->s[0] != '\0') && (cxt->s[0] != '*' || cxt->s[1] != '/')) {
+        cxt->s++;
+      }
+      if(cxt->s[0] == '\0') {
+        error_row_col_exit(before, "Block comment not closed at the end of file\n");
+      }
       cxt->s += 2;
-    }
-    else if(isalpha(*cxt->s) || *cxt->s == '_') { cxt->s = token_get_ident(cxt, cxt->s, token); break; }
-    else if(isdigit(*cxt->s))                   { cxt->s = token_get_int(cxt->s, token); break; }
-    else if(*cxt->s == '\'' || *cxt->s == '\"') { cxt->s = token_get_str(cxt->s + 1, token, *cxt->s); break; }
-    else {
+    } else if(isalpha(*cxt->s) || *cxt->s == '_') { 
+      cxt->s = token_get_ident(cxt, cxt->s, token); 
+      break; 
+    } else if(isdigit(*cxt->s)) {
+      cxt->s = token_get_int(cxt->s, token); 
+      break; 
+    } else if(*cxt->s == '\'' || *cxt->s == '\"') { 
+      cxt->s = token_get_str(cxt->s + 1, token, *cxt->s); 
+      break; 
+    } else {
       cxt->s = token_get_op(cxt->s, token);
-      if(token->type == T_ILLEGAL) error_row_col_exit(before, "Unknown symbol \'%c\'\n", *before);
+      if(token->type == T_ILLEGAL) {
+        error_row_col_exit(before, "Unknown symbol \'%c\'\n", *before);
+      }
       break;
     }
   }
