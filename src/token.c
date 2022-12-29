@@ -74,14 +74,12 @@ token_cxt_t *token_cxt_init(char *input) {
   cxt->pushbacks = NULL;
   cxt->s = cxt->begin = input;
   cxt->pb_num = 0;
-  cxt->ignore_pb = 0;
   return cxt;
 }
 
 void token_cxt_reinit(token_cxt_t *cxt, char *input) {
   cxt->s = cxt->begin = input;
   cxt->pb_num = 0;
-  cxt->ignore_pb = 0;
   token_t *curr = cxt->pushbacks, *prev = NULL;
   while(curr) {
     prev = curr;
@@ -924,7 +922,7 @@ token_t *token_get_next_ignore_lookahead(token_cxt_t *cxt) {
 // Returns the next token, or NULL if EOF
 token_t *token_get_next(token_cxt_t *cxt) {
   token_t *token;
-  if(cxt->pushbacks && !cxt->ignore_pb) {
+  if(cxt->pushbacks != NULL) {
     assert(cxt->pb_num > 0);
     token = cxt->pushbacks->next;
     if(token == cxt->pushbacks) {
@@ -973,10 +971,8 @@ void token_pushback(token_cxt_t *cxt, token_t *token) {
 token_t *token_lookahead(token_cxt_t *cxt, int num) {
   assert(num > 0 && cxt->pb_num >= 0);  
   while(cxt->pb_num < num) {
-    //cxt->ignore_pb = 1;
     // This may return NULL if token stream reaches the end
     token_t *token = token_get_next_ignore_lookahead(cxt); 
-    //cxt->ignore_pb = 0;
     if(token != NULL) {
       token_pushback(cxt, token);
     } else {
